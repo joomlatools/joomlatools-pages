@@ -1,0 +1,32 @@
+
+{
+    "name": "joomlatools/pages",
+    "type": "joomlatools-installer",
+    "license": "GPL-3.0-only",
+    "description": "A component for including html and markdown into Joomla. Inspired by Jekyll and Grav",
+    "keywords": [
+        "joomla",
+        "component",
+        "pages",
+        "markdown"
+    ],
+    "homepage": "https://github.com/joomlatools/joomlatools-pages",
+    "authors": [
+         {
+            "name": "Johan Janssens",
+            "email": "johan@janssens.me",
+            "homepage": "http://about.me/johanjanssens"
+        },
+        {
+            "name": "Timble",
+            "email": "info@timble.net",
+            "homepage": "http://www.timble.net"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.0",
+        "joomlatools/installer": "*",
+        "joomlatools/framework": "~3.0",
+        "michelf/php-markdown": "1.8.*"
+    }
+}
