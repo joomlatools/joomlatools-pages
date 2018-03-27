@@ -14,7 +14,8 @@ simple way, and not to mention it's super fast too!
 
 ## Who is Joomlatools Pages for?
 
-Joomlatools Pages is for website developers creating custom Joomla sites and have experience with html, markdown, etc.
+Joomlatools Pages is for website developers and designers who create bespoke Joomla sites and have experience with html, 
+markdown, etc.
 
 ## Requirements
 
