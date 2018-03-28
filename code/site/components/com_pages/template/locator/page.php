@@ -100,4 +100,19 @@ class ComPagesTemplateLocatorPage extends KTemplateLocatorFile
 
         return $result;
     }
+
+    /**
+     * Prevent directory traversal attempts outside of the base path
+     *
+     * @param  string $file The file path
+     * @return string The real file path
+     */
+    public function realPath($file)
+    {
+        $path = parent::realPath($file);
+
+        if(!strpos($file, $this->getBasePath())) {
+            return false;
+        }
+    }
 }
