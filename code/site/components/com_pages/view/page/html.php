@@ -110,6 +110,16 @@ class ComPagesViewPageHtml extends ComKoowaViewHtml
     }
 
     /**
+     * Get the title
+     *
+     * @return  string  The title of the view
+     */
+    public function getTitle()
+    {
+        return $this->_title;
+    }
+
+    /**
      * Get the description
      *
      * @return 	string  The description of the view
