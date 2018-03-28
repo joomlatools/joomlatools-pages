@@ -17,6 +17,27 @@ class ComPagesTemplateLocatorPage extends KTemplateLocatorFile
     protected static $_name = 'page';
 
     /**
+     * The root path
+     *
+     * @var string
+     */
+    protected $_base_path;
+
+    /**
+     * Constructor
+     *
+     * Prevent creating instances of this class by making the constructor private
+     *
+     * @param KObjectConfig $config   An optional ObjectConfig object with configuration options
+     */
+    public function __construct(KObjectConfig $config)
+    {
+        parent::__construct($config);
+
+        $this->_base_path = rtrim($config->base_path, '/');
+    }
+
+    /**
      * Initializes the options for the object
      *
      * Called from {@link __construct()} as a first step of object instantiation.
@@ -27,26 +48,20 @@ class ComPagesTemplateLocatorPage extends KTemplateLocatorFile
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'base_path' =>  Koowa::getInstance()->getRootPath().'/pages',
+            'base_path' =>  Koowa::getInstance()->getRootPath().'/joomlatools-pages',
         ));
 
         parent::_initialize($config);
     }
 
     /**
-     * Set the base path
+     * Get the root path
      *
-     * @param string $path The base path
-     * @return KTemplateLocatorAbstract
+     * @return string
      */
-    public function setBasePath($path)
+    public function getBasePath()
     {
-        //Prevent base path from being reset
-        if(!isset($this->_base_path)){
-            parent::setBasePath($path);
-        }
-
-        return $this;
+        return $this->_base_path;
     }
 
     /**
@@ -58,32 +73,22 @@ class ComPagesTemplateLocatorPage extends KTemplateLocatorFile
      */
     public function find(array $info)
     {
-        //Qualify partial templates.
-        if(dirname($info['url']) === '.')
-        {
-            if(empty($info['base'])) {
-                throw new RuntimeException('Cannot qualify partial template path');
-            }
-
-            $path = dirname($info['base']);
-        }
-        else $path = dirname($info['url']);
-
         $file   = pathinfo($info['url'], PATHINFO_FILENAME);
         $format = pathinfo($info['url'], PATHINFO_EXTENSION);
+        $path   = pathinfo($info['url'], PATHINFO_DIRNAME);
 
-        $path = str_replace(parse_url($info['url'], PHP_URL_SCHEME).'://', '', $info['url']);
-        $path = $info['base'].'/'.$path;
+        $path = ltrim(str_replace(parse_url($path, PHP_URL_SCHEME).'://', '', $path), '/');
+        $path = $this->getBasePath().'/'.$path;
 
-        if($this->realPath($path)) {
-           $path .= '/index.html';
-       } else {
-           $path .= '.html';
-       }
+        if($this->realPath($path.'/'.$file)) {
+            $pattern = $path.'/'.$file.'/index.'.$format.'*';
+        } else {
+            $pattern = $path.'/'.$file.'.'.$format.'*';
+        }
 
         //Try to find the file
         $result = false;
-        if ($results = glob($path.'*'))
+        if ($results = glob($pattern))
         {
             foreach($results as $file)
             {
