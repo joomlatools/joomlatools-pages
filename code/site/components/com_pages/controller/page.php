@@ -20,7 +20,16 @@ class ComPagesControllerPage extends KControllerView
     {
         $this->getView()->setPage($this->getPage());
 
-        return parent::_actionRender($context);
+        if($result = parent::_actionRender($context))
+        {
+            //Set the title
+            JFactory::getDocument()->setTitle($this->getView()->getTitle());
+
+            //Set the description
+            JFactory::getDocument()->setDescription($this->getView()->getDescription());
+        }
+
+        return $result;
     }
 
     /**
@@ -30,13 +39,17 @@ class ComPagesControllerPage extends KControllerView
      */
     public function getPage()
     {
-        $site_path = $this->getRequest()->getSiteUrl()->getPath();
+        $request = $this->getRequest();
 
-        $path = $this->getRequest()->getUrl()->getPath();
-        $path = ltrim(str_replace(array($site_path, 'index.php'), '', $path), '/');
+        //Get the page path
+        $path = $request->getUrl()->getPath();
+        $path = ltrim(str_replace(array($request->getSiteUrl()->getPath(), 'index.php'), '', $path), '/');
 
         //Handle the site root case eg. http://mysite.com/
-        $path = 'page://'.($path ?: 'index');
+        $path = 'page://pages/'.($path ?: 'index');
+
+        //Add the format to the path if not present
+        $path = pathinfo($path, PATHINFO_EXTENSION) ? $path : $path.'.'.$request->getFormat();
 
         return $this->getObject('com:pages.template.page')->loadFile($path);
     }
