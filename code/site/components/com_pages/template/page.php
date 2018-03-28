@@ -41,7 +41,7 @@ class ComPagesTemplatePage extends KTemplate
             }
         }
 
-        return $this->loadString(str_replace($matches[0], '', $content), $type != 'html' ? $type : null);
+        return $this->loadString(str_replace($matches[0], '', $content), $type != 'html' ? $type : null, $url);
     }
 
     /**
@@ -55,7 +55,7 @@ class ComPagesTemplatePage extends KTemplate
      * @param  integer  $type    The template type.
      * @return KTemplate
      */
-    public function loadString($source, $type = null)
+    public function loadString($source, $type = null, $url = null)
     {
         if($type)
         {
@@ -67,7 +67,7 @@ class ComPagesTemplatePage extends KTemplate
 
             $this->_source = $this->getObject('template.engine.factory')
                 ->createEngine($type, $config)
-                ->loadString($source);
+                ->loadString($source, $url);
         }
         else parent::loadString($source);
 
