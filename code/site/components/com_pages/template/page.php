@@ -73,33 +73,4 @@ class ComPagesTemplatePage extends KTemplate
 
         return $this;
     }
-
-    /**
-     * Render the template
-     *
-     * @return string
-     */
-    public function toString()
-    {
-        return $this->render();
-    }
-
-    /**
-     * Cast the object to a string
-     *
-     * @return string
-     */
-    final public function __toString()
-    {
-        $result = '';
-
-        //Not allowed to throw exceptions in __toString() See : https://bugs.php.net/bug.php?id=53648
-        try {
-            $result = $this->toString();
-        } catch (Exception $e) {
-            trigger_error('ComPagesTemplatePage::__toString exception: '. (string) $e, E_USER_ERROR);
-        }
-
-        return $result;
-    }
 }
