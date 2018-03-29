@@ -17,27 +17,6 @@ class ComPagesTemplateLocatorPage extends KTemplateLocatorFile
     protected static $_name = 'page';
 
     /**
-     * The root path
-     *
-     * @var string
-     */
-    protected $_base_path;
-
-    /**
-     * Constructor
-     *
-     * Prevent creating instances of this class by making the constructor private
-     *
-     * @param KObjectConfig $config   An optional ObjectConfig object with configuration options
-     */
-    public function __construct(KObjectConfig $config)
-    {
-        parent::__construct($config);
-
-        $this->_base_path = rtrim($config->base_path, '/');
-    }
-
-    /**
      * Initializes the options for the object
      *
      * Called from {@link __construct()} as a first step of object instantiation.
@@ -55,16 +34,6 @@ class ComPagesTemplateLocatorPage extends KTemplateLocatorFile
     }
 
     /**
-     * Get the root path
-     *
-     * @return string
-     */
-    public function getBasePath()
-    {
-        return $this->_base_path;
-    }
-
-    /**
      * Find a template path
      *
      * @param array  $info  The path information
@@ -73,12 +42,18 @@ class ComPagesTemplateLocatorPage extends KTemplateLocatorFile
      */
     public function find(array $info)
     {
-        $file   = pathinfo($info['url'], PATHINFO_FILENAME);
-        $format = pathinfo($info['url'], PATHINFO_EXTENSION);
-        $path   = pathinfo($info['url'], PATHINFO_DIRNAME);
+        $path = ltrim(str_replace(parse_url($info['url'], PHP_URL_SCHEME).'://', '', $info['url']), '/');
 
-        $path = ltrim(str_replace(parse_url($path, PHP_URL_SCHEME).'://', '', $path), '/');
-        $path = $this->getBasePath().'/'.$path;
+        $file   = pathinfo($path, PATHINFO_FILENAME);
+        $format = pathinfo($path, PATHINFO_EXTENSION);
+        $path   = ltrim(pathinfo($path, PATHINFO_DIRNAME), '.');
+
+        //Prepend the base path
+        if($path) {
+            $path = $this->getBasePath().'/'.$path;
+        } else {
+            $path = $this->getBasePath();
+        }
 
         if($this->realPath($path.'/'.$file)) {
             $pattern = $path.'/'.$file.'/index.'.$format.'*';
@@ -99,20 +74,5 @@ class ComPagesTemplateLocatorPage extends KTemplateLocatorFile
         }
 
         return $result;
-    }
-
-    /**
-     * Prevent directory traversal attempts outside of the base path
-     *
-     * @param  string $file The file path
-     * @return string The real file path
-     */
-    public function realPath($file)
-    {
-        $path = parent::realPath($file);
-
-        if(!strpos($file, $this->getBasePath())) {
-            return false;
-        }
     }
 }
