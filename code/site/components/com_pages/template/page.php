@@ -41,7 +41,7 @@ class ComPagesTemplatePage extends KTemplate
             }
         }
 
-        return $this->loadString(str_replace($matches[0], '', $content), $type != 'html' ? $type : null);
+        return $this->loadString(str_replace($matches[0], '', $content), $type != 'html' ? $type : null, $url);
     }
 
     /**
@@ -55,7 +55,7 @@ class ComPagesTemplatePage extends KTemplate
      * @param  integer  $type    The template type.
      * @return KTemplate
      */
-    public function loadString($source, $type = null)
+    public function loadString($source, $type = null, $url = null)
     {
         if($type)
         {
@@ -67,39 +67,10 @@ class ComPagesTemplatePage extends KTemplate
 
             $this->_source = $this->getObject('template.engine.factory')
                 ->createEngine($type, $config)
-                ->loadString($source);
+                ->loadString($source, $url);
         }
         else parent::loadString($source);
 
         return $this;
-    }
-
-    /**
-     * Render the template
-     *
-     * @return string
-     */
-    public function toString()
-    {
-        return $this->render();
-    }
-
-    /**
-     * Cast the object to a string
-     *
-     * @return string
-     */
-    final public function __toString()
-    {
-        $result = '';
-
-        //Not allowed to throw exceptions in __toString() See : https://bugs.php.net/bug.php?id=53648
-        try {
-            $result = $this->toString();
-        } catch (Exception $e) {
-            trigger_error('ComPagesTemplatePage::__toString exception: '. (string) $e, E_USER_ERROR);
-        }
-
-        return $result;
     }
 }

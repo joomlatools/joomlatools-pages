@@ -9,10 +9,6 @@
 
 return array(
 
-    'aliases'  => [
-        'com:koowa.template.locator.file' => 'com:pages.template.locator.file'
-    ],
-
     'identifiers' => [
         'template.locator.factory' => [
             'locators' => [

@@ -27,26 +27,10 @@ class ComPagesTemplateLocatorPage extends KTemplateLocatorFile
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'base_path' =>  Koowa::getInstance()->getRootPath().'/pages',
+            'base_path' =>  Koowa::getInstance()->getRootPath().'/joomlatools-pages',
         ));
 
         parent::_initialize($config);
-    }
-
-    /**
-     * Set the base path
-     *
-     * @param string $path The base path
-     * @return KTemplateLocatorAbstract
-     */
-    public function setBasePath($path)
-    {
-        //Prevent base path from being reset
-        if(!isset($this->_base_path)){
-            parent::setBasePath($path);
-        }
-
-        return $this;
     }
 
     /**
@@ -58,32 +42,28 @@ class ComPagesTemplateLocatorPage extends KTemplateLocatorFile
      */
     public function find(array $info)
     {
-        //Qualify partial templates.
-        if(dirname($info['url']) === '.')
-        {
-            if(empty($info['base'])) {
-                throw new RuntimeException('Cannot qualify partial template path');
-            }
+        $path = ltrim(str_replace(parse_url($info['url'], PHP_URL_SCHEME).'://', '', $info['url']), '/');
 
-            $path = dirname($info['base']);
+        $file   = pathinfo($path, PATHINFO_FILENAME);
+        $format = pathinfo($path, PATHINFO_EXTENSION);
+        $path   = ltrim(pathinfo($path, PATHINFO_DIRNAME), '.');
+
+        //Prepend the base path
+        if($path) {
+            $path = $this->getBasePath().'/'.$path;
+        } else {
+            $path = $this->getBasePath();
         }
-        else $path = dirname($info['url']);
 
-        $file   = pathinfo($info['url'], PATHINFO_FILENAME);
-        $format = pathinfo($info['url'], PATHINFO_EXTENSION);
-
-        $path = str_replace(parse_url($info['url'], PHP_URL_SCHEME).'://', '', $info['url']);
-        $path = $info['base'].'/'.$path;
-
-        if($this->realPath($path)) {
-           $path .= '/index.html';
-       } else {
-           $path .= '.html';
-       }
+        if($this->realPath($path.'/'.$file)) {
+            $pattern = $path.'/'.$file.'/index.'.$format.'*';
+        } else {
+            $pattern = $path.'/'.$file.'.'.$format.'*';
+        }
 
         //Try to find the file
         $result = false;
-        if ($results = glob($path.'*'))
+        if ($results = glob($pattern))
         {
             foreach($results as $file)
             {
