@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-framework-pages for the canonical source repository
  */
 
-class ComPagesTemplatePage extends KTemplate
+class ComPagesPage extends KTemplate
 {
     /**
      * Initializes the options for the object
@@ -21,9 +21,10 @@ class ComPagesTemplatePage extends KTemplate
     {
         $config->append(array(
             'functions'  => array(
-                'data'   => function($path, $format = '') {
+                'data' => function($path, $format = '') {
                     return  $this->getObject('com:pages.data.factory')->createObject($path, $format);
                 }
+
             ),
             'cache'           => false,
             'cache_namespace' => 'pages',

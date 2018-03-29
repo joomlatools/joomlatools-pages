@@ -51,6 +51,6 @@ class ComPagesControllerPage extends KControllerView
         //Add the format to the path if not present
         $path = pathinfo($path, PATHINFO_EXTENSION) ? $path : $path.'.'.$request->getFormat();
 
-        return $this->getObject('com:pages.template.page')->loadFile($path);
+        return $this->getObject('com:pages.page')->loadFile($path);
     }
 }

@@ -11,6 +11,6 @@ defined('KOOWA') or die; ?>
 
 <div class="content" id="content" tabindex="-1">
     <div class="content__inner content__inner--spaced">
-        <?= $page->render() ?>
+        <?= $page->render(); ?>
     </div>
 </div>
