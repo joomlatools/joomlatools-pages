@@ -43,18 +43,9 @@ class ComPagesTemplateLocatorData extends KTemplateLocatorFile
     {
         $result = parent::find($info);
 
-        if($result)
-        {
-            //If the result is a file check if the first line is a url
-            if(!is_dir($result))
-            {
-                $line = trim(fgets(fopen($result, 'r')));
-                if(parse_url($line, PHP_URL_SCHEME)) {
-                    $result = $line;
-                }
-            }
-            //If the result is a directory, return all the files in the directory
-            else $result = glob($result.'/*.*');
+        //If the result is a directory, return all the files in the directory
+        if($result && is_dir($result)) {
+            $result = glob($result.'/*.*');
         }
 
         return $result;

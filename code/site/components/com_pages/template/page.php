@@ -21,8 +21,8 @@ class ComPagesTemplatePage extends KTemplate
     {
         $config->append(array(
             'functions'  => array(
-                'data'   => function($path) {
-                    return  $this->getObject('com:pages.data.factory')->createObject($path);
+                'data'   => function($path, $format = '') {
+                    return  $this->getObject('com:pages.data.factory')->createObject($path, $format);
                 }
             ),
             'cache'           => false,
