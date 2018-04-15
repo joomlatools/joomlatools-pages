@@ -7,10 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-framework-pages for the canonical source repository
  */
 
-defined('KOOWA') or die; ?>
+class ComPagesDataObject extends KObjectConfig
+{
 
-<div class="content" id="content" tabindex="-1">
-    <div class="content__inner content__inner--spaced">
-        <?= $page->render(); ?>
-    </div>
-</div>
+}

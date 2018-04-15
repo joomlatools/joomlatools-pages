@@ -7,8 +7,32 @@
  * @link        https://github.com/joomlatools/joomlatools-framework-pages for the canonical source repository
  */
 
-class ComPagesTemplatePage extends KTemplate
+class ComPagesPage extends KTemplate
 {
+    /**
+     * Initializes the options for the object
+     *
+     * Called from {@link __construct()} as a first step of object instantiation.
+     *
+     * @param  KObjectConfig $config  An optional ObjectConfig object with configuration options.
+     * @return void
+     */
+    protected function _initialize(KObjectConfig $config)
+    {
+        $config->append(array(
+            'functions'  => array(
+                'data' => function($path, $format = '') {
+                    return  $this->getObject('com:pages.data.factory')->createObject($path, $format);
+                }
+
+            ),
+            'cache'           => false,
+            'cache_namespace' => 'pages',
+        ));
+
+        parent::_initialize($config);
+    }
+
     /**
      * Load a template by path
      *
@@ -19,9 +43,7 @@ class ComPagesTemplatePage extends KTemplate
     public function loadFile($url)
     {
         //Locate the template
-        $locator = $this->getObject('template.locator.factory')->createLocator($url);
-
-        if (!$file = $locator->locate($url)) {
+        if (!$file = $this->getObject('template.locator.factory')->locate($url)) {
             throw new InvalidArgumentException(sprintf('The file "%s" cannot be located.', $url));
         }
 

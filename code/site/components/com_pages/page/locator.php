@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-framework-pages for the canonical source repository
  */
 
-class ComPagesTemplateLocatorPage extends KTemplateLocatorFile
+class ComPagesPageLocator extends KTemplateLocatorFile
 {
     /**
      * The locator name
