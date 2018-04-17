@@ -7,50 +7,41 @@
  * @link        https://github.com/joomlatools/joomlatools-framework-pages for the canonical source repository
  */
 
-class ComPagesControllerPage extends KControllerView
+class ComPagesControllerPage extends KControllerModel
 {
-    /**
-     * Inject the page into the view
-     *
-     * @param  KControllerContextInterface $context A command context object
-     * @throws KControllerExceptionFormatNotSupported If the requested format is not supported for the resource
-     * @return string|bool The rendered output of the view or false if something went wrong
-     */
-    protected function _actionRender(KControllerContextInterface $context)
+    public function __construct(KObjectConfig $config)
     {
-        $this->getView()->setPage($this->getPage());
+        parent::__construct($config);
 
-        if($result = parent::_actionRender($context))
-        {
-            //Set the title
-            JFactory::getDocument()->setTitle($this->getView()->getTitle());
-
-            //Set the description
-            JFactory::getDocument()->setDescription($this->getView()->getDescription());
-        }
-
-        return $result;
+        $this->addCommandCallback('after.render', '_afterRender');
     }
 
-    /**
-     * Get the page
-     *
-     * @return ComPagesTemplatePage The page template object
-     */
-    public function getPage()
+    protected function _initialize(KObjectConfig $config)
     {
-        $request = $this->getRequest();
+        $config->append(array(
+            'behaviors' => array(
+                'redirectable'
+            ),
+        ));
+        parent::_initialize($config);
+    }
 
-        //Get the page path
-        $path = $request->getUrl()->getPath();
-        $path = ltrim(str_replace(array($request->getSiteUrl()->getPath(), 'index.php'), '', $path), '/');
+    protected function _afterRender(KControllerContextInterface $context)
+    {
+        $entity = $this->getModel()->fetch();
 
-        //Handle the site root case eg. http://mysite.com/
-        $path = 'page://pages/'.($path ?: 'index');
+        if($context->request->getFormat() == 'html')
+        {
+            //Set the metadata
+            foreach($entity->metadata as $name => $content) {
+                JFactory::getDocument()->setMetaData($name, $content);
+            }
 
-        //Add the format to the path if not present
-        $path = pathinfo($path, PATHINFO_EXTENSION) ? $path : $path.'.'.$request->getFormat();
+            //Set the title
+            JFactory::getDocument()->setTitle($entity->title);
 
-        return $this->getObject('com:pages.page')->loadFile($path);
+            //Set the description
+            JFactory::getDocument()->setDescription($entity->description);
+        }
     }
 }
