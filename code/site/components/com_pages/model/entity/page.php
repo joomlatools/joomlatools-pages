@@ -38,7 +38,7 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
                 'redirect'    => '',
                 'metadata'    => array(),
                 'process'     => array(
-                    'plugins' => true
+                    'plugins' => false
                 ),
                 'layout'      => 'default'
             ),
@@ -56,7 +56,7 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
             $type    = pathinfo($this->file, PATHINFO_EXTENSION);
             $content = $this->getObject('com:pages.template')
                 ->loadString($this->_content, $type != 'html' ? $type : null, $this->path)
-                ->render();
+                ->render($this->getProperties());
 
             //Run page content through content plugins
             if($this->process->plugins)
