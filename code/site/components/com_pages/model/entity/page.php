@@ -13,7 +13,7 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
     {
         parent::__construct($config);
 
-        //Create the config object (cannot use factory)
+        //Create the config object
         $config = (new ComPagesObjectConfigPage())->fromFile($this->file);
 
         //Set the properties
@@ -28,7 +28,7 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
         $config->append(array(
             'data' => array(
                 'title'       => '',
-                'description' => '',
+                'summary'     => '',
                 'date'        => '',
                 'published'   => true,
                 'access'      => array(
@@ -67,6 +67,12 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
         return $result;
     }
 
+    public function getPropertyExcerpt()
+    {
+        $parts = preg_split('#<!--(.*)more(.*)-->#i', $this->content, 2);
+        return $parts[0];
+    }
+
     public function setPropertyAccess($value)
     {
         return new KObjectConfig($value);
@@ -75,6 +81,18 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
     public function setPropertyProcess($value)
     {
         return new KObjectConfig($value);
+    }
+
+    public function setPropertyMetadata($value)
+    {
+        $config = new KObjectConfig($value);
+
+        //Set the summary as the metadata descriptipn
+        if(!isset($config->description)) {
+            $config->description = $this->summary;
+        }
+
+        return $config;
     }
 
     public function setPropertyDate($value)
@@ -100,9 +118,11 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
             }
         }
 
-        $data['content']= $this->content;
-        $data['access'] = $this->access->toArray();
-        $data['date']   = $this->date->format(DateTime::ATOM);
+        $data['content']  = $this->content;
+        $data['excerpt']  = $this->excerpt;
+        $data['access']   = $this->access->toArray();
+        $data['metadata'] = $this->metadata->toArray();
+        $data['date']     = $this->date->format(DateTime::ATOM);
 
         unset($data['file']);
         unset($data['path']);

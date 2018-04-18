@@ -39,9 +39,6 @@ class ComPagesControllerPage extends KControllerModel
 
             //Set the title
             JFactory::getDocument()->setTitle($entity->title);
-
-            //Set the description
-            JFactory::getDocument()->setDescription($entity->description);
         }
     }
 }
