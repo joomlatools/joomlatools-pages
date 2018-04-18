@@ -46,31 +46,43 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
         parent::_initialize($config);
     }
 
-    public function getPropertyContent()
+    public function content($refresh = false)
     {
-        $type   = pathinfo($this->file, PATHINFO_EXTENSION);
-        $result = $this->getObject('com:pages.template')
-            ->loadString($this->_content, $type != 'html' ? $type : null, $this->path)
-            ->render();
+        static $content;
 
-        //Run page content through content plugins
-        if($this->process->plugins)
+        if(!isset($content) || $refresh)
         {
-            $result = JHtml::_('content.prepare', $result);
+            $type    = pathinfo($this->file, PATHINFO_EXTENSION);
+            $content = $this->getObject('com:pages.template')
+                ->loadString($this->_content, $type != 'html' ? $type : null, $this->path)
+                ->render();
 
-            // Make sure our script filter does not screw up email cloaking
-            if (strpos($result, '<script') !== false) {
-                $result = str_replace('<script', '<script data-inline', $result);
+            //Run page content through content plugins
+            if($this->process->plugins)
+            {
+                $content = JHtml::_('content.prepare', $content);
+
+                // Make sure our script filter does not screw up email cloaking
+                if (strpos($content, '<script') !== false) {
+                    $content = str_replace('<script', '<script data-inline', $content);
+                }
             }
         }
 
-        return $result;
+        return $content;
     }
 
-    public function getPropertyExcerpt()
+    public function excerpt($refresh = false)
     {
-        $parts = preg_split('#<!--(.*)more(.*)-->#i', $this->content, 2);
-        return $parts[0];
+        static $excerpt;
+
+        if(!isset($excerpt) || $refresh)
+        {
+            $parts = preg_split('#<!--(.*)more(.*)-->#i', $this->content(), 2);
+            $excerpt = $parts[0];
+        }
+
+        return $excerpt;
     }
 
     public function setPropertyAccess($value)
@@ -118,8 +130,8 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
             }
         }
 
-        $data['content']  = $this->content;
-        $data['excerpt']  = $this->excerpt;
+        $data['content']  = $this->content();
+        $data['excerpt']  = $this->excerpt();
         $data['access']   = $this->access->toArray();
         $data['metadata'] = $this->metadata->toArray();
         $data['date']     = $this->date->format(DateTime::ATOM);
