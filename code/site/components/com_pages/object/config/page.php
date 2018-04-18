@@ -27,7 +27,7 @@ class ComPagesObjectConfigPage extends KObjectConfigYaml
                 $this->merge(parent::fromString($matches[1], false));
             }
 
-            $this->content = str_replace($matches[0], '', $string);
+            $this->setContent(str_replace($matches[0], '', $string));
         }
 
         return $object ? $this : $this->toArray();
@@ -53,7 +53,7 @@ class ComPagesObjectConfigPage extends KObjectConfigYaml
         return $this->__content;
     }
 
-    public function setConntent($content)
+    public function setContent($content)
     {
         $this->__content = trim($content);
         return $this;
