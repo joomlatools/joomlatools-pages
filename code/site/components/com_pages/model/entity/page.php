@@ -13,21 +13,14 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
     {
         parent::__construct($config);
 
-        //Get the page content
-        $content = file_get_contents($this->file);
+        //Create the config object (cannot use factory)
+        $config = (new ComPagesObjectConfigPage())->fromFile($this->file);
 
-        if (strpos($content, "---") !== false)
-        {
-            $config = array();
-            if(preg_match('#^\s*---(.*|[\s\S]*)\s*---#siU', $content, $matches))
-            {
-                //Inject the properties into the entity
-                $properties = $this->getObject('object.config.factory')->fromString('yaml', $matches[1], false);
-                $this->setProperties($properties, false);
-            }
-        }
+        //Set the properties
+        $this->setProperties($config->toArray(), false);
 
-        $this->_content = str_replace($matches[0], '', $content);
+        //Se the content
+        $this->_content = $config->getContent();
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -41,13 +34,14 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
                 'access'      => array(
                     'roles'  => array('public'),
                     'groups' => array('public', 'guest'),
-                'redirect'    => '',
-                'metadata'    => array(),
-                'process'     => array(
-                    'plugins' => true
-                )
-            ),
-        )));
+                    'redirect'    => '',
+                    'metadata'    => array(),
+                    'process'     => array(
+                        'plugins' => true
+                    ),
+                    'layout'      => 'default'
+                ),
+            )));
 
         parent::_initialize($config);
     }
