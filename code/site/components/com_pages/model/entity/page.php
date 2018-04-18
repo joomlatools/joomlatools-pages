@@ -33,15 +33,16 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
                 'published'   => true,
                 'access'      => array(
                     'roles'  => array('public'),
-                    'groups' => array('public', 'guest'),
-                    'redirect'    => '',
-                    'metadata'    => array(),
-                    'process'     => array(
-                        'plugins' => true
-                    ),
-                    'layout'      => 'default'
+                    'groups' => array('public', 'guest')
                 ),
-            )));
+                'redirect'    => '',
+                'metadata'    => array(),
+                'process'     => array(
+                    'plugins' => true
+                ),
+                'layout'      => 'default'
+            ),
+        ));
 
         parent::_initialize($config);
     }
