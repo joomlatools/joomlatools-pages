@@ -7,13 +7,13 @@
  * @link        https://github.com/joomlatools/joomlatools-framework-pages for the canonical source repository
  */
 
-class ComPagesViewPageHtml extends ComKoowaViewHtml
+class ComPagesViewPageJson extends KViewJson
 {
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append([
-            'template_filters' => ['markdown'],
-        ]);
+        $config->append(array(
+            'text_fields' => array('description', 'content') // Links are converted to absolute ones in these fields
+        ));
 
         parent::_initialize($config);
     }

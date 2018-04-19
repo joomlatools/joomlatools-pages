@@ -12,8 +12,8 @@ return array(
     'identifiers' => [
         'template.locator.factory' => [
             'locators' => [
-                'com:pages.page.locator',
-                'com:pages.data.locator'
+                'com:pages.data.locator',
+                'com:pages.template.locator'
             ]
         ],
         'template.engine.factory' => [

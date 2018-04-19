@@ -7,14 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-framework-pages for the canonical source repository
  */
 
-class ComPagesViewPageHtml extends ComKoowaViewHtml
+class ComPagesModelEntityPages extends KModelEntityComposite
 {
-    protected function _initialize(KObjectConfig $config)
-    {
-        $config->append([
-            'template_filters' => ['markdown'],
-        ]);
 
-        parent::_initialize($config);
-    }
 }
