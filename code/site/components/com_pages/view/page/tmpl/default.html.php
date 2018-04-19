@@ -10,17 +10,19 @@
 defined('KOOWA') or die; ?>
 
 <? // Before display - content plugin event ?>
+<? $content = $page->content() ?>
 
 <? if($page->process->plugins) : ?>
     <?= helper('event.trigger', array(
         'name'       => 'onContentBeforeDisplay',
-        'attributes' => array('com_pages.page', &$page->content, (object)$page->getProperties(), 0)
+        'import_group' => true,
+        'attributes' => array('com_pages.page', &$content, (object)$page->getProperties(), 0)
     )); ?>
 <?endif ?>
 
 <div class="content" id="content" tabindex="-1">
     <div class="content__inner content__inner--spaced">
-        <?= $page->content() ?>
+        <?= $content ?>
     </div>
 </div>
 
@@ -28,6 +30,7 @@ defined('KOOWA') or die; ?>
 <? if($page->process->plugins) : ?>
     <?= helper('event.trigger', array(
         'name'       => 'onContentAfterDisplay',
-        'attributes' => array('com_pages.page', &$page->content, (object)$page->getProperties(), 0)
+        'import_group' => true,
+        'attributes' => array('com_pages.page', &$content, (object)$page->getProperties(), 0)
     )); ?>
 <?endif ?>
