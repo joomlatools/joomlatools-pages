@@ -32,15 +32,34 @@ class ComPagesViewPageHtml extends ComKoowaViewHtml
         //Find the layout
         if($layout = $context->data->page->layout)
         {
-            $format = $this->getFormat();
             $path = 'page://layouts/'.$layout;
 
-            if (!$this->getObject('template.locator.factory')->locate($path.'.'.$format)) {
+            if (!$this->getObject('template.locator.factory')->locate($path)) {
                 throw new RuntimeException(sprintf("Layout '%s' cannot be found", $layout));
             }
-
-            $context->layout = $path;
         }
+        else $path = 'com:pages.view.page.default.html';
+
+        $context->layout = $path;
+    }
+
+    /**
+     * Return the views output
+     *
+     * @param KViewContext  $context A view context object
+     * @return string  The output of the view
+     */
+    protected function _actionRender(KViewContext $context)
+    {
+        $data = KObjectConfig::unbox($context->data);
+
+        //Render the template
+        $this->_content = $this->getTemplate()
+            ->loadFile($context->layout)
+            ->setParameters($context->parameters)
+            ->render($data);
+
+        return KViewAbstract::_actionRender($context);
     }
 
     protected function _processPlugins(KViewContextInterface $context)
