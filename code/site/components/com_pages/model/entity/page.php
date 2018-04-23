@@ -38,7 +38,7 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
                 'redirect'    => '',
                 'metadata'    => array(),
                 'process'     => array(
-                    'plugins' => false
+                    'plugins' => true
                 ),
                 'layout'      => 'default'
             ),
@@ -57,17 +57,6 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
             $content = $this->getObject('com:pages.template')
                 ->loadString($this->_content, $type != 'html' ? $type : null, $this->path)
                 ->render($this->getProperties());
-
-            //Run page content through content plugins
-            if($this->process->plugins)
-            {
-                $content = JHtml::_('content.prepare', $content);
-
-                // Make sure our script filter does not screw up email cloaking
-                if (strpos($content, '<script') !== false) {
-                    $content = str_replace('<script', '<script data-inline', $content);
-                }
-            }
         }
 
         return $content;
