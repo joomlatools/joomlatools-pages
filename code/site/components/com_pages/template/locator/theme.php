@@ -7,19 +7,16 @@
  * @link        https://github.com/joomlatools/joomlatools-framework-pages for the canonical source repository
  */
 
-class ComPagesTemplate extends KTemplate
+class ComPagesTemplateLocatorTheme extends KTemplateLocatorFile
 {
+    protected static $_name = 'theme';
+
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append(array(
-            'functions'  => array(
-                'data' => function($path, $format = '') {
-                    return  $this->getObject('com:pages.data.factory')->createObject($path, $format);
-                }
+        $template  = JFactory::getApplication()->getTemplate();
 
-            ),
-            'cache'           => false,
-            'cache_namespace' => 'pages',
+        $config->append(array(
+            'base_path' =>  JPATH_THEMES.'/'.$template,
         ));
 
         parent::_initialize($config);
