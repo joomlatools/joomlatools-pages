@@ -4,27 +4,13 @@
  *
  * @copyright   Copyright (C) 2018 Johan Janssens and Timble CVBA. (http://www.timble.net)
  * @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl.html>
- * @link        https://github.com/joomlatools/joomlatools-framework-pages for the canonical source repository
+ * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
 final class ComPagesDataFactory extends KObject implements KObjectSingleton
 {
-    /**
-     * The data object cache
-     *
-     * @var string
-     */
     private static $__cache = array();
 
-    /**
-     * Read data from a file, folder or url and return a data object
-     *
-     * @param  string  $path
-     * @param  string  $format
-     * @throws \InvalidArgumentException If the data file(s) could not be located
-     * @throws RuntimeException
-     * @return ComPagesDataObject
-     */
     public function createObject($path, $format = '')
     {
         if(!isset($this->__cache[$path]))
@@ -48,14 +34,6 @@ final class ComPagesDataFactory extends KObject implements KObjectSingleton
         return $this->__cache[$path];
     }
 
-    /**
-     * Read a data from a file or folder
-     *
-     * @param  string  $path
-     * @throws \InvalidArgumentException If the data file(s) could not be located
-     * @throws RuntimeException
-     * @return array
-     */
     public function fromPath($path)
     {
         //Get the data
@@ -75,15 +53,6 @@ final class ComPagesDataFactory extends KObject implements KObjectSingleton
         return $result;
     }
 
-    /**
-     * Read a data from a file or folder
-     *
-     * @param  string  $url
-     * @param  string  $format
-     * @throws \InvalidArgumentException If the data file(s) could not be located
-     * @throws RuntimeException
-     * @return array
-     */
     public function fromUrl($url, $format = '')
     {
         if(!ini_get('allow_url_fopen')) {
