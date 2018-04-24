@@ -65,26 +65,28 @@ class ComPagesViewPageHtml extends ComKoowaViewPageHtml
             $content = new stdClass;
             $content->text = $context->result;
 
+            $params = (object)$page->getProperties();
+
             //Trigger onContentBeforeDisplay
             $results = array();
             $results[] = $this->getTemplate()->createHelper('event')->trigger(array(
                 'name'         => 'onContentBeforeDisplay',
                 'import_group' => 'content',
-                'attributes'   => array('com_pages.page', &$content, (object)$page->getProperties())
+                'attributes'   => array('com_pages.page', &$content, &$params)
             ));
 
             //Trigger onContentPrepare
             $results[] = $this->getTemplate()->createHelper('event')->trigger(array(
                 'name'         => 'onContentPrepare',
                 'import_group' => 'content',
-                'attributes'   => array('com_pages.page', &$content, (object)$page->getProperties())
+                'attributes'   => array('com_pages.page', &$content, &$params)
             ));
 
             //Trigger onContentAfterDisplay
             $results[] = $this->getTemplate()->createHelper('event')->trigger(array(
                 'name'         => 'onContentAfterDisplay',
                 'import_group' => 'content',
-                'attributes'   => array('com_pages.page', &$content, (object)$page->getProperties())
+                'attributes'   => array('com_pages.page', &$content, &$params)
             ));
 
             $context->result = trim(implode("\n", $results));;
