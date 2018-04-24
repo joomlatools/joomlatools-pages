@@ -43,12 +43,6 @@ class ComPagesViewPageHtml extends ComKoowaViewPageHtml
         $context->layout = $path;
     }
 
-    /**
-     * Return the views output
-     *
-     * @param KViewContext  $context A view context object
-     * @return string  The output of the view
-     */
     protected function _actionRender(KViewContext $context)
     {
         $data = KObjectConfig::unbox($context->data);
@@ -68,7 +62,8 @@ class ComPagesViewPageHtml extends ComKoowaViewPageHtml
 
         if($page->process->plugins)
         {
-            $content = $context->result;
+            $content = new stdClass;
+            $content->text = $context->result;
 
             //Trigger onContentBeforeDisplay
             $results = array();
