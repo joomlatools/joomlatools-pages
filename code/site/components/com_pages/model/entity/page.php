@@ -26,6 +26,7 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
+            'identity_key'   => 'page',
             'data' => array(
                 'title'       => '',
                 'summary'     => '',
@@ -40,11 +41,28 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
                 'process'     => array(
                     'plugins' => true
                 ),
-                'layout'      => ''
+                'layout'      => '',
+                'colllection' => false,
             ),
         ));
 
         parent::_initialize($config);
+    }
+
+    public function collection()
+    {
+        static $collection;
+
+        if($this->collection !== false)
+        {
+            $collection = $this->getObject('com:pages.controller.page')
+                ->path($this->path)
+                ->browse();
+
+            return $collection;
+        }
+
+        return array();
     }
 
     public function content($refresh = false)
@@ -53,8 +71,13 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
 
         if(!isset($content) || $refresh)
         {
+            $config = array('functions' => array(
+                'collection' => array($this, 'collection'),
+                'excerpt'    => array($this, 'excerpt')
+            ));
+
             $type    = pathinfo($this->file, PATHINFO_EXTENSION);
-            $content = $this->getObject('com:pages.template')
+            $content = $this->getObject('com:pages.template', $config)
                 ->loadString($this->_content, $type != 'html' ? $type : null, $this->path)
                 ->render($this->getProperties());
         }
@@ -103,7 +126,7 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
         if(empty($value)) {
             $date = $this->getObject('date')->setTimestamp(filemtime($this->file));
         } else {
-            $date = $this->getObject('date', array('date' => $value));
+            $date = $this->getObject('date', array('date' => trim($value)));
         }
 
         return $date;

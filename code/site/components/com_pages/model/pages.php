@@ -40,8 +40,36 @@ class ComPagesModelPages extends KModelAbstract
                     'file' => $file,
                 );
             }
-
-            return parent::_actionCreate($context);
         }
+        else
+        {
+            $files = array();
+            $path  = $this->getState()->path;
+
+            //Locate the template
+            if ($file = $this->getObject('template.locator.factory')->locate($path))
+            {
+                $iterator = new FilesystemIterator(dirname($file));
+                while( $iterator->valid() )
+                {
+                    $file = $iterator->current();
+                    $name = pathinfo($file->getRealpath(), PATHINFO_FILENAME);
+
+                    if($name != 'index')
+                    {
+                        $files[] = [
+                            'file' => $file->getRealPath(),
+                            'path' => $path.'/'.$name,
+                        ];
+                    }
+
+                    $iterator->next();
+                }
+
+                $context->entity = $files;
+            }
+        }
+
+        return parent::_actionCreate($context);
     }
 }
