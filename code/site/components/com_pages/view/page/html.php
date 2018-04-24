@@ -38,7 +38,7 @@ class ComPagesViewPageHtml extends ComKoowaViewHtml
                 throw new RuntimeException(sprintf("Layout '%s' cannot be found", $layout));
             }
         }
-        else $path = 'com:pages.view.page.default.html';
+        else $path = 'com://site/pages.page.default.html';
 
         $context->layout = $path;
     }
