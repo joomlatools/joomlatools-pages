@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-framework-pages for the canonical source repository
  */
 
-class ComPagesViewPageHtml extends ComKoowaViewHtml
+class ComPagesViewPageHtml extends ComKoowaViewPageHtml
 {
     public function __construct(KObjectConfig $config)
     {
