@@ -40,7 +40,7 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
                 'process'     => array(
                     'plugins' => true
                 ),
-                'layout'      => 'default'
+                'layout'      => ''
             ),
         ));
 
