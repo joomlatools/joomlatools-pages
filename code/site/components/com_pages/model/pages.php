@@ -13,14 +13,14 @@ class ComPagesModelPages extends KModelAbstract
     {
         parent::__construct($config);
         $this->getState()
-            ->insert('path', 'url');
+            ->insert('path', 'url')
+            ->insert('file', 'cmd', '', true, array('path'));
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
             'identity_key' => 'path',
-            'state'        => 'com:pages.model.state',
         ));
 
         parent::_initialize($config);
@@ -28,8 +28,10 @@ class ComPagesModelPages extends KModelAbstract
 
     protected function _actionFetch(KModelContext $context)
     {
-        if ($path = $this->getState()->path)
+        if ($this->getState()->isUnique())
         {
+            $path = $this->getState()->path.'/'.$this->getState()->file;
+
             //Locate the template
             if ($file = $this->getObject('template.locator.factory')->locate($path))
             {
@@ -41,6 +43,5 @@ class ComPagesModelPages extends KModelAbstract
 
             return parent::_actionCreate($context);
         }
-        else throw new UnexpectedValueException("The state 'path' is required.");
     }
 }

@@ -21,7 +21,8 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         $path = 'page://pages/'.($path ?: 'index');
 
         //Add the format to the path if not present
-        $request->query->path = pathinfo($path, PATHINFO_EXTENSION) ? $path : $path.'.html';
+        $request->query->file = pathinfo($path, PATHINFO_BASENAME);
+        $request->query->path = pathinfo($path, PATHINFO_DIRNAME);
 
         return $request;
     }
