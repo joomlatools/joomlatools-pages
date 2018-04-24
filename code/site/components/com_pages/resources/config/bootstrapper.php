@@ -13,7 +13,8 @@ return array(
         'template.locator.factory' => [
             'locators' => [
                 'com:pages.data.locator',
-                'com:pages.template.locator'
+                'com:pages.template.locator.page',
+                'com:pages.template.locator.theme'
             ]
         ],
         'template.engine.factory' => [
