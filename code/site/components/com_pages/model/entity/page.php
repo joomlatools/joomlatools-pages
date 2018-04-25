@@ -9,6 +9,12 @@
 
 class ComPagesModelEntityPage extends KModelEntityAbstract
 {
+    protected $_content = '';
+
+    protected $_content_rendered = false;
+
+    protected $_collection_object = false;
+
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
@@ -19,7 +25,7 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
         //Set the properties
         $this->setProperties($config->toArray(), false);
 
-        //Se the content
+        //Set the content
         $this->_content = $config->getContent();
     }
 
@@ -51,15 +57,16 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
 
     public function collection()
     {
-        static $collection;
-
         if($this->collection !== false)
         {
-            $collection = $this->getObject('com:pages.controller.page')
-                ->path($this->path)
-                ->browse();
+            if(!$this->_collection_object)
+            {
+                $this->_collection_object = $this->getObject('com:pages.controller.page')
+                    ->path($this->path)
+                    ->browse();
+            }
 
-            return $collection;
+            return  $this->_collection_object;
         }
 
         return array();
@@ -67,9 +74,7 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
 
     public function content($refresh = false)
     {
-        static $content;
-
-        if(!isset($content) || $refresh)
+        if(!$this->_content_rendered || $refresh)
         {
             $config = array('functions' => array(
                 'collection' => array($this, 'collection'),
@@ -80,20 +85,17 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
             $content = $this->getObject('com:pages.template', $config)
                 ->loadString($this->_content, $type != 'html' ? $type : null, $this->path)
                 ->render($this->getProperties());
+
+            $this->_content_rendered = $content;
         }
 
-        return $content;
+        return $this->_content_rendered;
     }
 
     public function excerpt($refresh = false)
     {
-        static $excerpt;
-
-        if(!isset($excerpt) || $refresh)
-        {
-            $parts = preg_split('#<!--(.*)more(.*)-->#i', $this->content(), 2);
-            $excerpt = $parts[0];
-        }
+        $parts = preg_split('#<!--(.*)more(.*)-->#i', $this->content($refresh), 2);
+        $excerpt = $parts[0];
 
         return $excerpt;
     }
