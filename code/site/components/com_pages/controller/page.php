@@ -13,6 +13,7 @@ class ComPagesControllerPage extends KControllerModel
     {
         parent::__construct($config);
 
+        $this->addCommandCallback('after.render', '_beforeRender');
         $this->addCommandCallback('after.render', '_afterRender');
     }
 
@@ -24,6 +25,15 @@ class ComPagesControllerPage extends KControllerModel
             ),
         ));
         parent::_initialize($config);
+    }
+
+
+    protected function _beforeRender(KControllerContextInterface $context)
+    {
+        $entity = $this->getModel()->fetch();
+
+        //Set the entity content in the response to allow for view decoration
+        $context->response->setContent($entity->content());
     }
 
     protected function _afterRender(KControllerContextInterface $context)
