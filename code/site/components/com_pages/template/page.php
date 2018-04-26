@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesTemplate extends KTemplate
+class ComPagesTemplatePage extends KTemplate
 {
     protected $_excluded_types;
 
@@ -27,7 +27,6 @@ class ComPagesTemplate extends KTemplate
                 'data' => function($path, $format = '') {
                     return  $this->getObject('com:pages.data.factory')->createObject($path, $format);
                 },
-                'date' => array($this, 'formatDate')
 
             ),
             'cache'           => false,
@@ -35,21 +34,6 @@ class ComPagesTemplate extends KTemplate
         ));
 
         parent::_initialize($config);
-    }
-
-    protected function formatDate($date, $format = '')
-    {
-        if(!$date instanceof KDate)
-        {
-            if(empty($format)) {
-                $format = $this->getObject('translator')->translate('DATE_FORMAT_LC3');
-            }
-
-            $result = $this->createHelper('date')->format(array('date' => $date, 'format' => $format));
-        }
-        else $result = $date->format($format);
-
-        return $result;
     }
 
     public function loadFile($url)
