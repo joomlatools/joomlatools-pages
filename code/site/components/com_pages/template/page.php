@@ -27,6 +27,7 @@ class ComPagesTemplatePage extends KTemplate
                 'data' => function($path, $format = '') {
                     return  $this->getObject('com:pages.data.factory')->createObject($path, $format);
                 },
+                'date' => array($this, 'formatDate')
 
             ),
             'cache'           => false,
@@ -34,6 +35,21 @@ class ComPagesTemplatePage extends KTemplate
         ));
 
         parent::_initialize($config);
+    }
+
+    protected function formatDate($date, $format = '')
+    {
+        if(!$date instanceof KDate)
+        {
+            if(empty($format)) {
+                $format = $this->getObject('translator')->translate('DATE_FORMAT_LC3');
+            }
+
+            $result = $this->createHelper('date')->format(array('date' => $date, 'format' => $format));
+        }
+        else $result = $date->format($format);
+
+        return $result;
     }
 
     public function loadFile($url)
