@@ -33,7 +33,7 @@ class ComPagesModelPages extends KModelAbstract
             $path = $this->getState()->path.'/'.$this->getState()->file;
 
             //Locate the template
-            if ($file = $this->getObject('template.locator.factory')->locate($path))
+            if ($file = $this->getObject('com:pages.template.locator')->locatePage($path))
             {
                 $context->entity =  array(
                     'path' => $path,
@@ -47,7 +47,7 @@ class ComPagesModelPages extends KModelAbstract
             $path  = $this->getState()->path;
 
             //Locate the template
-            if ($file = $this->getObject('template.locator.factory')->locate($path))
+            if ($file = $this->getObject('com:pages.template.locator')->locatePage($path))
             {
                 $iterator = new FilesystemIterator(dirname($file));
                 while( $iterator->valid() )

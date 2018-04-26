@@ -81,9 +81,11 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
                 'excerpt'    => array($this, 'excerpt')
             ));
 
-            $type    = pathinfo($this->file, PATHINFO_EXTENSION);
+            $type = pathinfo($this->file, PATHINFO_EXTENSION);
+            $url  = $this->getObject('com:pages.template.locator')->getPageUrl($this->path);
+
             $content = $this->getObject('com:pages.template', $config)
-                ->loadString($this->_content, $type != 'html' ? $type : null, $this->path)
+                ->loadString($this->_content, $type != 'html' ? $type : null, $url)
                 ->render($this->getProperties());
 
             $this->_content_rendered = $content;

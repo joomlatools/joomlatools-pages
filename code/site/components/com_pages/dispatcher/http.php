@@ -18,11 +18,16 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         $path = ltrim(str_replace(array($request->getSiteUrl()->getPath(), 'index.php'), '', $path), '/');
 
         //Handle the site root case eg. http://mysite.com/
-        $path = 'page://pages/'.($path ?: 'index');
+        if($path)
+        {
+            $file = pathinfo($path, PATHINFO_FILENAME);
+            $path = pathinfo($path, PATHINFO_DIRNAME);
+        }
+        else $file = 'index';
 
         //Add the format to the path if not present
-        $request->query->file = pathinfo($path, PATHINFO_BASENAME);
-        $request->query->path = pathinfo($path, PATHINFO_DIRNAME);
+        $request->query->file = $file;
+        $request->query->path = $path;
 
         return $request;
     }
