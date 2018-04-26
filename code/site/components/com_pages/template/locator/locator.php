@@ -23,7 +23,7 @@ class ComPagesTemplateLocator extends KObject implements KObjectSingleton
         return $this->getObject('template.locator.factory')->locate($url);
     }
 
-    public function getLayoutUr($path)
+    public function getLayoutUrl($path)
     {
         return 'page://layouts/'.$path;
     }
