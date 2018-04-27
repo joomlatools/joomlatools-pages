@@ -24,7 +24,7 @@
     ],
     "require": {
         "php": ">=5.5.0",
-        "joomlatools/installer": "*",
+        "joomlatools/composer": "*",
         "joomlatools/framework": "~3.0",
         "michelf/php-markdown": "1.8.*"
     }
