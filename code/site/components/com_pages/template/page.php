@@ -18,11 +18,10 @@ class ComPagesTemplatePage extends KTemplate
                     return  $this->getObject('com:pages.data.factory')->createObject($path, $format);
                 },
                 'date' => array($this, 'formatDate')
-
             ),
             'cache'           => false,
             'cache_namespace' => 'pages',
-            'excluded_types' => array('html', 'txt', 'svg', 'css', 'js'),
+            'excluded_types'  => array('html', 'txt', 'svg', 'css', 'js'),
         ));
 
         parent::_initialize($config);

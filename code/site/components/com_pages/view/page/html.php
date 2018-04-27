@@ -9,11 +9,24 @@
 
 class ComPagesViewPageHtml extends ComKoowaViewPageHtml
 {
+    protected $_base_path;
+
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
 
-        $this->addCommandCallback('after.render', '_processPlugins');
+        $this->_base_path = rtrim($config->base_path, '/');
+
+        $this->addCommandCallback('after.render' , '_processPlugins');
+    }
+
+    protected function _initialize(KObjectConfig $config)
+    {
+        $config->append(array(
+            'base_path' => 'page://layouts',
+        ));
+
+        parent::_initialize($config);
     }
 
     protected function _fetchData(KViewContext $context)
@@ -24,7 +37,7 @@ class ComPagesViewPageHtml extends ComKoowaViewPageHtml
         if($layout = $context->data->page->layout)
         {
             if(!parse_url($layout, PHP_URL_SCHEME)) {
-                $path = 'page://layouts/'.$layout;
+                $path = $this->_base_path.'/'.$layout;
             } else {
                 $path = $layout;
             }
@@ -54,7 +67,7 @@ class ComPagesViewPageHtml extends ComKoowaViewPageHtml
             $layout = (new ComPagesObjectConfigPage())->fromFile($file);
 
             if(isset($layout->page)) {
-                throw new RuntimeException('Using "page" in layout frontmatter is now allowed');
+                throw new RuntimeException('Using "page" in layout frontmatter in not allowed');
             }
 
             //Render the layout
@@ -77,6 +90,7 @@ class ComPagesViewPageHtml extends ComKoowaViewPageHtml
 
         return KViewAbstract::_actionRender($context);
     }
+
 
     protected function _processPlugins(KViewContextInterface $context)
     {

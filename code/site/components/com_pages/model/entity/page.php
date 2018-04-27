@@ -20,13 +20,13 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
         parent::__construct($config);
 
         //Create the config object
-        $config = (new ComPagesObjectConfigPage())->fromFile($this->file);
+        $page = (new ComPagesObjectConfigPage())->fromFile($this->file);
 
         //Set the properties
-        $this->setProperties($config->toArray(), false);
+        $this->setProperties($page->toArray(), false);
 
         //Set the content
-        $this->_content = $config->getContent();
+        $this->_content = $page->getContent();
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -81,11 +81,8 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
                 'excerpt'    => array($this, 'excerpt')
             ));
 
-            $type = pathinfo($this->file, PATHINFO_EXTENSION);
-            $url  = $this->getObject('com:pages.template.locator')->getPageUrl($this->path);
-
-            $content = $this->getObject('com:pages.template', $config)
-                ->loadString($this->_content, $type != 'html' ? $type : null, $url)
+            $content = $this->getObject('com:pages.template.page', $config)
+                ->loadString($this->_content,  pathinfo($this->file, PATHINFO_EXTENSION), $this->url)
                 ->render($this->getProperties());
 
             $this->_content_rendered = $content;

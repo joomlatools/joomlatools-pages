@@ -9,17 +9,22 @@
 
 class ComPagesModelPages extends KModelAbstract
 {
+    protected $_base_path;
+
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
         $this->getState()
             ->insert('path', 'url')
             ->insert('file', 'cmd', '', true, array('path'));
+
+        $this->_base_path =  rtrim($config->base_path, '/');
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
+            'base_path'    => 'page://pages',
             'identity_key' => 'path',
         ));
 
@@ -31,13 +36,15 @@ class ComPagesModelPages extends KModelAbstract
         if ($this->getState()->isUnique())
         {
             $path = $this->getState()->path.'/'.$this->getState()->file;
+            $url  = $this->qualifyPage($path);
 
             //Locate the template
-            if ($file = $this->getObject('com:pages.template.locator')->locatePage($path))
+            if ($file = $this->getObject('template.locator.factory')->locate($url))
             {
                 $context->entity =  array(
                     'path' => $path,
                     'file' => $file,
+                    'url'  => $url
                 );
             }
         }
@@ -45,9 +52,10 @@ class ComPagesModelPages extends KModelAbstract
         {
             $files = array();
             $path  = $this->getState()->path;
+            $url   = $this->qualifyPage($path);
 
             //Locate the template
-            if ($file = $this->getObject('com:pages.template.locator')->locatePage($path))
+            if ($file = $this->getObject('template.locator.factory')->locate($url))
             {
                 $iterator = new FilesystemIterator(dirname($file));
                 while( $iterator->valid() )
@@ -60,6 +68,7 @@ class ComPagesModelPages extends KModelAbstract
                         $files[] = [
                             'file' => $file->getRealPath(),
                             'path' => $path.'/'.$name,
+                            'url'  => $url.'/'.$name
                         ];
                     }
 
@@ -71,5 +80,16 @@ class ComPagesModelPages extends KModelAbstract
         }
 
         return parent::_actionCreate($context);
+    }
+
+    public function qualifyPage($path)
+    {
+        if(!parse_url($path, PHP_URL_SCHEME)) {
+            $url  = $path = $this->_base_path.'/'.$path;
+        } else {
+            $url = $path;
+        }
+
+        return $url;
     }
 }
