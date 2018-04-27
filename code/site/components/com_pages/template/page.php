@@ -12,8 +12,8 @@ class ComPagesTemplatePage extends KTemplate
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'excluded_types' => array('html', 'txt', 'svg', 'css', 'js'),
-            'functions'  => array(
+            'filters'   => array('markdown'),
+            'functions' => array(
                 'data' => function($path, $format = '') {
                     return  $this->getObject('com:pages.data.factory')->createObject($path, $format);
                 },
@@ -21,6 +21,7 @@ class ComPagesTemplatePage extends KTemplate
             ),
             'cache'           => false,
             'cache_namespace' => 'pages',
+            'excluded_types' => array('html', 'txt', 'svg', 'css', 'js'),
         ));
 
         parent::_initialize($config);
