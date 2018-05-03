@@ -9,6 +9,14 @@
 
 class ComPagesTemplatePage extends KTemplate
 {
+    public function __construct(KObjectConfig $config)
+    {
+        parent::__construct($config);
+
+        //Intercept template exception
+        $this->getObject('exception.handler')->addExceptionCallback(array($this, 'handleException'), true);
+    }
+
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
@@ -21,7 +29,7 @@ class ComPagesTemplatePage extends KTemplate
             ),
             'cache'           => false,
             'cache_namespace' => 'pages',
-            'excluded_types'  => array('html', 'txt', 'svg', 'css', 'js'),
+            'excluded_types' => array('html', 'txt', 'svg', 'css', 'js'),
         ));
 
         parent::_initialize($config);
@@ -40,5 +48,26 @@ class ComPagesTemplatePage extends KTemplate
         else $result = $date->format($format);
 
         return $result;
+    }
+
+    public function handleException(Exception &$exception)
+    {
+        if($exception instanceof KTemplateExceptionError)
+        {
+            $file   = $exception->getFile();
+            $buffer = $exception->getPrevious()->getFile();
+
+            //Get the real file if it can be found
+            $line = count(file($file)) - count(file($buffer)) + $exception->getLine() - 1;
+
+            $exception = new KTemplateExceptionError(
+                $exception->getMessage(),
+                $exception->getCode(),
+                $exception->getSeverity(),
+                $file,
+                $line,
+                $exception->getPrevious()
+            );
+        }
     }
 }
