@@ -29,68 +29,63 @@ class ComPagesViewPageHtml extends ComKoowaViewPageHtml
         parent::_initialize($config);
     }
 
-    protected function _fetchData(KViewContext $context)
-    {
-        parent::_fetchData($context);
-
-        //Find the layout
-        if($layout = $context->data->page->layout)
-        {
-            if(!parse_url($layout, PHP_URL_SCHEME)) {
-                $path = $this->_base_path.'/'.$layout;
-            } else {
-                $path = $layout;
-            }
-        }
-        else $path = 'com://site/pages.page.default.html';
-
-        $context->layout = $path;
-    }
-
     protected function _actionRender(KViewContext $context)
     {
         $data   = $context->data;
         $layout = $context->layout;
 
-        $renderLayout = function($layout, $data) use(&$renderLayout)
+        //Find the layout
+        if($layout = $context->data->page->layout)
         {
-            //Locate the layout
-            if(!parse_url($layout, PHP_URL_SCHEME)) {
-                $url = 'page://layouts/'.$layout;
-            } else {
-                $url = $layout;
-            }
+            $renderLayout = function($layout, $data) use(&$renderLayout)
+            {
+                //Locate the layout
+                if(!parse_url($layout, PHP_URL_SCHEME)) {
+                    $url = 'page://layouts/'.$layout;
+                } else {
+                    $url = $layout;
+                }
 
-            $file = $this->getObject('template.locator.factory')->locate($url);
+                if(!$file = $this->getObject('template.locator.factory')->locate($url)) {
+                    throw new RuntimeException(sprintf('Cannot find layout: "%s"', $layout));
+                }
 
-            //Load the layout
-            $layout = (new ComPagesObjectConfigPage())->fromFile($file);
+                //Load the layout
+                $layout = (new ComPagesObjectConfigPage())->fromFile($file);
 
-            if(isset($layout->page)) {
-                throw new RuntimeException('Using "page" in layout frontmatter in not allowed');
-            }
+                if(isset($layout->page)) {
+                    throw new RuntimeException('Using "page" in layout frontmatter is now allowed');
+                }
+
+                //Render the layout
+                $data->append($layout);
+
+                $this->_content = $this->getTemplate()
+                    ->loadString($layout->getContent(), pathinfo($file, PATHINFO_EXTENSION), $url)
+                    ->render(KObjectConfig::unbox($data));
+
+                //Handle recursive layout
+                if($layout->layout) {
+                    $renderLayout($layout->layout, $data);
+                }
+            };
+
+            Closure::bind($renderLayout, $this, get_class());
 
             //Render the layout
-            $data->append($layout);
-
+            $renderLayout($layout, $data);
+        }
+        else
+        {
+            //Render the default layout
             $this->_content = $this->getTemplate()
-                ->loadString($layout->getContent(), pathinfo($file, PATHINFO_EXTENSION), $url)
+                ->loadFile('com://site/pages.page.default.html')
+                ->setParameters($context->parameters)
                 ->render(KObjectConfig::unbox($data));
-
-            //Handle recursive layout
-            if($layout->layout) {
-                $renderLayout($layout->layout, $data);
-            }
-        };
-
-        Closure::bind($renderLayout, $this, get_class());
-
-        //Render the layout
-        $renderLayout($layout, $data);
+        }
 
         return KViewAbstract::_actionRender($context);
     }
-
 
     protected function _processPlugins(KViewContextInterface $context)
     {

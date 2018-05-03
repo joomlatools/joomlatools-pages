@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="component" version="0.1.0" method="upgrade">
+    <identifier>com:pages</identifier>
+    <name>com_textman</name>
+    <author>Joomlatools</author>
+    <creationDate>May 2018</creationDate>
+    <copyright>Copyright (C) 2017 Timble CVBA (http://www.timble.net)</copyright>
+    <license>GNU GPLv3 - http://www.gnu.org/licenses/gpl.html</license>
+    <authorEmail>support@joomlatools.com</authorEmail>
+    <authorUrl>www.joomlatools.com</authorUrl>
+    <version>0.1.0</version>
+    <description>COM_PAGES_XML_DESCRIPTION</description>
+
+    <files folder="site/components/com_pages">
+        <filename>pages.php</filename>
+        <filename>router.php</filename>
+
+        <folder>controller</folder>
+        <folder>data</folder>
+        <folder>dispatcher</folder>
+        <folder>model</folder>
+        <folder>object</folder>
+        <folder>resources</folder>
+        <folder>template</folder>
+        <folder>view</folder>
+    </files>
+
+    <administration>
+        <files folder="administrator/components/com_pages">
+            <filename>version.php</filename>
+        </files>
+    </administration>
+</extension>
