@@ -29,6 +29,7 @@ class ComPagesObjectConfigPage extends KObjectConfigYaml
 
             $this->setContent(str_replace($matches[0], '', $string));
         }
+        else $this->setContent($string);
 
         return $object ? $this : $this->toArray();
     }
