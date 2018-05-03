@@ -33,7 +33,9 @@ class ComPagesViewPageHtml extends ComKoowaViewPageHtml
                     $url = $layout;
                 }
 
-                $file = $this->getObject('template.locator.factory')->locate($url);
+                if(!$file = $this->getObject('template.locator.factory')->locate($url)) {
+                    throw new RuntimeException(sprintf('Cannot find layout: "%s"', $layout));
+                }
 
                 //Load the layout
                 $layout = (new ComPagesObjectConfigPage())->fromFile($file);
