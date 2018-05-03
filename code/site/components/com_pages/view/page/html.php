@@ -41,7 +41,7 @@ class ComPagesViewPageHtml extends ComKoowaViewPageHtml
                 $layout = (new ComPagesObjectConfigPage())->fromFile($file);
 
                 if(isset($layout->page)) {
-                    throw new RuntimeException('Using "page" in layout frontmatter is now allowed');
+                    throw new KTemplateExceptionSyntaxError('Using "page" in layout frontmatter is now allowed');
                 }
 
                 //Render the layout
