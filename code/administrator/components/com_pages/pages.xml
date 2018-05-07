@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="component" version="0.1.0" method="upgrade">
     <identifier>com:pages</identifier>
-    <name>com_textman</name>
+    <name>com_pages</name>
     <author>Joomlatools</author>
     <creationDate>May 2018</creationDate>
     <copyright>Copyright (C) 2017 Timble CVBA (http://www.timble.net)</copyright>
@@ -28,6 +28,8 @@
     <administration>
         <files folder="administrator/components/com_pages">
             <filename>version.php</filename>
+
+            <folder>language</folder>
         </files>
     </administration>
 </extension>
