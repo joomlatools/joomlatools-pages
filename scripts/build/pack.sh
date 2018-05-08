@@ -4,7 +4,7 @@ build_dir=$(pwd)
 payload_dir=$build_dir/installer/payload
 
 framework_location=remote
-framework_branch=master
+framework_branch=feature/151-template
 
 # Clean up
 rm -rf installer
