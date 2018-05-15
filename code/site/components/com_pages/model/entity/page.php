@@ -13,14 +13,18 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
     {
         parent::__construct($config);
 
-        //Create the config object
-        $config = (new ComPagesObjectConfigPage())->fromFile($this->file);
+        //Check if the file is set
+        if($this->file)
+        {
+            //Create the config object
+            $config = (new ComPagesObjectConfigPage())->fromFile($this->file);
 
-        //Set the properties
-        $this->setProperties($config->toArray(), false);
+            //Set the properties
+            $this->setProperties($config->toArray(), false);
 
-        //Se the content
-        $this->_content = $config->getContent();
+            //Se the content
+            $this->_content = $config->getContent();
+        }
     }
 
     protected function _initialize(KObjectConfig $config)
