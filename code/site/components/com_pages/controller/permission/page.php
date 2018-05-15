@@ -32,7 +32,7 @@ class ComPagesControllerPermissionPage extends ComKoowaControllerPermissionAbstr
         //Check user group access
         if($result)
         {
-            $groups = $this->getObject('com:users.database.table.groups')
+            $groups = $this->getObject('com:pages.database.table.groups')
                 ->select($this->getUser()->getGroups(), KDatabase::FETCH_ARRAY_LIST);
 
             $groups = array_map('strtolower', array_column($groups, 'title'));
@@ -45,7 +45,7 @@ class ComPagesControllerPermissionPage extends ComKoowaControllerPermissionAbstr
         //Check user roles access
         if($result)
         {
-            $roles = $this->getObject('com:users.database.table.roles')
+            $roles = $this->getObject('com:pages.database.table.roles')
                 ->select($this->getUser()->getRoles(), KDatabase::FETCH_ARRAY_LIST);
 
             $roles = array_map('strtolower', array_column($roles, 'title'));

@@ -4,7 +4,7 @@
  *
  * @copyright   Copyright (C) 2018 Johan Janssens and Timble CVBA. (http://www.timble.net)
  * @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl.html>
- * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
+ * @link        https://github.com/joomlatools/joomlatools-framework-pages for the canonical source repository
  */
 
 class ComPagesModelEntityPage extends KModelEntityAbstract
@@ -19,14 +19,18 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
     {
         parent::__construct($config);
 
-        //Create the config object
-        $page = (new ComPagesObjectConfigPage())->fromFile($this->file);
+        //Check if the file is set
+        if($this->file)
+        {
+            //Create the config object
+            $page = (new ComPagesObjectConfigPage())->fromFile($this->file);
 
-        //Set the properties
-        $this->setProperties($page->toArray(), false);
+            //Set the properties
+            $this->setProperties($page->toArray(), false);
 
-        //Set the content
-        $this->_content = $page->getContent();
+            //Set the content
+            $this->_content = $page->getContent();
+        }
     }
 
     protected function _initialize(KObjectConfig $config)
