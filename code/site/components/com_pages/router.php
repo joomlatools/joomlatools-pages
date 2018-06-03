@@ -24,16 +24,50 @@ class ComPagesRouter
 
     public function build(&$query)
     {
+        $segments = array();
         if (isset($query['view'])) {
             unset($query['view']);
         }
 
-        return array();
+        if(isset($query['path']))
+        {
+            $segments[] = $query['path'];
+            unset($query['path']);
+        }
+
+        if(isset($query['file']))
+        {
+            $segments[] = $query['file'];
+            unset($query['file']);
+        }
+
+        return $segments;
     }
 
     public function parse($segments)
     {
-        return array('view' => 'page');
+        $result = array('view' => 'page');
+
+        //Replace all the ':' with '-' again
+        $segments = array_map(function($segment) {
+            return str_replace(':', '-', $segment);
+        }, $segments);
+
+        if(!empty($segments))
+        {
+            $file = array_pop($segments);
+            $path = implode('/', $segments);
+        }
+        else
+        {
+            $file = 'index';
+            $path = '';
+        }
+
+        $result['file'] = $file;
+        $result['path'] = $path ?: '.';
+
+        return $result;
     }
 }
 

@@ -9,4 +9,4 @@
 
 defined('KOOWA') or die; ?>
 
-<?= $page->content(); ?>
+<?= $page->content; ?>

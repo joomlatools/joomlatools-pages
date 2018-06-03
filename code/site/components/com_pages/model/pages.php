@@ -9,23 +9,18 @@
 
 class ComPagesModelPages extends KModelAbstract
 {
-    protected $_base_path;
-
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
         $this->getState()
             ->insert('path', 'url')
             ->insert('file', 'cmd', '', true, array('path'));
-
-        $this->_base_path =  rtrim($config->base_path, '/');
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'base_path'    => 'page://pages',
-            'identity_key' => 'path',
+            'identity_key' => 'file',
         ));
 
         parent::_initialize($config);
@@ -33,43 +28,21 @@ class ComPagesModelPages extends KModelAbstract
 
     protected function _actionFetch(KModelContext $context)
     {
-        if ($this->getState()->isUnique())
-        {
-            $path = $this->getState()->path.'/'.$this->getState()->file;
-            $url  = $this->qualifyPage($path);
-
-            //Locate the template
-            if ($file = $this->getObject('template.locator.factory')->locate($url))
-            {
-                $context->entity =  array(
-                    'path' => $path,
-                    'file' => $file,
-                    'url'  => $url
-                );
-            }
-        }
-        else
+        if (!$this->getState()->isUnique())
         {
             $files = array();
             $path  = $this->getState()->path;
-            $url   = $this->qualifyPage($path);
 
             //Locate the template
-            if ($file = $this->getObject('template.locator.factory')->locate($url))
+            if ($file = $this->getObject('com:pages.template.page')->loadFile($path)->getFilename())
             {
                 $iterator = new FilesystemIterator(dirname($file));
                 while( $iterator->valid() )
                 {
-                    $file = $iterator->current();
-                    $name = pathinfo($file->getRealpath(), PATHINFO_FILENAME);
+                    $file = pathinfo($iterator->current()->getRealpath(), PATHINFO_FILENAME);
 
-                    if($name != 'index')
-                    {
-                        $files[] = [
-                            'file' => $file->getRealPath(),
-                            'path' => $path.'/'.$name,
-                            'url'  => $url.'/'.$name
-                        ];
+                    if($file != 'index') {
+                        $files[] = $this->loadPage($path, $file);;
                     }
 
                     $iterator->next();
@@ -78,18 +51,31 @@ class ComPagesModelPages extends KModelAbstract
                 $context->entity = $files;
             }
         }
+        else
+        {
+            $path = $this->getState()->path;
+            $file = $this->getState()->file;
+
+            //Locate the template
+            if ($properties = $this->loadPage($path, $file)) {
+                $context->entity = $properties;
+            }
+        }
 
         return parent::_actionCreate($context);
     }
 
-    public function qualifyPage($path)
+    public function loadPage($path, $file)
     {
-        if(!parse_url($path, PHP_URL_SCHEME)) {
-            $url  = $path = $this->_base_path.'/'.$path;
-        } else {
-            $url = $path;
-        }
+        $template = $this->getObject('com:pages.template.page')->loadFile($path.'/'.$file);
 
-        return $url;
+        //Get the properties
+        $properties = $template->getData();
+        $properties['path']    = $path;
+        $properties['file']    = $file;
+        $properties['date']    = filemtime($template->getFilename());
+        $properties['content'] = $template->render($properties);
+
+        return $properties;
     }
 }

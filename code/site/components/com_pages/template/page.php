@@ -7,67 +7,74 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesTemplatePage extends KTemplate
+class ComPagesTemplatePage extends ComPagesTemplateAbstract
 {
-    public function __construct(KObjectConfig $config)
-    {
-        parent::__construct($config);
-
-        //Intercept template exception
-        $this->getObject('exception.handler')->addExceptionCallback(array($this, 'handleException'), true);
-    }
+    protected $_collection = false;
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'filters'   => array('markdown'),
+            'base_path' => 'page://pages',
             'functions' => array(
-                'data' => function($path, $format = '') {
-                    return  $this->getObject('com:pages.data.factory')->createObject($path, $format);
-                },
-                'date' => array($this, 'formatDate')
+                'route'    => array($this, 'createRoute'),
+                'collection' => array($this, 'loadCollection')
             ),
-            'cache'           => false,
-            'cache_namespace' => 'pages',
-            'excluded_types' => array('html', 'txt', 'svg', 'css', 'js'),
         ));
 
         parent::_initialize($config);
     }
 
-    protected function formatDate($date, $format = '')
+    public function loadFile($url)
     {
-        if(!$date instanceof KDate)
+        $url = $this->qualify($url);
+
+        if(parse_url($url, PHP_URL_SCHEME) == 'page')
         {
-            if(empty($format)) {
-                $format = $this->getObject('translator')->translate('DATE_FORMAT_LC3');
+            if(!$file = $this->getObject('template.locator.factory')->locate($url)) {
+                throw new RuntimeException(sprintf('Cannot find page: "%s"', $url));
             }
 
-            $result = $this->createHelper('date')->format(array('date' => $date, 'format' => $format));
+            //Load the layout
+            $page = (new ComPagesTemplateFile())->fromFile($file);
+
+            //Store the data
+            $this->_data = KObjectConfig::unbox($page);
+
+            //Store the filename
+            $this->_filename = $file;
+
+            //Load the content
+            $result = $this->loadString($page->getContent(), pathinfo($file, PATHINFO_EXTENSION), $url);
         }
-        else $result = $date->format($format);
+        else $result = parent::loadFile($url);
 
         return $result;
     }
 
-    public function handleException(Exception &$exception)
+    public function createRoute($path)
     {
-        if($exception instanceof KTemplateExceptionError)
-        {
-            $file   = $exception->getFile();
-            $buffer = $exception->getPrevious()->getFile();
-
-            //Get the real file if it can be found
-            $line = count(file($file)) - count(file($buffer)) + $exception->getLine() - 1;
-
-            $exception = new KTemplateExceptionError(
-                $exception->getMessage(),
-                $exception->getCode(),
-                $exception->getSeverity(),
-                $file,
-                $line,
-                $exception->getPrevious()
-            );
+        $route = 'route://path='.$this->path.'/'.$this->file;
+        if(!empty($path)) {
+            $route .= '&'.$path;
         }
+
+        return $route;
+    }
+
+    public function loadCollection()
+    {
+        if($this->collection !== false)
+        {
+            if(!$this->_collection)
+            {
+                $this->_collection = $this->getObject('com:pages.controller.page')
+                    ->path($this->path.'/'.$this->file)
+                    ->browse();
+            }
+
+            return  $this->_collection;
+        }
+
+        return array();
     }
 }

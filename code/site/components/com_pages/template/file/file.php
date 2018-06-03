@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesObjectConfigPage extends KObjectConfigYaml
+class ComPagesTemplateFile extends KObjectConfigYaml
 {
     private $__content = '';
 

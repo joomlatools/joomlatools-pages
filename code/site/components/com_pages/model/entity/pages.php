@@ -12,7 +12,7 @@ class ComPagesModelEntityPages extends KModelEntityComposite
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'identity_key' => 'page',
+            'identity_key' => 'file',
             'prototypable' => false
         ));
 

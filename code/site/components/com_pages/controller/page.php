@@ -24,7 +24,7 @@ class ComPagesControllerPage extends KControllerModel
         $entity = $this->getModel()->fetch();
 
         //Set the entity content in the response to allow for view decoration
-        $context->response->setContent($entity->content());
+        $context->response->setContent($entity->content);
     }
 
     protected function _afterRender(KControllerContextInterface $context)
