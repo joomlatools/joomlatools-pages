@@ -16,8 +16,8 @@ class ComPagesTemplatePage extends ComPagesTemplateAbstract
         $config->append(array(
             'base_path' => 'page://pages',
             'functions' => array(
-                'route'    => array($this, 'createRoute'),
-                'collection' => array($this, 'loadCollection')
+                'route'    => array($this, 'buildRoute'),
+                'collection' => array($this, 'fetchCollection')
             ),
         ));
 
@@ -30,7 +30,7 @@ class ComPagesTemplatePage extends ComPagesTemplateAbstract
 
         if(parse_url($url, PHP_URL_SCHEME) == 'page')
         {
-            if(!$file = $this->getObject('template.locator.factory')->locate($url)) {
+            if(!$file = $this->findFile($url)) {
                 throw new RuntimeException(sprintf('Cannot find page: "%s"', $url));
             }
 
@@ -51,24 +51,70 @@ class ComPagesTemplatePage extends ComPagesTemplateAbstract
         return $result;
     }
 
-    public function createRoute($path)
+    public function parseRoute($route)
     {
-        $route = 'route://path='.$this->path.'/'.$this->file;
-        if(!empty($path)) {
-            $route .= '&'.$path;
+        $result = array();
+
+        if($this->isCollection() && isset($this->collection['route']))
+        {
+            if(!is_array($route)) {
+                $segments = explode($route, '/');
+            } else {
+                $segments = $route;
+            }
+
+            $parts    = explode('/', $this->collection['route']);
+            $segments = array_values($segments);
+
+            foreach($parts as $key => $name)
+            {
+                if($name[0] == ':' && isset($segments[$key]))
+                {
+                    $name = ltrim($name, ':');
+                    $result[$name] = $segments[$key];
+                }
+            }
+        };
+
+        return $result;
+    }
+
+    public function buildRoute(KModelEntityInterface $entity)
+    {
+        $route = 'route://'.$this->path;
+
+        if($this->isCollection() && isset($this->collection['route']))
+        {
+            $parts    = explode('/', $this->collection['route']);
+            $segments = array();
+            foreach($parts as $key => $name)
+            {
+                if($name[0] == ':') {
+                    $segments[] = $entity->getProperty(ltrim($name, ':'));
+                } else {
+                    $segments[] = $name;
+                }
+            }
+
+            $route .= '/'.implode('/', $segments);
         }
 
         return $route;
     }
 
-    public function loadCollection()
+    public function isCollection()
+    {
+        return $this->collection !== false;
+    }
+
+    public function fetchCollection()
     {
         if($this->collection !== false)
         {
             if(!$this->_collection)
             {
                 $this->_collection = $this->getObject('com:pages.controller.page')
-                    ->path($this->path.'/'.$this->file)
+                    ->path($this->path)
                     ->browse();
             }
 

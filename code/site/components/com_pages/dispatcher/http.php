@@ -13,6 +13,13 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     {
         $request = parent::getRequest();
 
+        //Hanlde the root
+        if(!isset($request->query->file))
+        {
+            $request->query->file = 'index';
+            $request->query->path = '.';
+        }
+
         return $request;
     }
 }

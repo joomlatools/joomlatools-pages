@@ -78,6 +78,14 @@ class ComPagesTemplateAbstract extends KTemplate
         }
     }
 
+    public function findFile($url)
+    {
+        $result = $this->getObject('template.locator.factory')
+            ->locate($this->qualify($url));
+
+        return $result;
+    }
+
     public function qualify($url)
     {
         //Qualify the layout

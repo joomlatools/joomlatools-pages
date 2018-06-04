@@ -29,16 +29,14 @@ class ComPagesRouter
             unset($query['view']);
         }
 
+        if(isset($query['file'])) {
+            unset($query['file']);
+        }
+
         if(isset($query['path']))
         {
             $segments[] = $query['path'];
             unset($query['path']);
-        }
-
-        if(isset($query['file']))
-        {
-            $segments[] = $query['file'];
-            unset($query['file']);
         }
 
         return $segments;
@@ -47,25 +45,47 @@ class ComPagesRouter
     public function parse($segments)
     {
         $result = array('view' => 'page');
+        $route  = array();
 
         //Replace all the ':' with '-' again
         $segments = array_map(function($segment) {
             return str_replace(':', '-', $segment);
         }, $segments);
 
-        if(!empty($segments))
+        //Find the path and file
+        $parts = array();
+        $page = KObjectManager::getInstance()->getObject('com:pages.template.page');
+
+        foreach($segments as $segment)
         {
-            $file = array_pop($segments);
-            $path = implode('/', $segments);
-        }
-        else
-        {
-            $file = 'index';
-            $path = '';
+            $parts[] = $segment;
+
+            if(!$page->findFile(implode($parts, '/')))
+            {
+                array_pop($parts);
+                $segments = array_values(array_diff($segments, $parts));
+
+                //Get the route
+                $page->loadFile(implode($parts, '/'));
+
+                if($page->isCollection()) {
+                    $route = $page->parseRoute($segments);
+                }
+
+                break;
+            }
         }
 
-        $result['file'] = $file;
-        $result['path'] = $path ?: '.';
+        //If no file element exists get the last part
+        if(!$route['file']) {
+            $result['file'] = array_pop($parts);
+        }
+
+        //Create the path
+        $result['path'] = implode($parts, '/') ?: '.';
+
+        //Merge the route variables
+        $result = array_merge($result, $route);
 
         return $result;
     }

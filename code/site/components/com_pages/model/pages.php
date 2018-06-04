@@ -20,7 +20,7 @@ class ComPagesModelPages extends KModelAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'identity_key' => 'file',
+            'identity_key' => 'path',
         ));
 
         parent::_initialize($config);
@@ -42,7 +42,7 @@ class ComPagesModelPages extends KModelAbstract
                     $file = pathinfo($iterator->current()->getRealpath(), PATHINFO_FILENAME);
 
                     if($file != 'index') {
-                        $files[] = $this->loadPage($path, $file);;
+                        $files[] = $this->loadPage($path.'/'.$file, $file);
                     }
 
                     $iterator->next();
@@ -57,7 +57,7 @@ class ComPagesModelPages extends KModelAbstract
             $file = $this->getState()->file;
 
             //Locate the template
-            if ($properties = $this->loadPage($path, $file)) {
+            if ($properties = $this->loadPage($path.'/'.$file, $file)) {
                 $context->entity = $properties;
             }
         }
@@ -67,7 +67,7 @@ class ComPagesModelPages extends KModelAbstract
 
     public function loadPage($path, $file)
     {
-        $template = $this->getObject('com:pages.template.page')->loadFile($path.'/'.$file);
+        $template = $this->getObject('com:pages.template.page')->loadFile($path);
 
         //Get the properties
         $properties = $template->getData();

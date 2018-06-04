@@ -23,7 +23,7 @@ class ComPagesTemplateFilterRoute extends KTemplateFilterAbstract
         {
             $text = str_replace(
                 $matches[0][$key],
-                $this->getTemplate()->route($query),
+                $this->getTemplate()->route('path='.$query),
                 $text
             );
         }

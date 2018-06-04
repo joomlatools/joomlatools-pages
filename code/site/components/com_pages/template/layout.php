@@ -26,7 +26,7 @@ class ComPagesTemplateLayout extends ComPagesTemplateAbstract
 
         if(parse_url($url, PHP_URL_SCHEME) == 'page')
         {
-            if(!$file = $this->getObject('template.locator.factory')->locate($url)) {
+            if(!$file = $this->findFile($url)) {
                 throw new RuntimeException(sprintf('Cannot find layout: "%s"', $url));
             }
 

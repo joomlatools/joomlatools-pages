@@ -12,10 +12,11 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'identity_key'   => 'file',
+            'identity_key'   => 'path',
             'data' => array(
                 'title'       => '',
                 'summary'     => '',
+                'alias'       => '',
                 'content'     => '',
                 'excerpt'     => '',
                 'date'        => 'now',
@@ -35,6 +36,21 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
         ));
 
         parent::_initialize($config);
+    }
+
+    public function getPropertyDay()
+    {
+        return $this->date->format('d');
+    }
+
+    public function getPropertyMonth()
+    {
+        return $this->date->format('m');
+    }
+
+    public function getPropertyYear()
+    {
+        return $this->date->format('y');
     }
 
     public function setPropertyExcerpt($excerpt)
