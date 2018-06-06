@@ -29,17 +29,15 @@ class ComPagesControllerPage extends KControllerModel
 
     protected function _afterRender(KControllerContextInterface $context)
     {
-        $entity = $this->getModel()->fetch();
-
         if($context->request->getFormat() == 'html')
         {
             //Set the metadata
-            foreach($entity->metadata as $name => $content) {
+            foreach($this->getView()->getMetadata() as $name => $content) {
                 JFactory::getDocument()->setMetaData($name, $content);
             }
 
             //Set the title
-            JFactory::getDocument()->setTitle($entity->title);
+            JFactory::getDocument()->setTitle($this->getView()->getTitle());
         }
     }
 }
