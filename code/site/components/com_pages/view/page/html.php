@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesViewPageHtml extends ComKoowaViewPageHtml
+class ComPagesViewPageHtml extends ComPagesViewHtml
 {
     public function __construct(KObjectConfig $config)
     {
@@ -16,55 +16,16 @@ class ComPagesViewPageHtml extends ComKoowaViewPageHtml
         $this->addCommandCallback('after.render' , '_processPlugins');
     }
 
-    protected function _initialize(KObjectConfig $config)
-    {
-        $config->append(array(
-            'template' => 'layout',
-            'template_filters' => array('route'),
-        ));
-
-        parent::_initialize($config);
-    }
-
-
     protected function _fetchData(KViewContext $context)
     {
         parent::_fetchData($context);
 
         //Find the layout
-        if(!$layout = $context->data->page->layout) {
+        if(!$layout = $context->layout) {
             $layout = 'com://site/pages.page.default.html';
         }
 
         $context->layout = $layout;
-    }
-
-    protected function _actionRender(KViewContext $context)
-    {
-        $data   = $context->data;
-        $layout = $context->layout;
-
-        //Render the layout
-        $renderLayout = function($layout, $data) use(&$renderLayout)
-        {
-            $template = $this->getTemplate()->loadFile($layout);
-
-            //Merge the data
-            $data->append($template->getData());
-
-            //Render the template
-            $this->_content = $template->render(KObjectConfig::unbox($data));
-
-            //Handle recursive layout
-            if($layout = $template->getParent()) {
-                $renderLayout($layout, $data);
-            }
-        };
-
-        Closure::bind($renderLayout, $this, get_class());
-        $renderLayout($layout, $data);
-
-        return KViewAbstract::_actionRender($context);
     }
 
     protected function _processPlugins(KViewContextInterface $context)
@@ -102,5 +63,35 @@ class ComPagesViewPageHtml extends ComKoowaViewPageHtml
 
             $context->result = trim(implode("\n", $results));;
         }
+    }
+
+    public function getPage()
+    {
+        return $this->getModel()->fetch();
+    }
+
+    public function getTitle()
+    {
+        $title = $this->getPage()->title;
+
+        return $title ? $title :  parent::getTitle();
+    }
+
+    public function getMetadata()
+    {
+        $page     = $this->getPage();
+        $metadata = (array) $page->metadata;;
+
+        //Set the description into the metadata if it doesn't exist.
+        if(isset($page->summary) && !isset($metadata['description'])) {
+            $metadata['description'] = $page->summary;
+        }
+
+        return $metadata;
+    }
+
+    public function getLayout()
+    {
+        return $this->getPage()->layout;
     }
 }

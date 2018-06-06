@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesViewPageJson extends KViewJson
+class ComPagesViewJson extends KViewJson
 {
     protected function _initialize(KObjectConfig $config)
     {

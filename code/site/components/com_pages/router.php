@@ -35,8 +35,22 @@ class ComPagesRouter
 
         if(isset($query['path']))
         {
+            $page = KObjectManager::getInstance()->getObject('com:pages.template.page')
+                ->loadFile($query['path']);
+
+            //Remove hardcoded states
+            if($collection = $page->isCollection()) {
+                $query = array_diff($query, $collection['state']);
+            }
+
             $segments[] = $query['path'];
             unset($query['path']);
+        }
+
+        if(isset($query['route']))
+        {
+            $segments[] = $query['route'];
+            unset($query['route']);
         }
 
         return $segments;
@@ -44,7 +58,7 @@ class ComPagesRouter
 
     public function parse($segments)
     {
-        $result = array('view' => 'page');
+        $result = array();
         $route  = array();
 
         //Replace all the ':' with '-' again
@@ -52,7 +66,7 @@ class ComPagesRouter
             return str_replace(':', '-', $segment);
         }, $segments);
 
-        //Find the path and file
+        //Find the path
         $parts = array();
         $page = KObjectManager::getInstance()->getObject('com:pages.template.page');
 
@@ -63,29 +77,51 @@ class ComPagesRouter
             if(!$page->findFile(implode($parts, '/')))
             {
                 array_pop($parts);
-                $segments = array_values(array_diff($segments, $parts));
-
-                //Get the route
-                $page->loadFile(implode($parts, '/'));
-
-                if($page->isCollection()) {
-                    $route = $page->parseRoute($segments);
-                }
-
                 break;
             }
         }
 
-        //If no file element exists get the last part
-        if(!$route['file']) {
-            $result['file'] = array_pop($parts);
-        }
+        //Parse the route
+        $page->loadFile(implode($parts, '/'));
 
-        //Create the path
+        if($collection = $page->isCollection())
+        {
+            $segments = array_values(array_diff($segments, $parts));
+
+            //Parse the route
+            if($segments && isset($collection['route']))
+            {
+                $query  = $this->parseCollection($segments, $collection['route']);
+                $result = array_merge($result, $query);
+            }
+
+            //Merge the state
+            if(isset($collection['state'])) {
+                $result = array_merge($result, $collection['state']);
+            }
+        }
+        else $result['file'] = array_pop($parts);
+
         $result['path'] = implode($parts, '/') ?: '.';
 
-        //Merge the route variables
-        $result = array_merge($result, $route);
+        return $result;
+    }
+
+    public function parseCollection(array $segments, $route)
+    {
+        $result = array();
+
+        $parts    = explode('/', $route);
+        $segments = array_values($segments);
+
+        foreach($parts as $key => $name)
+        {
+            if($name[0] == ':' && isset($segments[$key]))
+            {
+                $name = ltrim($name, ':');
+                $result[$name] = $segments[$key];
+            }
+        }
 
         return $result;
     }

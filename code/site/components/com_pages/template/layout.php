@@ -33,8 +33,8 @@ class ComPagesTemplateLayout extends ComPagesTemplateAbstract
             //Load the layout
             $layout = (new ComPagesTemplateFile())->fromFile($file);
 
-            if(isset($layout->page)) {
-                throw new KTemplateExceptionSyntaxError('Using "page" in layout frontmatter is now allowed');
+            if(isset($layout->page) || isset($layout->pages)) {
+                throw new KTemplateExceptionSyntaxError('Using "page or pages" in layout frontmatter is now allowed');
             }
 
             //Set the parent layout

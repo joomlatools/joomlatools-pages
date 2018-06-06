@@ -74,18 +74,6 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
         return new KObjectConfig($value);
     }
 
-    public function setPropertyMetadata($value)
-    {
-        $config = new KObjectConfig($value);
-
-        //Set the summary as the metadata descriptipn
-        if(!isset($config->description)) {
-            $config->description = $this->summary;
-        }
-
-        return $config;
-    }
-
     public function setPropertyDate($value)
     {
         //Set the date based on the modified time of the file

@@ -9,6 +9,8 @@
 
 class ComPagesModelPages extends KModelAbstract
 {
+    protected $_pages;
+
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
@@ -21,6 +23,7 @@ class ComPagesModelPages extends KModelAbstract
     {
         $config->append(array(
             'identity_key' => 'path',
+            'behaviors'    => array('sortable', 'categorizable', 'paginatable')
         ));
 
         parent::_initialize($config);
@@ -28,53 +31,85 @@ class ComPagesModelPages extends KModelAbstract
 
     protected function _actionFetch(KModelContext $context)
     {
-        if (!$this->getState()->isUnique())
-        {
-            $files = array();
-            $path  = $this->getState()->path;
-
-            //Locate the template
-            if ($file = $this->getObject('com:pages.template.page')->loadFile($path)->getFilename())
-            {
-                $iterator = new FilesystemIterator(dirname($file));
-                while( $iterator->valid() )
-                {
-                    $file = pathinfo($iterator->current()->getRealpath(), PATHINFO_FILENAME);
-
-                    if($file != 'index') {
-                        $files[] = $this->loadPage($path.'/'.$file, $file);
-                    }
-
-                    $iterator->next();
-                }
-
-                $context->entity = $files;
-            }
-        }
-        else
-        {
-            $path = $this->getState()->path;
-            $file = $this->getState()->file;
-
-            //Locate the template
-            if ($properties = $this->loadPage($path.'/'.$file, $file)) {
-                $context->entity = $properties;
-            }
+        if(!$context->entity) {
+            $context->entity = KObjectConfig::unbox($context->pages);
         }
 
         return parent::_actionCreate($context);
     }
 
-    public function loadPage($path, $file)
+    protected function _actionCount(KModelContext $context)
     {
-        $template = $this->getObject('com:pages.template.page')->loadFile($path);
+        return count($context->pages);
+    }
+
+    protected function _actionReset(KModelContext $context)
+    {
+        $this->_pages = null;
+
+        parent::_actionReset($context);
+    }
+
+    public function getContext()
+    {
+        $context = parent::getContext();
+
+        if (!$this->getState()->isUnique()) {
+            $context->pages = $this->_fetchPages();
+        } else {
+            $context->pages = $this->_fetchPage();
+        }
+
+        return $context;
+    }
+
+    protected function _fetchPages()
+    {
+        if(!$this->_pages)
+        {
+            $pages = array();
+            $path  = $this->getState()->path;
+            $page  = $this->getObject('com:pages.template.page')->loadFile($path);
+
+            if($page->isCollection())
+            {
+                $file = $page->getFilename();
+
+                $iterator = new FilesystemIterator(dirname($file));
+                while($iterator->valid())
+                {
+                    $file = pathinfo($iterator->current()->getRealpath(), PATHINFO_FILENAME);
+
+                    if($file != 'index') {
+                        $pages[] = $this->_fetchPage($path.'/'.$file);
+                    }
+
+                    $iterator->next();
+                }
+            }
+
+            $this->_pages = $pages;
+        }
+
+        return $this->_pages;
+    }
+
+    protected function _fetchPage($path = null)
+    {
+        $path = $path ?: $this->getState()->path.'/'.$this->getState()->file;
+        $page = $this->getObject('com:pages.template.page')->loadFile($path);
 
         //Get the properties
-        $properties = $template->getData();
+        $properties = $page->getData();
         $properties['path']    = $path;
-        $properties['file']    = $file;
-        $properties['date']    = filemtime($template->getFilename());
-        $properties['content'] = $template->render($properties);
+        $properties['file']    = basename($path);
+
+        //If no date is defined use the file last modified time
+        if(!isset($properties['date'])) {
+            $properties['date'] = filemtime($page->getFilename());
+        }
+
+        $properties['content'] = $page->render($properties);
 
         return $properties;
     }
