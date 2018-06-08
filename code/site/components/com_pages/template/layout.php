@@ -11,6 +11,15 @@ class ComPagesTemplateLayout extends ComPagesTemplateAbstract
 {
     protected $_parent;
 
+    protected $_base_path;
+
+    public function __construct(KObjectConfig $config)
+    {
+        parent::__construct($config);
+
+        $this->_base_path = rtrim($config->base_path, '/');
+    }
+
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
@@ -22,16 +31,19 @@ class ComPagesTemplateLayout extends ComPagesTemplateAbstract
 
     public function loadFile($url)
     {
-        $url = $this->qualify($url);
+        //Qualify the layout
+        if(!parse_url($url, PHP_URL_SCHEME)) {
+            $url = $this->_base_path.'/'.$url;
+        }
 
         if(parse_url($url, PHP_URL_SCHEME) == 'page')
         {
-            if(!$file = $this->findFile($url)) {
+            if(!$file = $this->getObject('template.locator.factory')->locate($url)) {
                 throw new RuntimeException(sprintf('Cannot find layout: "%s"', $url));
             }
 
             //Load the layout
-            $layout = (new ComPagesTemplateFile())->fromFile($file);
+            $layout = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
 
             if(isset($layout->page) || isset($layout->pages)) {
                 throw new KTemplateExceptionSyntaxError('Using "page or pages" in layout frontmatter is now allowed');
@@ -46,9 +58,6 @@ class ComPagesTemplateLayout extends ComPagesTemplateAbstract
 
             //Store the data
             $this->_data = KObjectConfig::unbox($layout);
-
-            //Store the filename
-            $this->_filename = $file;
 
             //Load the content
             $result = $this->loadString($layout->getContent(), pathinfo($file, PATHINFO_EXTENSION), $url);

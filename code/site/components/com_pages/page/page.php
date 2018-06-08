@@ -7,4 +7,10 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-final class ComPagesTemplateDefault extends ComPagesTemplateAbstract { }
+class ComPagesPage extends ComPagesObjectConfigFrontmatter
+{
+    public function isCollection()
+    {
+        return isset($this->collection) && $this->collection !== false ? $this->collection : false;
+    }
+}

@@ -53,15 +53,15 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
         return $this->date->format('y');
     }
 
-    public function setPropertyExcerpt($excerpt)
+    public function setPropertyContent($content)
     {
-        if(empty($excerpt))
+        if(!$this->excerpt)
         {
-            $parts = preg_split('#<!--(.*)more(.*)-->#i', $this->content, 2);
-            $excerpt = $parts[0];
+            $parts = preg_split('#<!--(.*)more(.*)-->#i', $content, 2);
+            $this->excerpt = $parts[0];
         }
 
-        return $excerpt;
+        return $content;
     }
 
     public function setPropertyAccess($value)

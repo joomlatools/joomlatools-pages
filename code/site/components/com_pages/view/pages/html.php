@@ -12,7 +12,7 @@ class ComPagesViewPagesHtml extends ComPagesViewHtml
     public function getPage()
     {
         $path = $this->getModel()->getState()->path;
-        $page = $this->getObject('com:pages.template.page')->loadFile($path);
+        $page = $this->getObject('page.registry')->getPage($path);
 
         return $page;
     }

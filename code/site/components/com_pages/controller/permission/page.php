@@ -11,48 +11,32 @@ class ComPagesControllerPermissionPage extends ComKoowaControllerPermissionAbstr
 {
     public function canRead()
     {
-        if(!$this->canAccess()) {
+        $path = $this->getModel()->fetch()->path;
+
+        if(!$this->canAccess($path)) {
             return false;
         }
 
         return parent::canRead();
     }
 
-    public function canAccess()
+    public function canBrowse()
     {
-        $result = true;
+        $path = $this->getModel()->getState()->path;
 
-        $page = $this->getModel()->fetch();
-
-        //Only editors can access unpublished pages
-        if(!$this->canEdit() && !$page->published) {
-           $result = false;
+        if(!$this->canAccess($path)) {
+            return false;
         }
 
-        //Check user group access
-        if($result)
-        {
-            $groups = $this->getObject('com:pages.database.table.groups')
-                ->select($this->getUser()->getGroups(), KDatabase::FETCH_ARRAY_LIST);
+        return parent::canRead();
+    }
 
-            $groups = array_map('strtolower', array_column($groups, 'title'));
+    public function canAccess($path)
+    {
+        $registry = $this->getObject('page.registry');
 
-            if(!array_intersect($groups, $page->access->groups->toArray())) {
-                $result = false;
-            }
-        }
-
-        //Check user roles access
-        if($result)
-        {
-            $roles = $this->getObject('com:pages.database.table.roles')
-                ->select($this->getUser()->getRoles(), KDatabase::FETCH_ARRAY_LIST);
-
-            $roles = array_map('strtolower', array_column($roles, 'title'));
-
-            if(!array_intersect($roles, $page->access->roles->toArray())) {
-                $result = false;
-            }
+        if($result = $registry->isPublished($path)) {
+            $result =  $registry->isAccessible($path);
         }
 
         return $result;

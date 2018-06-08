@@ -23,7 +23,7 @@ class ComPagesModelPages extends KModelAbstract
     {
         $config->append(array(
             'identity_key' => 'path',
-            'behaviors'    => array('sortable', 'categorizable', 'paginatable')
+            'behaviors'    => array('sortable', 'categorizable', 'accessible', 'paginatable')
         ));
 
         parent::_initialize($config);
@@ -35,7 +35,16 @@ class ComPagesModelPages extends KModelAbstract
             $context->entity = KObjectConfig::unbox($context->pages);
         }
 
-        return parent::_actionCreate($context);
+        if($result = parent::_actionCreate($context))
+        {
+            $registry = $this->getObject('page.registry');
+
+            foreach($result as $page) {
+                $page->content = $registry->getContent($page->path);
+            }
+        }
+
+        return $result;
     }
 
     protected function _actionCount(KModelContext $context)
@@ -54,63 +63,16 @@ class ComPagesModelPages extends KModelAbstract
     {
         $context = parent::getContext();
 
+        $registry = $this->getObject('page.registry');
+
         if (!$this->getState()->isUnique()) {
-            $context->pages = $this->_fetchPages();
+            $path = $this->getState()->path;
         } else {
-            $context->pages = $this->_fetchPage();
+            $path = $this->getState()->path.'/'.$this->getState()->file;
         }
+
+        $context->pages = $registry->getData($path);
 
         return $context;
-    }
-
-    protected function _fetchPages()
-    {
-        if(!$this->_pages)
-        {
-            $pages = array();
-            $path  = $this->getState()->path;
-            $page  = $this->getObject('com:pages.template.page')->loadFile($path);
-
-            if($page->isCollection())
-            {
-                $file = $page->getFilename();
-
-                $iterator = new FilesystemIterator(dirname($file));
-                while($iterator->valid())
-                {
-                    $file = pathinfo($iterator->current()->getRealpath(), PATHINFO_FILENAME);
-
-                    if($file != 'index') {
-                        $pages[] = $this->_fetchPage($path.'/'.$file);
-                    }
-
-                    $iterator->next();
-                }
-            }
-
-            $this->_pages = $pages;
-        }
-
-        return $this->_pages;
-    }
-
-    protected function _fetchPage($path = null)
-    {
-        $path = $path ?: $this->getState()->path.'/'.$this->getState()->file;
-        $page = $this->getObject('com:pages.template.page')->loadFile($path);
-
-        //Get the properties
-        $properties = $page->getData();
-        $properties['path']    = $path;
-        $properties['file']    = basename($path);
-
-        //If no date is defined use the file last modified time
-        if(!isset($properties['date'])) {
-            $properties['date'] = filemtime($page->getFilename());
-        }
-
-        $properties['content'] = $page->render($properties);
-
-        return $properties;
     }
 }

@@ -7,9 +7,19 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesTemplateFile extends KObjectConfigYaml
+class ComPagesObjectConfigFrontmatter extends KObjectConfigYaml
 {
     private $__content = '';
+
+    private $__filename = false;
+
+    public function fromFile($filename, $object = true)
+    {
+        //Store the filename
+        $this->__filename = $filename;
+
+        return parent::fromFile($filename, $object);
+    }
 
     public function fromString($string, $object = true)
     {
@@ -53,5 +63,15 @@ class ComPagesTemplateFile extends KObjectConfigYaml
     {
         $this->__content = trim($content);
         return $this;
+    }
+
+    public function getFilename()
+    {
+        return $this->__filename;
+    }
+
+    public function getFiletype()
+    {
+        return pathinfo($this->getFilename(), PATHINFO_EXTENSION);
     }
 }

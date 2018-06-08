@@ -22,6 +22,11 @@ class ComPagesRouter
         return $instance;
     }
 
+    public function getRegistry()
+    {
+        return KObjectManager::getInstance()->getObject('page.registry');
+    }
+
     public function build(&$query)
     {
         $segments = array();
@@ -35,8 +40,7 @@ class ComPagesRouter
 
         if(isset($query['path']))
         {
-            $page = KObjectManager::getInstance()->getObject('com:pages.template.page')
-                ->loadFile($query['path']);
+            $page = $this->getRegistry()->getPage($query['path']);
 
             //Remove hardcoded states
             if($collection = $page->isCollection()) {
@@ -68,21 +72,18 @@ class ComPagesRouter
 
         //Find the path
         $parts = array();
-        $page = KObjectManager::getInstance()->getObject('com:pages.template.page');
-
         foreach($segments as $segment)
         {
             $parts[] = $segment;
 
-            if(!$page->findFile(implode($parts, '/')))
+            if(!$this->getRegistry()->hasPage(implode($parts, '/')))
             {
                 array_pop($parts);
                 break;
             }
         }
 
-        //Parse the route
-        $page->loadFile(implode($parts, '/'));
+        $page = $this->getRegistry()->getPage(implode($parts, '/'));
 
         if($collection = $page->isCollection())
         {

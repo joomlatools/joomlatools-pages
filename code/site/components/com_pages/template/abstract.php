@@ -11,13 +11,9 @@ class ComPagesTemplateAbstract extends KTemplate
 {
     protected $_filename;
 
-    protected $_base_path;
-
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
-
-        $this->_base_path = rtrim($config->base_path, '/');
 
         //Intercept template exception
         $this->getObject('exception.handler')->addExceptionCallback(array($this, 'handleException'), true);
@@ -26,7 +22,6 @@ class ComPagesTemplateAbstract extends KTemplate
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'base_path' => 'page://pages',
             'filters'   => array('markdown'),
             'functions' => array(
                 'data' => function($path, $format = '') {
@@ -76,28 +71,5 @@ class ComPagesTemplateAbstract extends KTemplate
                 $exception->getPrevious()
             );
         }
-    }
-
-    public function findFile($url)
-    {
-        $result = $this->getObject('template.locator.factory')
-            ->locate($this->qualify($url));
-
-        return $result;
-    }
-
-    public function qualify($url)
-    {
-        //Qualify the layout
-        if(!parse_url($url, PHP_URL_SCHEME)) {
-            $url = $this->_base_path.'/'.$url;
-        }
-
-        return $url;
-    }
-
-    public function getFilename()
-    {
-        return $this->_filename;
     }
 }

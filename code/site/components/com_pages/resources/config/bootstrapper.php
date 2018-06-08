@@ -9,11 +9,13 @@
 
 return array(
 
+    'aliases' => ['page.registry' => 'com:pages.page.registry'],
+
     'identifiers' => [
         'template.locator.factory' => [
             'locators' => [
                 'com:pages.data.locator',
-                'com:pages.template.locator.page',
+                'com:pages.page.locator',
                 'com:pages.template.locator.theme'
             ]
         ],
