@@ -7,4 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-final class ComPagesTemplateDefault extends ComPagesTemplateAbstract { }
+class ComPagesTemplatePage extends ComPagesTemplateAbstract
+{
+
+}

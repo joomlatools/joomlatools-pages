@@ -12,6 +12,10 @@ return array(
     'aliases' => ['page.registry' => 'com:pages.page.registry'],
 
     'identifiers' => [
+        'object.config.factory' => [
+            'formats' => ['md' => 'ComPagesDataMarkdown']
+        ],
+
         'template.locator.factory' => [
             'locators' => [
                 'com:pages.data.locator',

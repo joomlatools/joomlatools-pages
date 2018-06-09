@@ -47,7 +47,7 @@ final class ComPagesDataFactory extends KObject implements KObjectSingleton
                 $data = $this->getObject('object.config.factory')->fromFile($file, false);
             }
 
-            $result = array_merge_recursive($result, $data);
+            $result[] = $data;
         }
 
         return $result;
