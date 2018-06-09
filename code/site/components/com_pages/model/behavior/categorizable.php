@@ -26,7 +26,7 @@ class ComPagesModelBehaviorCategorizable extends KModelBehaviorAbstract
     {
         $state = $context->state;
 
-        if(!$context->state->isUnique())
+        if(!$context->state->isUnique() && $state->category)
         {
             $pages = KObjectConfig::unbox($context->pages);
 

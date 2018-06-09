@@ -31,7 +31,7 @@ class ComPagesModelBehaviorSortable extends KModelBehaviorAbstract
     {
         $state = $context->state;
 
-        if(!$context->state->isUnique())
+        if(!$context->state->isUnique() && $state->sort)
         {
             $pages = KObjectConfig::unbox($context->pages);
 
