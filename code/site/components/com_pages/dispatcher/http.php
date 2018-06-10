@@ -16,7 +16,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         //Hanlde the root
         if(!isset($request->query->path))
         {
-            $request->query->file = 'index';
+            $request->query->slug = 'index';
             $request->query->path = '.';
         }
 

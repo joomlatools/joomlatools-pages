@@ -47,8 +47,8 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 //Set the path
                 $page->path = $path;
 
-                //Set the file
-                $page->file = basename($path);
+                //Set the slug
+                $page->slug = basename($path);
 
                 //Set the published state (if not set yet)
                 if(!isset($page->published)) {
@@ -136,10 +136,9 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
     public function isCollection($path)
     {
-        if(isset($this->_data[$path]) && is_array($this->_data[$path])) {
-            $result = true;
-        } else {
-            $result = false;
+        $result = false;
+        if($page  = $this->getPage($path)) {
+            $result = $page->isCollection();
         }
 
         return $result;

@@ -30,8 +30,8 @@ class ComPagesRouter
     public function build(&$query)
     {
         $segments = array();
-        if(isset($query['file'])) {
-            unset($query['file']);
+        if(isset($query['slug'])) {
+            unset($query['slug']);
         }
 
         if(isset($query['path']))
@@ -98,7 +98,7 @@ class ComPagesRouter
                 $result = array_merge($result, $collection['state']);
             }
         }
-        else $result['file'] = array_pop($parts);
+        else $result['slug'] = array_pop($parts);
 
         $result['path'] = implode($parts, '/') ?: '.';
 

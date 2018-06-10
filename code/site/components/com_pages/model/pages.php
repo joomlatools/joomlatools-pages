@@ -16,7 +16,7 @@ class ComPagesModelPages extends KModelAbstract
         parent::__construct($config);
         $this->getState()
             ->insert('path', 'url')
-            ->insert('file', 'cmd', '', true, array('path'));
+            ->insert('slug', 'cmd', '', true, array('path'));
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -68,7 +68,7 @@ class ComPagesModelPages extends KModelAbstract
         if (!$this->getState()->isUnique()) {
             $path = $this->getState()->path;
         } else {
-            $path = $this->getState()->path.'/'.$this->getState()->file;
+            $path = $this->getState()->path.'/'.$this->getState()->slug;
         }
 
         $context->pages = $registry->getData($path);

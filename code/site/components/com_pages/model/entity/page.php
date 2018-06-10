@@ -16,7 +16,7 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
             'data' => array(
                 'title'       => '',
                 'summary'     => '',
-                'alias'       => '',
+                'slug'        => '',
                 'content'     => '',
                 'excerpt'     => '',
                 'date'        => 'now',
