@@ -45,10 +45,12 @@ class ComPagesViewPagesHtml extends ComPagesViewHtml
 
     public function getRoute($route = '', $fqr = true, $escape = true)
     {
+        $query = array();
+        $path  = $this->getModel()->getState()->path;
         if($route instanceof KModelEntityInterface)
         {
-            $entity = $route;
-            $route = 'path='.$this->getModel()->getState()->path;
+            $query = array();
+            $query['path'] = $path;
 
             if($collection = $this->getPage()->isCollection())
             {
@@ -59,18 +61,36 @@ class ComPagesViewPagesHtml extends ComPagesViewHtml
                     foreach($parts as $key => $name)
                     {
                         if($name[0] == ':') {
-                            $segments[] = $entity->getProperty(ltrim($name, ':'));
+                            $segments[] = $route->getProperty(ltrim($name, ':'));
                         } else {
                             $segments[] = $name;
                         }
                     }
 
-                    $route = '&route='.implode('/', $segments);
+                    $query['route'] = implode('/', $segments);
                 }
             }
         }
+        else if(is_array($route))
+        {
+            $query = $route;
 
-        return parent::getRoute($route, $fqr, $escape);
+            if($collection = $this->getPage()->isCollection())
+            {
+                $states = array();
+                foreach ($this->getModel()->getState() as $name => $state)
+                {
+                    if ($state->default != $state->value && !$state->internal) {
+                        $states[$name] = $state->value;
+                    }
+
+                    $query = array_merge($states, $query);
+                }
+            }
+        }
+        else $query['path'] = $route;
+
+        return parent::getRoute($query, $fqr, $escape);
     }
 
 }

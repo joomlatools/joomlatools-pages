@@ -12,7 +12,8 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'template' => 'layout',
+            'template'  => 'layout',
+            'behaviors' => array('routable'),
         ));
 
         parent::_initialize($config);
@@ -47,5 +48,30 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
         $renderLayout($layout, $data, $parameters);
 
         return KViewAbstract::_actionRender($context);
+    }
+
+    public function getRoute($route = '', $fqr = true, $escape = true)
+    {
+        //Parse route
+        $parts = array();
+
+        if(is_string($route)) {
+            parse_str(trim($route), $parts);
+        } else {
+            $parts = $route;
+        }
+
+        //Create the route
+        $route = $this->getObject('lib:dispatcher.router.route', array('escape' =>  $escape))->setQuery($parts);
+
+        //Add host, schema and port for fully qualified routes
+        if ($fqr === true)
+        {
+            $route->scheme = $this->getUrl()->scheme;
+            $route->host   = $this->getUrl()->host;
+            $route->port   = $this->getUrl()->port;
+        }
+
+        return $route;
     }
 }

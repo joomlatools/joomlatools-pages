@@ -30,21 +30,18 @@ class ComPagesRouter
     public function build(&$query)
     {
         $segments = array();
-        if (isset($query['view'])) {
-            unset($query['view']);
-        }
-
         if(isset($query['file'])) {
             unset($query['file']);
         }
 
         if(isset($query['path']))
         {
-            $page = $this->getRegistry()->getPage($query['path']);
-
             //Remove hardcoded states
-            if($collection = $page->isCollection()) {
-                $query = array_diff($query, $collection['state']);
+            if($page = $this->getRegistry()->getPage($query['path']))
+            {
+                if($collection = $page->isCollection()) {
+                    $query = array_diff_key($query, $collection['state']);
+                }
             }
 
             $segments[] = $query['path'];

@@ -9,5 +9,28 @@
 
 class ComPagesTemplatePage extends ComPagesTemplateAbstract
 {
+    protected function _initialize(KObjectConfig $config)
+    {
+        $config->append(array(
+            'functions' => array(
+                'route' => array($this, 'createRoute'),
+            ),
+        ));
 
+        parent::_initialize($config);
+    }
+
+    public function createRoute($path)
+    {
+        $route = '';
+        if(is_string($path)) {
+            $route = 'route://path=' . $path;
+        }
+
+        if(is_array($path)) {
+            $route = http_build_query($path, '', '&');
+        }
+
+        return $route;
+    }
 }
