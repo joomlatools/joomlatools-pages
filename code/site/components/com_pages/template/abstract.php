@@ -27,6 +27,9 @@ class ComPagesTemplateAbstract extends KTemplate
                 'data' => function($path, $format = '') {
                     return  $this->getObject('com:pages.data.factory')->createObject($path, $format);
                 },
+                'collection' => function($path, $state = array()) {
+                    return $this->getObject('com:pages.model.pages')->setState($state)->path($path)->fetch();
+                },
                 'date' => array($this, 'formatDate')
             ),
             'cache'           => false,
