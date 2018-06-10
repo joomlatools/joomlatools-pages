@@ -27,10 +27,8 @@ class ComPagesTemplateAbstract extends KTemplate
                 'data' => function($path, $format = '') {
                     return  $this->getObject('com:pages.data.factory')->createObject($path, $format);
                 },
-                'collection' => function($path, $state = array()) {
-                    return $this->getObject('com:pages.model.pages')->setState($state)->path($path)->fetch();
-                },
-                'date' => array($this, 'formatDate')
+                'collection' => array($this, 'fetchCollection'),
+                'date'       => array($this, 'formatDate')
             ),
             'cache'           => false,
             'cache_namespace' => 'pages',
@@ -74,5 +72,15 @@ class ComPagesTemplateAbstract extends KTemplate
                 $exception->getPrevious()
             );
         }
+    }
+
+    public function fetchCollection($path, $state = array())
+    {
+        $result = array();
+        if($this->getObject('page.registry')->isCollection($path)) {
+            $result = $this->getObject('com:pages.model.pages')->setState($state)->path($path)->fetch();
+        }
+
+        return $result;
     }
 }
