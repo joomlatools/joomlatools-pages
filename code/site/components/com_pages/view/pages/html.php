@@ -46,35 +46,25 @@ class ComPagesViewPagesHtml extends ComPagesViewHtml
     public function getRoute($route = '', $fqr = true, $escape = true)
     {
         $query = array();
-        $path  = $this->getModel()->getState()->path;
+
         if($route instanceof KModelEntityInterface)
         {
-            $query = array();
-            $query['path'] = $path;
-
-            if($collection = $this->getPage()->isCollection())
-            {
-                if($collection['route'])
-                {
-                    $parts    = explode('/', $collection['route']);
-                    $segments = array();
-                    foreach($parts as $key => $name)
-                    {
-                        if($name[0] == ':') {
-                            $segments[] = $route->getProperty(ltrim($name, ':'));
-                        } else {
-                            $segments[] = $name;
-                        }
-                    }
-
-                    $query['route'] = implode('/', $segments);
-                }
+            $query['path'] = $route->path;
+            $query['slug'] = $route->slug;
+        }
+        else if(is_string($route))
+        {
+            if(strpos($route, '=')) {
+                parse_str(trim($route), $query);
+            } else {
+                $query['path'] = $route;
             }
         }
-        else if(is_array($route))
-        {
-            $query = $route;
+        else $query = $route;
 
+        //Add add if the query is not unique
+        if(!$query['slug'])
+        {
             if($collection = $this->getPage()->isCollection())
             {
                 $states = array();
@@ -88,7 +78,6 @@ class ComPagesViewPagesHtml extends ComPagesViewHtml
                 }
             }
         }
-        else $query['path'] = $route;
 
         return parent::getRoute($query, $fqr, $escape);
     }

@@ -37,9 +37,9 @@ class ComPagesRouter
         if(isset($query['path']))
         {
             //Remove hardcoded states
-            if($page = $this->getRegistry()->getPage($query['path']))
+            if($collection = $this->getRegistry()->isCollection($query['path']))
             {
-                if($collection = $page->isCollection()) {
+                if(isset($collection['state'])) {
                     $query = array_diff_key($query, $collection['state']);
                 }
             }
@@ -48,80 +48,38 @@ class ComPagesRouter
             unset($query['path']);
         }
 
-        if(isset($query['route']))
-        {
-            $segments[] = $query['route'];
-            unset($query['route']);
-        }
-
         return $segments;
     }
 
     public function parse($segments)
     {
-        $result = array();
-        $route  = array();
+        $query = array();
 
         //Replace all the ':' with '-' again
         $segments = array_map(function($segment) {
             return str_replace(':', '-', $segment);
         }, $segments);
 
-        //Find the path
-        $parts = array();
-        foreach($segments as $segment)
+        $route = implode($segments, '/');
+        if($this->getRegistry()->hasPage($route))
         {
-            $parts[] = $segment;
-
-            if(!$this->getRegistry()->hasPage(implode($parts, '/')))
+            if($collection = $this->getRegistry()->isCollection($route))
             {
-                array_pop($parts);
-                break;
+                $query['path'] = $route;
+
+                //Add hardcoded states
+                if(isset($collection['state'])) {
+                    $query = array_merge($query, $collection['state']);
+                }
+            }
+            else
+            {
+                $query['slug'] = array_pop($segments);
+                $query['path'] = implode($segments, '/') ?: '.';
             }
         }
 
-        $page = $this->getRegistry()->getPage(implode($parts, '/'));
-
-        if($collection = $page->isCollection())
-        {
-            $segments = array_values(array_diff($segments, $parts));
-
-            //Parse the route
-            if($segments && isset($collection['route']))
-            {
-                $query  = $this->parseCollection($segments, $collection['route']);
-                $result = array_merge($result, $query);
-            }
-
-            //Merge the state
-            if(isset($collection['state'])) {
-                $result = array_merge($result, $collection['state']);
-            }
-        }
-        else $result['slug'] = array_pop($parts);
-
-        $result['path'] = implode($parts, '/') ?: '.';
-
-        return $result;
-    }
-
-    public function parseCollection(array $segments, $route)
-    {
-        $result = array();
-
-        $parts    = explode('/', $route);
-        $segments = array_values($segments);
-
-        foreach($parts as $key => $name)
-        {
-            if($name[0] == ':' && isset($segments[$key]))
-            {
-                $name = ltrim($name, ':');
-                $result[$name] = $segments[$key];
-            }
-        }
-
-        return $result;
+        return $query;
     }
 }
 
