@@ -65,7 +65,7 @@ class ComPagesViewPagesHtml extends ComPagesViewHtml
         //Add add if the query is not unique
         if(!$query['slug'])
         {
-            if($collection = $this->getPage()->isCollection())
+            if($collection = $this->getPage()->collection)
             {
                 $states = array();
                 foreach ($this->getModel()->getState() as $name => $state)

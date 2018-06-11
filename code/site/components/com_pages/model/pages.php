@@ -73,7 +73,7 @@ class ComPagesModelPages extends KModelAbstract
         else
         {
             $path = $this->getState()->path.'/'.$this->getState()->slug;
-            $pages = $registry->getPage($path)->toArray();
+            $pages = (array) $registry->getPage($path);
         }
 
         $context->pages = $pages;
