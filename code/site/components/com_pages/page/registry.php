@@ -53,31 +53,43 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
             if($file = $this->getObject('template.locator.factory')->locate($url))
             {
-                //Load the page
-                $page = (new ComPagesPage())->fromFile($file);
+                if(!$cache = $this->isCached($file, 'page'))
+                {
+                    //Load the page
+                    $page = (new ComPagesPage())->fromFile($file);
 
-                //Set the path
-                $page->path = $path;
+                    //Set the path
+                    $page->path = $path;
 
-                //Set the slug
-                $page->slug = basename($path);
+                    //Set the slug
+                    $page->slug = basename($path);
 
-                //Set the published state (if not set yet)
-                if(!isset($page->published)) {
-                    $page->published = true;
+                    //Set the published state (if not set yet)
+                    if (!isset($page->published)) {
+                        $page->published = true;
+                    }
+
+                    //Set the date (if not set yet)
+                    if (!isset($page->date)) {
+                        $page->date = filemtime($page->filename);
+                    }
+
+                    //Transform the page to an array
+                    $page = $page->toArray();
+
+                    //Cache the page
+                    $this->_writeCache($file, $page, 'page');
+                }
+                else
+                {
+                    if(!$page = require($cache)) {
+                        throw new RuntimeException(sprintf('The page data "%s" cannot be loaded from cache.', $cache));
+                    }
                 }
 
-                //Set the date (if not set yet)
-                if(!isset($page->date)) {
-                    $page->date = filemtime($page->getFilename());
-                }
-
-                //Transform the page to an array
-                $page = (object) $page->toArray();
+                $this->_pages[$path] = (object) $page;
             }
-            else $page = false;
-
-            $this->_pages[$path] = $page;
+            else $this->_pages[$path] = false;
         }
 
         return $this->_pages[$path];
@@ -105,11 +117,11 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             {
                 if(!$this->isCollection($path))
                 {
-                    //Load the page
-                    $page = (new ComPagesPage())->fromFile($file);
-
-                    if(!$cache = $this->isCached($file))
+                    if(!$cache = $this->isCached($file, 'content'))
                     {
+                        //Load the page
+                        $page = (new ComPagesPage())->fromFile($file);
+
                         $url     = $this->_base_path.'/'.$path;
                         $type    = $page->getFiletype();
                         $content = $page->getContent();
@@ -119,12 +131,12 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                             ->render($page->toArray());
 
                         //Cache the page
-                        $this->_writeCache($file, $content);
+                        $this->_writeCache($file, $content, 'content');
                     }
                     else
                     {
                         if(!$content = file_get_contents($cache)) {
-                            throw new RuntimeException(sprintf('The page "%s" cannot be loaded from cache.', $cache));
+                            throw new RuntimeException(sprintf('The content "%s" cannot be loaded from cache.', $cache));
                         }
                     }
 
@@ -142,7 +154,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     {
         if(!isset($this->_collection[$path]))
         {
-
             if($this->isCollection($path))
             {
                 $pages = array();
@@ -157,21 +168,19 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 }
                 else $directory = $page->filename;
 
-                if(!$cache = $this->isCached(dirname($directory)))
+                if(!$cache = $this->isCached(dirname($directory), 'collection'))
                 {
-                    $iterator = new FilesystemIterator(dirname($directory));
-                    while ($iterator->valid()) {
-                        $slug = pathinfo($iterator->current()->getRealpath(), PATHINFO_FILENAME);
+                    $files = glob(dirname($directory).'/*.*');
+                    foreach($files as $file)
+                    {
+                        $slug = pathinfo($file, PATHINFO_FILENAME);
 
                         if ($slug != 'index') {
                             $pages[] = (array) $this->getPage($path . '/' . $slug);
                         }
-
-                        $iterator->next();
                     }
-
-                    //Cache the data
-                    $this->_writeCache(dirname($directory), $pages);
+                    //Cache the collection
+                    $this->_writeCache(dirname($directory), $pages, 'collection');
                 }
                 else
                 {
@@ -247,14 +256,14 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $result;
     }
 
-    public function isCached($file)
+    public function isCached($file, $group = 'cache')
     {
         $result = false;
 
         if($this->_cache)
         {
             $hash   = crc32($file.PHP_VERSION);
-            $cache  = $this->_cache_path.'/'.$hash.'.php';
+            $cache  = $this->_cache_path.'/'.$group.'_'.$hash.'.php';
             $result = is_file($cache) ? $cache : false;
 
             if($result && file_exists($file))
@@ -268,7 +277,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $result;
     }
 
-    protected function _writeCache($file, $data)
+    protected function _writeCache($file, $data, $group = 'cache')
     {
         if($this->_cache)
         {
@@ -283,7 +292,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             }
 
             $hash = crc32($file.PHP_VERSION);
-            $file = $path.'/'.$hash.'.php';
+            $file  = $this->_cache_path.'/'.$group.'_'.$hash.'.php';
 
             if(!is_string($data)) {
                 $data = '<?php return '.var_export($data, true).';';
