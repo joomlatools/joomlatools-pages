@@ -87,15 +87,22 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         if($page && $page->isCollection())
         {
             $pages = array();
-            $file  = $page->getFilename();
 
-            $iterator = new FilesystemIterator(dirname($file));
+            if($root = $page->collection['root'])
+            {
+                $path = $root;
+                $directory = $this->getObject('template.locator.factory')
+                    ->locate($this->_base_path.'/'.$path);
+            }
+            else $directory = $page->getFilename();
+
+            $iterator = new FilesystemIterator(dirname($directory));
             while($iterator->valid())
             {
-                $file = pathinfo($iterator->current()->getRealpath(), PATHINFO_FILENAME);
+                $slug = pathinfo($iterator->current()->getRealpath(), PATHINFO_FILENAME);
 
-                if($file != 'index') {
-                    $pages[] = $this->getPage($path.'/'.$file)->toArray();
+                if($slug != 'index') {
+                    $pages[] = $this->getPage($path.'/'.$slug)->toArray();
                 }
 
                 $iterator->next();
