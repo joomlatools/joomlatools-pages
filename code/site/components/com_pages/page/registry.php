@@ -15,17 +15,29 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
     protected $_base_path;
 
+    protected $_cache;
+    protected $_cache_path;
+
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
 
-        $this->_base_path = rtrim($config->base_path, '/');
+        $this->_base_path  = rtrim($config->base_path, '/');
+        $this->_cache      = $config->cache;
+
+        if(empty($config->cache_path)) {
+            $this->_cache_path = $this->getObject('com:pages.page.locator')->getBasePath().'/cache';
+        } else {
+            $this->_cache_path = $config->cache_path;
+        }
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'base_path' => 'page://pages',
+            'base_path'  => 'page://pages',
+            'cache'      => false,
+            'cache_path' => '',
         ));
 
         parent::_initialize($config);
@@ -127,21 +139,67 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
             if($page && !$page->isCollection())
             {
-                $url     = $this->_base_path.'/'.$path;
-                $type    = $page->getFiletype();
-                $content = $page->getContent();
-                $data    = $this->getData($path);
+                $file = $page->getFilename();
 
-                $result = $this->getObject('com:pages.template.page')
-                    ->loadString($content, $type, $url)
-                    ->render($data);
+                if(!$cache = $this->isCached($file))
+                {
+                    $url     = $this->_base_path.'/'.$path;
+                    $type    = $page->getFiletype();
+                    $content = $page->getContent();
+                    $data    = $this->getData($path);
 
-                $this->_content[$path] = $result;
+                    $result = $this->getObject('com:pages.template.page')
+                        ->loadString($content, $type, $url)
+                        ->render($data);
+
+                    //Cache the page
+                    $this->cacheContent($file, $result);
+
+                    $this->_content[$path] = $result;
+                }
+                else
+                {
+                    if(!$content = file_get_contents($cache)) {
+                        throw new RuntimeException(sprintf('The page "%s" cannot be loaded from cache.', $file));
+                    }
+
+                    $this->_content[$path] = $content;
+                }
             }
             else $this->_content[$path] = false;
         }
 
         return $this->_content[$path];
+    }
+
+    public function cacheContent($file, $source)
+    {
+        if($this->_cache)
+        {
+            $path = $this->_cache_path;
+
+            if(!is_dir($path) && (false === @mkdir($path, 0755, true) && !is_dir($path))) {
+                throw new RuntimeException(sprintf('The page cache path "%s" does not exist', $path));
+            }
+
+            if(!is_writable($path)) {
+                throw new RuntimeException(sprintf('The page cache path "%s" is not writable', $path));
+            }
+
+            $hash = crc32($file.PHP_VERSION);
+            $file = $path.'/page_'.$hash.'.php';
+
+            if(@file_put_contents($file, $source) === false) {
+                throw new RuntimeException(sprintf('The page cannot be cached in "%s"', $file));
+            }
+
+            //Override default permissions for cache files
+            @chmod($file, 0666 & ~umask());
+
+            return $file;
+        }
+
+        return false;
     }
 
     public function isCollection($path)
@@ -198,6 +256,27 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         {
             if($page->published) {
                 $result = $page->published;
+            }
+        }
+
+        return $result;
+    }
+
+    public function isCached($file)
+    {
+        $result = false;
+
+        if($this->_cache)
+        {
+            $hash   = crc32($file.PHP_VERSION);
+            $cache  = $this->_cache_path.'/page_'.$hash.'.php';
+            $result = is_file($cache) ? $cache : false;
+
+            if($result && is_file($file))
+            {
+                if(filemtime($cache) < filemtime($file)) {
+                    $result = false;
+                }
             }
         }
 
