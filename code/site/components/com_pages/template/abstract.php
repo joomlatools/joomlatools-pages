@@ -22,13 +22,11 @@ class ComPagesTemplateAbstract extends KTemplate
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'filters'   => array('markdown'),
+            'filters'   => array('markdown', 'frontmatter'),
             'functions' => array(
-                'data' => function($path, $format = '') {
-                    return  $this->getObject('com:pages.data.factory')->createObject($path, $format);
-                },
-                'collection' => array($this, 'fetchCollection'),
-                'date'       => array($this, 'formatDate')
+                'date'       => array($this, 'formatDate'),
+                'data'       => array($this, 'fetchData'),
+                'collection' => array($this, 'fetchCollection')
             ),
             'cache'           => false,
             'cache_namespace' => 'pages',
@@ -72,6 +70,11 @@ class ComPagesTemplateAbstract extends KTemplate
                 $exception->getPrevious()
             );
         }
+    }
+
+    public function fetchData($path, $format = '')
+    {
+        return $this->getObject('com:pages.data.factory')->createObject($path, $format);
     }
 
     public function fetchCollection($path, $state = array())
