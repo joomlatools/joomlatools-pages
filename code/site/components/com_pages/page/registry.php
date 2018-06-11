@@ -82,35 +82,38 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
     public function getData($path)
     {
-        $page = $this->getPage($path);
-
-        if($page && $page->isCollection())
+        if(!isset($this->_data[$path]))
         {
-            $pages = array();
+            $page = $this->getPage($path);
 
-            if($root = $page->collection['root'])
+            if($page->isCollection())
             {
-                $path = $root;
-                $directory = $this->getObject('template.locator.factory')
-                    ->locate($this->_base_path.'/'.$path);
-            }
-            else $directory = $page->getFilename();
+                $pages = array();
 
-            $iterator = new FilesystemIterator(dirname($directory));
-            while($iterator->valid())
-            {
-                $slug = pathinfo($iterator->current()->getRealpath(), PATHINFO_FILENAME);
+                if($root = $page->collection['root'])
+                {
+                    $path = $root;
+                    $directory = $this->getObject('template.locator.factory')
+                        ->locate($this->_base_path.'/'.$path);
+                }
+                else $directory = $page->getFilename();
 
-                if($slug != 'index') {
-                    $pages[] = $this->getPage($path.'/'.$slug)->toArray();
+                $iterator = new FilesystemIterator(dirname($directory));
+                while($iterator->valid())
+                {
+                    $slug = pathinfo($iterator->current()->getRealpath(), PATHINFO_FILENAME);
+
+                    if($slug != 'index') {
+                        $pages[] = $this->getPage($path.'/'.$slug)->toArray();
+                    }
+
+                    $iterator->next();
                 }
 
-                $iterator->next();
+                $this->_data[$path] = $pages;
             }
-
-            $this->_data[$path] = $pages;
+            else $this->_data[$path] = $page->toArray();
         }
-        else $this->_data[$path] = $page->toArray();
 
         return isset($this->_data[$path]) ? $this->_data[$path] : null;
     }
