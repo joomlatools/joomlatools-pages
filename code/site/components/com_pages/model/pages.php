@@ -40,7 +40,7 @@ class ComPagesModelPages extends KModelAbstract
             $registry = $this->getObject('page.registry');
 
             foreach($result as $page) {
-                $page->content = $registry->getContent($page->path);
+                $page->content = $registry->getPageContent($page->path);
             }
         }
 
@@ -65,13 +65,18 @@ class ComPagesModelPages extends KModelAbstract
 
         $registry = $this->getObject('page.registry');
 
-        if (!$this->getState()->isUnique()) {
-            $path = $this->getState()->path;
-        } else {
+        if (!$this->getState()->isUnique())
+        {
+            $path  = $this->getState()->path;
+            $pages = $registry->getCollection($path);
+        }
+        else
+        {
             $path = $this->getState()->path.'/'.$this->getState()->slug;
+            $pages = $registry->getPage($path)->toArray();
         }
 
-        $context->pages = $registry->getData($path);
+        $context->pages = $pages;
 
         return $context;
     }
