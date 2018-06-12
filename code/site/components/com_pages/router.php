@@ -30,10 +30,13 @@ class ComPagesRouter
     public function build(&$query)
     {
         $segments = array();
+
+        //Slug
         if(isset($query['slug'])) {
             unset($query['slug']);
         }
 
+        //Path
         if(isset($query['path']))
         {
             //Remove hardcoded states
@@ -48,6 +51,11 @@ class ComPagesRouter
             unset($query['path']);
         }
 
+        //Format
+        if(isset($query['format'])) {
+            JFactory::getConfig()->set('sef_suffix', 1);
+        }
+
         return $segments;
     }
 
@@ -60,6 +68,17 @@ class ComPagesRouter
             return str_replace(':', '-', $segment);
         }, $segments);
 
+
+        //Format
+        $slug = array_pop($segments);
+        if($format = pathinfo($slug, PATHINFO_EXTENSION))
+        {
+            $query['format'] = $format;
+            $segments[] = basename($slug, '.'.$format);
+        }
+        else $segments[] = $slug;
+
+        //Path and slug
         $route = implode($segments, '/');
         if($this->getRegistry()->hasPage($route))
         {

@@ -93,16 +93,45 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
     public function getRoute($route = '', $fqr = true, $escape = true)
     {
         //Parse route
-        $parts = array();
+        $query = array();
 
-        if(is_string($route)) {
-            parse_str(trim($route), $parts);
-        } else {
-            $parts = $route;
+        if(is_string($route))
+        {
+            if(strpos($route, '=')) {
+                parse_str(trim($route), $query);
+            } else {
+                $query['path'] = $route;
+            }
+        }
+        else
+        {
+            if($route instanceof KModelEntityInterface)
+            {
+                $query['path'] = $route->path;
+                $query['slug'] = $route->slug;
+            }
+            else $query = $route;
+        }
+
+        //Add add if the query is not unique
+        if(!$query['slug'])
+        {
+            if($collection = $this->getPage()->collection)
+            {
+                $states = array();
+                foreach ($this->getModel()->getState() as $name => $state)
+                {
+                    if ($state->default != $state->value && !$state->internal) {
+                        $states[$name] = $state->value;
+                    }
+
+                    $query = array_merge($states, $query);
+                }
+            }
         }
 
         //Create the route
-        $route = $this->getObject('lib:dispatcher.router.route', array('escape' =>  $escape))->setQuery($parts);
+        $route = $this->getObject('lib:dispatcher.router.route', array('escape' =>  $escape))->setQuery($query);
 
         //Add host, schema and port for fully qualified routes
         if ($fqr === true)

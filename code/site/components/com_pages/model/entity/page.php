@@ -98,9 +98,13 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
         }
 
         $data['content']  = $this->content;
-        $data['access']   = $this->access->toArray();
-        $data['metadata'] = $this->metadata->toArray();
+        $data['access']   = KObjectConfig::unbox($this->access);
+        $data['metadata'] = KObjectConfig::unbox($this->metadata);
         $data['date']     = $this->date->format(DateTime::ATOM);
+
+        unset($data['filename']);
+        unset($data['process']);
+        unset($data['layout']);
 
         return $data;
     }
