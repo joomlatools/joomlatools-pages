@@ -19,6 +19,46 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
         parent::_initialize($config);
     }
 
+    public function getPage()
+    {
+        $state = $this->getModel()->getState();
+        if(!$state->isUnique())
+        {
+            $path = $state->path.'/'.$state->slug;
+            $page = $this->getObject('page.registry')->getPage($path);
+        }
+        else $page =  $this->getModel()->fetch();
+
+        return $page;
+    }
+
+    public function getTitle()
+    {
+        $result = '';
+        if($page = $this->getPage()) {
+            $result = $page->title ? $page->title :  parent::getTitle();
+        }
+
+        return $result;
+    }
+
+    public function getMetadata()
+    {
+        $metadata = array();
+        if($page = $this->getPage())
+        {
+            $metadata = (array) $page->metadata;
+
+            //Set the description into the metadata if it doesn't exist.
+            if($page->summary && !isset($metadata['description'])) {
+                $metadata['description'] = $page->summary;
+            }
+        }
+
+
+        return $metadata;
+    }
+
     protected function _actionRender(KViewContext $context)
     {
         $data       = $context->data;

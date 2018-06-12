@@ -9,38 +9,9 @@
 
 class ComPagesViewPagesHtml extends ComPagesViewHtml
 {
-    public function getPage()
-    {
-        $path = $this->getModel()->getState()->path;
-        $page = $this->getObject('page.registry')->getPage($path);
-
-        return $page;
-    }
-
-    public function getTitle()
-    {
-        $page = $this->getPage();
-
-        return $page->title ? $page->title :  parent::getTitle();
-    }
-
-    public function getMetadata()
-    {
-        $page     = $this->getPage();
-        $metadata = (array) $page->metadata;
-
-        //Set the description into the metadata if it doesn't exist.
-        if($page->summary && !isset($metadata['description'])) {
-            $metadata['description'] = $page->summary;
-        }
-
-        return $metadata;
-    }
-
     public function getLayout()
     {
-        $path = $this->getModel()->getState()->path;
-        return 'page://pages/'.$path;
+        return 'page://pages/'. $this->getPage()->path;
     }
 
     public function getRoute($route = '', $fqr = true, $escape = true)

@@ -16,6 +16,11 @@ class ComPagesViewPageHtml extends ComPagesViewHtml
         $this->addCommandCallback('after.render' , '_processPlugins');
     }
 
+    public function getLayout()
+    {
+        return $this->getPage()->layout;
+    }
+
     protected function _fetchData(KViewContext $context)
     {
         parent::_fetchData($context);
@@ -63,35 +68,5 @@ class ComPagesViewPageHtml extends ComPagesViewHtml
 
             $context->result = trim(implode("\n", $results));;
         }
-    }
-
-    public function getPage()
-    {
-        return $this->getModel()->fetch();
-    }
-
-    public function getTitle()
-    {
-        $title = $this->getPage()->title;
-
-        return $title ? $title :  parent::getTitle();
-    }
-
-    public function getMetadata()
-    {
-        $page     = $this->getPage();
-        $metadata = (array) $page->metadata;;
-
-        //Set the description into the metadata if it doesn't exist.
-        if(isset($page->summary) && !isset($metadata['description'])) {
-            $metadata['description'] = $page->summary;
-        }
-
-        return $metadata;
-    }
-
-    public function getLayout()
-    {
-        return $this->getPage()->layout;
     }
 }
