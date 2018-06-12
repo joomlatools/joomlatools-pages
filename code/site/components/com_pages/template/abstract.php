@@ -21,17 +21,17 @@ class ComPagesTemplateAbstract extends KTemplate
 
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append(array(
-            'filters'   => array('markdown', 'frontmatter'),
-            'functions' => array(
-                'date'       => array($this, 'formatDate'),
-                'data'       => array($this, 'fetchData'),
-                'collection' => array($this, 'fetchCollection')
-            ),
+        $config->append([
+            'filters'   => ['markdown', 'frontmatter'],
+            'functions' => [
+                'date'       => [$this, 'formatDate'],
+                'data'       => [$this, 'fetchData'],
+                'collection' => [$this, 'fetchCollection']
+            ],
             'cache'           => false,
             'cache_namespace' => 'pages',
-            'excluded_types' => array('html', 'txt', 'svg', 'css', 'js'),
-        ));
+            'excluded_types' => ['html', 'txt', 'svg', 'css', 'js'],
+        ]);
 
         parent::_initialize($config);
     }

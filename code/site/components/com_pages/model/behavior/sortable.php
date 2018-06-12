@@ -11,9 +11,9 @@ class ComPagesModelBehaviorSortable extends KModelBehaviorAbstract
 {
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append(array(
+        $config->append([
             'priority'   => self::PRIORITY_HIGH,
-        ));
+        ]);
 
         parent::_initialize($config);
     }

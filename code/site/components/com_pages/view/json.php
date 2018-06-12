@@ -11,9 +11,9 @@ class ComPagesViewJson extends KViewJson
 {
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append(array(
-            'text_fields' => array('description', 'content') // Links are converted to absolute ones in these fields
-        ));
+        $config->append([
+            'text_fields' => ['description', 'content'] // Links are converted to absolute ones in these fields
+        ]);
 
         parent::_initialize($config);
     }

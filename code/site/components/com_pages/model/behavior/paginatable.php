@@ -11,9 +11,9 @@ class ComPagesModelBehaviorPaginatable extends KModelBehaviorPaginatable
 {
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append(array(
+        $config->append([
             'priority'   => self::PRIORITY_LOW,
-        ));
+        ]);
 
         parent::_initialize($config);
     }

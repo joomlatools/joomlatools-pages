@@ -34,11 +34,11 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append(array(
+        $config->append([
             'base_path'  => 'page://pages',
-            'cache'      => false,
+            'cache'      => true,
             'cache_path' => '',
-        ));
+        ]);
 
         parent::_initialize($config);
     }

@@ -9,12 +9,6 @@
 
 class ComPagesViewBehaviorRoutable extends KViewBehaviorAbstract
 {
-    /**
-     * Convert the schemes to their real paths
-     *
-     * @param string $text  The text to parse
-     * @return void
-     */
     public function _afterRender(KViewContextInterface $context)
     {
         $text = $context->result;

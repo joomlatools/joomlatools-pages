@@ -13,9 +13,9 @@ class ComPagesPageLocator extends KTemplateLocatorFile
 
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append(array(
+        $config->append([
             'base_path' =>  Koowa::getInstance()->getRootPath().'/joomlatools-pages',
-        ));
+        ]);
 
         parent::_initialize($config);
     }

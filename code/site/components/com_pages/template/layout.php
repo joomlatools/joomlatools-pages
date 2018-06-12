@@ -22,9 +22,9 @@ class ComPagesTemplateLayout extends ComPagesTemplateAbstract
 
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append(array(
+        $config->append([
             'base_path' => 'page://layouts',
-        ));
+        ]);
 
         parent::_initialize($config);
     }

@@ -11,9 +11,9 @@ class ComPagesDatabaseTableGroups extends KDatabaseTableAbstract
 {
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append(array(
+        $config->append([
             'name' => defined('JOOMLATOOLS_PLATFORM') ? 'users_groups' : 'usergroups'
-        ));
+        ]);
 
         parent::_initialize($config);
     }

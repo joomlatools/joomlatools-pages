@@ -11,9 +11,9 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
 {
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append(array(
+        $config->append([
             'identity_key'   => 'path',
-            'data' => array(
+            'data' => [
                 'title'       => '',
                 'summary'     => '',
                 'slug'        => '',
@@ -21,19 +21,19 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
                 'excerpt'     => '',
                 'date'        => 'now',
                 'published'   => true,
-                'access'      => array(
-                    'roles'  => array('public'),
-                    'groups' => array('public', 'guest')
-                ),
+                'access'      => [
+                    'roles'  => ['public'],
+                    'groups' => ['public', 'guest']
+                ],
                 'redirect'    => '',
-                'metadata'    => array(),
-                'process'     => array(
+                'metadata'    => [],
+                'process'     => [
                     'plugins' => true
-                ),
+                ],
                 'layout'      => '',
                 'colllection' => false,
-            ),
-        ));
+            ],
+        ]);
 
         parent::_initialize($config);
     }

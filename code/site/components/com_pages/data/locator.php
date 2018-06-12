@@ -13,9 +13,9 @@ class ComPagesDataLocator extends KTemplateLocatorFile
 
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append(array(
+        $config->append([
             'base_path' =>  Koowa::getInstance()->getRootPath().'/joomlatools-pages/data',
-        ));
+        ]);
 
         parent::_initialize($config);
     }

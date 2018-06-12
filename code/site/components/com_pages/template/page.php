@@ -12,9 +12,9 @@ class ComPagesTemplatePage extends ComPagesTemplateAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'functions' => array(
-                'route' => array($this, 'createRoute'),
-            ),
+            'functions' => [
+                'route' => [$this, 'createRoute'],
+            ],
         ));
 
         parent::_initialize($config);

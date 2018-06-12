@@ -15,9 +15,9 @@ class ComPagesTemplateLocatorTheme extends KTemplateLocatorFile
     {
         $template  = JFactory::getApplication()->getTemplate();
 
-        $config->append(array(
+        $config->append([
             'base_path' =>  JPATH_THEMES.'/'.$template,
-        ));
+        ]);
 
         parent::_initialize($config);
     }

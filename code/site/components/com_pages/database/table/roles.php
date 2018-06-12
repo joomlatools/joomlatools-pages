@@ -11,9 +11,9 @@ class ComPagesDatabaseTableRoles extends KDatabaseTableAbstract
 {
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append(array(
+        $config->append([
             'name' => defined('JOOMLATOOLS_PLATFORM') ? 'users_roles' : 'viewlevels'
-        ));
+        ]);
 
         parent::_initialize($config);
     }

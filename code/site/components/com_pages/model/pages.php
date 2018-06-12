@@ -21,10 +21,10 @@ class ComPagesModelPages extends KModelAbstract
 
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append(array(
+        $config->append([
             'identity_key' => 'path',
-            'behaviors'    => array('sortable', 'categorizable', 'accessible', 'paginatable')
-        ));
+            'behaviors'    => ['sortable', 'categorizable', 'accessible', 'paginatable']
+        ]);
 
         parent::_initialize($config);
     }

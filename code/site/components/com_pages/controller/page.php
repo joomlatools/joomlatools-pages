@@ -11,11 +11,10 @@ class ComPagesControllerPage extends KControllerModel
 {
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append(array(
-            'behaviors' => array(
-                'redirectable'
-            ),
-        ));
+        $config->append([
+            'formats'   => ['json'],
+            'behaviors' => ['redirectable'],
+        ]);
         parent::_initialize($config);
     }
 

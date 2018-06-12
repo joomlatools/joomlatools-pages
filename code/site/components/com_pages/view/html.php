@@ -11,10 +11,10 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
 {
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append(array(
+        $config->append([
             'template'  => 'layout',
-            'behaviors' => array('routable'),
-        ));
+            'behaviors' => ['routable'],
+        ]);
 
         parent::_initialize($config);
     }
