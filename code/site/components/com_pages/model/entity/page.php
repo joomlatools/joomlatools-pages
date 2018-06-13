@@ -84,7 +84,7 @@ class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerial
         return $date;
     }
 
-    public function jsonSerialize()
+    public function toArray()
     {
         $data = parent::toArray();
 
@@ -93,13 +93,23 @@ class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerial
             if(empty($value)) {
                 unset($data[$key]);
             }
+
+            if($value instanceof KObjectConfigInterface) {
+                $data[$key] = KObjectConfig::unbox($value);
+            }
+
+            if($value instanceof KDate) {
+                $data[$key] = $value->format(DateTime::ATOM);
+            }
+
         }
 
-        $data['content']  = $this->content;
-        $data['excerpt']  = $this->excerpt;
-        $data['access']   = KObjectConfig::unbox($this->access);
-        $data['metadata'] = KObjectConfig::unbox($this->metadata);
-        $data['date']     = $this->date->format(DateTime::ATOM);
+        return $data;
+    }
+
+    public function jsonSerialize()
+    {
+        $data = parent::toArray();
 
         unset($data['filename']);
         unset($data['process']);
