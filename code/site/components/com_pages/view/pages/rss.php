@@ -7,14 +7,13 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesViewHtml extends ComKoowaViewPageHtml
+class ComPagesViewPagesRss extends KViewRss
 {
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append([
-            'template'  => 'layout',
-            'behaviors' => ['routable'],
-        ]);
+        $config->append(array(
+            'auto_fetch' => false
+        ));
 
         parent::_initialize($config);
     }
@@ -32,68 +31,21 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
         return $page;
     }
 
-    public function getTitle()
+    protected function _fetchData(KViewContext $context)
     {
-        $result = '';
-        if($page = $this->getPage()) {
-            $result = $page->title ? $page->title :  parent::getTitle();
-        }
+        $context->data->append(array(
+            'sitename'  => JFactory::getApplication()->getCfg('sitename'),
+            'language'  => JFactory::getLanguage()->getTag(),
+            'pages'     => $this->getModel()->fetch(),
+            'total'     => $this->getModel()->count(),
+            'description'  => $this->getPage()->summary ?: '',
+            'image'        => $this->getPage()->image ?: ''
+        ));
 
-        return $result;
+        parent::_fetchData($context);
     }
 
-    public function getMetadata()
-    {
-        $metadata = array();
-        if($page = $this->getPage())
-        {
-            if(isset($page->metadata))
-            {
-                $metadata = KObjectConfig::unbox($page->metadata);
-
-                //Set the description into the metadata if it doesn't exist.
-                if(isset($page->summary) && !isset($page->metadata->description)) {
-                    $metadata['description'] = $page->summary;
-                }
-            }
-        }
-
-
-        return $metadata;
-    }
-
-    protected function _actionRender(KViewContext $context)
-    {
-        $data       = $context->data;
-        $layout     = $context->layout;
-        $parameters = $context->parameters;
-
-        //Render the layout
-        $renderLayout = function($layout, $data, $parameters) use(&$renderLayout)
-        {
-            $template = $this->getTemplate()
-                ->loadFile($layout)
-                ->setParameters($parameters);
-
-            //Merge the data
-            $data->append($template->getData());
-
-            //Render the template
-            $this->_content = $template->render(KObjectConfig::unbox($data));
-
-            //Handle recursive layout
-            if($layout = $template->getParent()) {
-                $renderLayout($layout, $data, $parameters);
-            }
-        };
-
-        Closure::bind($renderLayout, $this, get_class());
-        $renderLayout($layout, $data, $parameters);
-
-        return KViewAbstract::_actionRender($context);
-    }
-
-    public function getRoute($route = '', $fqr = true, $escape = true)
+    public function getRoute($route = '', $fqr = true, $escape = false)
     {
         //Parse route
         $query = array();
@@ -116,8 +68,7 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
             else $query = $route;
         }
 
-        //Add add if the query is not unique
-        if(!isset($query['slug']))
+        if(!$query['slug'])
         {
             if($collection = $this->getPage()->collection)
             {

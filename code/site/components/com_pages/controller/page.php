@@ -18,6 +18,18 @@ class ComPagesControllerPage extends KControllerModel
         parent::_initialize($config);
     }
 
+    public function getFormats()
+    {
+        $formats = parent::getFormats();
+
+        //Only add rss for collections
+        if(!$this->getModel()->getState()->isUnique()) {
+            $formats[] = 'rss';
+        }
+
+        return $formats;
+    }
+
     protected function _beforeRender(KControllerContextInterface $context)
     {
         //Set the entity content in the response to allow for view decoration

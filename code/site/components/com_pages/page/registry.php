@@ -11,7 +11,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 {
     protected $_pages       = array();
     protected $_collection  = array();
-    protected $_content     = array();
 
     protected $_base_path;
 
@@ -36,7 +35,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     {
         $config->append([
             'base_path'  => 'page://pages',
-            'cache'      => false,
+            'cache'      => true,
             'cache_path' => '',
         ]);
 
@@ -74,20 +73,32 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                         $page->date = filemtime($page->filename);
                     }
 
-                    //Transform the page to an array
-                    $page = $page->toArray();
+                    if(!isset($page->collection) || $page->collection == false)
+                    {
+                        //Render the content
+                        $type    = $page->getFiletype();
+                        $content = $page->getContent();
+
+                        $page->content = $this->getObject('com:pages.template.page')
+                            ->loadString($content, $type, $url)
+                            ->render($page->toArray());
+                    }
+                    else $page->content = '';
 
                     //Cache the page
-                    $this->_writeCache($file, $page, 'page');
+                    $this->_writeCache($file, $page->toArray(), 'page');
                 }
                 else
                 {
                     if(!$page = require($cache)) {
                         throw new RuntimeException(sprintf('The page data "%s" cannot be loaded from cache.', $cache));
                     }
+
+                    //Create a page config object
+                    $page = new ComPagesObjectConfigFrontmatter($page);
                 }
 
-                $this->_pages[$path] = (object) $page;
+                $this->_pages[$path] = $page;
             }
             else $this->_pages[$path] = false;
         }
@@ -95,7 +106,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $this->_pages[$path];
     }
 
-    public function hasPage($path)
+    public function isPage($path)
     {
         if(!isset($this->_pages[$path]))
         {
@@ -105,49 +116,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         else $result = ($this->_pages[$path] === false) ? false : true;
 
         return $result;
-    }
-
-    public function getPageContent($path)
-    {
-        if(!$this->_content[$path])
-        {
-            $url = $this->_base_path . '/' . $path;
-
-            if($file = $this->getObject('template.locator.factory')->locate($url))
-            {
-                if(!$this->isCollection($path))
-                {
-                    if(!$cache = $this->isCached($file, 'content'))
-                    {
-                        //Load the page
-                        $page = (new ComPagesPage())->fromFile($file);
-
-                        $url     = $this->_base_path.'/'.$path;
-                        $type    = $page->getFiletype();
-                        $content = $page->getContent();
-
-                        $content = $this->getObject('com:pages.template.page')
-                            ->loadString($content, $type, $url)
-                            ->render($page->toArray());
-
-                        //Cache the page
-                        $this->_writeCache($file, $content, 'content');
-                    }
-                    else
-                    {
-                        if(!$content = file_get_contents($cache)) {
-                            throw new RuntimeException(sprintf('The content "%s" cannot be loaded from cache.', $cache));
-                        }
-                    }
-
-                    $this->_content[$path] = $content;
-                }
-                else $this->_content[$path] = false;
-            }
-            else $this->_content[$path] = false;
-        }
-
-        return $this->_content[$path];
     }
 
     public function getCollection($path)
@@ -160,9 +128,9 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
                 $page = $this->getPage($path);
 
-                if($root = $page->collection['root'])
+                if(isset($page->collection->root))
                 {
-                    $path = $root;
+                    $path = $page->collection->root;
                     $directory = $this->getObject('template.locator.factory')
                         ->locate($this->_base_path.'/'.$path);
                 }
@@ -175,8 +143,12 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     {
                         $slug = pathinfo($file, PATHINFO_FILENAME);
 
-                        if ($slug != 'index') {
-                            $pages[] = (array) $this->getPage($path . '/' . $slug);
+                        if ($slug != 'index')
+                        {
+                            $page = $this->getPage($path . '/' . $slug)->toArray();
+                            unset($page['content']);
+
+                            $pages[] = $page;
                         }
                     }
                     //Cache the collection
@@ -200,7 +172,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     {
         $result = false;
         if($page  = $this->getPage($path)) {
-            $result = isset($page->collection) && $page->collection !== false ? $page->collection : false;
+            $result = isset($page->collection) && $page->collection !== false ? KObjectConfig::unbox($page->collection) : false;
         }
 
         return $result;
@@ -213,27 +185,27 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         if($page = $this->getPage($path))
         {
             //Check groups
-            if($page->access['groups'])
+            if(isset($page->access->groups))
             {
                 $groups = $this->getObject('com:pages.database.table.groups')
                     ->select($this->getObject('user')->getGroups(), KDatabase::FETCH_ARRAY_LIST);
 
                 $groups = array_map('strtolower', array_column($groups, 'title'));
 
-                if(!array_intersect($groups, $page->access['groups'])) {
+                if(!array_intersect($groups, KObjectConfig::unbox($page->access->groups))) {
                     $result = false;
                 }
             }
 
             //Check roles
-            if($result && $page->access['roles'])
+            if($result && isset($page->access->roles))
             {
                 $roles = $this->getObject('com:pages.database.table.roles')
                     ->select($this->getObject('user')->getRoles(), KDatabase::FETCH_ARRAY_LIST);
 
                 $roles = array_map('strtolower', array_column($roles, 'title'));
 
-                if(!array_intersect($roles, $page->access['roles'])) {
+                if(!array_intersect($roles, KObjectConfig::unbox($page->access->roles))) {
                     $result = false;
                 }
             }

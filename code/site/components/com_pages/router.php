@@ -80,7 +80,7 @@ class ComPagesRouter
 
         //Path and slug
         $route = implode($segments, '/');
-        if($this->getRegistry()->hasPage($route))
+        if($this->getRegistry()->isPage($route))
         {
             if($collection = $this->getRegistry()->isCollection($route))
             {

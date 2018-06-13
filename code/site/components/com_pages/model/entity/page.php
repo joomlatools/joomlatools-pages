@@ -20,6 +20,7 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
                 'content'     => '',
                 'excerpt'     => '',
                 'date'        => 'now',
+                'author'      => '',
                 'published'   => true,
                 'access'      => [
                     'roles'  => ['public'],
@@ -53,15 +54,12 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
         return $this->date->format('y');
     }
 
-    public function setPropertyContent($content)
+    public function getPropertyExcerpt()
     {
-        if(!$this->excerpt)
-        {
-            $parts = preg_split('#<!--(.*)more(.*)-->#i', $content, 2);
-            $this->excerpt = $parts[0];
-        }
+        $parts = preg_split('#<!--(.*)more(.*)-->#i', $this->content, 2);
+        $excerpt = $parts[0];
 
-        return $content;
+        return $excerpt;
     }
 
     public function setPropertyAccess($value)
@@ -98,6 +96,7 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
         }
 
         $data['content']  = $this->content;
+        $data['excerpt']  = $this->excerpt;
         $data['access']   = KObjectConfig::unbox($this->access);
         $data['metadata'] = KObjectConfig::unbox($this->metadata);
         $data['date']     = $this->date->format(DateTime::ATOM);
@@ -105,6 +104,7 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
         unset($data['filename']);
         unset($data['process']);
         unset($data['layout']);
+        unset($data['path']);
 
         return $data;
     }
