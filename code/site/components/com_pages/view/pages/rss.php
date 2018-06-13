@@ -12,6 +12,7 @@ class ComPagesViewPagesRss extends KViewRss
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
+            'mimetype'   => 'text/xml',
             'auto_fetch' => false
         ));
 
