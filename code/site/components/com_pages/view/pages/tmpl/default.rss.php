@@ -35,7 +35,12 @@ defined('KOOWA') or die; ?>
                 <title><?= escape($page->title); ?></title>
                 <link><?= route($page); ?></link>
                 <guid isPermaLink="true"><?= route($page); ?></guid>
-                <description><![CDATA[<?=$page->content?>]]></description>
+                <description><![CDATA[
+                 <? if($page->image): ?>
+                    <img width="800" href="<?= $page->image ?>" />
+                 <? endif ?>
+                 <?= $page->content ?>
+                ?>]]></description>
                 <author><?= escape($page->author) ?></author>
                 <category><?= escape($page->category) ?></category>
                 <pubDate><?= $page->date->format(DateTime::ATOM) ?></pubDate>
