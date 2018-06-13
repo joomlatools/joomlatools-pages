@@ -79,6 +79,11 @@ class ComPagesViewJson extends KViewJson
         return $route;
     }
 
+    protected function _getEntity(KModelEntityInterface $entity)
+    {
+        return $entity->jsonSerialize();
+    }
+
     protected function _getEntityRoute(KModelEntityInterface $entity)
     {
         $query = array();

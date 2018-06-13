@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelEntityPages extends KModelEntityComposite
+class ComPagesModelEntityPages extends KModelEntityComposite implements JsonSerializable
 {
     protected function _initialize(KObjectConfig $config)
     {
@@ -17,5 +17,15 @@ class ComPagesModelEntityPages extends KModelEntityComposite
         ]);
 
         parent::_initialize($config);
+    }
+
+    public function jsonSerialize()
+    {
+        $result = array();
+        foreach ($this as $key => $entity) {
+            $result[$key] = $entity->jsonSerialize();
+        }
+
+        return $result;
     }
 }
