@@ -35,7 +35,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     {
         $config->append([
             'base_path'  => 'page://pages',
-            'cache'      => true,
+            'cache'      => false,
             'cache_path' => '',
         ]);
 
