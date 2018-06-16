@@ -24,7 +24,7 @@ defined('KOOWA') or die; ?>
                 <link><?= route('format=html') ?></link>
             </image>
         <? endif; ?>
-        <lastBuildDate><?= count($pages) ? $pages->top()->date->format(DateTime::ATOM) : '' ?></lastBuildDate>
+        <lastBuildDate><?= count($pages) ? $pages->top()->date->format(DateTime::RSS) : '' ?></lastBuildDate>
         <atom:link href="<?=  url() ?>" rel="self" type="application/rss+xml"/>
         <language><?= $language ?></language>
         <sy:updatePeriod><?= $update_period ?></sy:updatePeriod>
@@ -43,7 +43,7 @@ defined('KOOWA') or die; ?>
                 ?>]]></description>
                 <author><?= escape($page->author) ?></author>
                 <category><?= escape($page->category) ?></category>
-                <pubDate><?= $page->date->format(DateTime::ATOM) ?></pubDate>
+                <pubDate><?= $page->date->format(DateTime::RSS) ?></pubDate>
             </item>
         <?endforeach?>
     </channel>
