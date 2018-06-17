@@ -58,7 +58,6 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
             }
         }
 
-
         return $metadata;
     }
 

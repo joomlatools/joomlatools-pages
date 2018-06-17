@@ -11,29 +11,11 @@ class ComPagesTemplateLayout extends ComPagesTemplateAbstract
 {
     protected $_parent;
 
-    protected $_base_path;
-
-    public function __construct(KObjectConfig $config)
-    {
-        parent::__construct($config);
-
-        $this->_base_path = rtrim($config->base_path, '/');
-    }
-
-    protected function _initialize(KObjectConfig $config)
-    {
-        $config->append([
-            'base_path' => 'page://layouts',
-        ]);
-
-        parent::_initialize($config);
-    }
-
     public function loadFile($url)
     {
         //Qualify the layout
         if(!parse_url($url, PHP_URL_SCHEME)) {
-            $url = $this->_base_path.'/'.$url;
+            $url = 'page://layouts/'.$url;
         }
 
         if(parse_url($url, PHP_URL_SCHEME) == 'page')
