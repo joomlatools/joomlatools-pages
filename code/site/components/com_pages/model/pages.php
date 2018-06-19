@@ -62,21 +62,20 @@ class ComPagesModelPages extends KModelAbstract
     public function getContext()
     {
         $context = parent::getContext();
-
         $registry = $this->getObject('page.registry');
 
-        if (!$this->getState()->isUnique())
+        //Make sure we have a valid path
+        if($path = $this->getState()->path)
         {
-            $path  = $this->getState()->path;
-            $pages = $registry->getCollection($path);
-        }
-        else
-        {
-            $path = $this->getState()->path.'/'.$this->getState()->slug;
-            $pages = $registry->getPage($path)->toArray();
-        }
+            if ($this->getState()->isUnique())
+            {
+                $path = $path.'/'.$this->getState()->slug;
+                $pages = $registry->getPage($path)->toArray();
+            }
+            else $pages = $registry->getCollection($path);
 
-        $context->pages = $pages;
+            $context->pages = $pages;
+        }
 
         return $context;
     }
