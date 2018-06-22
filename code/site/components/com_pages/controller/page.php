@@ -29,9 +29,11 @@ class ComPagesControllerPage extends KControllerModel
 
             //Only add xml for sitemaps if specifically defined
             $page = $this->getView()->getPage();
-            if(isset($page->sitemap) && $page->sitemap = true) {
+
+            if(isset($page->collection['sitemap']) && $page->collection['sitemap']) {
                 $formats[] = 'xml';
             }
+
         }
 
         return $formats;
