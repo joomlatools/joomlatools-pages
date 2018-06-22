@@ -16,14 +16,15 @@ class ComPagesModelPages extends KModelAbstract
         parent::__construct($config);
         $this->getState()
             ->insert('path', 'url')
-            ->insert('slug', 'cmd', '', true, array('path'));
+            ->insert('slug', 'cmd', '', true, array('path'))
+            ->insert('tree', 'boolean');
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
             'identity_key' => 'path',
-            'behaviors'    => ['sortable', 'categorizable', 'accessible', 'paginatable']
+            'behaviors'    => ['sortable', 'categorizable', 'accessible', 'paginatable', 'recursable']
         ]);
 
         parent::_initialize($config);
@@ -67,12 +68,15 @@ class ComPagesModelPages extends KModelAbstract
         //Make sure we have a valid path
         if($path = $this->getState()->path)
         {
-            if ($this->getState()->isUnique())
+            if (!$this->getState()->isUnique())
             {
-                $path = $path.'/'.$this->getState()->slug;
-                $pages = $registry->getPage($path)->toArray();
+                if($this->getState()->tree) {
+                    $pages = $registry->getPages($path);
+                } else {
+                    $pages = $registry->getCollection($path);
+                }
             }
-            else $pages = $registry->getCollection($path);
+            else $pages = $registry->getPage($path.'/'.$this->getState()->slug)->toArray();
 
             $context->pages = $pages;
         }

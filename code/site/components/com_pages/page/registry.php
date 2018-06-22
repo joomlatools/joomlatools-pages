@@ -33,14 +33,13 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     {
         $config->append([
             'cache'      => false,
-            'cache'      => false,
             'cache_path' => '',
         ]);
 
         parent::_initialize($config);
     }
 
-    public function getPages()
+    public function getPages($path = '')
     {
         if(!isset($this->_pages))
         {
@@ -50,25 +49,21 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             {
                 $iterator = new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS);
                 $iterator = new ComPagesRecursiveFilterIterator($iterator);
-                $iterator = new RecursiveIteratorIterator($iterator, RecursiveIteratorIterator::CHILD_FIRST);
+                $iterator = new RecursiveIteratorIterator($iterator, RecursiveIteratorIterator::SELF_FIRST);
 
                 $result = array();
                 foreach ($iterator as $file)
                 {
-                    $path = trim(dirname($iterator->getSubpathname()), '.');
-                    $slug = pathinfo($file, PATHINFO_FILENAME);
+                    $page_path = trim(dirname($iterator->getSubpathname()), '.');
+                    $page_slug = pathinfo($file, PATHINFO_FILENAME);
 
-                    if($path) {
-                        $page = $path . '/' . $slug;
+                    if($page_path) {
+                        $page_path = $page_path . '/' . $page_slug;
                     } else {
-                        $page = $slug;
+                        $page_path = $page_slug;
                     }
 
-                    $page = $this->getPage($page)->toArray();
-
-                    //Set the parent path
-                    $page['parent_path'] = $path;
-
+                    $page = $this->getPage($page_path)->toArray();
                     unset($page['content']);
 
                     $result[] = $page;
@@ -87,7 +82,19 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             $this->_pages = $result;
         }
 
-        return $this->_pages;
+        //Filter the pages based on the path
+        if($path)
+        {
+            $result = array_filter($this->_pages, function($page) use ($path)
+            {
+                if(strpos($page['path'], $path) === 0) {
+                    return true;
+                }
+            });
+        }
+        else $result = $this->_pages;
+
+        return $result;
     }
 
     public function getPage($path)

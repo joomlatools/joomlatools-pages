@@ -28,4 +28,28 @@ class ComPagesModelEntityPages extends KModelEntityComposite implements JsonSeri
 
         return $result;
     }
+
+    public function get($property, $default)
+    {
+        if($this->hasProperty($property)) {
+            $result = $this->getProperty($property);
+        } else {
+            $result = $default;
+        }
+    }
+
+    public function __call($method, $arguments)
+    {
+        $parts = KStringInflector::explode($method);
+
+        //Check if a behavior is mixed
+        if ($parts[0] == 'is' && isset($parts[1]))
+        {
+            if(!isset($this->_mixed_methods[$method])) {
+                return false;
+            }
+        }
+
+        return parent::__call($method, $arguments);
+    }
 }

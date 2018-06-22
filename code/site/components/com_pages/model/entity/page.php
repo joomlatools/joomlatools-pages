@@ -39,6 +39,17 @@ class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerial
         parent::_initialize($config);
     }
 
+    public function get($property, $default)
+    {
+        if($this->hasProperty($property)) {
+            $result = $this->getProperty($property);
+        } else {
+            $result = $default;
+        }
+
+        return $result;
+    }
+
     public function getPropertyDay()
     {
         return $this->date->format('d');
@@ -117,5 +128,20 @@ class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerial
         unset($data['path']);
 
         return $data;
+    }
+
+    public function __call($method, $arguments)
+    {
+        $parts = KStringInflector::explode($method);
+
+        //Check if a behavior is mixed
+        if ($parts[0] == 'is' && isset($parts[1]))
+        {
+            if(!isset($this->_mixed_methods[$method])) {
+                return false;
+            }
+        }
+
+        return parent::__call($method, $arguments);
     }
 }
