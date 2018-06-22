@@ -21,7 +21,6 @@ class ComPagesViewPagesRss extends ComPagesViewXml
         parent::_initialize($config);
     }
 
-
     protected function _fetchData(KViewContext $context)
     {
         $context->data->append(array(

@@ -24,8 +24,9 @@ class ComPagesPageLocator extends KTemplateLocatorFile
     {
         $path = ltrim(str_replace(parse_url($info['url'], PHP_URL_SCHEME).'://', '', $info['url']), '/');
 
-        $file = pathinfo($path, PATHINFO_FILENAME);
-        $path = ltrim(pathinfo($path, PATHINFO_DIRNAME), '.');
+        $file   = pathinfo($path, PATHINFO_FILENAME);
+        $format = pathinfo($path, PATHINFO_EXTENSION);
+        $path   = ltrim(pathinfo($path, PATHINFO_DIRNAME), '.');
 
         //Prepend the base path
         if($path) {
@@ -34,10 +35,21 @@ class ComPagesPageLocator extends KTemplateLocatorFile
             $path = $this->getBasePath();
         }
 
-        if($this->realPath($path.'/'.$file)) {
-            $pattern = $path.'/'.$file.'/index.'.'*';
-        } else {
-            $pattern = $path.'/'.$file.'.*';
+        if($this->realPath($path.'/'.$file))
+        {
+            if($format) {
+                $pattern = $path.'/'.$file.'/index.'.$format.'.*';
+            } else {
+                $pattern = $path.'/'.$file.'/index.'.'*';
+            }
+        }
+        else
+        {
+            if($format) {
+                $pattern = $path.'/'.$file.'.'.$format.'.*';
+            } else {
+                $pattern = $path.'/'.$file.'.*';
+            }
         }
 
         //Try to find the file

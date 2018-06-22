@@ -27,12 +27,11 @@ class ComPagesViewXml extends KViewTemplate
     public function getPage()
     {
         $state = $this->getModel()->getState();
-        if(!$state->isUnique())
-        {
-            $path = $state->path.'/'.$state->slug;
-            $page = $this->getObject('page.registry')->getPage($path);
+        if(!$state->isUnique()) {
+            $page = $this->getObject('page.registry')->getPage($state->path);
+        }  else {
+            $page =  $this->getModel()->fetch();
         }
-        else $page =  $this->getModel()->fetch();
 
         return $page;
     }
