@@ -15,27 +15,56 @@ class ComPagesModelPages extends KModelAbstract
     {
         parent::__construct($config);
         $this->getState()
-            ->insert('path', 'url')
-            ->insert('slug', 'cmd', '', true, array('path'))
+            ->insert('path', 'url', '.')
+            ->insert('page', 'cmd', '', true, array('path'))
             ->insert('tree', 'boolean');
+
+        $this->addCommandCallback('before.fetch', '_prepareContext');
+        $this->addCommandCallback('before.count', '_prepareContext');
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
             'identity_key' => 'path',
-            'behaviors'    => ['sortable', 'categorizable', 'accessible', 'paginatable', 'collectable', 'recursable']
+            'behaviors'    => [
+                'sortable',
+                'categorizable',
+                'accessible',
+                'paginatable',
+                'collectable',
+                'recursable'
+            ]
         ]);
 
         parent::_initialize($config);
     }
 
+    protected function _prepareContext(KModelContext $context)
+    {
+        $registry = $this->getObject('page.registry');
+
+        //Make sure we have a valid path
+        if($path = $this->getState()->path)
+        {
+            if (!$this->getState()->isUnique())
+            {
+                if($this->getState()->tree) {
+                    $pages = $registry->getPages($path);
+                } else {
+                    $pages = $registry->getCollection($path);
+                }
+            }
+            else $pages = $registry->getPage($path.'/'.$this->getState()->page)->toArray();
+
+            $context->pages  = $pages;
+            $context->entity = $pages;
+        }
+    }
+
+
     protected function _actionFetch(KModelContext $context)
     {
-        if(!$context->entity) {
-            $context->entity = KObjectConfig::unbox($context->pages);
-        }
-
         if($result = parent::_actionCreate($context))
         {
             $registry = $this->getObject('page.registry');
@@ -58,29 +87,5 @@ class ComPagesModelPages extends KModelAbstract
         $this->_pages = null;
 
         parent::_actionReset($context);
-    }
-
-    public function getContext()
-    {
-        $context = parent::getContext();
-        $registry = $this->getObject('page.registry');
-
-        //Make sure we have a valid path
-        if($path = $this->getState()->path)
-        {
-            if (!$this->getState()->isUnique())
-            {
-                if($this->getState()->tree) {
-                    $pages = $registry->getPages($path);
-                } else {
-                    $pages = $registry->getCollection($path);
-                }
-            }
-            else $pages = $registry->getPage($path.'/'.$this->getState()->slug)->toArray();
-
-            $context->pages = $pages;
-        }
-
-        return $context;
     }
 }
