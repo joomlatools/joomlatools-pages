@@ -31,6 +31,7 @@ class ComPagesModelPages extends KModelAbstract
                 'sortable',
                 'categorizable',
                 'accessible',
+                'crawlable',
                 'paginatable',
                 'collectable',
                 'recursable'

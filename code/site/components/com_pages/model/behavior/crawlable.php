@@ -7,19 +7,26 @@
  * @link        https://github.com/joomlatools/joomlatools-framework-pages for the canonical source repository
  */
 
-class ComPagesModelBehaviorAccessible extends ComPagesModelBehaviorFilterable
+class ComPagesModelBehaviorCrawlable extends ComPagesModelBehaviorFilterable
 {
+    public function onMixin(KObjectMixable $mixer)
+    {
+        parent::onMixin($mixer);
+
+        $mixer->getState()
+            ->insert('sitemap', 'boolean');
+    }
+
     protected function _beforeFetch(KModelContextInterface $context)
     {
         $state = $context->state;
 
-        if(!$state->isUnique())
+        if(!$context->state->isUnique() && $state->sitemap)
         {
-            $pages    = KObjectConfig::unbox($context->pages);
-            $registry = $this->getObject('page.registry');
+            $pages = KObjectConfig::unbox($context->pages);
 
-            $pages = array_filter($pages, function($page) use ($registry) {
-                return $registry->isPublished($page['path']) && $registry->isAccessible($page['path']);
+            $pages = array_filter($pages, function($page)  {
+                return (isset($page['sitemap']) && $page['sitemap'] == false) ? false : true;
             });
 
             $context->pages = $pages;

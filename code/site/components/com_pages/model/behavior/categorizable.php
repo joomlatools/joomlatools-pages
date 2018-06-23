@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-framework-pages for the canonical source repository
  */
 
-class ComPagesModelBehaviorCategorizable extends KModelBehaviorAbstract
+class ComPagesModelBehaviorCategorizable extends ComPagesModelBehaviorFilterable
 {
     public function onMixin(KObjectMixable $mixer)
     {
@@ -17,24 +17,21 @@ class ComPagesModelBehaviorCategorizable extends KModelBehaviorAbstract
             ->insert('category', 'cmd');
     }
 
-    protected function _beforeCount(KModelContextInterface $context)
-    {
-        $this->_beforeFetch($context);
-    }
-
     protected function _beforeFetch(KModelContextInterface $context)
     {
         $state = $context->state;
 
-        if(!$context->state->isUnique() && $state->category)
+        if(!$state->isUnique() && $state->category)
         {
             $pages = KObjectConfig::unbox($context->pages);
 
-            $pages = array_filter( $pages, function($value) use ($state) {
-                return $value['category'] == $state->category;
+            $pages = array_filter( $pages, function($page) use ($state) {
+                return $page['category'] == $state->category;
             });
 
             $context->pages = $pages;
         }
+
+        parent::_beforeFetch($context);
     }
 }

@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-framework-pages for the canonical source repository
  */
 
-class ComPagesModelBehaviorSortable extends KModelBehaviorAbstract
+class ComPagesModelBehaviorSortable extends ComPagesModelBehaviorFilterable
 {
     protected function _initialize(KObjectConfig $config)
     {
@@ -31,7 +31,7 @@ class ComPagesModelBehaviorSortable extends KModelBehaviorAbstract
     {
         $state = $context->state;
 
-        if(!$context->state->isUnique() && $state->sort)
+        if(!$state->isUnique() && $state->sort)
         {
             $pages = KObjectConfig::unbox($context->pages);
 
@@ -64,5 +64,7 @@ class ComPagesModelBehaviorSortable extends KModelBehaviorAbstract
 
             $context->pages = $pages;
         }
+
+        parent::_beforeFetch($context);
     }
 }
