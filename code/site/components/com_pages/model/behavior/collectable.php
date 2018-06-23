@@ -9,13 +9,33 @@
 
 class ComPagesModelBehaviorCollectable extends KModelBehaviorAbstract
 {
+    private $__state;
+
+    public function hasCollection()
+    {
+       return $this->isCollection();
+    }
+
     public function getCollection()
     {
-        $collection = $this->getObject('com:pages.model.pages')
-            ->path($this->path)
-            ->fetch();
+        $result = array();
+        if($this->hasCollection())
+        {
+            $state = $this->__state;
 
-        return $collection;
+            //Remove states
+            unset($state->offset);
+            unset($state->limit);
+            unset($state->path);
+            unset($state->page);
+
+            $result = $this->getObject('com:pages.model.pages')
+                ->setState($state->getValues())
+                ->path($this->path)
+                ->fetch();
+        }
+
+        return $result;
     }
 
     public function getMixableMethods($exclude = array())
@@ -48,6 +68,8 @@ class ComPagesModelBehaviorCollectable extends KModelBehaviorAbstract
 
         if ($pages instanceof KModelEntityInterface)
         {
+            $this->__state = $context->getSubject()->getState();
+
             foreach ($pages as $key => $page)
             {
                 //Force mixin the behavior into each page
