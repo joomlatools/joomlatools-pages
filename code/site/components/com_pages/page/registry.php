@@ -55,12 +55,12 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 foreach ($iterator as $file)
                 {
                     $page_path = trim(dirname($iterator->getSubpathname()), '.');
-                    $page_slug = pathinfo($file, PATHINFO_FILENAME);
+                    $page_file = pathinfo($file, PATHINFO_FILENAME);
 
                     if($page_path) {
-                        $page_path = $page_path . '/' . $page_slug;
+                        $page_path = $page_path . '/' . $page_file;
                     } else {
-                        $page_path = $page_slug;
+                        $page_path = $page_file;
                     }
 
                     $page = $this->getPage($page_path)->toArray();
@@ -217,8 +217,8 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     $files = glob($directory.'/*.*');
                     foreach($files as $file)
                     {
-                        $slug = pathinfo($file, PATHINFO_FILENAME);
-                        $page = $this->getPage($path . '/' . $slug)->toArray();
+                        $file = pathinfo($file, PATHINFO_FILENAME);
+                        $page = $this->getPage($path . '/' . $file)->toArray();
 
                         //Set the layout for the page
                         if(!isset($page['layout']) && $layout) {

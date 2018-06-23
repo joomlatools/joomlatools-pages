@@ -32,8 +32,8 @@ class ComPagesRouter
         $segments = array();
 
         //Slug
-        if(isset($query['slug'])) {
-            unset($query['slug']);
+        if(isset($query['page'])) {
+            unset($query['page']);
         }
 
         //Path
@@ -70,15 +70,15 @@ class ComPagesRouter
 
 
         //Format
-        $slug = array_pop($segments);
-        if($format = pathinfo($slug, PATHINFO_EXTENSION))
+        $page = array_pop($segments);
+        if($format = pathinfo($page, PATHINFO_EXTENSION))
         {
             $query['format'] = $format;
-            $segments[] = basename($slug, '.'.$format);
+            $segments[] = basename($page, '.'.$format);
         }
-        else $segments[] = $slug;
+        else $segments[] = $page;
 
-        //Path and slug
+        //Path and page
         $route = implode($segments, '/');
         if($this->getRegistry()->isPage($route))
         {
@@ -93,7 +93,7 @@ class ComPagesRouter
             }
             else
             {
-                $query['slug'] = array_pop($segments);
+                $query['page'] = array_pop($segments);
                 $query['path'] = implode($segments, '/') ?: '.';
             }
         }

@@ -23,7 +23,7 @@ class ComPagesViewJson extends KViewJson
         $state = $this->getModel()->getState();
         if(!$state->isUnique())
         {
-            $path = $state->path.'/'.$state->slug;
+            $path = $state->path.'/'.$state->page;
             $page = $this->getObject('page.registry')->getPage($path);
         }
         else $page =  $this->getModel()->fetch();
@@ -49,7 +49,7 @@ class ComPagesViewJson extends KViewJson
         //Set the format
         $query['format'] = 'json';
 
-        if(!$query['slug'])
+        if(!$query['page'])
         {
             if($collection = $this->getPage()->collection)
             {
@@ -88,7 +88,7 @@ class ComPagesViewJson extends KViewJson
     {
         $query = array();
         $query['path'] = $entity->path;
-        $query['slug'] = $entity->slug;
+        $query['page'] = $entity->slug;
 
         return $this->getRoute($query);
     }

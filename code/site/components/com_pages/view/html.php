@@ -24,7 +24,7 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
         $state = $this->getModel()->getState();
         if(!$state->isUnique())
         {
-            $path = $state->path.'/'.$state->slug;
+            $path = $state->path.'/'.$state->page;
             $page = $this->getObject('page.registry')->getPage($path);
         }
         else $page =  $this->getModel()->fetch();
@@ -110,13 +110,13 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
             if($route instanceof KModelEntityInterface)
             {
                 $query['path'] = $route->path;
-                $query['slug'] = $route->slug;
+                $query['page'] = $route->page;
             }
             else $query = $route;
         }
 
         //Add add if the query is not unique
-        if(!isset($query['slug']))
+        if(!isset($query['page']))
         {
             if($collection = $this->getPage()->collection)
             {

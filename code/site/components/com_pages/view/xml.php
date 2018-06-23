@@ -54,12 +54,12 @@ class ComPagesViewXml extends KViewTemplate
             if($route instanceof KModelEntityInterface)
             {
                 $query['path'] = $route->path;
-                $query['slug'] = $route->slug;
+                $query['page'] = $route->page;
             }
             else $query = $route;
         }
 
-        if(!$query['slug'])
+        if(!$query['page'])
         {
             if($collection = $this->getPage()->collection)
             {
