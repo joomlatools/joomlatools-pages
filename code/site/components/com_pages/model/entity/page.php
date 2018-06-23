@@ -130,6 +130,11 @@ class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerial
         return $data;
     }
 
+    public function isCollection()
+    {
+        return isset($this->collection) && $this->collection !== false ? $this->collection : false;
+    }
+
     public function __call($method, $arguments)
     {
         $parts = KStringInflector::explode($method);

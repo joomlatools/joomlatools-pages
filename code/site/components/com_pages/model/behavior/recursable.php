@@ -59,19 +59,21 @@ class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
 
     public function getMixableMethods($exclude = array())
     {
-        $exclude = array_merge($exclude, array('getNodes'));
-        $methods = parent::getMixableMethods($exclude);
+        $methods = array();
+        if($this->getMixer() instanceof KModelEntityInterface) {
+            $methods = parent::getMixableMethods($exclude);
+        }
 
         return $methods;
     }
 
     public function isSupported()
     {
-        $page = $this->getMixer();
+        $mixer = $this->getMixer();
 
-        if($page instanceof KModelEntityInterface)
+        if($mixer instanceof ComPagesModelPages)
         {
-            if(!$page->hasProperty('path'))  {
+            if($mixer->getState()->isUnique()) {
                 return false;
             }
         }
@@ -86,22 +88,17 @@ class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
         if ($pages instanceof KModelEntityComposable)
         {
             //Store the pages
-            $this->__pages  = $pages;
-            $pages->mixin($this);
-
+            $this->__pages    = $pages;
             $this->__iterator = null;
             $this->__children = array();
 
             foreach ($this->__pages as $key => $page)
             {
-                //Force mixin the behavior into each page
+                //Mixin the behavior
                 $page->mixin($this);
 
-                if($page->isRecursable()) {
-                    $parent = dirname($page->path);
-                } else {
-                    $parent = '.';
-                }
+                //Get the parent
+                $parent = dirname($page->path);
 
                 //Store the nodes by parent
                 $this->__children[$parent][$key] = $page;

@@ -25,6 +25,14 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     protected function _actionDispatch(KDispatcherContextInterface $context)
     {
+        $pages = $this->getObject('com:pages.model.pages')->path('.')->slug('blog')->fetch();
+
+        foreach($pages->getCollection() as $post) {
+            echo var_dump($post->title);
+        }
+
+        die;
+
         $method = strtolower($context->request->getMethod());
 
         if (!in_array($method, $this->getHttpMethods())) {

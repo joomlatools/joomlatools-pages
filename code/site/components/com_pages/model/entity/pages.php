@@ -40,16 +40,12 @@ class ComPagesModelEntityPages extends KModelEntityComposite implements JsonSeri
 
     public function __call($method, $arguments)
     {
-        $parts = KStringInflector::explode($method);
+        $result = null;
 
-        //Check if a behavior is mixed
-        if ($parts[0] == 'is' && isset($parts[1]))
-        {
-            if(!isset($this->_mixed_methods[$method])) {
-                return false;
-            }
+        if($entity = $this->getIterator()->current()) {
+            $result = $entity->__call($method, $arguments);
         }
 
-        return parent::__call($method, $arguments);
+        return $result;
     }
 }

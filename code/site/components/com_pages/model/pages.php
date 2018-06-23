@@ -24,7 +24,7 @@ class ComPagesModelPages extends KModelAbstract
     {
         $config->append([
             'identity_key' => 'path',
-            'behaviors'    => ['sortable', 'categorizable', 'accessible', 'paginatable', 'recursable']
+            'behaviors'    => ['sortable', 'categorizable', 'accessible', 'paginatable', 'collectable', 'recursable']
         ]);
 
         parent::_initialize($config);
