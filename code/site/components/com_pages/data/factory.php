@@ -9,7 +9,7 @@
 
 final class ComPagesDataFactory extends KObject implements KObjectSingleton
 {
-    private static $__cache = array();
+    private $__cache = array();
 
     public function createObject($path, $format = '')
     {
@@ -47,7 +47,11 @@ final class ComPagesDataFactory extends KObject implements KObjectSingleton
                 $data = $this->getObject('object.config.factory')->fromFile($file, false);
             }
 
-            $result[] = $data;
+            if(is_array($path)) {
+                $result[] = $data;
+            } else {
+                $result = $data;
+            }
         }
 
         return $result;
