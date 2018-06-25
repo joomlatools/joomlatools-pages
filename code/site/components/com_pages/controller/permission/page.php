@@ -12,8 +12,9 @@ class ComPagesControllerPermissionPage extends ComKoowaControllerPermissionAbstr
     public function canRead()
     {
         $path = $this->getModel()->fetch()->path;
+        $page = $this->getModel()->fetch()->skug;
 
-        if(!$this->canAccess($path)) {
+        if(!$this->canAccess($path.'/'.$page)) {
             return false;
         }
 
