@@ -7,4 +7,10 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesDataObject extends KObjectConfig { }
+class ComPagesDataObject extends KObjectConfig
+{
+    public function __debugInfo()
+    {
+        return self::unbox($this);
+    }
+}
