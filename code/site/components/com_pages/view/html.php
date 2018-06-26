@@ -94,7 +94,7 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
         $renderLayout = function($layout, $data, $parameters) use(&$renderLayout)
         {
             $template = $this->getTemplate()
-                ->setParameters($parameters);
+                ->setParameters($parameters)
                 ->loadFile($layout);
 
             //Merge the data
