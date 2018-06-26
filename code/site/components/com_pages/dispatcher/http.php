@@ -9,18 +9,30 @@
 
 class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 {
-    public function getRequest()
+    protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
-        $request = parent::getRequest();
+        $request = $context->request;
 
-        //Hanlde the root
+        //Manually route the url if it hasn't been routed yet
         if(!isset($request->query->path))
         {
-            $request->query->page = 'index';
-            $request->query->path = '.';
-        }
+            $base = $request->getBasePath();
+            $url  = $request->getUrl()->getPath();
 
-        return $request;
+            //Get the segments
+            $path = trim(str_replace(array($base, '/index.php'), '', $url), '/');
+
+            if($path) {
+                $segments = explode('/', $path);
+            } else {
+                $segments = array('index');
+            }
+
+            //Route the
+            $query = $this->getObject('com:pages.router')->parse($segments);
+
+            $request->query->add($query);
+        }
     }
 
     protected function _actionDispatch(KDispatcherContextInterface $context)

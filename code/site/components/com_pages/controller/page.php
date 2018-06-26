@@ -18,6 +18,16 @@ class ComPagesControllerPage extends KControllerModel
         parent::_initialize($config);
     }
 
+    public function getRequest()
+    {
+        $request = parent::getRequest();
+
+        //Remove the view query parameter
+        $request->query->remove('view');
+
+        return $request;
+    }
+
     public function getFormats()
     {
         $formats = parent::getFormats();

@@ -7,26 +7,8 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesRouter
+class ComPagesRouter extends KObject implements KObjectSingleton
 {
-    private function __construct() {}
-
-    public static function getInstance()
-    {
-        static $instance;
-
-        if (!$instance) {
-            $instance = new ComPagesRouter();
-        }
-
-        return $instance;
-    }
-
-    public function getRegistry()
-    {
-        return KObjectManager::getInstance()->getObject('page.registry');
-    }
-
     public function build(&$query)
     {
         $segments = array();
@@ -40,7 +22,7 @@ class ComPagesRouter
         if(isset($query['path']))
         {
             //Remove hardcoded states
-            if($collection = $this->getRegistry()->isCollection($query['path']))
+            if($collection = $this->getObject('page.registry')->isCollection($query['path']))
             {
                 if(isset($collection['state'])) {
                     $query = array_diff_key($query, $collection['state']);
@@ -68,7 +50,6 @@ class ComPagesRouter
             return str_replace(':', '-', $segment);
         }, $segments);
 
-
         //Format
         $page = array_pop($segments);
         if($format = pathinfo($page, PATHINFO_EXTENSION))
@@ -80,9 +61,10 @@ class ComPagesRouter
 
         //Path and page
         $route = implode($segments, '/');
-        if($this->getRegistry()->isPage($route))
+
+        if($this->getObject('page.registry')->isPage($route))
         {
-            if($collection = $this->getRegistry()->isCollection($route))
+            if($collection = $this->getObject('page.registry')->isCollection($route))
             {
                 $query['path'] = $route;
 
@@ -104,10 +86,10 @@ class ComPagesRouter
 
 function PagesBuildRoute(&$query)
 {
-    return ComPagesRouter::getInstance()->build($query);
+    return KObjectManager::getInstance()->getObject('com:pages.router')->build($query);
 }
 
 function PagesParseRoute($segments)
 {
-    return ComPagesRouter::getInstance()->parse($segments);
+    return KObjectManager::getInstance()->getObject('com:pages.router')->parse($segments);
 }
