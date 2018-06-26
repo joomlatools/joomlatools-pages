@@ -61,6 +61,29 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
         return $metadata;
     }
 
+    protected function _fetchData(KViewContext $context)
+    {
+        $model = $this->getModel();
+
+        $context->parameters = $model->getState()->getValues();
+
+        //Auto-assign the data from the model
+        if($this->_auto_fetch)
+        {
+            //Set the data
+            $name   = $this->getName();
+            $entity = $model->fetch();
+            $context->data->$name = $entity;
+
+            //Set the parameters
+            if($this->isCollection()) {
+                $context->parameters->total = $model->count();
+            } else {
+                $context->parameters->total = 1;
+            }
+        }
+    }
+
     protected function _actionRender(KViewContext $context)
     {
         $data       = $context->data;
@@ -71,8 +94,8 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
         $renderLayout = function($layout, $data, $parameters) use(&$renderLayout)
         {
             $template = $this->getTemplate()
-                ->loadFile($layout)
                 ->setParameters($parameters);
+                ->loadFile($layout);
 
             //Merge the data
             $data->append($template->getData());
