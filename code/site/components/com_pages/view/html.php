@@ -133,13 +133,13 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
             if($route instanceof KModelEntityInterface)
             {
                 $query['path'] = $route->path;
-                $query['page'] = $route->page;
+                $query['slug'] = $route->slug;
             }
             else $query = $route;
         }
 
         //Add add if the query is not unique
-        if(!isset($query['page']))
+        if(!isset($query['slug']))
         {
             if($collection = $this->getPage()->collection)
             {

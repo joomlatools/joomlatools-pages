@@ -16,7 +16,7 @@ class ComPagesModelPages extends KModelAbstract
         parent::__construct($config);
         $this->getState()
             ->insert('path', 'url', '.')
-            ->insert('page', 'cmd', '', true, array('path'))
+            ->insert('slug', 'cmd', '', true, array('path'))
             ->insert('tree', 'boolean');
 
         $this->addCommandCallback('before.fetch', '_prepareContext');
@@ -56,7 +56,7 @@ class ComPagesModelPages extends KModelAbstract
                     $pages = $registry->getCollection($path);
                 }
             }
-            else $pages = $registry->getPage($path.'/'.$this->getState()->page)->toArray();
+            else $pages = $registry->getPage($path.'/'.$this->getState()->slug)->toArray();
 
             $context->pages  = $pages;
             $context->entity = $pages;

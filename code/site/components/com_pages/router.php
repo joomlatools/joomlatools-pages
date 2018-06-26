@@ -14,8 +14,8 @@ class ComPagesRouter extends KObject implements KObjectSingleton
         $segments = array();
 
         //Slug
-        if(isset($query['page'])) {
-            unset($query['page']);
+        if(isset($query['slug'])) {
+            unset($query['slug']);
         }
 
         //Path
@@ -75,7 +75,7 @@ class ComPagesRouter extends KObject implements KObjectSingleton
             }
             else
             {
-                $query['page'] = array_pop($segments);
+                $query['slug'] = array_pop($segments);
                 $query['path'] = implode($segments, '/') ?: '.';
             }
         }
