@@ -22,7 +22,7 @@ class ComPagesModelBehaviorCategorizable extends ComPagesModelBehaviorFilterable
         return (bool) $context->state->category;
     }
 
-    protected function _doFilter($page, $context)
+    protected function _accept($page, $context)
     {
         return isset($page['category']) && $page['category'] == $context->state->category;
     }

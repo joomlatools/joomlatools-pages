@@ -9,7 +9,7 @@
 
 class ComPagesModelBehaviorAccessible extends ComPagesModelBehaviorFilterable
 {
-    protected function _doFilter($page, $context)
+    protected function _accept($page, $context)
     {
         $registry = $this->getObject('page.registry');
         return $registry->isPublished($page['path'].'/'.$page['slug']) && $registry->isAccessible($page['path'].'/'.$page['slug']);

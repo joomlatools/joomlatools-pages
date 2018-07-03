@@ -22,7 +22,7 @@ class ComPagesModelBehaviorCrawlable extends ComPagesModelBehaviorFilterable
         return (bool) $context->state->sitemap;
     }
 
-    protected function _doFilter($page, $context)
+    protected function _accept($page, $context)
     {
         return (isset($page['sitemap']) && $page['sitemap'] == false) ? false : true;
     }

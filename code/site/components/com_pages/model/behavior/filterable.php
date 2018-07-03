@@ -21,7 +21,7 @@ abstract class ComPagesModelBehaviorFilterable extends KModelBehaviorAbstract
         {
             $pages = KObjectConfig::unbox($context->pages);
             $pages = array_filter( $pages, function($page) use ($context) {
-                return $this->_doFilter($page, $context);
+                return $this->_accept($page, $context);
             });
 
             $context->entity = $pages;
@@ -34,5 +34,5 @@ abstract class ComPagesModelBehaviorFilterable extends KModelBehaviorAbstract
         return true;
     }
 
-    abstract protected function _doFilter($page, $context);
+    abstract protected function _accept($page, $context);
 }
