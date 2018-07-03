@@ -11,17 +11,15 @@ class ComPagesViewXml extends KViewTemplate
 {
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append(array(
+        $config->append([
             'mimetype'   => 'text/xml',
-            'auto_fetch' => false
-        ));
+            'auto_fetch' => false,
+            'template'   => 'layout',
+            'behaviors'  => ['routable'],
+
+        ]);
 
         parent::_initialize($config);
-    }
-
-    public function getLayout()
-    {
-        return 'default';
     }
 
     public function getPage()

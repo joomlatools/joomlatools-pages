@@ -12,8 +12,9 @@ class ComPagesControllerPermissionPage extends ComKoowaControllerPermissionAbstr
     public function canRead()
     {
         $path = $this->getModel()->fetch()->path;
+        $page = $this->getModel()->fetch()->slug;
 
-        if(!$this->canAccess($path)) {
+        if(!$this->canAccess($path.'/'.$page)) {
             return false;
         }
 
@@ -33,11 +34,15 @@ class ComPagesControllerPermissionPage extends ComKoowaControllerPermissionAbstr
 
     public function canAccess($path)
     {
-        $registry = $this->getObject('page.registry');
+        if($path)
+        {
+            $registry = $this->getObject('page.registry');
 
-        if($result = $registry->isPublished($path)) {
-            $result =  $registry->isAccessible($path);
+            if($result = $registry->isPublished($path)) {
+                $result =  $registry->isAccessible($path);
+            }
         }
+        else $result = true;
 
         return $result;
     }

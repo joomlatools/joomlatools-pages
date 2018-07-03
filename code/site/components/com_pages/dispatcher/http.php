@@ -37,12 +37,18 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     protected function _actionDispatch(KDispatcherContextInterface $context)
     {
-        $method = strtolower($context->request->getMethod());
+        //Throw 404 if the route is not valid
+        if(!$this->getObject('com:pages.router')->isValid()) {
+            throw new KHttpExceptionNotFound('Page Not Found');
+        }
 
+        //Throw 405 if the method is not allowed
+        $method = strtolower($context->request->getMethod());
         if (!in_array($method, $this->getHttpMethods())) {
             throw new KDispatcherExceptionMethodNotAllowed('Method not allowed');
         }
 
+        //Excute the request
         $this->execute($method, $context);
         $this->send($context);
     }

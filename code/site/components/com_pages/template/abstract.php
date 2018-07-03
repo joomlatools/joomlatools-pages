@@ -28,7 +28,6 @@ class ComPagesTemplateAbstract extends KTemplate
                 'data'       => [$this, 'fetchData'],
                 'page'       => [$this, 'fetchPage'],
                 'pages'      => [$this, 'fetchPages'],
-                'collection' => [$this, 'fetchCollection']
             ],
             'cache'           => false,
             'cache_namespace' => 'pages',
@@ -82,32 +81,22 @@ class ComPagesTemplateAbstract extends KTemplate
     public function fetchPage($path)
     {
         $result = array();
-        if($this->getObject('page.registry')->isPage($path)) {
+        if($this->getObject('page.registry')->isPage($path))
+        {
             $result = $this->getObject('com:pages.model.pages')
                 ->path($path)
                 ->fetch();
         }
+
+        return $result;
     }
 
-    public function fetchPages($path = './index', $state = array())
+    public function fetchPages($path = '.', $state = array())
     {
         $result = array();
         if ($this->getObject('page.registry')->isPage($path))
         {
-            $result = $this->getObject('com:pages.model.pages')
-                ->setState($state)
-                ->path($path)
-                ->tree(true)
-                ->fetch();
-        }
-    }
-
-    public function fetchCollection($path, $state = array())
-    {
-        $result = array();
-        if($this->getObject('page.registry')->isCollection($path))
-        {
-            $result = $this->getObject('com:pages.model.pages')
+            $pages = $this->getObject('com:pages.model.pages')
                 ->setState($state)
                 ->path($path)
                 ->fetch();

@@ -18,7 +18,18 @@ class ComPagesViewPageHtml extends ComPagesViewHtml
 
     public function getLayout()
     {
-        return $this->getPage()->layout;
+        $layout = '';
+
+        $page = $this->getPage();
+        if(!isset($page->layout))
+        {
+            if($collection = $this->getObject('page.registry')->isCollection($page->path)) {
+                $layout = isset($collection['layout']) ? $collection['layout'] : '';
+            }
+        }
+        else $layout = $page->layout;
+
+        return $layout;
     }
 
     protected function _fetchData(KViewContext $context)

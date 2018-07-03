@@ -65,6 +65,14 @@ class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerial
         return $this->date->format('y');
     }
 
+    public function getPropertyContent()
+    {
+        $registry = $this->getObject('page.registry');
+        $content = $registry->getPage($this->path.'/'.$this->slug)->content;
+
+        return $content;
+    }
+
     public function getPropertyExcerpt()
     {
         $parts = preg_split('#<!--(.*)more(.*)-->#i', $this->content, 2);
@@ -116,6 +124,12 @@ class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerial
         }
 
         return $data;
+    }
+
+    public function getHandle()
+    {
+        $handle = $this->path ? $this->path.'/'.$this->slug : $this->slug;
+        return $handle;
     }
 
     public function jsonSerialize()

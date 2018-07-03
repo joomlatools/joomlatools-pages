@@ -9,6 +9,9 @@
 
 class ComPagesPageRegistry extends KObject implements KObjectSingleton
 {
+    const PAGES_ONLY = \RecursiveIteratorIterator::LEAVES_ONLY;
+    const PAGES_TREE = \RecursiveIteratorIterator::SELF_FIRST;
+
     protected $_page        = array();
     protected $_collection  = array();
     protected $_pages       = null;
@@ -39,17 +42,22 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         parent::_initialize($config);
     }
 
-    public function getPages($path = '')
+    public function getPages($path = '', $mode = self::PAGES_ONLY, $depth = -1)
     {
-        if(!isset($this->_pages))
-        {
-            $directory = $this->getObject('com:pages.page.locator')->getBasePath().'/pages';
+        $group = 'pages_'.crc32($mode.$depth);
 
-            if (!$cache = $this->isCached($directory, 'pages'))
+        if(!isset($this->_pages[$path.$group]))
+        {
+            $directory = dirname($this->getObject('com:pages.page.locator')->locate('page://pages/'. $path));
+
+            if (!$cache = $this->isCached($directory, $group))
             {
                 $iterator = new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS);
                 $iterator = new ComPagesRecursiveFilterIterator($iterator);
-                $iterator = new RecursiveIteratorIterator($iterator, RecursiveIteratorIterator::SELF_FIRST);
+                $iterator = new RecursiveIteratorIterator($iterator, $mode);
+
+                //Set the max dept, -1 for full depth
+                $iterator->setMaxDepth($depth);
 
                 $result = array();
                 foreach ($iterator as $file)
@@ -57,20 +65,21 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     $page_path = trim(dirname($iterator->getSubpathname()), '.');
                     $page_file = pathinfo($file, PATHINFO_FILENAME);
 
-                    if($page_path) {
-                        $page_path = $page_path . '/' . $page_file;
-                    } else {
-                        $page_path = $page_file;
+                    $page_path = $page_path ? $page_path. '/' . $page_file : $page_file;
+
+                    //Pre-pend the path
+                    if(!empty($path)) {
+                        $page_path = $path.'/'.$page_path;
                     }
 
                     $page = $this->getPage($page_path)->toArray();
                     unset($page['content']);
 
-                    $result[] = $page;
+                    $result[$page_path] = $page;
                 }
 
                 //Cache the page
-                $this->_writeCache($directory, $result, 'pages');
+                $this->_writeCache($directory, $result, $group);
             }
             else
             {
@@ -79,22 +88,10 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 }
             }
 
-            $this->_pages = $result;
+            $this->_pages[$path.$group] = $result;
         }
 
-        //Filter the pages based on the path
-        if($path)
-        {
-            $result = array_filter($this->_pages, function($page) use ($path)
-            {
-                if(strpos($page['path'], $path) === 0) {
-                    return true;
-                }
-            });
-        }
-        else $result = $this->_pages;
-
-        return $result;
+        return $this->_pages[$path.$group];
     }
 
     public function getPage($path)
@@ -104,14 +101,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
         if($path && !isset($this->_page[$path]))
         {
-            $locations = array('page://pages', 'page://collections');
-            foreach($locations as $location)
-            {
-                $url = $location. '/'. $path;
-                if($file = $this->getObject('template.locator.factory')->locate($url)) {
-                    break;
-                }
-            }
+            $file = $this->getObject('com:pages.page.locator')->locate('page://pages/'. $path);
 
             if($file)
             {
@@ -121,7 +111,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     $page = (new ComPagesPage())->fromFile($file);
 
                     //Set the path
-                    $page->path = $path;
+                    $page->path = trim(dirname($path), '.');
 
                     //Set the slug
                     $page->slug = basename($path);
@@ -143,7 +133,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                         $content = $page->getContent();
 
                         $page->content = $this->getObject('com:pages.template.page')
-                            ->loadString($content, $type, $url)
+                            ->loadString($content, $type, 'page://pages/'. $path)
                             ->render($page->toArray());
                     }
                     else $page->content = '';
@@ -171,80 +161,27 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
     public function isPage($path)
     {
-        if(!isset($this->_page[$path]))
-        {
-            $result    = false;
-            $locations = array('page://pages', 'page://collections');
-            foreach($locations as $location)
-            {
-                $url = $location. '/'. $path;
-                if($result = $this->getObject('template.locator.factory')->locate($url)) {
-                    break;
-                }
-            }
+        if(!isset($this->_page[$path])) {
+           $result = (bool) $this->getObject('com:pages.page.locator')->locate('page://pages/'. $path);
+        } else {
+            $result = ($this->_page[$path] === false) ? false : true;
         }
-        else $result = ($this->_page[$path] === false) ? false : true;
 
         return $result;
     }
 
-    public function getCollection($path)
+    public function isPageFormat($path, $format)
     {
-        if(!isset($this->_collection[$path]))
+        $result = false;
+        if($this->isPage($path))
         {
-            if($this->isCollection($path))
-            {
-                $collection = array();
-                $page  = $this->getPage($path);
-
-                if(isset($page->collection->path)) {
-                    $path = $page->collection->path;
-                } else {
-                    $path = $page->path;
-                }
-
-                if(isset($page->collection->layout)) {
-                    $layout = $page->collection->layout;
-                }
-
-                $directory = $this->getObject('com:pages.page.locator')->getBasePath().'/collections/'.$path;
-                if(!is_dir($directory)) {
-                    throw new RuntimeException(sprintf('The collection "%s" does not exist', 'collections/'.$path));
-                }
-
-                if(!$cache = $this->isCached($directory, 'collection'))
-                {
-                    $files = glob($directory.'/*.*');
-                    foreach($files as $file)
-                    {
-                        $file = pathinfo($file, PATHINFO_FILENAME);
-                        $page = $this->getPage($path . '/' . $file)->toArray();
-
-                        //Set the layout for the page
-                        if(!isset($page['layout']) && $layout) {
-                            $page['layout'] = $layout;
-                        }
-
-                        unset($page['content']);
-
-                        $collection[] = $page;
-                    }
-
-                    //Cache the collection
-                    $this->_writeCache($directory, $collection, 'collection');
-                }
-                else
-                {
-                    if(!$collection = require($cache)) {
-                        throw new RuntimeException(sprintf('The collection "%s" cannot be loaded from cache.', $cache));
-                    }
-                }
-
-                $this->_collection[$path] = $collection;
+            $formats = $this->getObject('com:pages.page.locator')->formats('page://pages/'. $path);
+            if(isset($formats[$format])) {
+                $result = true;
             }
         }
 
-        return isset($this->_collection[$path]) ? $this->_collection[$path] : null;
+        return $result;
     }
 
     public function isCollection($path)
@@ -365,8 +302,12 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
 class ComPagesRecursiveFilterIterator extends RecursiveFilterIterator
 {
+    protected $_basepath;
+
     public function __construct(RecursiveDirectoryIterator $iterator)
     {
+        $this->_basepath =  KObjectManager::getInstance()->getObject('com:pages.page.locator')->getBasePath().'/pages';
+
         parent::__construct($iterator);
     }
 
@@ -377,7 +318,7 @@ class ComPagesRecursiveFilterIterator extends RecursiveFilterIterator
 
         if(strlen($current) && !in_array($current[0], array('.', '_')))
         {
-            if(strpos($current, 'index') === false) {
+            if($this->getPath() === $this->_basepath || strpos($current, 'index') === false) {
                 $result = true;
             }
         }

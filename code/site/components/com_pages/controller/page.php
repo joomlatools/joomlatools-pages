@@ -32,18 +32,14 @@ class ComPagesControllerPage extends KControllerModel
     {
         $formats = parent::getFormats();
 
-        //Only add rss collections
-        if(!$this->getModel()->getState()->isUnique())
+        if($page = $this->getRequest()->query->page)
         {
-            $formats[] = 'rss';
-
-            //Only add xml for sitemaps if specifically defined
-            $page = $this->getView()->getPage();
-
-            if(isset($page->collection['sitemap']) && $page->collection['sitemap']) {
-                $formats[] = 'xml';
+            $format = $this->getRequest()->getFormat();
+            if($this->getObject('page.registry')->isPageFormat($page, $format)) {
+                $formats = array($format);
+            } else {
+                $formats = array();
             }
-
         }
 
         return $formats;

@@ -24,7 +24,7 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
         $state = $this->getModel()->getState();
         if(!$state->isUnique())
         {
-            $path = $state->path.'/'.$state->page;
+            $path = $this->getLayout();
             $page = $this->getObject('page.registry')->getPage($path);
         }
         else $page =  $this->getModel()->fetch();
@@ -47,14 +47,13 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
         $metadata = array();
         if($page = $this->getPage())
         {
-            if(isset($page->metadata))
-            {
+            if(isset($page->metadata)) {
                 $metadata = KObjectConfig::unbox($page->metadata);
+            }
 
-                //Set the description into the metadata if it doesn't exist.
-                if(isset($page->summary) && !isset($page->metadata->description)) {
-                    $metadata['description'] = $page->summary;
-                }
+            //Set the description into the metadata if it doesn't exist.
+            if(isset($page->summary) && !isset($page->metadata->description)) {
+                $metadata['description'] = $page->summary;
             }
         }
 
@@ -154,6 +153,7 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
                 }
             }
         }
+
 
         //Create the route
         $route = $this->getObject('lib:dispatcher.router.route', array('escape' =>  $escape))->setQuery($query);

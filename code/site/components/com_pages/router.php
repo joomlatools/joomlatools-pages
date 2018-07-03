@@ -9,14 +9,11 @@
 
 class ComPagesRouter extends KObject implements KObjectSingleton
 {
+    private $__valid = false;
+
     public function build(&$query)
     {
         $segments = array();
-
-        //Slug
-        if(isset($query['slug'])) {
-            unset($query['slug']);
-        }
 
         //Path
         if(isset($query['path']))
@@ -29,8 +26,22 @@ class ComPagesRouter extends KObject implements KObjectSingleton
                 }
             }
 
+            //Handle frontpage
             $segments[] = $query['path'];
             unset($query['path']);
+        }
+
+
+
+        //Slug
+        if(isset($query['slug']))
+        {
+            //Handle frontpage
+            if($query['slug'] != 'index') {
+                $segments[] = $query['slug'];
+            }
+
+            unset($query['slug']);
         }
 
         //Format
@@ -50,7 +61,6 @@ class ComPagesRouter extends KObject implements KObjectSingleton
             return str_replace(':', '-', $segment);
         }, $segments);
 
-        //Format
         $page = array_pop($segments);
         if($format = pathinfo($page, PATHINFO_EXTENSION))
         {
@@ -64,9 +74,12 @@ class ComPagesRouter extends KObject implements KObjectSingleton
 
         if($this->getObject('page.registry')->isPage($route))
         {
+            $query['page'] = $route;
+
             if($collection = $this->getObject('page.registry')->isCollection($route))
             {
-                $query['path'] = $route;
+                $query['path']   = $route;
+                $query['layout'] = $route;
 
                 //Add hardcoded states
                 if(isset($collection['state'])) {
@@ -78,9 +91,25 @@ class ComPagesRouter extends KObject implements KObjectSingleton
                 $query['slug'] = array_pop($segments);
                 $query['path'] = implode($segments, '/') ?: '.';
             }
+
+            $this->__valid = true;
+        }
+        else
+        {
+            $query['slug']   = '';
+            $query['path']   = '';
+            $query['format'] = '';
+            $query['page']   = '';
+
+            $this->__valid = false;
         }
 
         return $query;
+    }
+
+    public function isValid()
+    {
+        return $this->__valid;
     }
 }
 

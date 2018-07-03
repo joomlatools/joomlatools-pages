@@ -24,7 +24,7 @@ class ComPagesViewPagesRss extends ComPagesViewXml
     protected function _fetchData(KViewContext $context)
     {
         $context->data->append(array(
-            'pages'     => $this->getModel()->limit(20)->fetch(),
+            'pages'     => $this->getModel()->fetch(),
             'total'     => $this->getModel()->count(),
             'sitename'  => JFactory::getApplication()->getCfg('sitename'),
             'language'  => JFactory::getLanguage()->getTag(),
@@ -33,5 +33,8 @@ class ComPagesViewPagesRss extends ComPagesViewXml
         ));
 
         parent::_fetchData($context);
+
+        //Set the layout
+        $context->layout = 'page://pages/'.$context->layout;
     }
 }

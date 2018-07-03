@@ -42,9 +42,15 @@ class ComPagesModelEntityPages extends KModelEntityComposite implements JsonSeri
     {
         $result = null;
 
-        if($entity = $this->getIterator()->current()) {
-            $result = $entity->__call($method, $arguments);
-        }
+        $methods = $this->getMethods();
+        if(!isset($methods[$method]))
+        {
+            //Forward the call to the entity
+            if($entity = parent::getIterator()->current()) {
+                $result = $entity->__call($method, $arguments);
+            }
+
+        } else $result = KObject::__call($method, $arguments);
 
         return $result;
     }

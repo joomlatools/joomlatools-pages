@@ -10,6 +10,7 @@
 class ComPagesPageLocator extends KTemplateLocatorFile
 {
     protected static $_name = 'page';
+    protected $_formats;
 
     protected function _initialize(KObjectConfig $config)
     {
@@ -65,5 +66,50 @@ class ComPagesPageLocator extends KTemplateLocatorFile
         }
 
         return $result;
+    }
+
+    public function formats($url)
+    {
+        if(!isset($this->_formats[$url]))
+        {
+            $path = ltrim(str_replace(parse_url($url, PHP_URL_SCHEME).'://', '', $url), '/');
+
+            $file = pathinfo($path, PATHINFO_FILENAME);
+            $path = ltrim(pathinfo($path, PATHINFO_DIRNAME), '.');
+
+            //Prepend the base path
+            if($path) {
+                $path = $this->getBasePath().'/'.$path;
+            } else {
+                $path = $this->getBasePath();
+            }
+
+            if($this->realPath($path.'/'.$file)) {
+                $pattern = $path.'/'.$file.'/index.'.'*';
+            } else {
+                $pattern = $path.'/'.$file.'.*';
+            }
+
+            //Try to find the file
+            $formats = array();
+            if ($results = glob($pattern))
+            {
+                $formats = array();
+                foreach($results as $result)
+                {
+                    $file = pathinfo($result, PATHINFO_FILENAME);
+
+                    if($format = pathinfo($file, PATHINFO_EXTENSION)) {
+                        $formats[$format] = $format;
+                    } else {
+                        $formats['html'] = 'html';
+                    }
+                }
+            }
+
+            $this->_formats[$url] = $formats;
+        }
+
+        return $this->_formats[$url];
     }
 }

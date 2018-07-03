@@ -9,18 +9,6 @@
 
 class ComPagesViewPagesXml extends ComPagesViewXml
 {
-    public function getLayout()
-    {
-        $layout = 'page://pages/'. $this->getPage()->path;
-        $format = $this->getFormat();
-
-        if(!$this->getObject('com:pages.page.locator')->locate($layout.'.'.$format)) {
-            $layout = 'default';
-        }
-
-        return $layout;
-    }
-
     protected function _fetchData(KViewContext $context)
     {
         $context->data->append(array(
@@ -29,5 +17,8 @@ class ComPagesViewPagesXml extends ComPagesViewXml
         ));
 
         parent::_fetchData($context);
+
+        //Set the layout
+        $context->layout = 'page://pages/'.$context->layout;
     }
 }

@@ -9,8 +9,11 @@
 
 class ComPagesViewPagesHtml extends ComPagesViewHtml
 {
-    public function getLayout()
+    protected function _fetchData(KViewContext $context)
     {
-        return 'page://pages/'. $this->getPage()->path;
+        parent::_fetchData($context);
+
+        //Set the layout
+        $context->layout = 'page://pages/'.$context->layout;
     }
 }

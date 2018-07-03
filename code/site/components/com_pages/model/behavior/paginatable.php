@@ -1,10 +1,10 @@
 <?php
 /**
- * Joomlatools Framework Pages
+ * Joomlatools Pages
  *
  * @copyright   Copyright (C) 2018 Johan Janssens and Timble CVBA. (http://www.timble.net)
  * @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl.html>
- * @link        https://github.com/joomlatools/joomlatools-framework-pages for the canonical source repository
+ * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
 class ComPagesModelBehaviorPaginatable extends KModelBehaviorPaginatable
@@ -12,7 +12,7 @@ class ComPagesModelBehaviorPaginatable extends KModelBehaviorPaginatable
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'priority'   => self::PRIORITY_LOW,
+            'priority' => self::PRIORITY_LOW,
         ]);
 
         parent::_initialize($config);
