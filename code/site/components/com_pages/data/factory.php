@@ -54,37 +54,38 @@ final class ComPagesDataFactory extends KObject implements KObjectSingleton
 
     public function fromDirectory($path)
     {
-        //Get the data
-        $result   = array();
+        $data  = array();
+        $files = array();
+        $dirs  = array();
 
-        $recurseDirectory = function(DirectoryIterator $iterator) use(&$recurseDirectory)
+        $basepath = $this->getObject('com:pages.data.locator')->getBasePath();
+        foreach (new DirectoryIterator($path) as $node)
         {
-            $basepath = $this->getObject('com:pages.data.locator')->getBasePath();
-
-            $data = array();
-            foreach ($iterator as $node)
-            {
-                if ($node->isFile())
-                {
-                    $path = ltrim(str_replace($basepath, '', $node->getPathname()), '/');
-
-                    if(count(glob(dirname($node->getPathname()).'/*.*')) > 1) {
-                        $data[] = $this->createObject($path);
-                    } else {
-                        $data = $this->createObject($path);
-                    }
-                }
-                elseif($node->isDir() && !$node->isDot()) {
-                    $data[$node->getFilename()] = $recurseDirectory(new DirectoryIterator($node->getPathname()));
-                }
+            if ($node->isFile()) {
+                $files[] = ltrim(str_replace($basepath, '', $node->getPathname()), '/');
             }
 
-            return $data;
-        };
+            if($node->isDir() && !$node->isDot()) {
+                $dirs[] =  ltrim(str_replace($basepath, '', $node->getPathname()), '/');
+            }
+        }
 
-        $result = $recurseDirectory(new DirectoryIterator($path));
+        //Handle Files
+        foreach($files as $file)
+        {
+            if(count($files) > 1) {
+                $data[] = $this->createObject($file);
+            } else {
+                $data = $this->createObject($file);
+            }
+        }
 
-        return $result;
+        //Handle Directories
+        foreach($dirs as $dir) {
+            $data[basename($dir)] = $this->createObject($dir);
+        }
+
+        return $data;
     }
 
     public function fromUrl($url, $format = '')
