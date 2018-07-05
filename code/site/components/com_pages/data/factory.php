@@ -68,12 +68,11 @@ final class ComPagesDataFactory extends KObject implements KObjectSingleton
                 {
                     $path = ltrim(str_replace($basepath, '', $node->getPathname()), '/');
 
-                    if(count(glob(dirname($node->getPathname()).'*.*') > 1)) {
+                    if(count(glob(dirname($node->getPathname()).'/*.*')) > 1) {
                         $data[] = $this->createObject($path);
                     } else {
                         $data = $this->createObject($path);
                     }
-
                 }
                 elseif($node->isDir() && !$node->isDot()) {
                     $data[$node->getFilename()] = $recurseDirectory(new DirectoryIterator($node->getPathname()));
