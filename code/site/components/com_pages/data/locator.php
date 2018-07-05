@@ -19,16 +19,4 @@ class ComPagesDataLocator extends KTemplateLocatorFile
 
         parent::_initialize($config);
     }
-
-    public function find(array $info)
-    {
-        $result = parent::find($info);
-
-        //If the result is a directory, return all the files in the directory
-        if($result && is_dir($result)) {
-            $result = glob($result.'/*.*');
-        }
-
-        return $result;
-    }
 }

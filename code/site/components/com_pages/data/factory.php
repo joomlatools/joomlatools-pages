@@ -22,8 +22,11 @@ final class ComPagesDataFactory extends KObject implements KObjectSingleton
                     throw new InvalidArgumentException(sprintf('The data file "%s" cannot be located.', $path));
                 }
 
-                $result = $this->fromPath($file);
-
+                if(is_dir($file)) {
+                    $result = $this->fromDirectory($file);
+                } else {
+                    $result = $this->fromFile($file);
+                }
             }
             else $result = $this->fromUrl($path, $format);
 
@@ -34,25 +37,53 @@ final class ComPagesDataFactory extends KObject implements KObjectSingleton
         return $this->__cache[$path];
     }
 
-    public function fromPath($path)
+    public function fromFile($file)
     {
         //Get the data
         $result = array();
-        foreach((array) $path as $file)
+
+        $url = trim(fgets(fopen($file, 'r')));
+        if(strpos($file, '://') !== false) {
+            $result = $this->fromUrl($url, pathinfo($file, PATHINFO_EXTENSION));
+        } else {
+            $result = $this->getObject('object.config.factory')->fromFile($file, false);
+        }
+
+        return $result;
+    }
+
+    public function fromDirectory($path)
+    {
+        //Get the data
+        $result   = array();
+
+        $recurseDirectory = function(DirectoryIterator $iterator) use(&$recurseDirectory)
         {
-            $url = trim(fgets(fopen($file, 'r')));
-            if(parse_url($url, PHP_URL_SCHEME)) {
-                $data = $this->fromUrl($url, pathinfo($file, PATHINFO_EXTENSION));
-            } else {
-                $data = $this->getObject('object.config.factory')->fromFile($file, false);
+            $basepath = $this->getObject('com:pages.data.locator')->getBasePath();
+
+            $data = array();
+            foreach ($iterator as $node)
+            {
+                if ($node->isFile())
+                {
+                    $path = ltrim(str_replace($basepath, '', $node->getPathname()), '/');
+
+                    if(count(glob(dirname($node->getPathname()).'*.*') > 1)) {
+                        $data[] = $this->createObject($path);
+                    } else {
+                        $data = $this->createObject($path);
+                    }
+
+                }
+                elseif($node->isDir() && !$node->isDot()) {
+                    $data[$node->getFilename()] = $recurseDirectory(new DirectoryIterator($node->getPathname()));
+                }
             }
 
-            if(is_array($path)) {
-                $result[] = $data;
-            } else {
-                $result = $data;
-            }
-        }
+            return $data;
+        };
+
+        $result = $recurseDirectory(new DirectoryIterator($path));
 
         return $result;
     }
