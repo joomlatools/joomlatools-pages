@@ -123,7 +123,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
                     //Set the date (if not set yet)
                     if (!isset($page->date)) {
-                        $page->date = filemtime($page->filename);
+                        $page->date = filemtime($page->getFilename());
                     }
 
                     if(!isset($page->collection) || $page->collection == false)

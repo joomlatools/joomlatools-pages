@@ -134,9 +134,8 @@ class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerial
 
     public function jsonSerialize()
     {
-        $data = parent::toArray();
+        $data = $this->toArray();
 
-        unset($data['filename']);
         unset($data['process']);
         unset($data['layout']);
         unset($data['path']);
