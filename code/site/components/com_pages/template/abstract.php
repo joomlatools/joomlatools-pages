@@ -94,9 +94,10 @@ class ComPagesTemplateAbstract extends KTemplate
     public function fetchPages($path = '.', $state = array())
     {
         $result = array();
+
         if ($this->getObject('page.registry')->isPage($path))
         {
-            $pages = $this->getObject('com:pages.model.pages')
+            $result = $this->getObject('com:pages.model.pages')
                 ->setState($state)
                 ->path($path)
                 ->fetch();
