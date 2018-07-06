@@ -97,6 +97,10 @@ class ComPagesTemplateAbstract extends KTemplate
 
         if ($this->getObject('page.registry')->isPage($path))
         {
+            if(is_string($state)) {
+                $state = json_decode('{'.preg_replace('/(\w+)/', '"$1"', $state).'}', true);
+            }
+
             $result = $this->getObject('com:pages.model.pages')
                 ->setState($state)
                 ->path($path)
