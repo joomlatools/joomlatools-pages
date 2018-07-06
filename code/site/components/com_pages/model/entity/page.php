@@ -81,6 +81,11 @@ class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerial
         return $excerpt;
     }
 
+    public function getPropertyCategory()
+    {
+        return basename($this->path);
+    }
+
     public function setPropertyAccess($value)
     {
         return new KObjectConfig($value);
