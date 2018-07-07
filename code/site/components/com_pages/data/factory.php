@@ -18,7 +18,7 @@ final class ComPagesDataFactory extends KObject implements KObjectSingleton
             if(!parse_url($path, PHP_URL_SCHEME) == 'http')
             {
                 //Locate the data file
-                if (!$file = $this->getObject('template.locator.factory')->locate('data://'.$path)) {
+                if (!$file = $this->getObject('com:pages.data.locator')->locate('data://'.$path)) {
                     throw new InvalidArgumentException(sprintf('The data file "%s" cannot be located.', $path));
                 }
 
@@ -59,30 +59,54 @@ final class ComPagesDataFactory extends KObject implements KObjectSingleton
         $dirs  = array();
 
         $basepath = $this->getObject('com:pages.data.locator')->getBasePath();
+        $basepath = ltrim(str_replace($basepath, '', $path), '/');
+
         foreach (new DirectoryIterator($path) as $node)
         {
-            if ($node->isFile()) {
-                $files[] = ltrim(str_replace($basepath, '', $node->getPathname()), '/');
+            if ($node->isFile() && !in_array($node->getFilename()[0], array('.', '_'))) {
+                $files[] = $node->getFilename();
             }
 
             if($node->isDir() && !$node->isDot()) {
-                $dirs[] =  ltrim(str_replace($basepath, '', $node->getPathname()), '/');
+                $dirs[] =  $node->getFilename();
             }
         }
 
         //Handle Files
-        foreach($files as $file)
+        if(!empty($files))
         {
-            if(count($files) > 1) {
-                $data[] = $this->createObject($file);
-            } else {
-                $data = $this->createObject($file);
+            // Order Files
+            if($file = $this->getObject('com:pages.data.locator')->locate('data://'.$basepath.'/.ordering'))
+            {
+                if(isset($this->fromFile($file)['files'])) {
+                    $files = $this->_orderData($files, $this->fromFile($file)['files']);
+                }
+            }
+
+            foreach($files as $file)
+            {
+                if(count($files) > 1) {
+                    $data[] = $this->createObject($basepath.'/'.$file);
+                } else {
+                    $data = $this->createObject($basepath.'/'.$file);
+                }
             }
         }
 
         //Handle Directories
-        foreach($dirs as $dir) {
-            $data[basename($dir)] = $this->createObject($dir);
+        if(!empty($dirs))
+        {
+            // Order Directories
+            if($file = $this->getObject('com:pages.data.locator')->locate('data://'.$basepath.'/.ordering'))
+            {
+                if(isset($this->fromFile($file)['directories'])) {
+                    $files = $this->_orderData($files, $this->fromFile($file)['directories']);
+                }
+            }
+
+            foreach($dirs as $dir) {
+                $data[basename($dir)] = $this->createObject($basepath.'/'.$dir);
+            }
         }
 
         return $data;
@@ -118,5 +142,22 @@ final class ComPagesDataFactory extends KObject implements KObjectSingleton
 
         $result = $this->getObject('object.config.factory')->fromString($format, $content, false);
         return $result;
+    }
+
+    protected function _orderData(array $data, $order)
+    {
+        if(is_string($order))
+        {
+            switch($order)
+            {
+                case 'ascending': sort($data, SORT_NATURAL); break;
+                case 'descending': rsort($data, SORT_NATURAL); break;
+                case 'shuffle': shuffle($data); break;
+            }
+
+        }
+        else $data = array_unique(array_merge($order, $data));
+
+        return $data;
     }
 }
