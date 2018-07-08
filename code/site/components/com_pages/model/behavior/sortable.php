@@ -23,43 +23,58 @@ class ComPagesModelBehaviorSortable extends KModelBehaviorAbstract
         parent::onMixin($mixer);
 
         $mixer->getState()
-            ->insert('sort', 'cmd')
-            ->insert('direction', 'word', 'asc');
+            ->insert('sort', 'cmd', 'title')
+            ->insert('order', 'word', 'asc');
     }
 
     protected function _beforeFetch(KModelContextInterface $context)
     {
         $state = $context->state;
 
-        if(!$state->isUnique() && $state->sort)
+        if(!$state->isUnique())
         {
             $pages = KObjectConfig::unbox($context->pages);
 
-            usort($pages, function($first, $second) use($state)
+            if($state->sort)
             {
-                $sorting = 0;
-                $name    = $state->sort;
-
-                $first_value  = $first[$name];
-                $second_value = $second[$name];
-
-                if($name == 'date')
+                usort($pages, function($first, $second) use($state)
                 {
-                    $first_value  = strtotime($first_value);
-                    $second_value = strtotime($second_value);
+                    $sorting = 0;
+                    $name    = $state->sort;
+
+                    $first_value  = $first[$name];
+                    $second_value = $second[$name];
+
+                    if($name == 'date')
+                    {
+                        $first_value  = strtotime($first_value);
+                        $second_value = strtotime($second_value);
+                    }
+
+                    if($first_value > $second_value) {
+                        $sorting = 1;
+                    } elseif ($first_value < $second_value) {
+                        $sorting = -1;
+                    }
+
+                    return $sorting;
+                });
+            }
+
+            if($state->order)
+            {
+                switch($state->order)
+                {
+                    case 'desc':
+                    case 'descending':
+                        $pages = array_reverse($pages);
+                        break;
+
+                    case 'shuffle':
+                        shuffle($pages);
+                        break;
+
                 }
-
-                if($first_value > $second_value) {
-                    $sorting = 1;
-                } elseif ($first_value < $second_value) {
-                    $sorting = -1;
-                }
-
-                return $sorting;
-            });
-
-            if($state->direction == 'desc') {
-                $pages = array_reverse($pages);
             }
 
             $context->pages  = $pages;
