@@ -54,4 +54,9 @@ class ComPagesModelEntityPages extends KModelEntityComposite implements JsonSeri
 
         return $result;
     }
+
+    public function __debugInfo()
+    {
+        return $this->toArray();
+    }
 }

@@ -167,4 +167,9 @@ class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerial
 
         return parent::__call($method, $arguments);
     }
+
+    public function __debugInfo()
+    {
+        return $this->toArray();
+    }
 }
