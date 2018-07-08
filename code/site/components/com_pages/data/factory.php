@@ -76,7 +76,7 @@ final class ComPagesDataFactory extends KObject implements KObjectSingleton
         if(!empty($files))
         {
             // Order Files
-            if($file = $this->getObject('com:pages.data.locator')->locate('data://'.$basepath.'/.ordering'))
+            if($file = $this->getObject('com:pages.data.locator')->locate('data://'.$basepath.'/.order'))
             {
                 if(isset($this->fromFile($file)['files'])) {
                     $files = $this->_orderData($files, $this->fromFile($file)['files']);
@@ -97,7 +97,7 @@ final class ComPagesDataFactory extends KObject implements KObjectSingleton
         if(!empty($dirs))
         {
             // Order Directories
-            if($file = $this->getObject('com:pages.data.locator')->locate('data://'.$basepath.'/.ordering'))
+            if($file = $this->getObject('com:pages.data.locator')->locate('data://'.$basepath.'/.order'))
             {
                 if(isset($this->fromFile($file)['directories'])) {
                     $files = $this->_orderData($files, $this->fromFile($file)['directories']);
@@ -150,9 +150,19 @@ final class ComPagesDataFactory extends KObject implements KObjectSingleton
         {
             switch($order)
             {
-                case 'ascending': sort($data, SORT_NATURAL); break;
-                case 'descending': rsort($data, SORT_NATURAL); break;
-                case 'shuffle': shuffle($data); break;
+                case 'asc':
+                case 'ascending':
+                    sort($data, SORT_NATURAL);
+                    break;
+
+                case 'desc':
+                case 'descending':
+                    rsort($data, SORT_NATURAL);
+                    break;
+
+                case 'shuffle':
+                    shuffle($data);
+                    break;
             }
 
         }
