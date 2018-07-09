@@ -63,9 +63,14 @@ class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
         return $this->getParent() !== null;
     }
 
-    public function getRecursiveIterator($mode = ComPagesModelIteratorRecursive::SELF_FIRST)
+    public function getDirectories()
     {
-        return new ComPagesModelIteratorRecursive($this->__parents, $mode, $this->_level);
+        return new ComPagesModelIteratorRecursive($this->__parents, ComPagesModelIteratorRecursive::PAGES_STRUCTURE, $this->_level);
+    }
+
+    public function getFiles()
+    {
+        return new ComPagesModelIteratorRecursive($this->__parents, ComPagesModelIteratorRecursive::PAGES_ONLY, $this->_level);
     }
 
     public function getMixableMethods($exclude = array())
