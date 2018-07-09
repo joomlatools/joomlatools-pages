@@ -9,8 +9,8 @@
 
 class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
 {
-    private $__parents;
-    private $__children;
+    private $__parents = array();
+    private $__children = array();
 
     protected $_level;
 
@@ -90,9 +90,7 @@ class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
             $pages = $context->entity;
 
             //Store the pages
-            $this->__pages    = $pages;
-            $this->__parents  = array();
-            $this->__children = array();
+            $this->__pages = $pages;
 
             //Store the level for iteration
             $this->_level    = $context->state->level;
