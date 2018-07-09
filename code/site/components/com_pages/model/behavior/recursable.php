@@ -78,20 +78,6 @@ class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
         return $methods;
     }
 
-    public function isSupported()
-    {
-        $mixer = $this->getMixer();
-
-        if($mixer instanceof ComPagesModelPages)
-        {
-            if(!$mixer->getState()->isUnique() && count($mixer->getPages())) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     protected function _afterFetch(KModelContext $context)
     {
         if ($context->state->recurse)
