@@ -9,6 +9,22 @@
 
 class ComPagesDataObject extends KObjectConfig
 {
+    public function shuffle()
+    {
+        $data = $this->toArray();
+        shuffle($data);
+
+        return new self($data);
+    }
+
+    public function slice($offset, $length = NULL)
+    {
+        $data = $this->toArray();
+        $data = array_slice($data, $offset, $length);
+
+        return new self($data);
+    }
+
     public function __debugInfo()
     {
         return self::unbox($this);
