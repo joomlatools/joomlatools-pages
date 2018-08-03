@@ -9,7 +9,10 @@
 
 return array(
 
-    'aliases' => ['page.registry' => 'com:pages.page.registry'],
+    'aliases' => [
+        'page.registry' => 'com:pages.page.registry',
+        'data.registry' => 'com:pages.data.registry'
+    ],
 
     'identifiers' => [
         'object.config.factory' => [

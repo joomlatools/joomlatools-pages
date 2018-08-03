@@ -7,13 +7,13 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-final class ComPagesDataFactory extends KObject implements KObjectSingleton
+final class ComPagesDataRegistry extends KObject implements KObjectSingleton
 {
-    private $__cache = array();
+    private $__data = array();
 
-    public function createObject($path, $format = '')
+    public function getData($path, $format = '')
     {
-        if(!isset($this->__cache[$path]))
+        if(!isset($this->__data[$path]))
         {
             if(!parse_url($path, PHP_URL_SCHEME) == 'http')
             {
@@ -31,10 +31,10 @@ final class ComPagesDataFactory extends KObject implements KObjectSingleton
             else $result = $this->fromUrl($path, $format);
 
             //Create the data object
-            $this->__cache[$path] = new ComPagesDataObject($result);
+            $this->__data[$path] = new ComPagesDataObject($result);
         }
 
-        return $this->__cache[$path];
+        return $this->__data[$path];
     }
 
     public function fromFile($file)
@@ -86,9 +86,9 @@ final class ComPagesDataFactory extends KObject implements KObjectSingleton
             foreach($files as $file)
             {
                 if(count($files) > 1) {
-                    $data[] = $this->createObject($basepath.'/'.$file);
+                    $data[] = $this->getData($basepath.'/'.$file);
                 } else {
-                    $data = $this->createObject($basepath.'/'.$file);
+                    $data = $this->getData($basepath.'/'.$file);
                 }
             }
         }
@@ -105,7 +105,7 @@ final class ComPagesDataFactory extends KObject implements KObjectSingleton
             }
 
             foreach($dirs as $dir) {
-                $data[basename($dir)] = $this->createObject($basepath.'/'.$dir);
+                $data[basename($dir)] = $this->getData($basepath.'/'.$dir);
             }
         }
 

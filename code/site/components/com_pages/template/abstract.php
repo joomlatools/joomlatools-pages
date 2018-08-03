@@ -81,13 +81,13 @@ class ComPagesTemplateAbstract extends KTemplate
             foreach($path as $directory)
             {
                 if (!$result instanceof ComPagesDataObject) {
-                    $result = $this->getObject('com:pages.data.factory')->createObject($directory, $format);
+                    $result = $this->getObject('data.registry')->getData($directory, $format);
                 } else {
-                    $result->append($this->getObject('com:pages.data.factory')->createObject($directory, $format));
+                    $result->append($this->getObject('data.registry')->getData($directory, $format));
                 }
             }
         }
-        else $result = $this->getObject('com:pages.data.factory')->createObject($path, $format);
+        else $result = $this->getObject('data.registry')->getData($path, $format);
 
         return $result;
     }
