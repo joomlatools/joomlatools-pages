@@ -12,9 +12,8 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     const PAGES_ONLY = \RecursiveIteratorIterator::LEAVES_ONLY;
     const PAGES_TREE = \RecursiveIteratorIterator::SELF_FIRST;
 
-    protected $_page        = array();
-    protected $_collection  = array();
-    protected $_pages       = null;
+    private $__page  = array();
+    private $__pages = null;
 
     protected $_cache;
     protected $_cache_path;
@@ -46,7 +45,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     {
         $group = 'pages_'.crc32($mode.$depth);
 
-        if(!isset($this->_pages[$path.$group]))
+        if(!isset($this->__pages[$path.$group]))
         {
             $directory = dirname($this->getObject('com:pages.page.locator')->locate('page://pages/'. $path));
 
@@ -88,10 +87,10 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 }
             }
 
-            $this->_pages[$path.$group] = $result;
+            $this->__pages[$path.$group] = $result;
         }
 
-        return $this->_pages[$path.$group];
+        return $this->__pages[$path.$group];
     }
 
     public function getPage($path)
@@ -99,13 +98,13 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         $page = null;
         $file = false;
 
-        if($path && !isset($this->_page[$path]))
+        if($path && !isset($this->__page[$path]))
         {
             $file = $this->getObject('com:pages.page.locator')->locate('page://pages/'. $path);
 
             if($file)
             {
-                if(!$cache = $this->isCached($file, 'page'))
+                if(!$cache = $this->isCached($file))
                 {
                     //Load the page
                     $page = (new ComPagesPage())->fromFile($file);
@@ -139,7 +138,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     else $page->content = '';
 
                     //Cache the page
-                    $this->_writeCache($file, $page->toArray(), 'page');
+                    $this->_writeCache($file, $page->toArray());
                 }
                 else
                 {
@@ -151,20 +150,20 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     $page = new ComPagesObjectConfigFrontmatter($page);
                 }
 
-                $this->_page[$path] = $page;
+                $this->__page[$path] = $page;
             }
-            else $this->_page[$path] = false;
+            else $this->__page[$path] = false;
         }
 
-        return $this->_page[$path];
+        return $this->__page[$path];
     }
 
     public function isPage($path)
     {
-        if(!isset($this->_page[$path])) {
+        if(!isset($this->__page[$path])) {
            $result = (bool) $this->getObject('com:pages.page.locator')->locate('page://pages/'. $path);
         } else {
-            $result = ($this->_page[$path] === false) ? false : true;
+            $result = ($this->__page[$path] === false) ? false : true;
         }
 
         return $result;
@@ -244,7 +243,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $result;
     }
 
-    public function isCached($file, $group = 'cache')
+    public function isCached($file, $group = 'page')
     {
         $result = false;
 
@@ -265,7 +264,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $result;
     }
 
-    protected function _writeCache($file, $data, $group = 'cache')
+    protected function _writeCache($file, $data, $group = 'page')
     {
         if($this->_cache)
         {
