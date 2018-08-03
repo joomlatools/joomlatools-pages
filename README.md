@@ -19,8 +19,8 @@ markdown, etc.
 
 ## Requirements
 
-* Joomla 3.x
-* PHP 5.5 or newer
+* Joomla 3.6.5 
+* PHP7 or newer
 
 ## Installation
 
@@ -31,7 +31,7 @@ composer require joomlatools/pages:0.1* --ignore-platform-reqs
 ```
 
 Note: You need to use the --ignore-platform-reqs flag if not the installation will fail due to a mismatch in the platform
-constraint. Joomla's requires PHP 5.3.10 as minimum while Joomlatools Pages is set to minimum PHP 5.5
+constraint. Joomla's requires PHP 5.3.10 as minimum while Joomlatools Pages is set to minimum PHP7
 
 ## Contributing
 

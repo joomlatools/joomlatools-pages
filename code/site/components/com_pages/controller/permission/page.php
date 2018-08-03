@@ -4,56 +4,45 @@
  *
  * @copyright   Copyright (C) 2018 Johan Janssens and Timble CVBA. (http://www.timble.net)
  * @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl.html>
- * @link        https://github.com/joomlatools/joomlatools-framework-pages for the canonical source repository
+ * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
 class ComPagesControllerPermissionPage extends ComKoowaControllerPermissionAbstract
 {
     public function canRead()
     {
-        if(!$this->canAccess()) {
+        $path = $this->getModel()->fetch()->path;
+        $page = $this->getModel()->fetch()->slug;
+
+        if(!$this->canAccess($path.'/'.$page)) {
             return false;
         }
 
         return parent::canRead();
     }
 
-    public function canAccess()
+    public function canBrowse()
     {
-        $result = true;
+        $path = $this->getModel()->getState()->path;
 
-        $page = $this->getModel()->fetch();
-
-        //Only editors can access unpublished pages
-        if(!$this->canEdit() && !$page->published) {
-           $result = false;
+        if(!$this->canAccess($path)) {
+            return false;
         }
 
-        //Check user group access
-        if($result)
+        return parent::canRead();
+    }
+
+    public function canAccess($path)
+    {
+        if($path)
         {
-            $groups = $this->getObject('com:pages.database.table.groups')
-                ->select($this->getUser()->getGroups(), KDatabase::FETCH_ARRAY_LIST);
+            $registry = $this->getObject('page.registry');
 
-            $groups = array_map('strtolower', array_column($groups, 'title'));
-
-            if(!array_intersect($groups, $page->access->groups->toArray())) {
-                $result = false;
+            if($result = $registry->isPublished($path)) {
+                $result =  $registry->isAccessible($path);
             }
         }
-
-        //Check user roles access
-        if($result)
-        {
-            $roles = $this->getObject('com:pages.database.table.roles')
-                ->select($this->getUser()->getRoles(), KDatabase::FETCH_ARRAY_LIST);
-
-            $roles = array_map('strtolower', array_column($roles, 'title'));
-
-            if(!array_intersect($roles, $page->access->roles->toArray())) {
-                $result = false;
-            }
-        }
+        else $result = true;
 
         return $result;
     }

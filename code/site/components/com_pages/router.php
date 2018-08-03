@@ -4,79 +4,121 @@
  *
  * @copyright   Copyright (C) 2018 Timble CVBA. (http://www.timble.net)
  * @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl.html>
- * @link        https://github.com/joomlatools/textman for the canonical source repository
+ * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-
-class ComPagesRouter
+class ComPagesRouter extends KObject implements KObjectSingleton
 {
-    /**
-     * Private constructor to avoid direct instantiation
-     */
-    private function __construct() {}
+    private $__valid = false;
 
-    /**
-     * Returns an instance of the class
-     *
-     * @return ComPagesRouter
-     */
-    public static function getInstance()
-    {
-        static $instance;
-
-        if (!$instance) {
-            $instance = new ComPagesRouter();
-        }
-
-        return $instance;
-    }
-    /**
-     * Builds a URL from a query object
-     *
-     * @param array $query query object
-     *
-     * @return array
-     */
     public function build(&$query)
     {
-        if (isset($query['view'])) {
-            unset($query['view']);
+        $segments = array();
+
+        //Path
+        if(isset($query['path']))
+        {
+            //Remove hardcoded states
+            if($collection = $this->getObject('page.registry')->isCollection($query['path']))
+            {
+                if(isset($collection['state'])) {
+                    $query = array_diff_key($query, $collection['state']);
+                }
+            }
+
+            //Handle frontpage
+            $segments[] = $query['path'];
+            unset($query['path']);
         }
 
-        return array();
+
+
+        //Slug
+        if(isset($query['slug']))
+        {
+            //Handle frontpage
+            if($query['slug'] != 'index') {
+                $segments[] = $query['slug'];
+            }
+
+            unset($query['slug']);
+        }
+
+        //Format
+        if(isset($query['format'])) {
+            JFactory::getConfig()->set('sef_suffix', 1);
+        }
+
+        return $segments;
     }
 
-
-    /**
-     * Parse the segments into query string
-     *
-     * @param array $segments
-     * @return array
-     */
     public function parse($segments)
     {
-        return array('view' => 'page');
+        $query = array();
+
+        //Replace all the ':' with '-' again
+        $segments = array_map(function($segment) {
+            return str_replace(':', '-', $segment);
+        }, $segments);
+
+        $page = array_pop($segments);
+        if($format = pathinfo($page, PATHINFO_EXTENSION))
+        {
+            $query['format'] = $format;
+            $segments[] = basename($page, '.'.$format);
+        }
+        else $segments[] = $page;
+
+        //Path and page
+        $route = implode($segments, '/');
+
+        if($this->getObject('page.registry')->isPage($route))
+        {
+            $query['page'] = $route;
+
+            if($collection = $this->getObject('page.registry')->isCollection($route))
+            {
+                $query['path']   = $route;
+                $query['layout'] = $route;
+
+                //Add hardcoded states
+                if(isset($collection['state'])) {
+                    $query = array_merge($query, $collection['state']);
+                }
+            }
+            else
+            {
+                $query['slug'] = array_pop($segments);
+                $query['path'] = implode($segments, '/') ?: '.';
+            }
+
+            $this->__valid = true;
+        }
+        else
+        {
+            $query['slug']   = '';
+            $query['path']   = '';
+            $query['format'] = '';
+            $query['page']   = '';
+
+            $this->__valid = false;
+        }
+
+        return $query;
+    }
+
+    public function isValid()
+    {
+        return $this->__valid;
     }
 }
 
-/**
- * Hooks up router to Joomla URL build event
- *
- * @param array $query
- * @return array
- */
 function PagesBuildRoute(&$query)
 {
-    return ComPagesRouter::getInstance()->build($query);
+    return KObjectManager::getInstance()->getObject('com:pages.router')->build($query);
 }
 
-/**
- * Hooks up router to Joomla URL parse event
- *
- * @param array $segments
- * @return array
- */
 function PagesParseRoute($segments)
 {
-    return ComPagesRouter::getInstance()->parse($segments);
+    return KObjectManager::getInstance()->getObject('com:pages.router')->parse($segments);
 }

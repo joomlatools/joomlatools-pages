@@ -7,51 +7,30 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesTemplatePage extends KTemplate
+class ComPagesTemplatePage extends ComPagesTemplateAbstract
 {
-    public function __construct(KObjectConfig $config)
-    {
-        parent::__construct($config);
-
-        //Intercept template exception
-        $this->getObject('exception.handler')->addExceptionCallback(array($this, 'handleException'), true);
-    }
-
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'filters'   => array('markdown'),
-            'functions' => array(
-                'data' => function($path, $format = '') {
-                    return  $this->getObject('com:pages.data.factory')->createObject($path, $format);
-                },
-            ),
-            'cache'           => false,
-            'cache_namespace' => 'pages',
-            'excluded_types'  => array('html', 'txt', 'svg', 'css', 'js'),
+            'functions' => [
+                'route' => [$this, 'createRoute'],
+            ],
         ));
 
         parent::_initialize($config);
     }
 
-    public function handleException(Exception &$exception)
+    public function createRoute($path)
     {
-        if($exception instanceof KTemplateExceptionError)
-        {
-            $file   = $exception->getFile();
-            $buffer = $exception->getPrevious()->getFile();
-
-            //Get the real file if it can be found
-            $line = count(file($file)) - count(file($buffer)) + $exception->getLine() - 1;
-
-            $exception = new KTemplateExceptionError(
-                $exception->getMessage(),
-                $exception->getCode(),
-                $exception->getSeverity(),
-                $file,
-                $line,
-                $exception->getPrevious()
-            );
+        $route = '';
+        if(is_string($path)) {
+            $route = 'route://path=' . $path;
         }
+
+        if(is_array($path)) {
+            $route = http_build_query($path, '', '&');
+        }
+
+        return $route;
     }
 }

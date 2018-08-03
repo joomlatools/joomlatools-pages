@@ -7,6 +7,13 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-defined('KOOWA') or die; ?>
+class ComPagesViewPagesHtml extends ComPagesViewHtml
+{
+    protected function _fetchData(KViewContext $context)
+    {
+        parent::_fetchData($context);
 
-<?= $page->content; ?>
+        //Set the layout
+        $context->layout = 'page://pages/'.$context->layout;
+    }
+}

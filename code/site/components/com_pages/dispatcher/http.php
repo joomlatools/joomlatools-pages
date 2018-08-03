@@ -4,25 +4,52 @@
  *
  * @copyright   Copyright (C) 2018 Johan Janssens and Timble CVBA. (http://www.timble.net)
  * @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl.html>
- * @link        https://github.com/joomlatools/joomlatools-framework-pages for the canonical source repository
+ * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
 class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 {
-    public function getRequest()
+    protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
-        $request = parent::getRequest();
+        $request = $context->request;
 
-        //Get the page path
-        $path = $request->getUrl()->getPath();
-        $path = ltrim(str_replace(array($request->getSiteUrl()->getPath(), 'index.php'), '', $path), '/');
+        //Manually route the url if it hasn't been routed yet
+        if(!isset($request->query->path))
+        {
+            $base = $request->getBasePath();
+            $url  = $request->getUrl()->getPath();
 
-        //Handle the site root case eg. http://mysite.com/
-        $path = 'page://pages/'.($path ?: 'index');
+            //Get the segments
+            $path = trim(str_replace(array($base, '/index.php'), '', $url), '/');
 
-        //Add the format to the path if not present
-        $request->query->path = pathinfo($path, PATHINFO_EXTENSION) ? $path : $path.'.html';
+            if($path) {
+                $segments = explode('/', $path);
+            } else {
+                $segments = array('index');
+            }
 
-        return $request;
+            //Route the
+            $query = $this->getObject('com:pages.router')->parse($segments);
+
+            $request->query->add($query);
+        }
+    }
+
+    protected function _actionDispatch(KDispatcherContextInterface $context)
+    {
+        //Throw 404 if the route is not valid
+        if(!$this->getObject('com:pages.router')->isValid()) {
+            throw new KHttpExceptionNotFound('Page Not Found');
+        }
+
+        //Throw 405 if the method is not allowed
+        $method = strtolower($context->request->getMethod());
+        if (!in_array($method, $this->getHttpMethods())) {
+            throw new KDispatcherExceptionMethodNotAllowed('Method not allowed');
+        }
+
+        //Excute the request
+        $this->execute($method, $context);
+        $this->send($context);
     }
 }

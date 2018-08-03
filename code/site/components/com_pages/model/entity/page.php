@@ -4,79 +4,86 @@
  *
  * @copyright   Copyright (C) 2018 Johan Janssens and Timble CVBA. (http://www.timble.net)
  * @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl.html>
- * @link        https://github.com/joomlatools/joomlatools-framework-pages for the canonical source repository
+ * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelEntityPage extends KModelEntityAbstract
+class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerializable
 {
-    public function __construct(KObjectConfig $config)
-    {
-        parent::__construct($config);
-
-        //Check if the file is set
-        if($this->file)
-        {
-            //Create the config object
-            $config = (new ComPagesObjectConfigPage())->fromFile($this->file);
-
-            //Set the properties
-            $this->setProperties($config->toArray(), false);
-
-            //Se the content
-            $this->_content = $config->getContent();
-        }
-    }
-
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append(array(
-            'data' => array(
+        $config->append([
+            'identity_key'   => 'path',
+            'data' => [
                 'title'       => '',
                 'summary'     => '',
-                'date'        => '',
+                'slug'        => '',
+                'content'     => '',
+                'excerpt'     => '',
+                'date'        => 'now',
+                'author'      => '',
                 'published'   => true,
-                'access'      => array(
-                    'roles'  => array('public'),
-                    'groups' => array('public', 'guest')
-                ),
+                'access'      => [
+                    'roles'  => ['public'],
+                    'groups' => ['public', 'guest']
+                ],
                 'redirect'    => '',
-                'metadata'    => array(),
-                'process'     => array(
+                'metadata'    => [],
+                'process'     => [
                     'plugins' => true
-                ),
-                'layout'      => ''
-            ),
-        ));
+                ],
+                'layout'      => '',
+                'colllection' => false,
+            ],
+        ]);
 
         parent::_initialize($config);
     }
 
-    public function content($refresh = false)
+    public function get($property, $default)
     {
-        static $content;
-
-        if(!isset($content) || $refresh)
-        {
-            $type    = pathinfo($this->file, PATHINFO_EXTENSION);
-            $content = $this->getObject('com:pages.template.page')
-                ->loadString($this->_content, $type, $this->path)
-                ->render($this->getProperties());
+        if($this->hasProperty($property)) {
+            $result = $this->getProperty($property);
+        } else {
+            $result = $default;
         }
+
+        return $result;
+    }
+
+    public function getPropertyDay()
+    {
+        return $this->date->format('d');
+    }
+
+    public function getPropertyMonth()
+    {
+        return $this->date->format('m');
+    }
+
+    public function getPropertyYear()
+    {
+        return $this->date->format('y');
+    }
+
+    public function getPropertyContent()
+    {
+        $registry = $this->getObject('page.registry');
+        $content = $registry->getPage($this->path.'/'.$this->slug)->content;
 
         return $content;
     }
 
-    public function excerpt($refresh = false)
+    public function getPropertyExcerpt()
     {
-        static $excerpt;
-
-        if(!isset($excerpt) || $refresh)
-        {
-            $parts = preg_split('#<!--(.*)more(.*)-->#i', $this->content(), 2);
-            $excerpt = $parts[0];
-        }
+        $parts = preg_split('#<!--(.*)more(.*)-->#i', $this->content, 2);
+        $excerpt = $parts[0];
 
         return $excerpt;
+    }
+
+    public function getPropertyCategory()
+    {
+        return basename($this->path);
     }
 
     public function setPropertyAccess($value)
@@ -89,25 +96,13 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
         return new KObjectConfig($value);
     }
 
-    public function setPropertyMetadata($value)
-    {
-        $config = new KObjectConfig($value);
-
-        //Set the summary as the metadata descriptipn
-        if(!isset($config->description)) {
-            $config->description = $this->summary;
-        }
-
-        return $config;
-    }
-
     public function setPropertyDate($value)
     {
         //Set the date based on the modified time of the file
-        if(empty($value)) {
-            $date = $this->getObject('date')->setTimestamp(filemtime($this->file));
+        if(is_integer($value)) {
+            $date = $this->getObject('date')->setTimestamp($value);
         } else {
-            $date = $this->getObject('date', array('date' => $value));
+            $date = $this->getObject('date', array('date' => trim($value)));
         }
 
         return $date;
@@ -122,17 +117,59 @@ class ComPagesModelEntityPage extends KModelEntityAbstract
             if(empty($value)) {
                 unset($data[$key]);
             }
+
+            if($value instanceof KObjectConfigInterface) {
+                $data[$key] = KObjectConfig::unbox($value);
+            }
+
+            if($value instanceof KDate) {
+                $data[$key] = $value->format(DateTime::ATOM);
+            }
+
         }
 
-        $data['content']  = $this->content();
-        $data['excerpt']  = $this->excerpt();
-        $data['access']   = $this->access->toArray();
-        $data['metadata'] = $this->metadata->toArray();
-        $data['date']     = $this->date->format(DateTime::ATOM);
+        return $data;
+    }
 
-        unset($data['file']);
+    public function getHandle()
+    {
+        $handle = $this->path ? $this->path.'/'.$this->slug : $this->slug;
+        return $handle;
+    }
+
+    public function jsonSerialize()
+    {
+        $data = $this->toArray();
+
+        unset($data['process']);
+        unset($data['layout']);
         unset($data['path']);
 
         return $data;
+    }
+
+    public function isCollection()
+    {
+        return isset($this->collection) && $this->collection !== false ? $this->collection : false;
+    }
+
+    public function __call($method, $arguments)
+    {
+        $parts = KStringInflector::explode($method);
+
+        //Check if a behavior is mixed
+        if ($parts[0] == 'is' && isset($parts[1]))
+        {
+            if(!isset($this->_mixed_methods[$method])) {
+                return false;
+            }
+        }
+
+        return parent::__call($method, $arguments);
+    }
+
+    public function __debugInfo()
+    {
+        return $this->toArray();
     }
 }

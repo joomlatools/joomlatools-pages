@@ -4,17 +4,21 @@
  *
  * @copyright   Copyright (C) 2018 Johan Janssens and Timble CVBA. (http://www.timble.net)
  * @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl.html>
- * @link        https://github.com/joomlatools/joomlatools-framework-pages for the canonical source repository
+ * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesObjectConfigPage extends KObjectConfigYaml
+class ComPagesObjectConfigFrontmatter extends KObjectConfigYaml
 {
-    /**
-     * The page content
-     *
-     * @var string
-     */
     private $__content = '';
+    private $__filename = '';
+
+    public function fromFile($filename, $object = true)
+    {
+        //Store the filename
+        $this->__filename = $filename;
+
+        return parent::fromFile($filename, $object);
+    }
 
     public function fromString($string, $object = true)
     {
@@ -58,5 +62,15 @@ class ComPagesObjectConfigPage extends KObjectConfigYaml
     {
         $this->__content = trim($content);
         return $this;
+    }
+
+    public function getFilename()
+    {
+        return $this->__filename;
+    }
+
+    public function getFiletype()
+    {
+        return pathinfo($this->getFilename(), PATHINFO_EXTENSION);
     }
 }
