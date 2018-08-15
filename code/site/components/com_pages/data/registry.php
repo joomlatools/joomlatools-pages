@@ -100,7 +100,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
             if($file = $this->getObject('com:pages.data.locator')->locate('data://'.$basepath.'/.order'))
             {
                 if(isset($this->fromFile($file)['directories'])) {
-                    $files = $this->_orderData($files, $this->fromFile($file)['directories']);
+                    $dirs = $this->_orderData($dirs, $this->fromFile($file)['directories']);
                 }
             }
 
