@@ -17,3 +17,4 @@ try {
 } catch(Exception $exception) {
     KObjectManager::getInstance()->getObject('exception.handler')->handleException($exception);
 }
+}
