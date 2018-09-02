@@ -9,7 +9,7 @@
 
 class ComPagesRouter extends KObject implements KObjectSingleton
 {
-    private $__valid = false;
+    private $__page = false;
 
     public function build(&$query)
     {
@@ -61,6 +61,10 @@ class ComPagesRouter extends KObject implements KObjectSingleton
             return str_replace(':', '-', $segment);
         }, $segments);
 
+        //Store the page
+        $this->__page = implode($segments, '/') ?: '.';;
+
+        //Parse the format
         $page = array_pop($segments);
         if($format = pathinfo($page, PATHINFO_EXTENSION))
         {
@@ -69,7 +73,7 @@ class ComPagesRouter extends KObject implements KObjectSingleton
         }
         else $segments[] = $page;
 
-        //Path and page
+        //Parse path and page
         $route = implode($segments, '/');
 
         if($this->getObject('page.registry')->isPage($route))
@@ -91,8 +95,6 @@ class ComPagesRouter extends KObject implements KObjectSingleton
                 $query['slug'] = array_pop($segments);
                 $query['path'] = implode($segments, '/') ?: '.';
             }
-
-            $this->__valid = true;
         }
         else
         {
@@ -101,15 +103,19 @@ class ComPagesRouter extends KObject implements KObjectSingleton
             $query['format'] = '';
             $query['page']   = '';
 
-            $this->__valid = false;
+            $this->__page = false;
         }
 
         return $query;
     }
 
-    public function isValid()
+    public function getPage()
     {
-        return $this->__valid;
+        if(is_string($this->__page)) {
+            $this->__page = $this->getObject('page.registry')->getPage($this->__page);
+        }
+
+        return $this->__page;
     }
 }
 

@@ -28,4 +28,9 @@ class ComPagesControllerBehaviorRedirectable extends KControllerBehaviorAbstract
             return false;
         }
     }
+
+    public function isSupported()
+    {
+        return $this->getMixer()->isDispatched();
+    }
 }

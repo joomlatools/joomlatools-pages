@@ -13,7 +13,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     {
         $request = $context->request;
 
-        //Manually route the url if it hasn't been routed yet
+        //Manualy route the url if it hasn't been routed yet
         if(!isset($request->query->path))
         {
             $base = $request->getBasePath();
@@ -38,7 +38,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     protected function _actionDispatch(KDispatcherContextInterface $context)
     {
         //Throw 404 if the route is not valid
-        if(!$this->getObject('com:pages.router')->isValid()) {
+        if(!$this->getObject('com:pages.router')->getPage()) {
             throw new KHttpExceptionNotFound('Page Not Found');
         }
 
@@ -48,7 +48,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             throw new KDispatcherExceptionMethodNotAllowed('Method not allowed');
         }
 
-        //Excute the request
+        //Execute the request
         $this->execute($method, $context);
         $this->send($context);
     }
