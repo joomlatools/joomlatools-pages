@@ -18,7 +18,6 @@ return array(
         'object.config.factory' => [
             'formats' => ['md' => 'ComPagesDataMarkdown']
         ],
-
         'template.locator.factory' => [
             'locators' => [
                 'com:pages.data.locator',
@@ -36,6 +35,6 @@ return array(
                 //See: https://michelf.ca/projects/php-markdown/extra/
                 return \Michelf\MarkdownExtra::defaultTransform($text);
             }
-        ]
+        ],
     ]
 );
