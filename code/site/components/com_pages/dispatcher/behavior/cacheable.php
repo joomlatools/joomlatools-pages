@@ -20,9 +20,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'cache'         => false,
-            'cache_private' => false,
-            'cache_time'    => 15, //must revalidate
+            'cache_time' => 7200, //2h
         ));
 
         parent::_initialize($config);
