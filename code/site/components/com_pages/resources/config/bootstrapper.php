@@ -7,6 +7,11 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
+$config = array();
+if(file_exists(Koowa::getInstance()->getRootPath().'/joomlatools-pages/config.php')) {
+    $config = (array) include Koowa::getInstance()->getRootPath().'/joomlatools-pages/config.php';
+}
+
 return array(
 
     'aliases' => [
@@ -36,5 +41,10 @@ return array(
                 return \Michelf\MarkdownExtra::defaultTransform($text);
             }
         ],
+        'com://site/pages.dispatcher.behavior.cacheable' => [
+            'cache'         => $config['cache'] ?: false,
+            'cache_time'    => $config['cache_time'] ?: 0,
+            'cache_private' => $config['cache_private'] ?: false,
+        ]
     ]
 );

@@ -9,6 +9,15 @@
 
 class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 {
+    protected function _initialize(KObjectConfig $config)
+    {
+        $config->append([
+            'behaviors' => ['cacheable'],
+        ]);
+
+        parent::_initialize($config);
+    }
+
     protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
         $request = $context->request;
