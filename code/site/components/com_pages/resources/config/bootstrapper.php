@@ -42,9 +42,9 @@ return array(
             }
         ],
         'com://site/pages.dispatcher.behavior.cacheable' => [
-            'cache'         => $config['cache'] ?: false,
-            'cache_time'    => $config['cache_time'] ?: 0,
-            'cache_private' => $config['cache_private'] ?: false,
+            'cache'         => $config['cache'] ?? false,
+            'cache_time'    => $config['cache_time'] ?? 0,
+            'cache_private' => $config['cache_private'] ?? false,
         ]
     ]
 );
