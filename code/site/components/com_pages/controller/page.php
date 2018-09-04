@@ -57,6 +57,7 @@ class ComPagesControllerPage extends KControllerModel
 
     protected function _afterRender(KControllerContextInterface $context)
     {
+        //Set metadata
         if($context->request->getFormat() == 'html')
         {
             //Set the metadata
@@ -66,6 +67,18 @@ class ComPagesControllerPage extends KControllerModel
 
             //Set the title
             JFactory::getDocument()->setTitle($this->getView()->getTitle());
+        }
+
+        //Disable caching
+        if($page = $this->getObject('com:pages.router')->getPage())
+        {
+            if($page->cache !== false)
+            {
+                if($page->has('cache_time')) {
+                    $context->request->headers->set('Cache-Control', array('max_age' => $page->get('cache_time')));
+                }
+            }
+            else $context->request->headers->set('Cache-Control', 'no-cache');
         }
     }
 }

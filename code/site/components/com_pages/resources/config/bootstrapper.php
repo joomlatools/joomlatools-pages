@@ -7,6 +7,11 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
+$config = array();
+if(file_exists(Koowa::getInstance()->getRootPath().'/joomlatools-pages/config.php')) {
+    $config = (array) include Koowa::getInstance()->getRootPath().'/joomlatools-pages/config.php';
+}
+
 return array(
 
     'aliases' => [
@@ -18,7 +23,6 @@ return array(
         'object.config.factory' => [
             'formats' => ['md' => 'ComPagesDataMarkdown']
         ],
-
         'template.locator.factory' => [
             'locators' => [
                 'com:pages.data.locator',
@@ -36,6 +40,11 @@ return array(
                 //See: https://michelf.ca/projects/php-markdown/extra/
                 return \Michelf\MarkdownExtra::defaultTransform($text);
             }
+        ],
+        'com://site/pages.dispatcher.behavior.cacheable' => [
+            'cache'         => $config['cache'] ?? false,
+            'cache_time'    => $config['cache_time'] ?? 0,
+            'cache_private' => $config['cache_private'] ?? false,
         ]
     ]
 );
