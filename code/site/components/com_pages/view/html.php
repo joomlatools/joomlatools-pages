@@ -100,7 +100,7 @@ class ComPagesViewHtml extends ComKoowaViewHtml
             $data->append($template->getData());
 
             //Render the template
-            $this->_content = $template->render(KObjectConfig::unbox($data));
+            $this->setContent($template->render(KObjectConfig::unbox($data)));
 
             //Handle recursive layout
             if($layout = $template->getParent()) {
