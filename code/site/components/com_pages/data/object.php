@@ -25,6 +25,22 @@ class ComPagesDataObject extends KObjectConfig
         return new self($data);
     }
 
+    public function filter($key, $value = null)
+    {
+        $data = $this->toArray();
+
+        $data = array_filter($data, function($v) use ($key, $value)
+        {
+            if($value !== null) {
+                return (isset($v[$key]) && $v[$key] === $value);
+            } else {
+                return isset($v[$key]);
+            }
+        });
+
+        return new self($data);
+    }
+
     public function __debugInfo()
     {
         return self::unbox($this);
