@@ -57,6 +57,11 @@ class ComPagesPageLocator extends KTemplateLocatorFile
         $result = false;
         if ($results = glob($pattern))
         {
+            //Sort the files
+            usort($results, function($a, $b) {
+                return strlen($a) <=> strlen($b);
+            });
+
             foreach($results as $file)
             {
                 if($result = $this->realPath($file)) {
