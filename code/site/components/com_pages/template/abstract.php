@@ -55,7 +55,7 @@ class ComPagesTemplateAbstract extends KTemplate
 
     protected function createSlug($string)
     {
-        return JApplicationHelper::stringURLSafe($string);
+        return $this->getObject('filter.factory')->createFilter('slug')->sanitize($string);
     }
 
     public function handleException(Exception &$exception)
