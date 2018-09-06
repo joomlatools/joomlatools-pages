@@ -27,7 +27,7 @@ markdown, etc.
 Go to the root directory of your Joomla installation in command line and execute this command:
 
 ```
-composer require joomlatools/pages:0.2* --ignore-platform-reqs
+composer require joomlatools/pages:0.3* --ignore-platform-reqs
 ```
 
 Note: You need to use the --ignore-platform-reqs flag if not the installation will fail due to a mismatch in the platform
