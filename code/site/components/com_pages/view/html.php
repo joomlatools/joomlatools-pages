@@ -7,11 +7,12 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesViewHtml extends ComKoowaViewHtml
+class ComPagesViewHtml extends ComKoowaViewPageHtml
 {
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
+            'decorator' => 'joomla',
             'template'  => 'layout',
             'behaviors' => ['routable'],
         ]);
