@@ -45,16 +45,6 @@ class ComPagesControllerPage extends KControllerModel
         return $formats;
     }
 
-    protected function _beforeRender(KControllerContextInterface $context)
-    {
-        //Set the entity content in the response to allow for view decoration
-        if($context->request->getFormat() == 'html')
-        {
-            $entity = $this->getModel()->fetch();
-            $context->response->setContent($entity->content);
-        }
-    }
-
     protected function _afterRender(KControllerContextInterface $context)
     {
         //Set metadata

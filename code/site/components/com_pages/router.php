@@ -11,6 +11,26 @@ class ComPagesRouter extends KObject implements KObjectSingleton
 {
     private $__page = false;
 
+    public function route()
+    {
+        $request = $this->getObject('request');
+
+        $base = $request->getBasePath();
+        $url  = $request->getUrl()->getPath();
+
+        //Get the segments
+        $path = trim(str_replace(array($base, '/index.php'), '', $url), '/');
+
+        if($path) {
+            $segments = explode('/', $path);
+        } else {
+            $segments = array('index');
+        }
+
+        //Route
+        return $this->parse($segments);
+    }
+
     public function build(&$query)
     {
         $segments = array();
