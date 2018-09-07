@@ -61,4 +61,19 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         $this->execute($method, $context);
         $this->send($context);
     }
+
+    protected function _afterDispatch(KDispatcherContextInterface $context)
+    {
+        $path = $this->getObject('com:pages.router')->getPath();
+
+        $pathway = JFactory::getApplication()->getPathway();
+        $menu    = JFactory::getApplication()->getMenu()->getActive();
+
+        $segments = array();
+        foreach($path as $segment)
+        {
+            $segments[] = $segment;
+            $pathway->addItem($segment, 'index.php?path='.implode('/', $path));
+        }
+    }
 }
