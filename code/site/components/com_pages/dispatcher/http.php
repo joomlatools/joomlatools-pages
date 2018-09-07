@@ -73,7 +73,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         foreach($path as $segment)
         {
             $segments[] = $segment;
-            $pathway->addItem($segment, 'index.php?path='.implode('/', $path));
+            $pathway->addItem($segment, 'index.php?path='.implode('/', $segments));
         }
     }
 }
