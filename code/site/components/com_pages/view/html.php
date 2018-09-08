@@ -37,7 +37,7 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
     {
         $result = '';
         if($page = $this->getPage()) {
-            $result = $page->title ? $page->title :  parent::getTitle();
+            $result = $page->title ? $page->title :  '';
         }
 
         return $result;
@@ -53,7 +53,7 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
             }
 
             //Set the description into the metadata if it doesn't exist.
-            if(isset($page->summary) && !isset($page->metadata->description)) {
+            if(!empty($page->summary) && !isset($page->metadata->description)) {
                 $metadata['description'] = $page->summary;
             }
         }

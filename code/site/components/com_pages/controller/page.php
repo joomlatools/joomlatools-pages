@@ -56,7 +56,9 @@ class ComPagesControllerPage extends KControllerModel
             }
 
             //Set the title
-            JFactory::getDocument()->setTitle($this->getView()->getTitle());
+            if($title = $this->getView()->getTitle()) {
+                JFactory::getDocument()->setTitle($title);
+            }
         }
 
         //Disable caching
