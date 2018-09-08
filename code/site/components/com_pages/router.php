@@ -31,8 +31,6 @@ class ComPagesRouter extends KObject implements KObjectSingleton
             unset($query['path']);
         }
 
-
-
         //Slug
         if(isset($query['slug']))
         {
@@ -49,20 +47,24 @@ class ComPagesRouter extends KObject implements KObjectSingleton
             JFactory::getConfig()->set('sef_suffix', 1);
         }
 
+        if(isset($query['view'])) {
+            unset($query['view']);
+        }
+
         return $segments;
     }
 
-    public function parse($segments)
+    public function parse($segments = array())
     {
         $query = array();
 
-        //Replace all the ':' with '-' again
-        $segments = array_map(function($segment) {
-            return str_replace(':', '-', $segment);
-        }, $segments);
-
-        //Store the page
-        $this->__page = implode($segments, '/') ?: '.';;
+        //Get the segments from the request
+        if(!$segments = $this->getPath())
+        {
+            $segments     = array('index');
+            $this->__page = '.';
+        }
+        else $this->__page = implode($segments, '/');
 
         //Parse the format
         $page = array_pop($segments);
@@ -109,11 +111,38 @@ class ComPagesRouter extends KObject implements KObjectSingleton
         return $query;
     }
 
+    public function getPath($relative = false)
+    {
+        $segments = array();
+
+        //Setup the pathway
+        $request = $this->getObject('request');
+
+        $base = $request->getBasePath();
+        $url  = $request->getUrl()->getPath();
+
+        //Get the segments
+        $path = trim(str_replace(array($base, '/index.php'), '', $url), '/');
+
+        if($relative)
+        {
+            $route = JFactory::getApplication()->getMenu()->getActive()->route;
+            $path  = ltrim(str_replace($route, '', $path), '/');
+        }
+
+        if($path) {
+            $segments = explode('/', $path);
+        }
+
+        return $segments;
+    }
+
     public function getPage()
     {
         if(is_string($this->__page)) {
             $this->__page = $this->getObject('page.registry')->getPage($this->__page);
         }
+
 
         return $this->__page;
     }

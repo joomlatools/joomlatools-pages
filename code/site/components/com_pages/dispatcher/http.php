@@ -25,21 +25,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         //Manualy route the url if it hasn't been routed yet
         if(!isset($request->query->path))
         {
-            $base = $request->getBasePath();
-            $url  = $request->getUrl()->getPath();
-
-            //Get the segments
-            $path = trim(str_replace(array($base, '/index.php'), '', $url), '/');
-
-            if($path) {
-                $segments = explode('/', $path);
-            } else {
-                $segments = array('index');
-            }
-
-            //Route the
-            $query = $this->getObject('com:pages.router')->parse($segments);
-
+            $query = $this->getObject('com:pages.router')->parse();
             $request->query->add($query);
         }
     }
@@ -60,5 +46,18 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         //Execute the request
         $this->execute($method, $context);
         $this->send($context);
+    }
+
+    protected function _afterDispatch(KDispatcherContextInterface $context)
+    {
+        $path    = $this->getObject('com:pages.router')->getPath(true);
+        $pathway = JFactory::getApplication()->getPathway();
+
+        $segments = array();
+        foreach($path as $segment)
+        {
+            $segments[] = $segment;
+            $pathway->addItem(ucfirst($segment), 'index.php?path='.implode('/', $segments));
+        }
     }
 }
