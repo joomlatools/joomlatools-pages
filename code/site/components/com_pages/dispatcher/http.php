@@ -25,7 +25,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         //Manualy route the url if it hasn't been routed yet
         if(!isset($request->query->path))
         {
-            $query = $this->getObject('com:pages.router')->route();
+            $query = $this->getObject('com:pages.router')->parse();
             $request->query->add($query);
         }
     }
@@ -46,5 +46,18 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         //Execute the request
         $this->execute($method, $context);
         $this->send($context);
+    }
+
+    protected function _afterDispatch(KDispatcherContextInterface $context)
+    {
+        $path    = $this->getObject('com:pages.router')->getPath(true);
+        $pathway = JFactory::getApplication()->getPathway();
+
+        $segments = array();
+        foreach($path as $segment)
+        {
+            $segments[] = $segment;
+            $pathway->addItem(ucfirst($segment), 'index.php?path='.implode('/', $segments));
+        }
     }
 }
