@@ -127,7 +127,7 @@ class ComPagesRouter extends KObject implements KObjectSingleton
         if($relative)
         {
             $route = JFactory::getApplication()->getMenu()->getActive()->route;
-            $path  = str_replace($route, '', $path);
+            $path  = ltrim(str_replace($route, '', $path), '/');
         }
 
         if($path) {
@@ -142,6 +142,7 @@ class ComPagesRouter extends KObject implements KObjectSingleton
         if(is_string($this->__page)) {
             $this->__page = $this->getObject('page.registry')->getPage($this->__page);
         }
+
 
         return $this->__page;
     }
