@@ -53,7 +53,7 @@ class ComPagesControllerPage extends KControllerModel
             $entity = $this->getModel()->fetch();
             $context->response->setContent($entity->content);
 
-            //Set the pathway
+            //Set the path in the pathway to allow for module injection
             $path    = $this->getObject('com:pages.router')->getPath(true);
             $pathway = JFactory::getApplication()->getPathway();
 
