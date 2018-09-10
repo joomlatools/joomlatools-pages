@@ -47,11 +47,22 @@ class ComPagesControllerPage extends KControllerModel
 
     protected function _beforeRender(KControllerContextInterface $context)
     {
-        //Set the entity content in the response to allow for view decoration
         if($context->request->getFormat() == 'html')
         {
+            //Set the entity content in the response to allow for view decoration
             $entity = $this->getModel()->fetch();
             $context->response->setContent($entity->content);
+
+            //Set the pathway
+            $path    = $this->getObject('com:pages.router')->getPath(true);
+            $pathway = JFactory::getApplication()->getPathway();
+
+            $segments = array();
+            foreach($path as $segment)
+            {
+                $segments[] = $segment;
+                $pathway->addItem(ucfirst($segment), 'index.php?path='.implode('/', $segments));
+            }
         }
     }
 
