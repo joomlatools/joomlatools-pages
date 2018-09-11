@@ -67,6 +67,7 @@ class ComPagesRouter extends KObject implements KObjectSingleton
                 $query['format'] = $format;
                 $route = basename($route, '.' . $format);
             }
+            else $route = $page;
 
             $query['page'] = $page;
 
