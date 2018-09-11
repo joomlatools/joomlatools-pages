@@ -43,21 +43,9 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             throw new KDispatcherExceptionMethodNotAllowed('Method not allowed');
         }
 
-        //Execute the request
+        //Execute the component method
         $this->execute($method, $context);
-        $this->send($context);
-    }
 
-    protected function _afterDispatch(KDispatcherContextInterface $context)
-    {
-        $path    = $this->getObject('com:pages.router')->getPath(true);
-        $pathway = JFactory::getApplication()->getPathway();
-
-        $segments = array();
-        foreach($path as $segment)
-        {
-            $segments[] = $segment;
-            $pathway->addItem(ucfirst($segment), 'index.php?path='.implode('/', $segments));
-        }
+        KDispatcherAbstract::_actionDispatch($context);
     }
 }

@@ -13,13 +13,13 @@ class ComPagesViewBehaviorRoutable extends KViewBehaviorAbstract
     {
         $text = $context->result;
 
-        preg_match_all('#route://([^"]+)#m', $text, $matches);
+        preg_match_all('#href="route://([^"]+)#m', $text, $matches);
 
         foreach (array_unique($matches[1]) as $key => $query)
         {
             $text = str_replace(
                 $matches[0][$key],
-                $this->getTemplate()->route($query),
+                'href="'.$this->getTemplate()->route($query).'"',
                 $text
             );
         }

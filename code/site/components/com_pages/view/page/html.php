@@ -21,7 +21,7 @@ class ComPagesViewPageHtml extends ComPagesViewHtml
         $layout = '';
 
         $page = $this->getPage();
-        if(!isset($page->layout))
+        if(!$page->layout)
         {
             if($collection = $this->getObject('page.registry')->isCollection($page->path)) {
                 $layout = isset($collection['layout']) ? $collection['layout'] : '';

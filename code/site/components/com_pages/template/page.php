@@ -20,17 +20,29 @@ class ComPagesTemplatePage extends ComPagesTemplateAbstract
         parent::_initialize($config);
     }
 
-    public function createRoute($path)
+    public function createRoute($route)
     {
-        $route = '';
-        if(is_string($path)) {
-            $route = 'route://path=' . $path;
+        //Parse route
+        $query = array();
+
+        if(is_string($route))
+        {
+            if(strpos($route, '=')) {
+                parse_str(trim($route), $query);
+            } else {
+                $query['path'] = $route;
+            }
+        }
+        else
+        {
+            if($route instanceof KModelEntityInterface)
+            {
+                $query['path'] = $route->path;
+                $query['slug'] = $route->slug;
+            }
+            else $query = $route;
         }
 
-        if(is_array($path)) {
-            $route = http_build_query($path, '', '&');
-        }
-
-        return $route;
+        return 'route://'.http_build_query($query, '', '&');
     }
 }
