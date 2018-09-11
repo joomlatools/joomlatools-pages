@@ -32,7 +32,7 @@ class ComPagesControllerPage extends KControllerModel
     {
         $formats = parent::getFormats();
 
-        if($page = $this->getRequest()->query->page)
+        if($page = $this->getRequest()->query->get('page', 'url', false))
         {
             $format = $this->getRequest()->getFormat();
             if($this->getObject('page.registry')->isPageFormat($page, $format)) {
@@ -49,19 +49,20 @@ class ComPagesControllerPage extends KControllerModel
     {
         if($context->request->getFormat() == 'html')
         {
-            //Set the entity content in the response to allow for view decoration
-            $entity = $this->getModel()->fetch();
-            $context->response->setContent($entity->content);
-
             //Set the path in the pathway to allow for module injection
-            $path    = $this->getObject('com:pages.router')->getPath(true);
-            $pathway = JFactory::getApplication()->getPathway();
+            $page_route = $this->getObject('com:pages.router')->getRoute();
+            $menu_route = JFactory::getApplication()->getMenu()->getActive()->route;
 
-            $segments = array();
-            foreach($path as $segment)
+            if($path = ltrim(str_replace($menu_route, '', $page_route), '/'))
             {
-                $segments[] = $segment;
-                $pathway->addItem(ucfirst($segment), 'index.php?path='.implode('/', $segments));
+                $pathway = JFactory::getApplication()->getPathway();
+
+                $segments = array();
+                foreach(explode('/', $path) as $segment)
+                {
+                    $segments[] = $segment;
+                    $pathway->addItem(ucfirst($segment), 'index.php?path='.implode('/', $segments));
+                }
             }
         }
     }
@@ -80,18 +81,6 @@ class ComPagesControllerPage extends KControllerModel
             if($title = $this->getView()->getTitle()) {
                 JFactory::getDocument()->setTitle($title);
             }
-        }
-
-        //Disable caching
-        if($page = $this->getObject('com:pages.router')->getPage())
-        {
-            if($page->cache !== false)
-            {
-                if($page->has('cache_time')) {
-                    $context->request->headers->set('Cache-Control', array('max_age' => $page->get('cache_time')));
-                }
-            }
-            else $context->request->headers->set('Cache-Control', 'no-cache');
         }
     }
 }

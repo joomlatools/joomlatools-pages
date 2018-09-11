@@ -52,6 +52,28 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         }
     }
 
+    protected function _beforeSend(KDispatcherContextInterface $context)
+    {
+        if($this->isCacheable())
+        {
+            //Disable caching
+            if ($page = $context->request->query->get('page', 'url', false))
+            {
+                $page = $this->getObject('page.registry')->getPage($page);
+
+                if ($page->cache !== false)
+                {
+                    if ($page->has('cache_time')) {
+                        $this->getMixer()->getResponse()->setMaxAge($page->get('cache_time'));
+                    }
+                }
+                else $this->getConfig()->cache = false;
+            }
+        }
+
+        parent::_beforeSend($context);
+    }
+
     protected function _beforeFlush(KDispatcherContextInterface $context)
     {
         //Proxy Koowa Output
