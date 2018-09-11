@@ -20,22 +20,42 @@ class ComPagesEventSubscriberDecorator extends KEventSubscriberAbstract
 
     public function onAfterApplicationDispatch(KEventInterface $event)
     {
-        $option = $this->getObject('request')->query->get('option', 'cmd');
-        $route  = $this->getObject('com:pages.router')->route();
+        $menu = JFactory::getApplication()->getMenu()->getActive();
 
-        if($route['page'] && $option != 'com_pages' )
+        if($menu->component !== 'com_pages')
         {
-            $buffer = $event->getTarget()->getDocument()->getBuffer('component');
+            $page_route = $this->getObject('com:pages.router')->getRoute();
 
-            ob_start();
+            $base  = trim(dirname($menu->route), '.');
+            $route = trim(str_replace($base, '', $page_route), '/');
 
-            $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
-            $dispatcher->getResponse()->setContent($buffer);
-            $dispatcher->dispatch();
+            $page = $base ? $base.'/'.$route : $route;
 
-            $result = ob_get_clean();
+            while($page && !$this->getObject('page.registry')->isPage($page))
+            {
+                if($route = trim(dirname($route), '.')) {
+                    $page  = $base ? $base.'/'.$route : $route;
+                } else {
+                    $page = false;
+                }
+            }
 
-            $event->getTarget()->getDocument()->setBuffer($result, 'component');
+            if($page)
+            {
+                $buffer = $event->getTarget()->getDocument()->getBuffer('component');
+
+                ob_start();
+
+                $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
+
+                $dispatcher->getRequest()->getUrl()->setPath($page);
+                $dispatcher->getResponse()->setContent($buffer);
+                $dispatcher->dispatch();
+
+                $result = ob_get_clean();
+
+                $event->getTarget()->getDocument()->setBuffer($result, 'component');
+            }
         }
     }
 }
