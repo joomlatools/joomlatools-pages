@@ -98,6 +98,8 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         $page = null;
         $file = false;
 
+        $path = ltrim($path, './');
+
         if($path && !isset($this->__page[$path]))
         {
             $file = $this->getObject('com:pages.page.locator')->locate('page://pages/'. $path);
