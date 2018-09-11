@@ -43,8 +43,9 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             throw new KDispatcherExceptionMethodNotAllowed('Method not allowed');
         }
 
-        //Execute the request
+        //Execute the component method
         $this->execute($method, $context);
-        $this->send($context);
+
+        KDispatcherAbstract::_actionDispatch($context);
     }
 }
