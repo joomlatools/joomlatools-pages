@@ -35,6 +35,9 @@ return array(
                 'lib:template.engine.markdown',
             ]
         ],
+        'event.subscriber.factory' => [
+            'subscribers' => ['com:pages.event.subscriber.decorator']
+        ],
         'lib:template.engine.markdown' => [
             'compiler' => function($text) {
                 //See: https://michelf.ca/projects/php-markdown/extra/

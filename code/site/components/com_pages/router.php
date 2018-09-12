@@ -9,8 +9,6 @@
 
 class ComPagesRouter extends KObject implements KObjectSingleton
 {
-    private $__page = false;
-
     public function build(&$query)
     {
         $segments = array();
@@ -47,6 +45,7 @@ class ComPagesRouter extends KObject implements KObjectSingleton
             JFactory::getConfig()->set('sef_suffix', 1);
         }
 
+        //Format
         if(isset($query['view'])) {
             unset($query['view']);
         }
@@ -54,33 +53,23 @@ class ComPagesRouter extends KObject implements KObjectSingleton
         return $segments;
     }
 
-    public function parse($segments = array())
+    public function parse($route)
     {
         $query = array();
 
-        //Get the segments from the request
-        if(!$segments = $this->getPath())
-        {
-            $segments     = array('index');
-            $this->__page = '.';
-        }
-        else $this->__page = implode($segments, '/');
-
         //Parse the format
-        $page = array_pop($segments);
-        if($format = pathinfo($page, PATHINFO_EXTENSION))
-        {
-            $query['format'] = $format;
-            $segments[] = basename($page, '.'.$format);
-        }
-        else $segments[] = $page;
+        $page = $route ?: 'index';
 
-        //Parse path and page
-        $route = implode($segments, '/');
-
-        if($this->getObject('page.registry')->isPage($route))
+        if($this->getObject('page.registry')->isPage($page))
         {
-            $query['page'] = $route;
+            if ($format = pathinfo($route, PATHINFO_EXTENSION))
+            {
+                $query['format'] = $format;
+                $route = basename($route, '.' . $format);
+            }
+            else $route = $page;
+
+            $query['page'] = $page;
 
             if($collection = $this->getObject('page.registry')->isCollection($route))
             {
@@ -94,27 +83,18 @@ class ComPagesRouter extends KObject implements KObjectSingleton
             }
             else
             {
+                $segments = explode('/', $route);
+
                 $query['slug'] = array_pop($segments);
                 $query['path'] = implode($segments, '/') ?: '.';
             }
-        }
-        else
-        {
-            $query['slug']   = '';
-            $query['path']   = '';
-            $query['format'] = '';
-            $query['page']   = '';
-
-            $this->__page = false;
         }
 
         return $query;
     }
 
-    public function getPath($relative = false)
+    public function getRoute()
     {
-        $segments = array();
-
         //Setup the pathway
         $request = $this->getObject('request');
 
@@ -124,27 +104,7 @@ class ComPagesRouter extends KObject implements KObjectSingleton
         //Get the segments
         $path = trim(str_replace(array($base, '/index.php'), '', $url), '/');
 
-        if($relative)
-        {
-            $route = JFactory::getApplication()->getMenu()->getActive()->route;
-            $path  = ltrim(str_replace($route, '', $path), '/');
-        }
-
-        if($path) {
-            $segments = explode('/', $path);
-        }
-
-        return $segments;
-    }
-
-    public function getPage()
-    {
-        if(is_string($this->__page)) {
-            $this->__page = $this->getObject('page.registry')->getPage($this->__page);
-        }
-
-
-        return $this->__page;
+        return $path;
     }
 }
 
@@ -155,5 +115,6 @@ function PagesBuildRoute(&$query)
 
 function PagesParseRoute($segments)
 {
-    return KObjectManager::getInstance()->getObject('com:pages.router')->parse($segments);
+    return array();
+    //return KObjectManager::getInstance()->getObject('com:pages.router')->parse($segments);
 }
