@@ -49,6 +49,13 @@ class ComPagesControllerPage extends KControllerModel
     {
         if($context->request->getFormat() == 'html')
         {
+            //Set the entity content in the response to allow for view decoration
+            if(!$context->response->getContent())
+            {
+                $entity = $this->getModel()->fetch();
+                $context->response->setContent($entity->content);
+            }
+
             //Set the path in the pathway to allow for module injection
             $page_route = $this->getObject('com:pages.router')->getRoute();
             $menu_route = JFactory::getApplication()->getMenu()->getActive()->route;
