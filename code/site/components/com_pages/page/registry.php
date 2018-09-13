@@ -120,6 +120,9 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     //Set the slug
                     $page->slug = basename($path);
 
+                    //Set the process
+                    $page->process = array();
+
                     //Set the published state (if not set yet)
                     if (!isset($page->published)) {
                         $page->published = true;
