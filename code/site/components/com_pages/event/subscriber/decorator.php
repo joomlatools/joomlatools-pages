@@ -44,9 +44,11 @@ class ComPagesEventSubscriberDecorator extends KEventSubscriberAbstract
 
             if($page)
             {
-                $data = $this->getObject('page.registry')->getPage($page);
+                $decorate = $this->getObject('page.registry')
+                    ->getPage($page)
+                    ->process->get('decorate', true);
 
-                if($data->process->get('decorate', 0) >= $level) {
+                if($decorate === true || (is_int($decorate) && ($decorate >= $level))) {
                     $this->_decoratePage($page, $event->getTarget());
                 }
             }
