@@ -31,31 +31,42 @@ class ComPagesEventSubscriberDecorator extends KEventSubscriberAbstract
 
             $page = $base ? $base.'/'.$route : $route;
 
+            $level = 0;
             while($page && !$this->getObject('page.registry')->isPage($page))
             {
-                if($route = trim(dirname($route), '.')) {
-                    $page  = $base ? $base.'/'.$route : $route;
-                } else {
-                    $page = false;
+                if($route = trim(dirname($route), '.'))
+                {
+                    $page = $base ? $base.'/'.$route : $route;
+                    $level++;
                 }
+                else $page = false;
             }
 
             if($page)
             {
-                $buffer = $event->getTarget()->getDocument()->getBuffer('component');
+                $data = $this->getObject('page.registry')->getPage($page);
 
-                ob_start();
-
-                $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
-
-                $dispatcher->getRequest()->getUrl()->setPath($page);
-                $dispatcher->getResponse()->setContent($buffer);
-                $dispatcher->dispatch();
-
-                $result = ob_get_clean();
-
-                $event->getTarget()->getDocument()->setBuffer($result, 'component');
+                if($data->process->get('decorate', 0) >= $level) {
+                    $this->_decoratePage($page, $event->getTarget());
+                }
             }
         }
+    }
+
+    protected function _decoratePage($page, $app)
+    {
+        $buffer = $app->getDocument()->getBuffer('component');
+
+        ob_start();
+
+        $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
+
+        $dispatcher->getRequest()->getUrl()->setPath($page);
+        $dispatcher->getResponse()->setContent($buffer);
+        $dispatcher->dispatch();
+
+        $result = ob_get_clean();
+
+        $app->getDocument()->setBuffer($result, 'component');
     }
 }
