@@ -29,6 +29,7 @@ class ComPagesTemplateAbstract extends KTemplate
                 'page'       => [$this, 'fetchPage'],
                 'pages'      => [$this, 'fetchPages'],
                 'slug'       => [$this, 'createSlug'],
+                'attribute'  => [$this, 'createAttribute'],
             ],
             'cache'           => false,
             'cache_namespace' => 'pages',
@@ -56,6 +57,22 @@ class ComPagesTemplateAbstract extends KTemplate
     protected function createSlug($string)
     {
         return $this->getObject('filter.factory')->createFilter('slug')->sanitize($string);
+    }
+
+    protected function createAttribute($name, $value)
+    {
+        $result = '';
+
+        if($value)
+        {
+            if(is_array($value)) {
+                $value = implode(' ', $value);
+            }
+
+            $result = $name.'="'.$value.'"';
+        }
+
+        return $result;
     }
 
     public function handleException(Exception &$exception)
