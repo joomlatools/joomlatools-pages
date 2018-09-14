@@ -16,7 +16,6 @@ class ComPagesViewXml extends KViewTemplate
             'auto_fetch' => false,
             'template'   => 'layout',
             'behaviors'  => ['routable'],
-
         ]);
 
         parent::_initialize($config);
@@ -24,11 +23,13 @@ class ComPagesViewXml extends KViewTemplate
 
     public function getPage()
     {
-        $state = $this->getModel()->getState();
-        if(!$state->isUnique()) {
-            $page = $this->getObject('page.registry')->getPage($state->path);
-        }  else {
-            $page =  $this->getModel()->fetch();
+        $registry = $this->getObject('page.registry');
+        $state    = $this->getModel()->getState();
+
+        if ($state->isUnique()) {
+            $page = $registry->getPage($state->path.'/'.$state->slug);
+        } else {
+            $page = $registry->getPage($state->path);
         }
 
         return $page;

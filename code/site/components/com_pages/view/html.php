@@ -22,13 +22,14 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
 
     public function getPage()
     {
-        $state = $this->getModel()->getState();
-        if(!$state->isUnique())
-        {
-            $path = $this->getLayout();
-            $page = $this->getObject('page.registry')->getPage($path);
+        $registry = $this->getObject('page.registry');
+        $state    = $this->getModel()->getState();
+
+        if ($state->isUnique()) {
+            $page = $registry->getPage($state->path.'/'.$state->slug);
+        } else {
+            $page = $registry->getPage($state->path);
         }
-        else $page =  $this->getModel()->fetch();
 
         return $page;
     }
@@ -46,15 +47,15 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
     public function getMetadata()
     {
         $metadata = array();
-        if($page = $this->getPage())
+        if($data = $this->getPage())
         {
-            if(isset($page->metadata)) {
-                $metadata = KObjectConfig::unbox($page->metadata);
+            if(isset($data->metadata)) {
+                $metadata = KObjectConfig::unbox($data->metadata);
             }
 
             //Set the description into the metadata if it doesn't exist.
-            if(!empty($page->summary) && !isset($page->metadata->description)) {
-                $metadata['description'] = $page->summary;
+            if(!empty($data->summary) && !isset($data->metadata->description)) {
+                $metadata['description'] = $data->summary;
             }
         }
 
@@ -70,17 +71,27 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
         //Auto-assign the data from the model
         if($this->_auto_fetch)
         {
-            //Set the data
-            $name   = $this->getName();
-            $entity = $model->fetch();
-            $context->data->$name = $entity;
+            $data = $this->getPage();
+
+            //Remove the content
+            unset($data['content']);
+
+            //Remove the state
+            foreach($context->parameters as $name => $value) {
+                unset($data[$name]);
+            }
+
+            //Set the page properties
+            $context->data->append($this->getPage());
 
             //Set the parameters
-            if($this->isCollection()) {
+            if($this->isCollection())
+            {
+                //Set the data
+                $context->data->pages = $model->fetch();
                 $context->parameters->total = $model->count();
-            } else {
-                $context->parameters->total = 1;
             }
+            else $context->parameters->total = 1;
         }
     }
 

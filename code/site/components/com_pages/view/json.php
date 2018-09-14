@@ -20,13 +20,14 @@ class ComPagesViewJson extends KViewJson
 
     public function getPage()
     {
-        $state = $this->getModel()->getState();
-        if(!$state->isUnique())
-        {
-            $path = $state->path.'/'.$state->page;
-            $page = $this->getObject('page.registry')->getPage($path);
+        $registry = $this->getObject('page.registry');
+        $state    = $this->getModel()->getState();
+
+        if ($state->isUnique()) {
+            $page = $registry->getPage($state->path.'/'.$state->slug);
+        } else {
+            $page = $registry->getPage($state->path);
         }
-        else $page =  $this->getModel()->fetch();
 
         return $page;
     }
