@@ -102,9 +102,6 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
             $data       = $context->data;
             $parameters = $context->parameters;
 
-            //Set the layout data
-            $data->layout = $this->getLayoutData();
-
             //Render the layout
             $renderLayout = function($layout, $data, $parameters) use(&$renderLayout)
             {
