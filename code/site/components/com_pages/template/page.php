@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesTemplatePage extends ComPagesTemplateAbstract
+class ComPagesTemplatePage extends ComPagesTemplateLayout
 {
     protected function _initialize(KObjectConfig $config)
     {
@@ -44,5 +44,12 @@ class ComPagesTemplatePage extends ComPagesTemplateAbstract
         }
 
         return 'route://'.http_build_query($query, '', '&');
+    }
+
+    public function render(array $data = array())
+    {
+        unset($data['layout']);
+
+        return parent::render($data);
     }
 }

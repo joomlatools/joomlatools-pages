@@ -18,16 +18,15 @@ class ComPagesViewPageHtml extends ComPagesViewHtml
 
     public function getLayout()
     {
-        $layout = '';
-
-        $page = $this->getPage();
-        if(!$page->layout)
+        if(!$layout = parent::getLayout())
         {
-            if($collection = $this->getObject('page.registry')->isCollection($page->path)) {
-                $layout = isset($collection['layout']) ? $collection['layout'] : '';
+            if($collection = $this->getObject('page.registry')->isCollection($this->getPage()->path))
+            {
+                if(isset($collection['layout'])) {
+                    $layout = $collection['layout'];
+                }
             }
         }
-        else $layout = $page->layout;
 
         return $layout;
     }
@@ -42,6 +41,28 @@ class ComPagesViewPageHtml extends ComPagesViewHtml
         }
 
         $context->layout = $layout;
+
+        //Auto-assign the data from the model
+        if($this->_auto_fetch)
+        {
+            //Set the pages entity
+            $context->data->page = $this->getPage();
+
+            //Set the parameters
+            $context->parameters->total = 1;
+        }
+    }
+
+    protected function _actionRender(KViewContext $context)
+    {
+        //Set the pre-rendered page content in the response to allow for view decoration
+        if(!$this->getContent())
+        {
+            $entity = $this->getModel()->fetch();
+            $this->setContent($entity->content);
+        }
+
+        return parent::_actionRender($context);
     }
 
     protected function _processPlugins(KViewContextInterface $context)

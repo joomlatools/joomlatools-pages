@@ -111,29 +111,14 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     //Load the page
                     $page = (new ComPagesPage())->fromFile($file);
 
-                    //Process
-                    $this->_processData($page);
-
                     //Set the path
                     $page->path = trim(dirname($path), '.');
 
                     //Set the slug
                     $page->slug = basename($path);
 
-                    //Set the process
-                    if(!$page->process) {
-                        $page->process = array();
-                    }
-
-                    //Set the published state (if not set yet)
-                    if (!isset($page->published)) {
-                        $page->published = true;
-                    }
-
-                    //Set the date (if not set yet)
-                    if (!isset($page->date)) {
-                        $page->date = filemtime($page->getFilename());
-                    }
+                    //Normalise the page data
+                    $this->_normalisePage($page);
 
                     if(!isset($page->collection) || $page->collection == false)
                     {
@@ -308,8 +293,29 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return false;
     }
 
-    protected function _processData($page)
+    protected function _normalisePage($page)
     {
+        //Set the process
+        if(!$page->process) {
+            $page->process = array();
+        }
+
+        //Set the published state (if not set yet)
+        if (!isset($page->published)) {
+            $page->published = true;
+        }
+
+        //Set the date (if not set yet)
+        if (!isset($page->date)) {
+            $page->date = filemtime($page->getFilename());
+        }
+
+        //Set the date (if not set yet)
+        if(isset($page->layout) && is_string($page->layout)) {
+            $page->layout = array('path' => $page->layout);
+        }
+
+        //Handle dynamic data
         array_walk_recursive ($page, function(&$value, $key)
         {
             if(is_string($value) && strpos($value, 'data://') === 0)

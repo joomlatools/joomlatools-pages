@@ -25,24 +25,28 @@ class ComPagesTemplateLayout extends ComPagesTemplateAbstract
             }
 
             //Load the layout
-            $layout = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
+            $template = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
 
-            if(isset($layout->page) || isset($layout->pages)) {
+            if(isset($template->page) || isset($template->pages)) {
                 throw new KTemplateExceptionSyntaxError('Using "page or pages" in layout frontmatter is now allowed');
             }
 
             //Set the parent layout
-            if($layout->layout) {
-                $this->_parent = $layout->layout;
-            } else {
-                $this->_parent = false;
+            if($layout = KObjectConfig::unbox($template->layout))
+            {
+                if(is_array($layout)) {
+                    $this->_parent = $layout['path'];
+                } else {
+                    $this->_parent = $layout;
+                }
             }
+            else $this->_parent = false;
 
-            //Store the data
-            $this->_data = KObjectConfig::unbox($layout);
+            //Store the data and remove the layout
+            $this->_data = KObjectConfig::unbox($template->remove('layout'));
 
             //Load the content
-            $result = $this->loadString($layout->getContent(), pathinfo($file, PATHINFO_EXTENSION), $url);
+            $result = $this->loadString($template->getContent(), pathinfo($file, PATHINFO_EXTENSION), $url);
         }
         else $result = parent::loadFile($url);
 

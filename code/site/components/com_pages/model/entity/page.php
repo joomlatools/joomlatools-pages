@@ -31,7 +31,7 @@ class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerial
                 'process'     => [
                     'plugins' => true
                 ],
-                'layout'      => '',
+                'layout'      => array(),
                 'colllection' => false,
             ],
         ]);
@@ -108,6 +108,11 @@ class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerial
         return $date;
     }
 
+    public function setPropertyLayout($value)
+    {
+        return new KObjectConfig($value);
+    }
+
     public function toArray()
     {
         $data = parent::toArray();
@@ -125,7 +130,6 @@ class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerial
             if($value instanceof KDate) {
                 $data[$key] = $value->format(DateTime::ATOM);
             }
-
         }
 
         return $data;

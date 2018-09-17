@@ -9,6 +9,8 @@
 
 class ComPagesViewHtml extends ComKoowaViewPageHtml
 {
+    protected $_page;
+
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
@@ -20,18 +22,44 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
         parent::_initialize($config);
     }
 
-    public function getPage()
+    public function getLayout()
     {
-        $registry = $this->getObject('page.registry');
-        $state    = $this->getModel()->getState();
-
-        if ($state->isUnique()) {
-            $page = $registry->getPage($state->path.'/'.$state->slug);
-        } else {
-            $page = $registry->getPage($state->path);
+        if($layout = $this->getPage()->layout) {
+            $layout = $layout->path;
         }
 
-        return $page;
+        return $layout;
+    }
+
+    public function getLayoutData()
+    {
+        $data = array();
+        if($layout = $this->getPage()->layout)
+        {
+            unset($layout->path);
+            $data = $layout;
+        }
+
+        return $data;
+    }
+
+    public function getPage()
+    {
+        if(!isset($this->_page))
+        {
+            $registry = $this->getObject('page.registry');
+            $state    = $this->getModel()->getState();
+
+            if ($state->isUnique()) {
+                $data = $registry->getPage($state->path.'/'.$state->slug);
+            } else {
+                $data = $registry->getPage($state->path);
+            }
+
+            $this->_page = $this->getObject('com:pages.model.pages')->create($data->toArray());
+        }
+
+        return $this->_page;
     }
 
     public function getTitle()
@@ -64,64 +92,48 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
 
     protected function _fetchData(KViewContext $context)
     {
-        $model = $this->getModel();
-
-        $context->parameters = $model->getState()->getValues();
-
-        //Auto-assign the data from the model
-        if($this->_auto_fetch)
-        {
-            $data = $this->getPage();
-
-            //Remove the content
-            unset($data['content']);
-
-            //Remove the state
-            foreach($context->parameters as $name => $value) {
-                unset($data[$name]);
-            }
-
-            //Set the page properties
-            $context->data->append($this->getPage());
-
-            //Set the parameters
-            if($this->isCollection())
-            {
-                //Set the data
-                $context->data->pages = $model->fetch();
-                $context->parameters->total = $model->count();
-            }
-            else $context->parameters->total = 1;
-        }
+        $context->parameters = $this->getModel()->getState()->getValues();
     }
 
     protected function _actionRender(KViewContext $context)
     {
-        $data       = $context->data;
-        $layout     = $context->layout;
-        $parameters = $context->parameters;
-
-        //Render the layout
-        $renderLayout = function($layout, $data, $parameters) use(&$renderLayout)
+        if($layout = $context->layout)
         {
-            $template = $this->getTemplate()
-                ->setParameters($parameters)
-                ->loadFile($layout);
+            $data       = $context->data;
+            $parameters = $context->parameters;
 
-            //Merge the data
-            $data->append($template->getData());
+            //Set the layout data
+            $data->layout = $this->getLayoutData();
 
-            //Render the template
-            $this->setContent($template->render(KObjectConfig::unbox($data)));
+            //Render the layout
+            $renderLayout = function($layout, $data, $parameters) use(&$renderLayout)
+            {
+                $template = $this->getTemplate()
+                    ->setParameters($parameters)
+                    ->loadFile($layout);
 
-            //Handle recursive layout
-            if($layout = $template->getParent()) {
-                $renderLayout($layout, $data, $parameters);
-            }
-        };
+                //Merge the page layout data
+                //
+                //Allow the layout data to be modified during template rendering
+                $data->merge($this->getLayoutData());
 
-        Closure::bind($renderLayout, $this, get_class());
-        $renderLayout($layout, $data, $parameters);
+                //Append the template layout data
+                //
+                //Do not overwrite existing data, only add it not defined yet
+                $data->append($template->getData());
+
+                //Render the template
+                $this->setContent($template->render(KObjectConfig::unbox($data)));
+
+                //Handle recursive layout
+                if($layout = $template->getParent()) {
+                    $renderLayout($layout, $data, $parameters);
+                }
+            };
+
+            Closure::bind($renderLayout, $this, get_class());
+            $renderLayout($layout, $data, $parameters);
+        }
 
         return KViewAbstract::_actionRender($context);
     }
@@ -165,7 +177,6 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
                 }
             }
         }
-
 
         //Create the route
         $route = $this->getObject('lib:dispatcher.router.route', array('escape' =>  $escape))->setQuery($query);
