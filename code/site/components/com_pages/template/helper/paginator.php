@@ -14,6 +14,7 @@ class ComPagesTemplateHelperPaginator extends KTemplateHelperPaginator
         $query = array();
         $query['limit']  = $page->limit;
         $query['offset'] = $page->offset;
+        $query['page']   = $this->getTemplate()->getParameters()->page;
 
         $url = $this->getTemplate()->route($query);
 

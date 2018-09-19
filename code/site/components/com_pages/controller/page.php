@@ -50,7 +50,7 @@ class ComPagesControllerPage extends KControllerModel
         if($context->request->getFormat() == 'html')
         {
             //Set the path in the pathway to allow for module injection
-            $page_route = $this->getObject('com:pages.router')->getRoute();
+            $page_route = $this->getObject('com:pages.dispatcher.router.route')->getRoute();
             $menu_route = JFactory::getApplication()->getMenu()->getActive()->route;
 
             if($path = ltrim(str_replace($menu_route, '', $page_route), '/'))

@@ -175,17 +175,7 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
             }
         }
 
-        //Create the route
-        $route = $this->getObject('lib:dispatcher.router.route', array('escape' =>  $escape))->setQuery($query);
-
-        //Add host, schema and port for fully qualified routes
-        if ($fqr === true)
-        {
-            $route->scheme = $this->getUrl()->scheme;
-            $route->host   = $this->getUrl()->host;
-            $route->port   = $this->getUrl()->port;
-        }
-
-        return $route;
+        //Build the route
+        return $this->getObject('com:pages.dispatcher.router.route',  array('escape'  => $escape))->build($query);
     }
 }

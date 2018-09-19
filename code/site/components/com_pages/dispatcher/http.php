@@ -20,11 +20,10 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
-        //Get the route
-        $route = $this->getObject('com:pages.router')->getRoute();
+        $url = $context->request->getUrl();
 
         //Throw 4054 if the page cannot be found
-        if($query = $this->getObject('com:pages.router')->parse($route)) {
+        if($query = $this->getObject('com:pages.dispatcher.router.route')->parse($url)) {
             $context->request->query->add($query);
         } else {
             throw new KHttpExceptionNotFound('Page Not Found');
