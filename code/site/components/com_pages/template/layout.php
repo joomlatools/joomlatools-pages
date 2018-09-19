@@ -35,12 +35,12 @@ class ComPagesTemplateLayout extends ComPagesTemplateAbstract
             if($layout = KObjectConfig::unbox($template->layout))
             {
                 if(is_array($layout)) {
-                    $this->_parent = $layout['path'];
+                    $this->_layout = $layout['path'];
                 } else {
-                    $this->_parent = $layout;
+                    $this->_layout = $layout;
                 }
             }
-            else $this->_parent = false;
+            else $this->_layout = false;
 
             //Store the data and remove the layout
             $this->_data = KObjectConfig::unbox($template->remove('layout'));
@@ -53,8 +53,8 @@ class ComPagesTemplateLayout extends ComPagesTemplateAbstract
         return $result;
     }
 
-    public function getParent()
+    public function getLayout()
     {
-        return $this->_parent;
+        return $this->_layout;
     }
 }

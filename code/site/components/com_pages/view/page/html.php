@@ -41,16 +41,6 @@ class ComPagesViewPageHtml extends ComPagesViewHtml
         }
 
         $context->layout = $layout;
-
-        //Auto-assign the data from the model
-        if($this->_auto_fetch)
-        {
-            //Set the pages entity
-            $context->data->page = $this->getPage();
-
-            //Set the parameters
-            $context->parameters->total = 1;
-        }
     }
 
     protected function _actionRender(KViewContext $context)
@@ -58,8 +48,22 @@ class ComPagesViewPageHtml extends ComPagesViewHtml
         //Set the pre-rendered page content in the response to allow for view decoration
         if(!$this->getContent())
         {
-            $entity = $this->getModel()->fetch();
-            $this->setContent($entity->content);
+            $data       = $context->data;
+            $layout     = $context->layout;
+            $parameters = $context->parameters;
+
+            //Render the page
+            $page = $this->getObject('com:pages.template.page')
+                ->setParameters($parameters)
+                ->loadFile('page://pages/'.$this->getPage()->route);
+
+            $data->append($page->getData());
+
+            $this->setContent($page->render(KObjectConfig::unbox($data)));
+
+            //Setup the layout
+            $context->layout     = $page->getLayout();
+            $context->data->page = $this->getPage();
         }
 
         return parent::_actionRender($context);

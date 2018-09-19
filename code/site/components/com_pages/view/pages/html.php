@@ -33,17 +33,16 @@ class ComPagesViewPagesHtml extends ComPagesViewHtml
         $parameters = $context->parameters;
 
         //Render the page
-        $template = $this->getObject('com:pages.template.page')
+        $page = $this->getObject('com:pages.template.page')
             ->setParameters($parameters)
-            ->loadFile('page://pages/'.$context->layout);
+            ->loadFile('page://pages/'.$this->getPage()->route);
 
-        $data->append($template->getData());
+        $data->append($page->getData());
 
-        $this->setContent($template->render(KObjectConfig::unbox($data)));
+        $this->setContent($page->render(KObjectConfig::unbox($data)));
 
         //Setup the layout
-        $context->layout     = $template->getParent();
-        $context->data->page = $this->getPage();
+        $context->layout = $page->getLayout();
 
         return parent::_actionRender($context);
     }

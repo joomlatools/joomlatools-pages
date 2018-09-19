@@ -41,7 +41,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         parent::_initialize($config);
     }
 
-    public function getPages($path = '', $mode = self::PAGES_ONLY, $depth = -1)
+    public function getPages($path = '', $mode = self::PAGES_ONLY, $depth = -1, $render = false)
     {
         $group = 'pages_'.crc32($mode.$depth);
 
@@ -71,10 +71,19 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                         $page_path = $path.'/'.$page_path;
                     }
 
-                    $page = $this->getPage($page_path)->toArray();
-                    unset($page['content']);
+                    $page = $this->getPage($page_path);
+                    if($this->isCollection($path))
+                    {
+                        //Render the content
+                        $type    = $page->getFiletype();
+                        $content = $page->getContent();
 
-                    $result[$page_path] = $page;
+                        $page->content = $this->getObject('com:pages.template.page')
+                            ->loadString($content, $type, 'page://pages/'. $path)
+                            ->render($page->toArray());
+                    }
+
+                    $result[$page_path] = $page->toArray();;
                 }
 
                 //Cache the page
@@ -119,18 +128,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
                     //Normalise the page data
                     $this->_normalisePage($page);
-
-                    if(!isset($page->collection) || $page->collection == false)
-                    {
-                        //Render the content
-                        $type    = $page->getFiletype();
-                        $content = $page->getContent();
-
-                        $page->content = $this->getObject('com:pages.template.page')
-                            ->loadString($content, $type, 'page://pages/'. $path)
-                            ->render($page->toArray());
-                    }
-                    else $page->content = '';
 
                     //Cache the page
                     $this->_writeCache($file, $page->toArray());

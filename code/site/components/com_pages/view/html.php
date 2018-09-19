@@ -50,13 +50,14 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
             $registry = $this->getObject('page.registry');
             $state    = $this->getModel()->getState();
 
-            if ($state->isUnique()) {
-                $data = $registry->getPage($state->path.'/'.$state->slug);
-            } else {
+            if (!$state->isUnique())
+            {
                 $data = $registry->getPage($state->path);
-            }
+                $page = $this->getObject('com:pages.model.pages')->create($data->toArray());
 
-            $this->_page = $this->getObject('com:pages.model.pages')->create($data->toArray());
+                $this->_page = $page;
+            }
+            else  $this->_page = $this->getModel()->fetch();
         }
 
         return $this->_page;
@@ -99,6 +100,9 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
     {
         if($layout = $context->layout)
         {
+            //Set the page object
+            $context->data->page = $this->getPage();
+
             $data       = $context->data;
             $parameters = $context->parameters;
 
@@ -123,7 +127,7 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
                 $this->setContent($template->render(KObjectConfig::unbox($data)));
 
                 //Handle recursive layout
-                if($layout = $template->getParent()) {
+                if($layout = $template->getLayout()) {
                     $renderLayout($layout, $data, $parameters);
                 }
             };
