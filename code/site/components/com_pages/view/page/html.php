@@ -31,39 +31,24 @@ class ComPagesViewPageHtml extends ComPagesViewHtml
         return $layout;
     }
 
-    protected function _fetchData(KViewContext $context)
-    {
-        parent::_fetchData($context);
-
-        //Find the layout
-        if(!$layout = $context->layout) {
-            $layout = 'com://site/pages.page.default.html';
-        }
-
-        $context->layout = $layout;
-    }
-
     protected function _actionRender(KViewContext $context)
     {
         //Set the pre-rendered page content in the response to allow for view decoration
-        if(!$this->getContent())
-        {
-            $data       = $context->data;
-            $layout     = $context->layout;
-            $parameters = $context->parameters;
+        $data       = $context->data;
+        $layout     = $context->layout;
+        $parameters = $context->parameters;
 
-            //Render the page
-            $page = $this->getObject('com:pages.template.page')
-                ->setParameters($parameters)
-                ->loadFile('page://pages/'.$this->getPage()->route);
+        //Render the page
+        $page = $this->getObject('com:pages.template.page')
+            ->setParameters($parameters)
+            ->loadFile('page://pages/'.$this->getPage()->route);
 
-            $data->append($page->getData());
+        $data->append($page->getData());
 
-            $this->setContent($page->render(KObjectConfig::unbox($data)));
+        $this->setContent($page->render(KObjectConfig::unbox($data)));
 
-            //Set the layout
-            $context->layout = $this->getLayout();
-        }
+        //Set the layout
+        $context->layout = $this->getLayout();
 
         return parent::_actionRender($context);
     }

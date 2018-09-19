@@ -7,6 +7,12 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-defined('KOOWA') or die; ?>
+class ComPagesViewDecoratorHtml extends ComPagesViewHtml
+{
+    protected function _actionRender(KViewContext $context)
+    {
+        $context->layout = 'page://pages/'.$this->getPage()->route;
 
-<ktml:content>
+        return parent::_actionRender($context);
+    }
+}

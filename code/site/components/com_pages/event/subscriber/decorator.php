@@ -61,7 +61,7 @@ class ComPagesEventSubscriberDecorator extends KEventSubscriberAbstract
 
         ob_start();
 
-        $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
+        $dispatcher = $this->getObject('com://site/pages.dispatcher.http', ['controller' => 'decorator']);
 
         $dispatcher->getRequest()->getUrl()->setPath($page);
         $dispatcher->getResponse()->setContent($buffer);

@@ -7,44 +7,8 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesControllerPage extends KControllerModel
+class ComPagesControllerPage extends ComPagesControllerAbstract
 {
-    protected function _initialize(KObjectConfig $config)
-    {
-        $config->append([
-            'formats'   => ['json'],
-            'behaviors' => ['redirectable'],
-        ]);
-        parent::_initialize($config);
-    }
-
-    public function getRequest()
-    {
-        $request = parent::getRequest();
-
-        //Remove the view query parameter
-        $request->query->remove('view');
-
-        return $request;
-    }
-
-    public function getFormats()
-    {
-        $formats = parent::getFormats();
-
-        if($page = $this->getRequest()->query->get('page', 'url', false))
-        {
-            $format = $this->getRequest()->getFormat();
-            if($this->getObject('page.registry')->isPageFormat($page, $format)) {
-                $formats = array($format);
-            } else {
-                $formats = array();
-            }
-        }
-
-        return $formats;
-    }
-
     protected function _beforeRender(KControllerContextInterface $context)
     {
         if($context->request->getFormat() == 'html')
@@ -63,23 +27,6 @@ class ComPagesControllerPage extends KControllerModel
                     $segments[] = $segment;
                     $pathway->addItem(ucfirst($segment), 'index.php?path='.implode('/', $segments));
                 }
-            }
-        }
-    }
-
-    protected function _afterRender(KControllerContextInterface $context)
-    {
-        //Set metadata
-        if($context->request->getFormat() == 'html')
-        {
-            //Set the metadata
-            foreach($this->getView()->getMetadata() as $name => $content) {
-                JFactory::getDocument()->setMetaData($name, $content);
-            }
-
-            //Set the title
-            if($title = $this->getView()->getTitle()) {
-                JFactory::getDocument()->setTitle($title);
             }
         }
     }
