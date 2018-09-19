@@ -61,9 +61,8 @@ class ComPagesViewPageHtml extends ComPagesViewHtml
 
             $this->setContent($page->render(KObjectConfig::unbox($data)));
 
-            //Setup the layout
-            $context->layout     = $page->getLayout();
-            $context->data->page = $this->getPage();
+            //Set the layout
+            $context->layout = $this->getLayout();
         }
 
         return parent::_actionRender($context);
