@@ -76,7 +76,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         parent::_beforeSend($context);
     }
 
-    protected function _beforeFlush(KDispatcherContextInterface $context)
+    protected function _beforeTerminate(KDispatcherContextInterface $context)
     {
         //Proxy Koowa Output
         if($this->isCacheable() && $this->getResponse()->isCacheable() && !$this->getResponse()->isStale())
