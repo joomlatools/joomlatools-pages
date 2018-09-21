@@ -69,7 +69,7 @@ class ComPagesTemplateAbstract extends KTemplate
                 $value = implode(' ', $value);
             }
 
-            $result = $name.'="'.$value.'"';
+            $result = ' '.$name.'="'.$value.'"';
         }
 
         return $result;
