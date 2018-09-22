@@ -55,8 +55,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
     public function fromDirectory($path)
     {
         $data  = array();
-        $files = array();
-        $count = 0;
+        $nodes = array();
 
         $basepath = $this->getObject('com:pages.data.locator')->getBasePath();
         $basepath = ltrim(str_replace($basepath, '', $path), '/');
@@ -64,36 +63,42 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         //List
         foreach (new DirectoryIterator($path) as $node)
         {
-            if (!in_array($node->getFilename()[0], array('.', '_')))
-            {
-                $files[] = $node->getFilename();
-
-                if($node->isFile()) {
-                    $count++;
-                }
+            if (!in_array($node->getFilename()[0], array('.', '_'))) {
+                $nodes[] = $node->getFilename();
             }
         }
 
         //Order
         if($order = $this->getObject('com:pages.data.locator')->locate('data://'.$basepath.'/.order')) {
-            $files = $this->_orderData($files, $this->fromFile($order));
+            $nodes = $this->_orderData($nodes, $this->fromFile($order));
 
         }
 
-        //Retrieve
+        //Files
+        $files = array();
+        $dirs  = array();
+        foreach($nodes as $node)
+        {
+            $info = pathinfo($node);
+
+            if($info['extension']) {
+                $files[] = $node;
+            } else {
+                $dirs[] = $node;
+            }
+        }
+
         foreach($files as $file)
         {
-            $info = pathinfo($file);
-
-            if($info['extension'])
-            {
-                if($count > 1) {
-                    $data[] = $this->getData($basepath.'/'.$file);
-                } else {
-                    $data = $this->getData($basepath.'/'.$file);
-                }
+            if(count($files) > 1) {
+                $data[] = $this->getData($basepath.'/'.$file);
+            } else {
+                $data = $this->getData($basepath.'/'.$file);
             }
-            else $data[$info['basename']] = $this->getData($basepath.'/'.$file);
+        }
+
+        foreach($dirs as $dir) {
+            $data[basename($dir)] = $this->getData($basepath.'/'.$dir);
         }
 
         return $data;
