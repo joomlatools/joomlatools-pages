@@ -56,57 +56,44 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
     {
         $data  = array();
         $files = array();
-        $dirs  = array();
+        $count = 0;
 
         $basepath = $this->getObject('com:pages.data.locator')->getBasePath();
         $basepath = ltrim(str_replace($basepath, '', $path), '/');
 
+        //List
         foreach (new DirectoryIterator($path) as $node)
         {
-            if ($node->isFile() && !in_array($node->getFilename()[0], array('.', '_'))) {
+            if (!in_array($node->getFilename()[0], array('.', '_')))
+            {
                 $files[] = $node->getFilename();
-            }
 
-            if($node->isDir() && !$node->isDot()) {
-                $dirs[] =  $node->getFilename();
+                if($node->isFile()) {
+                    $count++;
+                }
             }
         }
 
-        //Handle Files
-        if(!empty($files))
-        {
-            // Order Files
-            if($file = $this->getObject('com:pages.data.locator')->locate('data://'.$basepath.'/.order'))
-            {
-                if(isset($this->fromFile($file)['files'])) {
-                    $files = $this->_orderData($files, $this->fromFile($file)['files']);
-                }
-            }
+        //Order
+        if($order = $this->getObject('com:pages.data.locator')->locate('data://'.$basepath.'/.order')) {
+            $files = $this->_orderData($files, $this->fromFile($order));
 
-            foreach($files as $file)
+        }
+
+        //Retrieve
+        foreach($files as $file)
+        {
+            $info = pathinfo($file);
+
+            if($info['extension'])
             {
-                if(count($files) > 1) {
+                if($count > 1) {
                     $data[] = $this->getData($basepath.'/'.$file);
                 } else {
                     $data = $this->getData($basepath.'/'.$file);
                 }
             }
-        }
-
-        //Handle Directories
-        if(!empty($dirs))
-        {
-            // Order Directories
-            if($file = $this->getObject('com:pages.data.locator')->locate('data://'.$basepath.'/.order'))
-            {
-                if(isset($this->fromFile($file)['directories'])) {
-                    $dirs = $this->_orderData($dirs, $this->fromFile($file)['directories']);
-                }
-            }
-
-            foreach($dirs as $dir) {
-                $data[basename($dir)] = $this->getData($basepath.'/'.$dir);
-            }
+            else $data[$info['basename']] = $this->getData($basepath.'/'.$file);
         }
 
         return $data;
