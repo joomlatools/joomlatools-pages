@@ -113,15 +113,15 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
                     ->setParameters($parameters)
                     ->loadFile($layout);
 
+                //Append the template layout data
+                //
+                //Do not overwrite existing data, only add it not defined yet
+                $this->getLayoutData()->append($template->getData());
+
                 //Merge the page layout data
                 //
                 //Allow the layout data to be modified during template rendering
                 $data->merge($this->getLayoutData());
-
-                //Append the template layout data
-                //
-                //Do not overwrite existing data, only add it not defined yet
-                $data->append($template->getData());
 
                 //Render the template
                 $this->setContent($template->render(KObjectConfig::unbox($data)));
