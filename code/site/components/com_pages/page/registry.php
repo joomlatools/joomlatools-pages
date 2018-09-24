@@ -12,6 +12,8 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     const PAGES_ONLY = \RecursiveIteratorIterator::LEAVES_ONLY;
     const PAGES_TREE = \RecursiveIteratorIterator::SELF_FIRST;
 
+    private  $__locator = null;
+
     private $__page  = array();
     private $__pages = null;
 
@@ -22,10 +24,14 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     {
         parent::__construct($config);
 
+        //Create the locator
+        $this->__locator = $this->getObject('com:pages.page.locator');
+
+        //Set the cache
         $this->_cache = $config->cache;
 
         if(empty($config->cache_path)) {
-            $this->_cache_path = $this->getObject('com:pages.page.locator')->getBasePath().'/cache';
+            $this->_cache_path = $this->getLocator()->getBasePath().'/cache';
         } else {
             $this->_cache_path = $config->cache_path;
         }
@@ -41,13 +47,18 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         parent::_initialize($config);
     }
 
+    public function getLocator()
+    {
+        return $this->__locator;
+    }
+
     public function getPages($path = '', $mode = self::PAGES_ONLY, $depth = -1, $render = false)
     {
         $group = 'pages_'.crc32($mode.$depth);
 
         if(!isset($this->__pages[$path.$group]))
         {
-            $directory = dirname($this->getObject('com:pages.page.locator')->locate('page://pages/'. $path));
+            $directory = dirname($this->getLocator()->locate('page://pages/'. $path));
 
             if (!$cache = $this->isCached($directory, $group))
             {
@@ -111,7 +122,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
         if($path && !isset($this->__page[$path]))
         {
-            $file = $this->getObject('com:pages.page.locator')->locate('page://pages/'. $path);
+            $file = $this->getLocator()->locate('page://pages/'. $path);
 
             if($file)
             {
@@ -153,7 +164,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     public function isPage($path)
     {
         if(!isset($this->__page[$path])) {
-           $result = (bool) $this->getObject('com:pages.page.locator')->locate('page://pages/'. $path);
+           $result = (bool) $this->getLocator()->locate('page://pages/'. $path);
         } else {
             $result = ($this->__page[$path] === false) ? false : true;
         }
@@ -166,7 +177,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         $result = false;
         if($this->isPage($path))
         {
-            $formats = $this->getObject('com:pages.page.locator')->formats('page://pages/'. $path);
+            $formats = $this->getLocator()->formats('page://pages/'. $path);
             if(isset($formats[$format])) {
                 $result = true;
             }
@@ -341,7 +352,7 @@ class ComPagesRecursiveFilterIterator extends RecursiveFilterIterator
 
     public function __construct(RecursiveDirectoryIterator $iterator)
     {
-        $this->_basepath =  KObjectManager::getInstance()->getObject('com:pages.page.locator')->getBasePath().'/pages';
+        $this->_basepath =  KObjectManager::getInstance()->getObject('page.registry')->getLocator()->getBasePath().'/pages';
 
         parent::__construct($iterator);
     }
