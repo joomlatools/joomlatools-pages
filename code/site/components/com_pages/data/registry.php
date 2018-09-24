@@ -81,10 +81,12 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
                 $nodes = array_merge($this->fromFile((string)$node->getFileInfo()), $nodes);
             }
 
-            if (!in_array($node->getFilename()[0], array('.', '_')) && !in_array($node->getFilename(), $nodes)) {
+            if (!in_array($node->getFilename()[0], array('.', '_'))) {
                 $nodes[] = $node->getFilename();
             }
         }
+
+        $nodes = array_unique($nodes);
 
         //Files
         $files = array();
