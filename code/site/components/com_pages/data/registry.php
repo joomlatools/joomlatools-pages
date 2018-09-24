@@ -9,7 +9,21 @@
 
 final class ComPagesDataRegistry extends KObject implements KObjectSingleton
 {
-    private $__data = array();
+    private $__data     = array();
+    private  $__locator = null;
+
+    public function __construct(KObjectConfig $config)
+    {
+        parent::__construct($config);
+
+        //Create the locator
+        $this->__locator = $this->getObject('com:pages.data.locator');
+    }
+
+    public function getLocator()
+    {
+        return $this->__locator;
+    }
 
     public function getData($path, $format = '')
     {
@@ -18,7 +32,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
             if(!parse_url($path, PHP_URL_SCHEME) == 'http')
             {
                 //Locate the data file
-                if (!$file = $this->getObject('com:pages.data.locator')->locate('data://'.$path)) {
+                if (!$file = $this->getLocator()->locate('data://'.$path)) {
                     throw new InvalidArgumentException(sprintf('The data file "%s" cannot be located.', $path));
                 }
 
@@ -57,21 +71,19 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         $data  = array();
         $nodes = array();
 
-        $basepath = $this->getObject('com:pages.data.locator')->getBasePath();
+        $basepath = $this->getLocator()->getBasePath();
         $basepath = ltrim(str_replace($basepath, '', $path), '/');
 
         //List
         foreach (new DirectoryIterator($path) as $node)
         {
-            if (!in_array($node->getFilename()[0], array('.', '_'))) {
+            if(strpos($node->getFilename(), '.order.') !== false) {
+                $nodes = array_merge($this->fromFile((string)$node->getFileInfo()), $nodes);
+            }
+
+            if (!in_array($node->getFilename()[0], array('.', '_')) && !in_array($node->getFilename(), $nodes)) {
                 $nodes[] = $node->getFilename();
             }
-        }
-
-        //Order
-        if($order = $this->getObject('com:pages.data.locator')->locate('data://'.$basepath.'/.order')) {
-            $nodes = $this->_orderData($nodes, $this->fromFile($order));
-
         }
 
         //Files
@@ -134,32 +146,5 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
 
         $result = $this->getObject('object.config.factory')->fromString($format, $content, false);
         return $result;
-    }
-
-    protected function _orderData(array $data, $order)
-    {
-        if(is_string($order))
-        {
-            switch($order)
-            {
-                case 'asc':
-                case 'ascending':
-                    sort($data, SORT_NATURAL);
-                    break;
-
-                case 'desc':
-                case 'descending':
-                    rsort($data, SORT_NATURAL);
-                    break;
-
-                case 'shuffle':
-                    shuffle($data);
-                    break;
-            }
-
-        }
-        else $data = array_unique(array_merge($order, $data));
-
-        return $data;
     }
 }
