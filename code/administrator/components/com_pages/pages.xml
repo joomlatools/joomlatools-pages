@@ -13,13 +13,15 @@
 
     <files folder="site/components/com_pages">
         <filename>pages.php</filename>
-        <filename>router.php</filename>
 
         <folder>controller</folder>
         <folder>data</folder>
+        <folder>database</folder>
         <folder>dispatcher</folder>
+        <folder>event</folder>
         <folder>model</folder>
         <folder>object</folder>
+        <folder>page</folder>
         <folder>resources</folder>
         <folder>template</folder>
         <folder>view</folder>
