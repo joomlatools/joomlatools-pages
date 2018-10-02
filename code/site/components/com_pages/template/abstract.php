@@ -120,9 +120,8 @@ class ComPagesTemplateAbstract extends KTemplate
         $result = array();
         if($this->getObject('page.registry')->isPage($path))
         {
-            $result = $this->getObject('com:pages.model.pages')
-                ->path($path)
-                ->fetch();
+            $data   = $this->getObject('page.registry')->getPage($path);
+            $result = $this->getObject('com:pages.model.pages')->create($data->toArray());
         }
 
         return $result;
