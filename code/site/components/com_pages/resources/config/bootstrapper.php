@@ -16,7 +16,9 @@ return array(
 
     'aliases' => [
         'page.registry' => 'com:pages.page.registry',
-        'data.registry' => 'com:pages.data.registry'
+        'data.registry' => 'com:pages.data.registry',
+        'com:pages.version'     => 'com://admin/pages.version',
+        'com:pages.data.object' => 'com://site/pages.data.object',
     ],
 
     'identifiers' => [

@@ -45,7 +45,8 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
             else $result = $this->fromUrl($path, $format);
 
             //Create the data object
-            $this->__data[$path] = new ComPagesDataObject($result);
+            $class = $this->getObject('manager')->getClass('com:pages.data.object');
+            $this->__data[$path] = new $class($result);
         }
 
         return $this->__data[$path];
@@ -57,7 +58,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         $result = array();
 
         $url = trim(fgets(fopen($file, 'r')));
-        if(strpos($file, '://') !== false) {
+        if(strpos($url, '://') !== false) {
             $result = $this->fromUrl($url, pathinfo($file, PATHINFO_EXTENSION));
         } else {
             $result = $this->getObject('object.config.factory')->fromFile($file, false);
