@@ -14,6 +14,7 @@ class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerial
         $config->append([
             'identity_key'   => 'path',
             'data' => [
+                'name'        => '',
                 'title'       => '',
                 'summary'     => '',
                 'slug'        => '',
@@ -86,9 +87,22 @@ class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerial
         return $this->getHandle();
     }
 
-    public function getPropertyCategory()
+    public function setPropertyName($name)
     {
-        return basename($this->path);
+        if(empty($name)) {
+            $name = ucwords(str_replace(array('_', '-'), ' ', $this->slug));
+        }
+
+        return $name;
+    }
+
+    public function setPropertyCategory($category)
+    {
+        if(empty($category)) {
+            $category = basename($this->path);
+        }
+
+        return $category;
     }
 
     public function setPropertyAccess($value)
