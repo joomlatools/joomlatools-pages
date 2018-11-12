@@ -17,7 +17,7 @@ class ComPagesModelPages extends KModelAbstract
         $this->getState()
             ->insert('path', 'url', '.')
             ->insert('slug', 'cmd', '', true, array('path'))
-            ->insert('recurse', 'boolean', 0, false, array(), true) //internal state
+            ->insert('recurse', 'boolean', true, false, array(), true) //internal state
             ->insert('level', 'int', 0, false, array(), true);      //internal state
 
         $this->addCommandCallback('before.fetch', '_prepareContext');
@@ -34,6 +34,7 @@ class ComPagesModelPages extends KModelAbstract
                 'categorizable',
                 'accessible',
                 'crawlable',
+                'visible',
                 'paginatable',
             ]
         ]);

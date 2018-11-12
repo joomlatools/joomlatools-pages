@@ -9,23 +9,15 @@
 
 class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
 {
-    private $__parents = array();
     private $__children = array();
-
-    protected $_level;
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'priority'   => self::PRIORITY_HIGH,
+            'priority' => self::PRIORITY_HIGH,
         ]);
 
         parent::_initialize($config);
-    }
-
-    public function getParent()
-    {
-        return $this->__pages->find($this->path);
     }
 
     public function hasChildren()
@@ -53,21 +45,6 @@ class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
         return $result;
     }
 
-    public function isRoot()
-    {
-        return $this->getParent() === null;
-    }
-
-    public function isChild()
-    {
-        return $this->getParent() !== null;
-    }
-
-    public function getFolders()
-    {
-        return new ComPagesModelIteratorRecursive($this->__parents, ComPagesModelIteratorRecursive::PAGES_STRUCTURE, $this->_level);
-    }
-
     public function getMixableMethods($exclude = array())
     {
         $methods = array();
@@ -80,15 +57,9 @@ class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
 
     protected function _afterFetch(KModelContext $context)
     {
-        if ($context->state->recurse)
+        if (!$context->state->isUnique() && $context->state->recurse)
         {
             $pages = $context->entity;
-
-            //Store the pages
-            $this->__pages = $pages;
-
-            //Store the level for iteration
-            $this->_level    = $context->state->level;
 
             //Filter children
             foreach ($pages as $path => $page)
@@ -103,8 +74,9 @@ class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
 
                     //Store the nodes by parent
                     $this->__children[$parent][$path] = $page;
+
+                    $pages->remove($page);
                 }
-                else $this->__parents[] = $page;
             }
 
             //Mixin the behavior
