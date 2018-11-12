@@ -118,7 +118,7 @@ class ComPagesTemplateAbstract extends KTemplate
     public function fetchPage($path)
     {
         $result = array();
-        if($this->getObject('page.registry')->isPage($path))
+        if($path && $this->getObject('page.registry')->isPage($path))
         {
             $data   = $this->getObject('page.registry')->getPage($path);
             $result = $this->getObject('com:pages.model.pages')->create($data->toArray());
@@ -131,7 +131,7 @@ class ComPagesTemplateAbstract extends KTemplate
     {
         $result = array();
 
-        if ($this->getObject('page.registry')->isPage($path))
+        if ($path && $this->getObject('page.registry')->isPage($path))
         {
             if(is_string($state)) {
                 $state = json_decode('{'.preg_replace('/(\w+)/', '"$1"', $state).'}', true);
