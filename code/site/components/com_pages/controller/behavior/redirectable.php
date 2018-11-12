@@ -17,10 +17,10 @@ class ComPagesControllerBehaviorRedirectable extends KControllerBehaviorAbstract
             {
                 $base = $context->request->getSiteUrl();
 
-                if(!JFactory::getApplication()->getCfg('sef_rewrite')) {
+                if(strpos($context->request->getUrl(), 'index.php') !== false) {
                     $base .= '/index.php';
                 }
-
+                
                 $url = $base .'/'.ltrim($url, '/');
             }
 
