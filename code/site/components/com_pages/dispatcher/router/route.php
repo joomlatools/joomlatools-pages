@@ -130,6 +130,6 @@ class ComPagesDispatcherRouterRoute extends KDispatcherRouterRoute
         $url  = $this->getObject('request')->getUrl()->getPath();
 
         //Get the route
-        return trim(str_replace(array($base, '/index.php'), '', $url), '/');
+        return trim(str_replace(array($base, '/index.php'), '', '/'.$url), '/');
     }
 }
