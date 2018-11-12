@@ -16,21 +16,6 @@ class ComPagesViewPageHtml extends ComPagesViewHtml
         $this->addCommandCallback('after.render' , '_processPlugins');
     }
 
-    public function getLayout()
-    {
-        if(!$layout = parent::getLayout())
-        {
-            if($collection = $this->getObject('page.registry')->isCollection($this->getPage()->path))
-            {
-                if(isset($collection['layout'])) {
-                    $layout = $collection['layout'];
-                }
-            }
-        }
-
-        return $layout;
-    }
-
     protected function _actionRender(KViewContext $context)
     {
         //Set the pre-rendered page content in the response to allow for view decoration

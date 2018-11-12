@@ -318,9 +318,23 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             $page->date = filemtime($page->getFilename());
         }
 
-        //Set the date (if not set yet)
-        if(isset($page->layout) && is_string($page->layout)) {
+        //Set the layout (if not set yet)
+        if($page->has('layout') && is_string($page->layout)) {
             $page->layout = array('path' => $page->layout);
+        }
+
+        //Set page default properties from collection
+        if($collection = $this->getObject('page.registry')->isCollection($page->path))
+        {
+            if(isset($collection['page']))
+            {
+                foreach($collection['page'] as $property => $value)
+                {
+                    if(!$page->has($property)) {
+                        $page->set($property, $value);
+                    }
+                }
+            }
         }
 
         //Handle dynamic data
