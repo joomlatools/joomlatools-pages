@@ -23,7 +23,7 @@ class ComPagesModelBehaviorSortable extends KModelBehaviorAbstract
         parent::onMixin($mixer);
 
         $mixer->getState()
-            ->insert('sort', 'cmd', 'title')
+            ->insert('sort', 'cmd', 'order')
             ->insert('order', 'word', 'asc');
     }
 
@@ -35,7 +35,7 @@ class ComPagesModelBehaviorSortable extends KModelBehaviorAbstract
         {
             $pages = KObjectConfig::unbox($context->pages);
 
-            if($state->sort)
+            if($state->sort && $state->sort != 'order')
             {
                 usort($pages, function($first, $second) use($state)
                 {
