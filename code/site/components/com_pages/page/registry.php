@@ -16,6 +16,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
     private $__page  = array();
     private $__pages = null;
+    private $__paths = array();
 
     protected $_cache;
     protected $_cache_path;
@@ -52,7 +53,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $this->__locator;
     }
 
-    public function getPages($path = '', $mode = self::PAGES_ONLY, $depth = -1, $render = false)
+    public function getPages($path = '', $mode = self::PAGES_ONLY, $depth = -1)
     {
         $group = 'pages_'.crc32($mode.$depth);
 
@@ -62,27 +63,19 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
             if (!$cache = $this->isCached($directory, $group))
             {
-                $iterator = new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS);
-                $iterator = new ComPagesRecursiveFilterIterator($iterator);
+                $iterator = new RecursiveArrayIterator($this->_iteratePath($path));
                 $iterator = new RecursiveIteratorIterator($iterator, $mode);
 
                 //Set the max dept, -1 for full depth
                 $iterator->setMaxDepth($depth);
 
                 $result = array();
-                foreach ($iterator as $file)
+                foreach ($iterator as $page_path => $children)
                 {
-                    $page_path = trim(dirname($iterator->getSubpathname()), '.');
-                    $page_file = pathinfo($file, PATHINFO_FILENAME);
-
-                    $page_path = $page_path ? $page_path. '/' . $page_file : $page_file;
-
-                    //Pre-pend the path
-                    if(!empty($path)) {
-                        $page_path = $path.'/'.$page_path;
+                    if(!$page = $this->getPage($page_path)) {
+                        throw new RuntimeException(sprintf('The page "%s"does not exist.', $page_path));
                     }
 
-                    $page = $this->getPage($page_path);
                     if($this->isCollection($path))
                     {
                         //Render the content
@@ -94,7 +87,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                             ->render($page->toArray());
                     }
 
-                    $result[$page_path] = $page->toArray();;
+                    $result[$page_path] = $page->toArray();
                 }
 
                 //Cache the page
@@ -267,6 +260,81 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $result;
     }
 
+    protected function _iteratePath($path = '')
+    {
+        $iterate = function($path) use(&$iterate)
+        {
+            if(!isset($this->__paths[$path]))
+            {
+                $files = false;
+
+                //Only include pages
+                if($directory = $this->getLocator()->locate('page://pages/'. $path))
+                {
+                    $nodes = array();
+                    $directory  = dirname($directory);
+
+                    $basepath = $this->getLocator()->getBasePath().'/pages';
+                    $basepath = ltrim(str_replace($basepath, '', $directory), '/');
+
+                    //List
+                    foreach (new DirectoryIterator($directory) as $node)
+                    {
+                        $nodes[] =  $node->getFilename();
+                        if(strpos($node->getFilename(), '.order.') !== false)
+                        {
+                            $order = $this->getObject('object.config.factory')->fromFile((string)$node->getFileInfo(), false);
+                            $nodes = array_merge($order, $nodes);
+                        }
+                    }
+
+                    if($nodes = array_unique($nodes))
+                    {
+                        $files = array();
+
+                        foreach($nodes as $node)
+                        {
+                            //Exclude files or folder that start with '.' or '_'
+                            if (!in_array($node[0], array('.', '_')))
+                            {
+                                $info     = pathinfo($node);
+                                $filepath = $basepath ? $basepath .'/'.$info['filename'] : $info['filename'];
+
+                                if($info['extension'])
+                                {
+                                    if(strpos($node, 'index') === false) {
+                                        $files[$filepath] = $filepath;
+                                    }
+                                }
+                                else
+                                {
+                                    if(false !== $result = $iterate($filepath))
+                                    {
+                                        if($result) {
+                                            $files[$filepath] = $result;
+                                        } else {
+                                            $files[$filepath] = $filepath;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                $this->__paths[$path] = $files;
+            }
+            else $files = $this->__paths[$path];
+
+            return $files;
+        };
+
+        Closure::bind($iterate, $this, get_class());
+        $files = $iterate($path);
+
+        return $files;
+    }
+
     protected function _writeCache($file, $data, $group = 'page')
     {
         if($this->_cache)
@@ -357,37 +425,5 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 }
             }
         });
-    }
-}
-
-class ComPagesRecursiveFilterIterator extends RecursiveFilterIterator
-{
-    protected $_basepath;
-
-    public function __construct(RecursiveDirectoryIterator $iterator)
-    {
-        $this->_basepath =  KObjectManager::getInstance()->getObject('page.registry')->getLocator()->getBasePath().'/pages';
-
-        parent::__construct($iterator);
-    }
-
-    public function accept()
-    {
-        $result  = false;
-        $current = $this->getBasename();
-
-        if(strlen($current) && !in_array($current[0], array('.', '_')))
-        {
-            if($this->getPath() === $this->_basepath || strpos($current, 'index') === false) {
-                $result = true;
-            }
-        }
-
-        return $result;
-    }
-
-    public function hasChildren()
-    {
-        return parent::hasChildren() && $this->accept();
     }
 }
