@@ -386,11 +386,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             $page->date = filemtime($page->getFilename());
         }
 
-        //Set the layout (if not set yet)
-        if($page->has('layout') && is_string($page->layout)) {
-            $page->layout = array('path' => $page->layout);
-        }
-
         //Set page default properties from collection
         if($collection = $this->getObject('page.registry')->isCollection($page->path))
         {
@@ -403,6 +398,11 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     }
                 }
             }
+        }
+
+        //Set the layout (if not set yet)
+        if($page->has('layout') && is_string($page->layout)) {
+            $page->layout = array('path' => $page->layout);
         }
 
         //Handle dynamic data
