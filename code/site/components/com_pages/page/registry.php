@@ -16,6 +16,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
     private $__page  = array();
     private $__pages = null;
+    private $__paths = array();
 
     protected $_cache;
     protected $_cache_path;
@@ -261,61 +262,75 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
     protected function _iteratePath($path = '')
     {
-        $files = false;
-        $nodes = array();
-
-        //Only include pages
-        if($path = $this->getLocator()->locate('page://pages/'. $path))
+        $iterate = function($path) use(&$iterate)
         {
-            $path = dirname($path);
-
-            $basepath = $this->getLocator()->getBasePath().'/pages';
-            $basepath = ltrim(str_replace($basepath, '', $path), '/');
-
-            //List
-            foreach (new DirectoryIterator($path) as $node)
+            if(!isset($this->__paths[$path]))
             {
-                $nodes[] =  $node->getFilename();
-                if(strpos($node->getFilename(), '.order.') !== false)
-                {
-                    $order = $this->getObject('object.config.factory')->fromFile((string)$node->getFileInfo(), false);
-                    $nodes = array_merge($order, $nodes);
-                }
-            }
+                $files = false;
 
-            if($nodes = array_unique($nodes))
-            {
-                $files = array();
-
-                foreach($nodes as $node)
+                //Only include pages
+                if($directory = $this->getLocator()->locate('page://pages/'. $path))
                 {
-                    //Exclude files or folder that start with '.' or '_'
-                    if (!in_array($node[0], array('.', '_')))
+                    $nodes = array();
+                    $directory  = dirname($directory);
+
+                    $basepath = $this->getLocator()->getBasePath().'/pages';
+                    $basepath = ltrim(str_replace($basepath, '', $directory), '/');
+
+                    //List
+                    foreach (new DirectoryIterator($directory) as $node)
                     {
-                        $info = pathinfo($node);
-                        $path = $basepath ? $basepath .'/'.$info['filename'] : $info['filename'];
-
-                        if($info['extension'])
+                        $nodes[] =  $node->getFilename();
+                        if(strpos($node->getFilename(), '.order.') !== false)
                         {
-                            if(strpos($node, 'index') === false) {
-                                $files[$path] = $path;
-                            }
+                            $order = $this->getObject('object.config.factory')->fromFile((string)$node->getFileInfo(), false);
+                            $nodes = array_merge($order, $nodes);
                         }
-                        else
+                    }
+
+                    if($nodes = array_unique($nodes))
+                    {
+                        $files = array();
+
+                        foreach($nodes as $node)
                         {
-                            if(false !== $result = $this->_iteratePath($path))
+                            //Exclude files or folder that start with '.' or '_'
+                            if (!in_array($node[0], array('.', '_')))
                             {
-                                if($result) {
-                                    $files[$path] = $result;
-                                } else {
-                                    $files[$path] = $path;
+                                $info     = pathinfo($node);
+                                $filepath = $basepath ? $basepath .'/'.$info['filename'] : $info['filename'];
+
+                                if($info['extension'])
+                                {
+                                    if(strpos($node, 'index') === false) {
+                                        $files[$filepath] = $filepath;
+                                    }
+                                }
+                                else
+                                {
+                                    if(false !== $result = $iterate($filepath))
+                                    {
+                                        if($result) {
+                                            $files[$filepath] = $result;
+                                        } else {
+                                            $files[$filepath] = $filepath;
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
                 }
+
+                $this->__paths[$path] = $files;
             }
-        }
+            else $files = $this->__paths[$path];
+
+            return $files;
+        };
+
+        Closure::bind($iterate, $this, get_class());
+        $files = $iterate($path);
 
         return $files;
     }
