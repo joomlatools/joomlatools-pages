@@ -23,6 +23,7 @@ class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerial
                 'date'        => 'now',
                 'author'      => '',
                 'published'   => true,
+                'category'    => '',
                 'access'      => [
                     'roles'  => ['public'],
                     'groups' => ['public', 'guest']
