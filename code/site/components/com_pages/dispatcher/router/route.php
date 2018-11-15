@@ -91,7 +91,7 @@ class ComPagesDispatcherRouterRoute extends KDispatcherRouterRoute
 
         if($this->getObject('page.registry')->isPage($page))
         {
-            if ($format = pathinfo($route, PATHINFO_EXTENSION))
+            if('html'!= $format = $this->getObject('request')->getFormat())
             {
                 $query['format'] = $format;
                 $route = basename($route, '.' . $format);
