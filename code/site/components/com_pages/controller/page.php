@@ -14,10 +14,10 @@ class ComPagesControllerPage extends ComPagesControllerAbstract
         if($context->request->getFormat() == 'html')
         {
             //Set the path in the pathway to allow for module injection
-            $page_route = $this->getObject('com:pages.dispatcher.router.route')->getRoute();
-            $menu_route = JFactory::getApplication()->getMenu()->getActive()->route;
+            $page_route = $this->getObject('com:pages.dispatcher.router.route');
+            $menu_route = JFactory::getApplication()->getMenu()->getActive();
 
-            if($path = ltrim(str_replace($menu_route, '', $page_route), '/'))
+            if($path = ltrim(str_replace($menu_route->route, '', $page_route->getRoute()), '/'))
             {
                 $pathway = JFactory::getApplication()->getPathway();
 
@@ -25,7 +25,9 @@ class ComPagesControllerPage extends ComPagesControllerAbstract
                 foreach(explode('/', $path) as $segment)
                 {
                     $segments[] = $segment;
-                    $pathway->addItem(ucfirst($segment), 'index.php?path='.implode('/', $segments));
+                    $route      = $page_route->build(array('path' => implode('/', $segments)));
+
+                    $pathway->addItem(ucfirst($segment), (string) $route);
                 }
             }
         }
