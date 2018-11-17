@@ -128,7 +128,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     $page->path = trim(dirname($path), '.');
 
                     //Set the slug
-                    $page->slug = basename($path);
+                    $page->slug = pathinfo($path, PATHINFO_FILENAME);
 
                     //Normalise the page data
                     $this->_normalisePage($page);
@@ -272,6 +272,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 if($directory = $this->getLocator()->locate('page://pages/'. $path))
                 {
                     $nodes = array();
+                    $order = array();
                     $directory  = dirname($directory);
 
                     $basepath = $this->getLocator()->getBasePath().'/pages';
@@ -280,14 +281,17 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     //List
                     foreach (new DirectoryIterator($directory) as $node)
                     {
-                        $nodes[] =  $node->getFilename();
-                        if(strpos($node->getFilename(), '.order.') !== false)
-                        {
+                        if(strpos($node->getFilename(), '.order.') !== false) {
                             $order = $this->getObject('object.config.factory')->fromFile((string)$node->getFileInfo(), false);
-                            $nodes = array_merge($order, $nodes);
+                        } else {
+                            $nodes[] =  $node->getFilename();
                         }
                     }
 
+                    //Remove files that don't exist from ordering (to prevent loops)
+                    $nodes = array_merge(array_intersect($order, $nodes), $nodes);
+
+                    //Prevent duplicates
                     if($nodes = array_unique($nodes))
                     {
                         $files = array();
