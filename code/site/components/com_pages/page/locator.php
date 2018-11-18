@@ -26,7 +26,7 @@ class ComPagesPageLocator extends KTemplateLocatorFile
         $path = ltrim(str_replace(parse_url($info['url'], PHP_URL_SCHEME).'://', '', $info['url']), '/');
 
         $file   = pathinfo($path, PATHINFO_FILENAME);
-        $format = pathinfo($path, PATHINFO_EXTENSION);
+        $format = pathinfo($path, PATHINFO_EXTENSION) ?: 'html';
         $path   = ltrim(pathinfo($path, PATHINFO_DIRNAME), '.');
 
         //Prepend the base path
@@ -36,32 +36,16 @@ class ComPagesPageLocator extends KTemplateLocatorFile
             $path = $this->getBasePath();
         }
 
-        if($this->realPath($path.'/'.$file))
-        {
-            if($format) {
-                $pattern = $path.'/'.$file.'/index.'.$format.'.*';
-            } else {
-                $pattern = $path.'/'.$file.'/index.'.'*';
-            }
-        }
-        else
-        {
-            if($format) {
-                $pattern = $path.'/'.$file.'.'.$format.'.*';
-            } else {
-                $pattern = $path.'/'.$file.'.*';
-            }
+        if($this->realPath($path.'/'.$file)) {
+            $pattern = $path.'/'.$file.'/index.'.$format.'*';
+        } else {
+            $pattern = $path.'/'.$file.'.'.$format.'*';
         }
 
         //Try to find the file
         $result = false;
         if ($results = glob($pattern))
         {
-            //Sort the files
-            usort($results, function($a, $b) {
-                return strlen($a) <=> strlen($b);
-            });
-
             foreach($results as $file)
             {
                 if($result = $this->realPath($file)) {
@@ -71,50 +55,5 @@ class ComPagesPageLocator extends KTemplateLocatorFile
         }
 
         return $result;
-    }
-
-    public function formats($url)
-    {
-        if(!isset($this->_formats[$url]))
-        {
-            $path = ltrim(str_replace(parse_url($url, PHP_URL_SCHEME).'://', '', $url), '/');
-
-            $file = pathinfo($path, PATHINFO_FILENAME);
-            $path = ltrim(pathinfo($path, PATHINFO_DIRNAME), '.');
-
-            //Prepend the base path
-            if($path) {
-                $path = $this->getBasePath().'/'.$path;
-            } else {
-                $path = $this->getBasePath();
-            }
-
-            if($this->realPath($path.'/'.$file)) {
-                $pattern = $path.'/'.$file.'/index.'.'*';
-            } else {
-                $pattern = $path.'/'.$file.'.*';
-            }
-
-            //Try to find the file
-            $formats  = array();
-            $engines = $this->getObject('template.engine.factory')->getFileTypes();
-            if ($results = glob($pattern))
-            {
-                $formats = array();
-                foreach($results as $result)
-                {
-                    $format = pathinfo($result, PATHINFO_EXTENSION);
-                    if(in_array($format, $engines)) {
-                        $format = pathinfo(pathinfo($result, PATHINFO_FILENAME), PATHINFO_EXTENSION);
-                    }
-
-                    $formats[$format] = $format;
-                }
-            }
-
-            $this->_formats[$url] = $formats;
-        }
-
-        return $this->_formats[$url];
     }
 }

@@ -35,9 +35,8 @@ class ComPagesControllerAbstract extends KControllerModel
 
         if($page = $this->getRequest()->query->get('page', 'url', false))
         {
-            $format = $this->getRequest()->getFormat();
-            if($this->getObject('page.registry')->isPageFormat($page, $format)) {
-                $formats = array($format);
+            if($this->getObject('page.registry')->isPage($page)) {
+                $formats = array($this->getRequest()->getFormat());
             } else {
                 $formats = array();
             }

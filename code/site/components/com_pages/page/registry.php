@@ -128,7 +128,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     $page->path = trim(dirname($path), '.');
 
                     //Set the slug
-                    $page->slug = pathinfo($path, PATHINFO_FILENAME);
+                    $page->slug = basename($path, '.html');
 
                     //Normalise the page data
                     $this->_normalisePage($page);
@@ -160,20 +160,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
            $result = (bool) $this->getLocator()->locate('page://pages/'. $path);
         } else {
             $result = ($this->__page[$path] === false) ? false : true;
-        }
-
-        return $result;
-    }
-
-    public function isPageFormat($path, $format)
-    {
-        $result = false;
-        if($this->isPage($path))
-        {
-            $formats = $this->getLocator()->formats('page://pages/'. $path);
-            if(isset($formats[$format])) {
-                $result = true;
-            }
         }
 
         return $result;
@@ -284,7 +270,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                         if(strpos($node->getFilename(), '.order.') !== false) {
                             $order = $this->getObject('object.config.factory')->fromFile((string)$node->getFileInfo(), false);
                         } else {
-                            $nodes[] =  $node->getFilename();
+                            $nodes[] = $node->getFilename();
                         }
                     }
 
