@@ -96,19 +96,19 @@ class ComPagesPageLocator extends KTemplateLocatorFile
             }
 
             //Try to find the file
-            $formats = array();
+            $formats  = array();
+            $engines = $this->getObject('template.engine.factory')->getFileTypes();
             if ($results = glob($pattern))
             {
                 $formats = array();
                 foreach($results as $result)
                 {
-                    $file = pathinfo($result, PATHINFO_FILENAME);
-
-                    if($format = pathinfo($file, PATHINFO_EXTENSION)) {
-                        $formats[$format] = $format;
-                    } else {
-                        $formats['html'] = 'html';
+                    $format = pathinfo($result, PATHINFO_EXTENSION);
+                    if(in_array($format, $engines)) {
+                        $format = pathinfo(pathinfo($result, PATHINFO_FILENAME), PATHINFO_EXTENSION);
                     }
+
+                    $formats[$format] = $format;
                 }
             }
 
