@@ -20,6 +20,30 @@ class ComPagesTemplatePage extends ComPagesTemplateLayout
         parent::_initialize($config);
     }
 
+    public function loadString($source, $type = null, $url = null)
+    {
+        if(parse_url($url, PHP_URL_SCHEME) == 'page')
+        {
+            ////Add filters
+            if(isset($this->_data['process']['filters']))
+            {
+                if($filters = (array) $this->_data['process']['filters'])
+                {
+                    foreach (KObjectConfig::unbox($filters) as $key => $value)
+                    {
+                        if (is_numeric($key)) {
+                            $this->addFilter($value);
+                        } else {
+                            $this->addFilter($key, $value);
+                        }
+                    }
+                }
+            }
+        }
+
+        return parent::loadString($source, $type, $url);
+    }
+
     public function createRoute($route)
     {
         //Parse route
