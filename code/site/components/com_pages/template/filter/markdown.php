@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesTemplateFilterMarkdown extends KTemplateFilterMarkdown
+class ComPagesTemplateFilterMarkdown extends KTemplateFilterAbstract
 {
     public function filter(&$text)
     {
