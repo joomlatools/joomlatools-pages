@@ -75,7 +75,7 @@ class ComPagesTemplateFilterToc extends KTemplateFilterAbstract
                 }
 
                 //Remove the <khtml:toc> tags
-                $text = str_replace($matches[0], $toc, $text);
+                $text = str_replace($matches[0][$key], $toc, $text);
 
             }
         }
