@@ -9,9 +9,22 @@
 
 class ComPagesTemplateFilterHighlight extends KTemplateFilterAbstract
 {
+    protected $_highlighter;
+
+    public function __construct(KObjectConfig $config)
+    {
+        parent::__construct($config);
+
+        //Set the markdown compiler
+        if($config->highlighter) {
+            $this->setHighlighter($config->highlighter);
+        }
+    }
+
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
+            'highlighter'      => null,
             'default_language' => 'php',
             'priority' => self::PRIORITY_HIGH
         ));
@@ -23,8 +36,6 @@ class ComPagesTemplateFilterHighlight extends KTemplateFilterAbstract
     {
         if(preg_match_all('#<pre><code\s*([^>]*)>(.*)<\/code></pre>#siU', $text, $matches))
         {
-            $highlighter = new Highlight\Highlighter();
-
             foreach($matches[2] as $key => $code)
             {
                 //Create attributes array
@@ -34,21 +45,45 @@ class ComPagesTemplateFilterHighlight extends KTemplateFilterAbstract
 
                 $attributes = array_merge($attributes, $this->parseAttributes($matches[1][$key]));
 
-                try
+                if($result = $this->_highlight($code, $attributes['language']))
                 {
-                    $highlighted = $highlighter->highlight($attributes['language'], $code, false);
-
                     $html  = '<ktml:style src="assets://com_pages/css/highlight.css" />';
-                    $html .= '<pre class="hljs ' . $highlighted->language . '">';
-                    $html .= htmlspecialchars_decode($highlighted->value, ENT_HTML5);
+                    $html .= '<pre class="hljs ' . $attributes['language'] . '">';
+                    $html .=  $result;
                     $html .= '</pre>';
 
                     $text = str_replace($matches[0][$key], $html, $text);
                 }
-                catch (DomainException $e) {};
             }
-
-
         }
+    }
+
+    public function getHighlighter()
+    {
+        return $this->_highlighter;
+    }
+
+    public function setHighlighter(callable $highlighter)
+    {
+        $this->_highlighter = $highlighter;
+        return $this;
+    }
+
+    protected function _highlight($source, $language = 'php')
+    {
+        $result = false;
+        if(is_callable($this->_highlighter))
+        {
+            try
+            {
+                $result = call_user_func($this->_highlighter, $source, $language);
+
+                //Ensure entities are not encoded
+                $result = htmlspecialchars_decode($result, ENT_HTML5);
+            }
+            catch (DomainException $e) {};
+        }
+
+        return $result;
     }
 }
