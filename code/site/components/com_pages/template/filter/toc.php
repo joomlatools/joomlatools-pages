@@ -13,8 +13,8 @@ class ComPagesTemplateFilterToc extends KTemplateFilterAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'base_level' => 1,
-            'max_level'  => 6,
+            'min_level' => 1,
+            'max_level' => 6,
             'anchor'     => [
                 'enabled'   => true,
                 'placement' => 'right',
@@ -40,14 +40,14 @@ class ComPagesTemplateFilterToc extends KTemplateFilterAbstract
             {
                 //Create attributes array
                 $attributes = array(
-                    'base' => $this->getConfig()->base_level,
-                    'max'  => $this->getConfig()->max_level,
+                    'min' => $this->getConfig()->min_level,
+                    'max' => $this->getConfig()->max_level,
                 );
 
                 $attributes = array_merge($attributes, $this->parseAttributes($matches[1][$key]));
 
                 $headers = array();
-                if(preg_match_all('#<h(['.$attributes['base'].'-'.$attributes['max'].'])\s*[^>]*>(.+?)</h\1>#is', $text, $headers))
+                if(preg_match_all('#<h(['.$attributes['min'].'-'.$attributes['max'].'])\s*[^>]*>(.+?)</h\1>#is', $text, $headers))
                 {
                     $toc = '<ul id="toc">';
 
