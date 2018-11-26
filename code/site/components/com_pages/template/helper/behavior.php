@@ -31,7 +31,7 @@ class ComPagesTemplateHelperBehavior extends ComKoowaTemplateHelperBehavior
             $html .= '<script>
             // Add anchors on DOMContentLoaded
             document.addEventListener("DOMContentLoaded", function(event) {
-                anchors.add();
+                anchors.add();if(document.querySelector(\'.no-anchor\')!==null){anchors.remove(\'.no-anchor\');}
             }); </script>';
 
             static::setLoaded('anchor');
