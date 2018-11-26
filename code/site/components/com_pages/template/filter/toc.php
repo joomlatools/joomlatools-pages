@@ -14,8 +14,16 @@ class ComPagesTemplateFilterToc extends KTemplateFilterAbstract
     {
         $config->append(array(
             'base_level' => 1,
-            'max_levek'  => 6,
-            'priority' => self::PRIORITY_LOW
+            'max_level'  => 6,
+            'anchor'     => [
+                'enabled'   => true,
+                'placement' => 'right',
+                'visibale'  => 'hover',
+                'icon'      => '&#128279;',
+                'class'     => null,
+                'truncate'  => null,
+                'arialabel' => 'Anchor',
+            ],
         ));
 
         parent::_initialize($config);
@@ -25,6 +33,7 @@ class ComPagesTemplateFilterToc extends KTemplateFilterAbstract
     {
         $toc = '';
 
+        $matches = array();
         if(preg_match_all('#<ktml:toc\s*([^>]*)>#siU', $text, $matches))
         {
             foreach($matches[0] as $key => $match)
@@ -72,10 +81,14 @@ class ComPagesTemplateFilterToc extends KTemplateFilterAbstract
                     }
 
                     $toc .= '</ul>';
+
+                    if($this->getConfig()->anchor->enabled) {
+                        $toc .= $this->getTemplate()->helper('behavior.anchor', KObjectConfig::unbox($this->getConfig()->anchor));
+                    }
                 }
 
                 //Remove the <khtml:toc> tags
-                $text = str_replace($matches[0][$key], $toc, $text);
+                $text = str_replace($match, $toc, $text);
 
             }
         }

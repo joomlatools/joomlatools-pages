@@ -13,6 +13,7 @@ class ComPagesTemplateFilterAsset extends ComKoowaTemplateFilterAsset
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
+            'priority' => self::PRIORITY_LOW,
             'schemes' => array('theme://' => 'base://templates/'.JFactory::getApplication()->getTemplate().'/'),
         ));
 
