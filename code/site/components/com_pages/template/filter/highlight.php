@@ -77,8 +77,10 @@ class ComPagesTemplateFilterHighlight extends KTemplateFilterAbstract
             {
                 $result = call_user_func($this->_highlighter, $source, $language);
 
-                //Ensure entities are not encoded
-                $result = htmlspecialchars_decode($result, ENT_HTML5);
+                //Ensure entities are not encoded when language is not html
+                if($language != 'html') {
+                    $result = htmlspecialchars_decode($result, ENT_HTML5);
+                }
             }
             catch (DomainException $e) {};
         }
