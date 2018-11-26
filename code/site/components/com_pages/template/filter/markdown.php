@@ -9,6 +9,15 @@
 
 class ComPagesTemplateFilterMarkdown extends KTemplateFilterAbstract
 {
+    protected function _initialize(KObjectConfig $config)
+    {
+        $config->append(array(
+            'priority' => self::PRIORITY_HIGH,
+        ));
+
+        parent::_initialize($config);
+    }
+
     public function filter(&$text)
     {
         $engine = $this->getObject('template.engine.factory')

@@ -26,7 +26,6 @@ class ComPagesTemplateFilterHighlight extends KTemplateFilterAbstract
         $config->append(array(
             'highlighter'      => null,
             'default_language' => 'php',
-            'priority' => self::PRIORITY_HIGH
         ));
 
         parent::_initialize($config);
@@ -34,7 +33,7 @@ class ComPagesTemplateFilterHighlight extends KTemplateFilterAbstract
 
     public function filter(&$text)
     {
-        if(preg_match_all('#<pre><code\s*([^>]*)>(.*)<\/code></pre>#siU', $text, $matches))
+        if(preg_match_all('#<pre>\s*<code\s*([^>]*)>(.*)<\/code>\s*</pre>#siU', $text, $matches))
         {
             foreach($matches[2] as $key => $code)
             {
@@ -45,7 +44,7 @@ class ComPagesTemplateFilterHighlight extends KTemplateFilterAbstract
 
                 $attributes = array_merge($attributes, $this->parseAttributes($matches[1][$key]));
 
-                if($result = $this->_highlight($code, $attributes['language']))
+                if($result = $this->_highlight(trim($code), $attributes['language']))
                 {
                     $html  = '<ktml:style src="assets://com_pages/css/highlight.css" />';
                     $html .= '<pre class="hljs ' . $attributes['language'] . '">';
