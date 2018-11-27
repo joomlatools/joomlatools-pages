@@ -39,15 +39,18 @@ class ComPagesTemplateFilterHighlight extends KTemplateFilterAbstract
             {
                 //Create attributes array
                 $attributes = array(
-                    'language' => $this->getConfig()->default_language,
+                    'class' => $this->getConfig()->default_language,
                 );
 
                 $attributes = array_merge($attributes, $this->parseAttributes($matches[1][$key]));
 
-                if($result = $this->_highlight(trim($code), $attributes['language']))
+                //Ensure entities are not encoded when passing to the highlighter.
+                $code = htmlspecialchars_decode($code, ENT_HTML5);
+
+                if($result = $this->_highlight(trim($code), $attributes['class']))
                 {
                     $html  = '<ktml:style src="assets://com_pages/css/highlight.css" />';
-                    $html .= '<pre class="hljs ' . $attributes['language'] . '">';
+                    $html .= '<pre class="hljs ' . $attributes['class'] . '">';
                     $html .=  $result;
                     $html .= '</pre>';
 
@@ -73,14 +76,8 @@ class ComPagesTemplateFilterHighlight extends KTemplateFilterAbstract
         $result = false;
         if(is_callable($this->_highlighter))
         {
-            try
-            {
+            try {
                 $result = call_user_func($this->_highlighter, $source, $language);
-
-                //Ensure entities are not encoded when language is not html
-                if($language != 'html') {
-                    $result = htmlspecialchars_decode($result, ENT_HTML5);
-                }
             }
             catch (DomainException $e) {};
         }
