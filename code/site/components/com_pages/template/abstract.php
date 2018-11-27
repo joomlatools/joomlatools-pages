@@ -22,7 +22,7 @@ class ComPagesTemplateAbstract extends KTemplate
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'filters'   => ['frontmatter', 'asset', 'template'],
+            'filters'   => ['frontmatter', 'asset', 'partial'],
             'functions' => [
                 'date'       => [$this, '_formatDate'],
                 'data'       => [$this, '_fetchData'],

@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesTemplateFilterTemplate extends KTemplateFilterAbstract
+class ComPagesTemplateFilterPartial extends KTemplateFilterAbstract
 {
     public function filter(&$text)
     {
@@ -15,7 +15,7 @@ class ComPagesTemplateFilterTemplate extends KTemplateFilterAbstract
         $types = implode('|', $types);
 
         $matches = array();
-        if(preg_match_all('#<ktml:template:('.$types.')>(.*)<\/ktml:template:('.$types.')>#siU', $text, $matches))
+        if(preg_match_all('#<ktml:partial\s+format="('.$types.')">(.*)<\/ktml:partial>#siU', $text, $matches))
         {
             foreach($matches[0] as $key => $match)
             {
