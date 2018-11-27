@@ -22,14 +22,14 @@ class ComPagesTemplateAbstract extends KTemplate
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'filters'   => ['markdown', 'frontmatter', 'asset'],
+            'filters'   => ['frontmatter', 'asset', 'partial'],
             'functions' => [
-                'date'       => [$this, 'formatDate'],
-                'data'       => [$this, 'fetchData'],
-                'page'       => [$this, 'fetchPage'],
-                'pages'      => [$this, 'fetchPages'],
-                'slug'       => [$this, 'createSlug'],
-                'attribute'  => [$this, 'createAttribute'],
+                'date'       => [$this, '_formatDate'],
+                'data'       => [$this, '_fetchData'],
+                'page'       => [$this, '_fetchPage'],
+                'pages'      => [$this, '_fetchPages'],
+                'slug'       => [$this, '_createSlug'],
+                'attribute'  => [$this, '_createAttribute'],
             ],
             'cache'           => false,
             'cache_namespace' => 'pages',
@@ -37,42 +37,6 @@ class ComPagesTemplateAbstract extends KTemplate
         ]);
 
         parent::_initialize($config);
-    }
-
-    protected function formatDate($date, $format = '')
-    {
-        if(!$date instanceof KDate)
-        {
-            if(empty($format)) {
-                $format = $this->getObject('translator')->translate('DATE_FORMAT_LC3');
-            }
-
-            $result = $this->createHelper('date')->format(array('date' => $date, 'format' => $format));
-        }
-        else $result = $date->format($format);
-
-        return $result;
-    }
-
-    protected function createSlug($string)
-    {
-        return $this->getObject('filter.factory')->createFilter('slug')->sanitize($string);
-    }
-
-    protected function createAttribute($name, $value)
-    {
-        $result = '';
-
-        if($value)
-        {
-            if(is_array($value)) {
-                $value = implode(' ', $value);
-            }
-
-            $result = ' '.$name.'="'.$value.'"';
-        }
-
-        return $result;
     }
 
     public function handleException(Exception &$exception)
@@ -96,7 +60,43 @@ class ComPagesTemplateAbstract extends KTemplate
         }
     }
 
-    public function fetchData($path, $format = '')
+    protected function _formatDate($date, $format = '')
+    {
+        if(!$date instanceof KDate)
+        {
+            if(empty($format)) {
+                $format = $this->getObject('translator')->translate('DATE_FORMAT_LC3');
+            }
+
+            $result = $this->createHelper('date')->format(array('date' => $date, 'format' => $format));
+        }
+        else $result = $date->format($format);
+
+        return $result;
+    }
+
+    protected function _createSlug($string)
+    {
+        return $this->getObject('filter.factory')->createFilter('slug')->sanitize($string);
+    }
+
+    protected function _createAttribute($name, $value)
+    {
+        $result = '';
+
+        if($value)
+        {
+            if(is_array($value)) {
+                $value = implode(' ', $value);
+            }
+
+            $result = ' '.$name.'="'.$value.'"';
+        }
+
+        return $result;
+    }
+
+    protected function _fetchData($path, $format = '')
     {
         $result = false;
         if(is_array($path))
@@ -115,7 +115,7 @@ class ComPagesTemplateAbstract extends KTemplate
         return $result;
     }
 
-    public function fetchPage($path)
+    protected function _fetchPage($path)
     {
         $result = array();
         if($path && $this->getObject('page.registry')->isPage($path))
@@ -127,7 +127,7 @@ class ComPagesTemplateAbstract extends KTemplate
         return $result;
     }
 
-    public function fetchPages($path = '.', $state = array())
+    protected function _fetchPages($path = '.', $state = array())
     {
         $result = array();
 

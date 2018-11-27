@@ -7,16 +7,22 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-
-class ComPagesTemplateFilterAsset extends ComKoowaTemplateFilterAsset
+class ComPagesTemplateFilterMarkdown extends KTemplateFilterAbstract
 {
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'priority' => self::PRIORITY_LOW,
-            'schemes' => array('theme://' => 'base://templates/'.JFactory::getApplication()->getTemplate().'/'),
+            'priority' => self::PRIORITY_HIGH,
         ));
 
         parent::_initialize($config);
+    }
+
+    public function filter(&$text)
+    {
+        $engine = $this->getObject('template.engine.factory')
+                ->createEngine('markdown', array('template' => $this->getTemplate()));
+
+        $text = $engine->loadString($text)->render();
     }
 }

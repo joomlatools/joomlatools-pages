@@ -46,10 +46,17 @@ return array(
                 return \Michelf\MarkdownExtra::defaultTransform($text);
             }
         ],
+        'com:pages.template.filter.highlight' => [
+            'highlighter'  => function($source, $language) {
+                //See: https://github.com/scrivo/highlight.php
+                return (new \Highlight\Highlighter())->highlight($language, $source, false)->value;
+            }
+        ],
         'com://site/pages.dispatcher.behavior.cacheable' => [
             'cache'         => $config['cache'] ?? false,
             'cache_time'    => $config['cache_time'] ?? 0,
             'cache_private' => $config['cache_private'] ?? false,
-        ]
+        ],
+
     ]
 );

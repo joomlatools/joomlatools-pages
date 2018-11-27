@@ -29,6 +29,7 @@ class ComPagesDataObject extends KObjectConfig
     {
         $data = $this->toArray();
 
+        //Filter the array
         $data = array_filter($data, function($v) use ($key, $value)
         {
             if($value !== null) {
@@ -37,6 +38,16 @@ class ComPagesDataObject extends KObjectConfig
                 return isset($v[$key]);
             }
         });
+
+        //Reset the numeric keys
+        if (is_numeric(key($data))) {
+            $data = array_values($data);
+        }
+
+        //Do no return an array if we only found one result
+        if(count($data) == 1) {
+           $data = $data[0];
+        }
 
         return new self($data);
     }
