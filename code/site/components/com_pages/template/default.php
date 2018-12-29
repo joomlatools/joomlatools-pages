@@ -7,9 +7,9 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesTemplateAbstract extends KTemplate
+class ComPagesTemplateDefault extends KTemplate
 {
-    protected $_filename;
+    protected $_layout;
 
     public function __construct(KObjectConfig $config)
     {
@@ -22,12 +22,10 @@ class ComPagesTemplateAbstract extends KTemplate
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'filters'   => ['frontmatter', 'asset', 'partial'],
+            'filters'   => ['frontmatter', 'partial'],
             'functions' => [
                 'date'       => [$this, '_formatDate'],
                 'data'       => [$this, '_fetchData'],
-                'page'       => [$this, '_fetchPage'],
-                'pages'      => [$this, '_fetchPages'],
                 'slug'       => [$this, '_createSlug'],
                 'attribute'  => [$this, '_createAttribute'],
             ],
@@ -58,6 +56,74 @@ class ComPagesTemplateAbstract extends KTemplate
                 $exception->getPrevious()
             );
         }
+    }
+
+    public function addFilters($filters)
+    {
+        foreach((array)KObjectConfig::unbox($filters) as $key => $value)
+        {
+            if (is_numeric($key)) {
+                $this->addFilter($value);
+            } else {
+                $this->addFilter($key, $value);
+            }
+        }
+
+        return $this;
+    }
+
+    public function loadFile($url)
+    {
+        //Qualify the layout
+        if(!parse_url($url, PHP_URL_SCHEME)) {
+            $url = 'page://layouts/'.$url;
+        }
+
+        if(parse_url($url, PHP_URL_SCHEME) == 'page')
+        {
+            if(!$file = $this->getObject('template.locator.factory')->locate($url)) {
+                throw new RuntimeException(sprintf('Cannot find layout: "%s"', $url));
+            }
+
+            //Load the layout
+            $template = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
+
+            if(isset($template->page) || isset($template->pages)) {
+                throw new KTemplateExceptionSyntaxError('Using "page or pages" in layout frontmatter is now allowed');
+            }
+
+            //Set the parent layout
+            if($layout = KObjectConfig::unbox($template->layout))
+            {
+                if(is_array($layout)) {
+                    $this->_layout = $layout['path'];
+                } else {
+                    $this->_layout = $layout;
+                }
+            }
+            else $this->_layout = false;
+
+            //Store the data and remove the layout
+            $this->_data = KObjectConfig::unbox($template->remove('layout'));
+
+            //Load the content
+            $result = $this->loadString($template->getContent(), pathinfo($file, PATHINFO_EXTENSION), $url);
+        }
+        else $result = parent::loadFile($url);
+
+        return $result;
+    }
+
+    public function getLayout()
+    {
+        return $this->_layout;
+    }
+
+    public function render(array $data = array())
+    {
+        unset($data['layout']);
+
+        return parent::render($data);
     }
 
     protected function _formatDate($date, $format = '')
@@ -111,37 +177,6 @@ class ComPagesTemplateAbstract extends KTemplate
             }
         }
         else $result = $this->getObject('data.registry')->getData($path, $format);
-
-        return $result;
-    }
-
-    protected function _fetchPage($path)
-    {
-        $result = array();
-        if($path && $this->getObject('page.registry')->isPage($path))
-        {
-            $data   = $this->getObject('page.registry')->getPage($path);
-            $result = $this->getObject('com:pages.model.pages')->create($data->toArray());
-        }
-
-        return $result;
-    }
-
-    protected function _fetchPages($path = '.', $state = array())
-    {
-        $result = array();
-
-        if ($path && $this->getObject('page.registry')->isPage($path))
-        {
-            if(is_string($state)) {
-                $state = json_decode('{'.preg_replace('/(\w+)/', '"$1"', $state).'}', true);
-            }
-
-            $result = $this->getObject('com:pages.model.pages')
-                ->setState($state)
-                ->path($path)
-                ->fetch();
-        }
 
         return $result;
     }

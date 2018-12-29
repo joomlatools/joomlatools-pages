@@ -76,17 +76,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                         throw new RuntimeException(sprintf('The page "%s"does not exist.', $page_path));
                     }
 
-                    if($this->isCollection($path))
-                    {
-                        //Render the content
-                        $type    = $page->getFiletype();
-                        $content = $page->getContent();
-
-                        $page->content = $this->getObject('com:pages.template.page')
-                            ->loadString($content, $type, 'page://pages/'. $path)
-                            ->render($page->toArray());
-                    }
-
                     $result[$page_path] = $page->toArray();
                 }
 

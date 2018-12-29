@@ -15,97 +15,41 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
     {
         $config->append([
             'decorator' => 'joomla',
-            'template'  => 'layout',
-            'behaviors' => ['routable'],
+            'template_filters' => ['asset'], //Redefine asset to run before the script filter
+            'template_functions' => [
+                'page'       => [$this, 'getPage'],
+                'pages'      => [$this, 'getPages'],
+            ],
         ]);
 
         parent::_initialize($config);
     }
 
-    public function getLayout()
-    {
-        if($layout = $this->getPage()->layout) {
-            $layout = $layout->path;
-        }
-
-        return $layout;
-    }
-
-    public function getLayoutData()
-    {
-        $data = array();
-        if($layout = $this->getPage()->layout)
-        {
-            unset($layout->path);
-            $data = $layout;
-        }
-
-        return $data;
-    }
-
-    public function getPage()
-    {
-        if(!isset($this->_page))
-        {
-            $registry = $this->getObject('page.registry');
-            $state    = $this->getModel()->getState();
-
-            if (!$state->isUnique())
-            {
-                $data = $registry->getPage($state->path);
-                $page = $this->getObject('com:pages.model.pages')->create($data->toArray());
-
-                $this->_page = $page;
-            }
-            else  $this->_page = $this->getModel()->fetch();
-        }
-
-        return $this->_page;
-    }
-
-    public function getTitle()
-    {
-        $result = '';
-        if($page = $this->getPage()) {
-            $result = $page->title ? $page->title :  '';
-        }
-
-        return $result;
-    }
-
-    public function getMetadata()
-    {
-        $metadata = array();
-        if($data = $this->getPage())
-        {
-            if(isset($data->metadata)) {
-                $metadata = KObjectConfig::unbox($data->metadata);
-            }
-
-            //Set the description into the metadata if it doesn't exist.
-            if(!empty($data->summary) && !isset($data->metadata->description)) {
-                $metadata['description'] = $data->summary;
-            }
-        }
-
-        return $metadata;
-    }
-
-    protected function _fetchData(KViewContext $context)
-    {
-        $context->parameters = $this->getModel()->getState()->getValues();
-    }
-
     protected function _actionRender(KViewContext $context)
     {
-        if($layout = $context->layout)
+        $data       = $context->data;
+        $parameters = $context->parameters;
+
+        //Render the page if it hasn't been rendered yet
+        if(empty($this->getPage()->content))
         {
-            //Set the page object
-            $context->data->page = $this->getPage();
+            //Create template
+            $page = clone $this->getTemplate();
+            $page->addFilters($this->getPage()->process->filters)
+                ->setParameters($parameters)
+                ->loadFile('page://pages/'.$this->getPage()->route);
 
-            $data       = $context->data;
-            $parameters = $context->parameters;
+            //Render page
+            $content = $page->render(KObjectConfig::unbox($data->append($page->getData())));
+            $this->getPage()->content = $content;
+        }
+        else $content = $this->getPage()->content;
 
+        //Set the rendered page in the view to allow for view decoration
+        $this->setContent($content);
+
+        if($layout = $this->getLayout())
+        {
             //Render the layout
             $renderLayout = function($layout, $data, $parameters) use(&$renderLayout)
             {
@@ -137,6 +81,107 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
         }
 
         return KViewAbstract::_actionRender($context);
+    }
+
+    public function getLayout()
+    {
+        if($layout = $this->getPage()->layout) {
+            $layout = $layout->path;
+        }
+
+        return $layout;
+    }
+
+    public function getLayoutData()
+    {
+        $data = array();
+        if($layout = $this->getPage()->layout)
+        {
+            unset($layout->path);
+            $data = $layout;
+        }
+
+        return $data;
+    }
+
+    public function getPage($path = null)
+    {
+        $result   = array();
+        $registry = $this->getObject('page.registry');
+
+        if (is_null($path))
+        {
+            if (!isset($this->_page))
+            {
+                $state = $this->getModel()->getState();
+
+                if (!$state->isUnique())
+                {
+                    $data = $registry->getPage($state->path);
+                    $page = $this->getObject('com:pages.model.pages')->create($data->toArray());
+
+                    $this->_page = $page;
+                }
+                else $this->_page = $this->getModel()->fetch();
+            }
+
+            $result = $this->_page;
+        }
+        else
+        {
+            if ($data = $registry->getPage($path)) {
+                $result = $this->getObject('com:pages.model.pages')->create($data->toArray());
+            }
+        }
+
+        return $result;
+    }
+
+    public function getPages($path = '.', $state = array())
+    {
+        $result = array();
+
+        if ($path && $this->getObject('page.registry')->isPage($path))
+        {
+            if(is_string($state)) {
+                $state = json_decode('{'.preg_replace('/(\w+)/', '"$1"', $state).'}', true);
+            }
+
+            $result = $this->getObject('com:pages.model.pages')
+                ->setState($state)
+                ->path($path)
+                ->fetch();
+        }
+
+        return $result;
+    }
+
+    public function getTitle()
+    {
+        $result = '';
+        if($page = $this->getPage()) {
+            $result = $page->title ? $page->title :  '';
+        }
+
+        return $result;
+    }
+
+    public function getMetadata()
+    {
+        $metadata = array();
+        if($data = $this->getPage())
+        {
+            if(isset($data->metadata)) {
+                $metadata = KObjectConfig::unbox($data->metadata);
+            }
+
+            //Set the description into the metadata if it doesn't exist.
+            if(!empty($data->summary) && !isset($data->metadata->description)) {
+                $metadata['description'] = $data->summary;
+            }
+        }
+
+        return $metadata;
     }
 
     public function getRoute($route = '', $fqr = true, $escape = true)
