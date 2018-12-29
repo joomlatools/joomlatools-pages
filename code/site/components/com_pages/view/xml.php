@@ -21,6 +21,15 @@ class ComPagesViewXml extends KViewTemplate
         parent::_initialize($config);
     }
 
+    protected function _actionRender(KViewContext $context)
+    {
+        //Prepend the xml prolog
+        $result  = '<?xml version="1.0" encoding="utf-8" ?>';
+        $result .=  parent::_actionRender($context);
+
+        return $result;
+    }
+
     public function getPage()
     {
         $registry = $this->getObject('page.registry');
@@ -75,15 +84,5 @@ class ComPagesViewXml extends KViewTemplate
         }
 
         return $this->getObject('com:pages.dispatcher.router.route',  array('escape'  => $escape))->build($query);
-    }
-
-
-    protected function _actionRender(KViewContext $context)
-    {
-        //Prepend the xml prolog
-        $result  = '<?xml version="1.0" encoding="utf-8" ?>';
-        $result .=  parent::_actionRender($context);
-
-        return $result;
     }
 }
