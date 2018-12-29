@@ -16,28 +16,6 @@ class ComPagesViewPageHtml extends ComPagesViewHtml
         $this->addCommandCallback('after.render' , '_processPlugins');
     }
 
-    protected function _actionRender(KViewContext $context)
-    {
-        //Set the pre-rendered page content in the response to allow for view decoration
-        $data       = $context->data;
-        $layout     = $context->layout;
-        $parameters = $context->parameters;
-
-        //Render the page
-        $page = $this->getObject('com:pages.template.page')
-            ->setParameters($parameters)
-            ->loadFile('page://pages/'.$this->getPage()->route);
-
-        $data->append($page->getData());
-
-        $this->setContent($page->render(KObjectConfig::unbox($data)));
-
-        //Set the layout
-        $context->layout = $this->getLayout();
-
-        return parent::_actionRender($context);
-    }
-
     protected function _processPlugins(KViewContextInterface $context)
     {
         $page = $context->data->page;
