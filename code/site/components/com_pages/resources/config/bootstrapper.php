@@ -46,7 +46,7 @@ return array(
                 return \Michelf\MarkdownExtra::defaultTransform($text);
             }
         ],
-        'com:pages.template.filter.highlight' => [
+        'com://site/pages.template.filter.highlight' => [
             'highlighter'  => function($source, $language) {
                 //See: https://github.com/scrivo/highlight.php
                 return (new \Highlight\Highlighter())->highlight($language, $source, false)->value;
