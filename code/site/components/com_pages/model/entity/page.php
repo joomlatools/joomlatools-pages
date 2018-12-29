@@ -20,6 +20,7 @@ class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerial
                 'slug'        => '',
                 'content'     => '',
                 'excerpt'     => '',
+                'text'        => '',
                 'date'        => 'now',
                 'author'      => '',
                 'published'   => true,
@@ -31,6 +32,7 @@ class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerial
                 'redirect'    => '',
                 'metadata'    => [],
                 'process'     => [
+                    'filters' => array(),
                     'plugins' => true
                 ],
                 'layout'      => array(),
@@ -70,9 +72,27 @@ class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerial
     public function getPropertyExcerpt()
     {
         $parts = preg_split('#<!--(.*)more(.*)-->#i', $this->content, 2);
-        $excerpt = $parts[0];
+
+        if(count($parts) > 1) {
+            $excerpt = $parts[0];
+        } else {
+            $excerpt = '';
+        }
 
         return $excerpt;
+    }
+
+    public function getPropertyText()
+    {
+        $parts = preg_split('#<!--(.*)more(.*)-->#i', $this->content, 2);
+
+        if(count($parts) > 1) {
+            $text = $parts[1];
+        } else {
+            $text = $parts[0];
+        }
+
+        return $text;
     }
 
     public function getPropertyRoute()
