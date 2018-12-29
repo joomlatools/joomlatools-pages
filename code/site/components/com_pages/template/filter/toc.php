@@ -7,7 +7,6 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-
 class ComPagesTemplateFilterToc extends KTemplateFilterAbstract
 {
     protected function _initialize(KObjectConfig $config)
