@@ -17,11 +17,12 @@ class ComPagesTemplateHelperBehavior extends ComKoowaTemplateHelperBehavior
             'options'  => array(
                 'placement' => 'right',
                 'visibale'  => 'hover',
-                'icon'      => '&#128279;',
+                'icon'      => "",
                 'class'     => null,
                 'truncate'  => null,
                 'arialabel' => 'Anchor',
-            )
+            ),
+            'selector' => null,
         ));
 
         $html = '';
@@ -29,9 +30,10 @@ class ComPagesTemplateHelperBehavior extends ComKoowaTemplateHelperBehavior
         {
             $html .= '<ktml:script src="assets://com_pages/js/'.($config->debug ? 'build/' : 'min/').'anchor.js" />';
             $html .= '<script>
+            anchors.options = '.$config->options.'   
             // Add anchors on DOMContentLoaded
             document.addEventListener("DOMContentLoaded", function(event) {
-                anchors.add();if(document.querySelector(\'.no-anchor\')!==null){anchors.remove(\'.no-anchor\');}
+                anchors.add('.$config->selector.');if(document.querySelector(\'.no-anchor\')!==null){anchors.remove(\'.no-anchor\');}
             }); </script>';
 
             static::setLoaded('anchor');

@@ -16,12 +16,15 @@ class ComPagesTemplateFilterToc extends KTemplateFilterAbstract
             'max_level' => 6,
             'anchor'     => [
                 'enabled'   => true,
-                'placement' => 'right',
-                'visibale'  => 'hover',
-                'icon'      => '&#128279;',
-                'class'     => null,
-                'truncate'  => null,
-                'arialabel' => 'Anchor',
+                'options' => [
+                    'placement' => 'right',
+                    'visibale'  => 'hover',
+                    'icon'      => "",
+                    'class'     => null,
+                    'truncate'  => null,
+                    'arialabel' => 'Anchor',
+                ],
+                'selector' => null,
             ],
         ));
 
