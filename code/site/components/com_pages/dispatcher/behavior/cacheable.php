@@ -124,7 +124,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         {
             $options = array(
                 'caching'      => true,
-                'defaultgroup' => 'com_koowa.pages',
+                'defaultgroup' => 'com_pages',
                 'lifetime'     => 60*24*7, //1 week
             );
 
