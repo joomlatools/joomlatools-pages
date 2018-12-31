@@ -31,24 +31,21 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     {
         if($this->isCacheable())
         {
-            if($data = $this->_getCache()->get($this->_getCacheKey()))
+            if($data = $this->_getCache()->get($this->_getEtag()))
             {
                 $content = $this->_prepareContent($data['content']);
                 $headers = $this->_prepareHeaders($data['headers']);
 
-                if(!$this->getObject('lib:http.response', ['headers' => $headers])->isStale())
-                {
-                    $this->getObject('response')
-                        ->setHeaders($headers)
-                        ->setContent($content);
+                $response = clone $this->getResponse();
+                $response
+                    ->setHeaders($headers)
+                    ->setContent($content);
 
-                    $this->send();
-
-                    return false;
+                //Send the response and terminate the request
+                if(!$response->isStale()) {
+                    $response->send();
                 }
             }
-            //Create a buffer to capture output for caching
-            else ob_start();
         }
     }
 
@@ -57,7 +54,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         if($this->isCacheable())
         {
             //Disable caching
-            if ($page = $context->request->query->get('page', 'url', false))
+            if ($page = $context->getRequest()->query->get('page', 'url', false))
             {
                 $cache = $this->getObject('page.registry')
                     ->getPage($page)
@@ -66,7 +63,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                 if ($cache !== false)
                 {
                     if(is_int($cache)) {
-                        $this->getMixer()->getResponse()->setMaxAge($cache);
+                        $context->getResponse()->setMaxAge($cache);
                     }
                 }
                 else $this->getConfig()->cache = false;
@@ -78,29 +75,46 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
     protected function _beforeTerminate(KDispatcherContextInterface $context)
     {
-        //Proxy Koowa Output
-        if($this->isCacheable() && $this->getResponse()->isCacheable() && !$this->getResponse()->isStale())
-        {
-            $data = array(
-                'headers' => $this->getResponse()->getHeaders(),
-                'content' => $this->getResponse()->getContent()
-            );
+        $response = $this->getResponse();
 
-            $this->_getCache()->store($data, $this->_getCacheKey());
+        //Proxy Koowa Output
+        if($this->isCacheable() && $response->isCacheable())
+        {
+            if($content = $response->getContent())
+            {
+                $data = array(
+                    'headers' => $this->getResponse()->getHeaders(),
+                    'content' => $content,
+                );
+
+                $this->_getCache()->store($data, $this->_geEtag());
+            }
         }
     }
 
     public function onAfterApplicationRespond(KEventInterface $event)
     {
-        //Proxy Joomla Output
-        if($this->isCacheable() && $this->getResponse()->isCacheable() && !$this->getResponse()->isStale())
-        {
-            $data = array(
-                'headers' => $this->getResponse()->getHeaders(),
-                'content' => $this->getResponse()->getContent()
-            );
+        $response = $this->getResponse();
 
-            $this->_getCache()->store($data, $this->_getCacheKey());
+        //Proxy Joomla Output
+        if($this->isCacheable() && $response->isCacheable())
+        {
+            if($content = $event->getTarget()->getBody())
+            {
+                $headers = array();
+                foreach (headers_list() as $header)
+                {
+                    $parts = explode(':', $header, 2);
+                    $headers[trim($parts[0])] = trim($parts[1]);
+                }
+
+                $data = array(
+                    'headers' => $headers,
+                    'content' => $content
+                );
+
+                $this->_getCache()->store($data, $this->_getEtag());
+            }
         }
     }
 
@@ -109,48 +123,15 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         if (!$this->__cache)
         {
             $options = array(
-                'caching'       => true,
-                'defaultgroup'  => 'com_koowa.pages',
-                'lifetime'      => 60*24*7, //1 week
+                'caching'      => true,
+                'defaultgroup' => 'com_koowa.pages',
+                'lifetime'     => 60*24*7, //1 week
             );
 
             $this->__cache = JCache::getInstance('output', $options);
         }
 
         return $this->__cache;
-    }
-
-    protected function _getCacheKey()
-    {
-        $url    = $this->getRequest()->getUrl()->toString(KHttpUrl::HOST + KHttpUrl::PATH + KHttpUrl::QUERY);
-        $format = $this->getRequest()->getFormat();
-        $user   = $this->getUser()->getId();
-
-        return crc32($url.$format.$user);
-    }
-
-    protected function _getContent()
-    {
-        return ob_get_clean();
-    }
-
-    protected function _getHeaders()
-    {
-        $headers = array();
-
-        //Remove headers set by Joomla
-        header_remove('Pragma');
-        header_remove('Last-Modified');
-        header_remove('Expires');
-
-        $headers = array();
-        foreach (headers_list() as $header)
-        {
-            $parts = explode(':', $header, 2);
-            $headers[trim($parts[0])] = trim($parts[1]);
-        }
-
-        return $headers;
     }
 
     protected function _prepareContent($content)
@@ -165,6 +146,8 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
     protected function _prepareHeaders($headers)
     {
+        unset($headers['Expires']);
+
         return $headers;
     }
 }
