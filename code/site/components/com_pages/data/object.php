@@ -25,6 +25,22 @@ class ComPagesDataObject extends KObjectConfig
         return new self($data);
     }
 
+    public function flatten()
+    {
+        $data = array();
+
+        foreach( $this->toArray() as $key => $values)
+        {
+            if(is_array($values)) {
+                $data = array_merge($data, $values);
+            } else {
+                $data[] = $values;
+            }
+        }
+
+        return new self($data);
+    }
+
     public function filter($key, $value = null)
     {
         $data = $this->toArray();
