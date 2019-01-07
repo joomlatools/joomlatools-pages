@@ -31,7 +31,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     {
         if($this->isCacheable())
         {
-            if($data = $this->_getCache()->get($this->_getEtag()))
+            if($data = $this->_getCache()->get($this->_getCacheKey()))
             {
                 $content = $this->_prepareContent($data['content']);
                 $headers = $this->_prepareHeaders($data['headers']);
@@ -87,7 +87,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                     'content' => $content,
                 );
 
-                $this->_getCache()->store($data, $this->_geEtag());
+                $this->_getCache()->store($data, $this->_getCacheKey());
             }
         }
     }
@@ -113,7 +113,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                     'content' => $content
                 );
 
-                $this->_getCache()->store($data, $this->_getEtag());
+                $this->_getCache()->store($data, $this->_getCacheKey());
             }
         }
     }
@@ -132,6 +132,15 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         }
 
         return $this->__cache;
+    }
+
+    protected function _getCacheKey()
+    {
+        $url     = $this->getRequest()->getUrl()->toString(KHttpUrl::HOST + KHttpUrl::PATH + KHttpUrl::QUERY);
+        $format  = $this->getRequest()->getFormat();
+        $user    = $this->getUser()->getId();
+
+        return crc32($url.$format.$user);
     }
 
     protected function _prepareContent($content)
