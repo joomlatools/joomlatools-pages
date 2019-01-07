@@ -57,7 +57,9 @@ class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
 
     protected function _afterFetch(KModelContext $context)
     {
-        if (!$context->state->isUnique() && $context->state->recurse)
+        $state = $context->state;
+
+        if (!$state->isUnique() && $state->recurse && ($state->level == 0 || $state->level > 1))
         {
             $pages = clone $context->entity;
 
