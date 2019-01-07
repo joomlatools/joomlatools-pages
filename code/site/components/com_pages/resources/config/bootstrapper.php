@@ -53,9 +53,16 @@ return array(
             }
         ],
         'com://site/pages.dispatcher.behavior.cacheable' => [
-            'cache'         => $config['cache'] ?? false,
-            'cache_time'    => $config['cache_time'] ?? 0,
-            'cache_private' => $config['cache_private'] ?? false,
+            'cache'         => $config['http_cache'] ?? false,
+            'cache_time'    => $config['http_cache_time'] ?? 7200, //2h
+        ],
+        'com://site/pages.page.registry' => [
+            'cache'         => $config['page_cache'] ?? false,
+            'cache_time'    => $config['page_cache_time'] ?? 60*60*24, //1d
+        ],
+        'com://site/pages.data.registry' => [
+            'cache'         => $config['data_cache'] ?? false,
+            'cache_time'    => $config['data_cache_time'] ?? 60*60*24, //1d
         ],
 
     ]
