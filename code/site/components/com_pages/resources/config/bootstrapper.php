@@ -14,6 +14,7 @@ if(file_exists(Koowa::getInstance()->getRootPath().'/joomlatools-pages/config.ph
 
 return array(
 
+    'priority' => KObjectBootstrapper::PRIORITY_HIGH,
     'aliases' => [
         'page.registry' => 'com:pages.page.registry',
         'data.registry' => 'com:pages.data.registry',
@@ -41,7 +42,8 @@ return array(
             ]
         ],
         'template.engine.factory' => [
-            'cache' => $config['template_cache'] ?? (JDEBUG ? false : true),
+            'cache'      => $config['template_cache'] ?? (JDEBUG ? false : true),
+            'cache_path' => $config['template_cache_path'] ?? JPATH_ADMINISTRATOR.'/cache/koowa.templates',
             'engines' => [
                 'lib:template.engine.markdown',
             ]
