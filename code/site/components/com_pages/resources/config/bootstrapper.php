@@ -57,11 +57,11 @@ return array(
             'cache_time'    => $config['http_cache_time'] ?? 7200, //2h
         ],
         'com://site/pages.page.registry' => [
-            'cache'         => $config['page_cache'] ?? false,
+            'cache'         => $config['page_cache'] ?? JDEBUG ? false : true,
             'cache_time'    => $config['page_cache_time'] ?? 60*60*24, //1d
         ],
         'com://site/pages.data.registry' => [
-            'cache'         => $config['data_cache'] ?? false,
+            'cache'         => $config['data_cache'] ?? JDEBUG ? false : true,
             'cache_time'    => $config['data_cache_time'] ?? 60*60*24, //1d
         ],
 

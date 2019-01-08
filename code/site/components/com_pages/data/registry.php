@@ -39,7 +39,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'cache'      => true,
+            'cache'      => JDEBUG ? false : true,
             'cache_path' => '',
             'cache_time' => 60*60*24 //1 day
         ]);
