@@ -41,6 +41,7 @@ return array(
             ]
         ],
         'template.engine.factory' => [
+            'cache' => $config['template_cache'] ?? (JDEBUG ? false : true),
             'engines' => [
                 'lib:template.engine.markdown',
             ]
