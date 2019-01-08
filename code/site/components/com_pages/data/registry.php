@@ -30,7 +30,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         $this->_cache_time = $config->cache_time;
 
         if(empty($config->cache_path)) {
-            $this->_cache_path = $this->getObject('com:pages.page.locator')->getBasePath().'/cache';
+            $this->_cache_path = Koowa::getInstance()->getRootPath().'/joomlatools-pages/cache';
         } else {
             $this->_cache_path = $config->cache_path;
         }
