@@ -28,6 +28,7 @@ class ComPagesTemplateDefault extends KTemplate
                 'data'       => [$this, '_fetchData'],
                 'slug'       => [$this, '_createSlug'],
                 'attribute'  => [$this, '_createAttribute'],
+                'attributes' => [$this, '_createAttributes']
             ],
             'cache'           => false,
             'cache_namespace' => 'pages',
@@ -160,6 +161,35 @@ class ComPagesTemplateDefault extends KTemplate
         }
 
         return $result;
+    }
+
+    protected function _createAttributes($array)
+    {
+        $output = array();
+
+        if($array instanceof KObjectConfig) {
+            $array = KObjectConfig::unbox($array);
+        }
+
+        if(is_array($array))
+        {
+            foreach($array as $key => $item)
+            {
+                if(is_array($item)) {
+                    $item = implode(' ', $item);
+                }
+
+                if (is_bool($item))
+                {
+                    if ($item === false) continue;
+                    $item = $key;
+                }
+
+                $output[] = $key.'="'.str_replace('"', '&quot;', $item).'"';
+            }
+        }
+
+        return implode(' ', $output);
     }
 
     protected function _fetchData($path, $format = '')
