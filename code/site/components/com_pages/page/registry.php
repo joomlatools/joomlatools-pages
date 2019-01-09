@@ -333,14 +333,16 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 throw new RuntimeException(sprintf('The page registry cache path "%s" is not writable', $path));
             }
 
+            if(!is_string($data))
+            {
+                $result = '<?php /*//path:'.$file.'*/'."\n";
+                $result .= 'return '.var_export($data, true).';';
+            }
+
             $hash = crc32($file.PHP_VERSION);
             $file  = $this->_cache_path.'/page_'.$hash.'.php';
 
-            if(!is_string($data)) {
-                $data = '<?php return '.var_export($data, true).';';
-            }
-
-            if(@file_put_contents($file, $data) === false) {
+            if(@file_put_contents($file, $result) === false) {
                 throw new RuntimeException(sprintf('The page registry cannot be cached in "%s"', $file));
             }
 

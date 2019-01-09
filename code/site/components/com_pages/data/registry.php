@@ -219,10 +219,12 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
 
     public function loadCache($basedir, $refresh = true)
     {
-        if (!$cache = $this->isCached($basedir))
+        $file = $this->getLocator()->getBasePath().'/'.$basedir;
+
+        if (!$cache = $this->isCached($file))
         {
             $data = $this->__fromPath($basedir);
-            $this->storeCache($basedir, KObjectConfig::unbox($data));
+            $this->storeCache($file, KObjectConfig::unbox($data));
         }
         else
         {
@@ -248,14 +250,16 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
                 throw new RuntimeException(sprintf('The data cache path "%s" is not writable', $path));
             }
 
+            if(!is_string($data))
+            {
+                $result = '<?php /*//path:'.$file.'*/'."\n";
+                $result .= 'return '.var_export($data, true).';';
+            }
+
             $hash = crc32($file.PHP_VERSION);
             $file  = $this->_cache_path.'/data_'.$hash.'.php';
 
-            if(!is_string($data)) {
-                $data = '<?php return '.var_export($data, true).';';
-            }
-
-            if(@file_put_contents($file, $data) === false) {
+            if(@file_put_contents($file, $result) === false) {
                 throw new RuntimeException(sprintf('The data cannot be cached in "%s"', $file));
             }
 
