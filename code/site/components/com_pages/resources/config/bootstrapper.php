@@ -14,6 +14,7 @@ if(file_exists(Koowa::getInstance()->getRootPath().'/joomlatools-pages/config.ph
 
 return array(
 
+    'priority' => KObjectBootstrapper::PRIORITY_HIGH,
     'aliases' => [
         'page.registry' => 'com:pages.page.registry',
         'data.registry' => 'com:pages.data.registry',
@@ -22,6 +23,14 @@ return array(
     ],
 
     'identifiers' => [
+        'page.registry' => [
+            'cache'         => $config['page_cache'] ?? (JDEBUG ? false : true),
+            'cache_time'    => $config['page_cache_time'] ?? 60*60*24, //1d
+        ],
+        'data.registry' => [
+            'cache'         => $config['data_cache'] ?? (JDEBUG ? false : true),
+            'cache_time'    => $config['data_cache_time'] ?? 60*60*24, //1d
+        ],
         'object.config.factory' => [
             'formats' => ['md' => 'ComPagesDataMarkdown']
         ],
@@ -33,6 +42,8 @@ return array(
             ]
         ],
         'template.engine.factory' => [
+            'cache'      => $config['template_cache'] ?? (JDEBUG ? false : true),
+            'cache_path' => $config['template_cache_path'] ?? JPATH_ADMINISTRATOR.'/cache/koowa.templates',
             'engines' => [
                 'lib:template.engine.markdown',
             ]
@@ -53,10 +64,8 @@ return array(
             }
         ],
         'com://site/pages.dispatcher.behavior.cacheable' => [
-            'cache'         => $config['cache'] ?? false,
-            'cache_time'    => $config['cache_time'] ?? 0,
-            'cache_private' => $config['cache_private'] ?? false,
+            'cache'         => $config['http_cache'] ?? false,
+            'cache_time'    => $config['http_cache_time'] ?? 7200, //2h
         ],
-
     ]
 );

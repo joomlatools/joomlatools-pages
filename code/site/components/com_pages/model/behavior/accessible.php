@@ -11,7 +11,36 @@ class ComPagesModelBehaviorAccessible extends ComPagesModelBehaviorFilterable
 {
     protected function _accept($page, $context)
     {
-        $registry = $this->getObject('page.registry');
-        return $registry->isPublished($page['path'].'/'.$page['slug']) && $registry->isAccessible($page['path'].'/'.$page['slug']);
+        if($result = $page['published'])
+        {
+            //Check groups
+            if(isset($page['access']['groups']))
+            {
+                $groups = $this->getObject('com:pages.database.table.groups')
+                    ->select($this->getObject('user')->getGroups(), KDatabase::FETCH_ARRAY_LIST);
+
+                $groups = array_map('strtolower', array_column($groups, 'title'));
+
+                if(!array_intersect($groups, $page['access']['groups'])) {
+                    $result = false;
+                }
+            }
+
+            //Check roles
+            if($result && isset($page['access']['roles']))
+            {
+                $roles = $this->getObject('com:pages.database.table.roles')
+                    ->select($this->getObject('user')->getRoles(), KDatabase::FETCH_ARRAY_LIST);
+
+                $roles = array_map('strtolower', array_column($roles, 'title'));
+
+                if(!array_intersect($roles, $page['access']['roles'])) {
+                    $result = false;
+                }
+            }
+        }
+        else $result = true;
+
+        return $result;
     }
 }

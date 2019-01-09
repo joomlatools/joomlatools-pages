@@ -14,12 +14,12 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
     private  $__locator = null;
 
-    private $__page  = array();
-    private $__pages = null;
-    private $__paths = array();
+    private $__pages  = array();
+    private $__data   = null;
 
     protected $_cache;
     protected $_cache_path;
+    protected $_cache_time;
 
     public function __construct(KObjectConfig $config)
     {
@@ -31,18 +31,26 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         //Set the cache
         $this->_cache = $config->cache;
 
+        //Set the cache time
+        $this->_cache_time = $config->cache_time;
+
         if(empty($config->cache_path)) {
-            $this->_cache_path = $this->getLocator()->getBasePath().'/cache';
+            $this->_cache_path =  Koowa::getInstance()->getRootPath().'/joomlatools-pages/cache';
         } else {
             $this->_cache_path = $config->cache_path;
         }
+
+        //Load the cache and do not refresh it
+        $basedir = $this->getLocator()->getBasePath().'/pages';
+        $this->__data = $this->loadCache($basedir, false);
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'cache'      => false,
+            'cache'      => JDEBUG ? false : true,
             'cache_path' => '',
+            'cache_time' => 60*60*24 //1 day
         ]);
 
         parent::_initialize($config);
@@ -55,100 +63,100 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
     public function getPages($path = '', $mode = self::PAGES_ONLY, $depth = -1)
     {
-        $group = 'pages_'.crc32($mode.$depth);
+        $result = array();
+        $files  = $this->__data['files'];
 
-        if(!isset($this->__pages[$path.$group]))
+        if($path = trim($path, '.'))
         {
-            $directory = dirname($this->getLocator()->locate('page://pages/'. $path));
-
-            if (!$cache = $this->isCached($directory, $group))
+            $segments = array();
+            foreach(explode('/', $path) as $segment)
             {
-                $iterator = new RecursiveArrayIterator($this->_iteratePath($path));
-                $iterator = new RecursiveIteratorIterator($iterator, $mode);
-
-                //Set the max dept, -1 for full depth
-                $iterator->setMaxDepth($depth);
-
-                $result = array();
-                foreach ($iterator as $page_path => $children)
+                $segments[] = $segment;
+                if(!isset($files[implode('/', $segments)]))
                 {
-                    if(!$page = $this->getPage($page_path)) {
-                        throw new RuntimeException(sprintf('The page "%s"does not exist.', $page_path));
-                    }
-
-                    $result[$page_path] = $page->toArray();
+                    $files = false;
+                    break;
                 }
-
-                //Cache the page
-                $this->_writeCache($directory, $result, $group);
+                else $files = $files[implode('/', $segments)];
             }
-            else
-            {
-                if (!$result = require($cache)) {
-                    throw new RuntimeException(sprintf('The pages "%s" cannot be loaded from cache.', $cache));
-                }
-            }
-
-            $this->__pages[$path.$group] = $result;
         }
 
-        return $this->__pages[$path.$group];
+        if($files)
+        {
+            $iterator = new RecursiveArrayIterator($files);
+            $iterator = new RecursiveIteratorIterator($iterator, $mode);
+
+            //Set the max dept, -1 for full depth
+            $iterator->setMaxDepth($depth);
+
+            foreach ($iterator as $page => $file)
+            {
+                if(!is_string($file))
+                {
+                    if(!$file = $this->getLocator()->locate('page://pages/'. $page)) {
+                        throw new RuntimeException(sprintf('The page "%s"does not exist.', $page));
+                    }
+                }
+
+                //Get the relative file path
+                $basedir = $this->getLocator()->getBasePath().'/pages';
+                $file    = trim(str_replace($basedir, '', $file), '/');
+
+                $result[$page] = $this->__data['pages'][$file];
+            }
+        }
+
+        return $result;
     }
 
     public function getPage($path)
     {
-        $page = null;
-        $file = false;
-
         $path = ltrim($path, './');
 
-        if($path && !isset($this->__page[$path]))
+        if($path && !isset($this->__pages[$path]))
         {
-            $file = $this->getLocator()->locate('page://pages/'. $path);
-
-            if($file)
+            if($file = $this->getLocator()->locate('page://pages/'. $path))
             {
-                if(!$cache = $this->isCached($file))
+                //Get the relative file path
+                $basedir = $this->getLocator()->getBasePath().'/pages';
+                $file    = trim(str_replace($basedir, '', $file), '/');
+
+                //Load the page
+                $page = new ComPagesPage($this->__data['pages'][$file]);
+
+                //Set page default properties from collection
+                if($collection = $this->isCollection($page->path))
                 {
-                    //Load the page
-                    $page = (new ComPagesPage())->fromFile($file);
-
-                    //Set the path
-                    $page->path = trim(dirname($path), '.');
-
-                    //Set the slug
-                    $page->slug = basename($path, '.html');
-
-                    //Normalise the page data
-                    $this->_normalisePage($page);
-
-                    //Cache the page
-                    $this->_writeCache($file, $page->toArray());
-                }
-                else
-                {
-                    if(!$page = require($cache)) {
-                        throw new RuntimeException(sprintf('The page "%s" cannot be loaded from cache.', $cache));
+                    if(isset($collection['page']))
+                    {
+                        foreach($collection['page'] as $property => $value)
+                        {
+                            if(!$page->has($property)) {
+                                $page->set($property, $value);
+                            }
+                        }
                     }
-
-                    //Create a page config object
-                    $page = new ComPagesObjectConfigFrontmatter($page);
                 }
 
-                $this->__page[$path] = $page;
+                //Set the layout (if not set yet)
+                if($page->has('layout') && is_string($page->layout)) {
+                    $page->layout = array('path' => $page->layout);
+                }
+
+                $this->__pages[$path] = $page;
             }
-            else $this->__page[$path] = false;
+            else $this->__pages[$path] = false;
         }
 
-        return $this->__page[$path];
+        return $this->__pages[$path];
     }
 
     public function isPage($path)
     {
-        if(!isset($this->__page[$path])) {
+        if(!isset($this->__pages[$path])) {
            $result = (bool) $this->getLocator()->locate('page://pages/'. $path);
         } else {
-            $result = ($this->__page[$path] === false) ? false : true;
+            $result = ($this->__pages[$path] === false) ? false : true;
         }
 
         return $result;
@@ -164,99 +172,37 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $result;
     }
 
-    public function isAccessible($path)
+    public function buildCache()
     {
-        $result = true;
-
-        if($page = $this->getPage($path))
-        {
-            //Check groups
-            if(isset($page->access->groups))
-            {
-                $groups = $this->getObject('com:pages.database.table.groups')
-                    ->select($this->getObject('user')->getGroups(), KDatabase::FETCH_ARRAY_LIST);
-
-                $groups = array_map('strtolower', array_column($groups, 'title'));
-
-                if(!array_intersect($groups, KObjectConfig::unbox($page->access->groups))) {
-                    $result = false;
-                }
-            }
-
-            //Check roles
-            if($result && isset($page->access->roles))
-            {
-                $roles = $this->getObject('com:pages.database.table.roles')
-                    ->select($this->getObject('user')->getRoles(), KDatabase::FETCH_ARRAY_LIST);
-
-                $roles = array_map('strtolower', array_column($roles, 'title'));
-
-                if(!array_intersect($roles, KObjectConfig::unbox($page->access->roles))) {
-                    $result = false;
-                }
-            }
-        }
-
-        return $result;
-    }
-
-    public function isPublished($path)
-    {
-        $result = true;
-
-        if($page = $this->getPage($path))
-        {
-            if($page->published) {
-                $result = $page->published;
-            }
-        }
-
-        return $result;
-    }
-
-    public function isCached($file, $group = 'page')
-    {
-        $result = false;
-
         if($this->_cache)
         {
-            $hash   = crc32($file.PHP_VERSION);
-            $cache  = $this->_cache_path.'/'.$group.'_'.$hash.'.php';
-            $result = is_file($cache) ? $cache : false;
-
-            if($result && file_exists($file))
-            {
-                if(filemtime($cache) < filemtime($file)) {
-                    $result = false;
-                }
-            }
+            $basedir = $this->getLocator()->getBasePath().'/pages';
+            $this->loadCache($basedir, true);
         }
 
-        return $result;
+        return false;
     }
 
-    protected function _iteratePath($path = '')
+    public function loadCache($basedir, $refresh = true)
     {
-        $iterate = function($path) use(&$iterate)
+        if ($refresh || (!$cache = $this->isCached($basedir)))
         {
-            if(!isset($this->__paths[$path]))
+            $data = array();
+
+            //Create the data
+            $iterate = function ($dir) use (&$iterate, $basedir, &$data)
             {
-                $files = false;
+                $nodes = array();
+                $order = array();
+                $files = array();
 
                 //Only include pages
-                if($directory = $this->getLocator()->locate('page://pages/'. $path))
+                if(is_dir($dir) && !empty(glob($dir.'/index*')))
                 {
-                    $nodes = array();
-                    $order = array();
-                    $directory  = dirname($directory);
-
-                    $basepath = $this->getLocator()->getBasePath().'/pages';
-                    $basepath = ltrim(str_replace($basepath, '', $directory), '/');
-
                     //List
-                    foreach (new DirectoryIterator($directory) as $node)
+                    foreach (new DirectoryIterator($dir) as $node)
                     {
-                        if(strpos($node->getFilename(), '.order.') !== false) {
+                        if (strpos($node->getFilename(), '.order.') !== false) {
                             $order = $this->getObject('object.config.factory')->fromFile((string)$node->getFileInfo(), false);
                         } else {
                             $nodes[] = $node->getFilename();
@@ -267,76 +213,137 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     $nodes = array_merge(array_intersect($order, $nodes), $nodes);
 
                     //Prevent duplicates
-                    if($nodes = array_unique($nodes))
+                    if ($nodes = array_unique($nodes))
                     {
-                        $files = array();
-
-                        foreach($nodes as $node)
+                        foreach ($nodes as $node)
                         {
                             //Exclude files or folder that start with '.' or '_'
                             if (!in_array($node[0], array('.', '_')))
                             {
-                                $info     = pathinfo($node);
-                                $filepath = $basepath ? $basepath .'/'.$info['filename'] : $info['filename'];
+                                $info = pathinfo($node);
 
-                                if($info['extension'])
+                                $file = $dir . '/' . $node;
+
+                                if (strpos($node, 'index') !== false) {
+                                    $path = trim(str_replace($basedir, '', $dir), '/');
+                                } else {
+                                    $path = trim(str_replace($basedir, '', $dir . '/' . $info['filename']), '/');
+                                }
+
+                                if ($info['extension'])
                                 {
-                                    if(strpos($node, 'index') === false) {
-                                        $files[$filepath] = $filepath;
+                                    //Load the page
+                                    $page = (new ComPagesPage())->fromFile($file);
+
+                                    //Set the path
+                                    $page->path = trim(dirname($path), '.');
+
+                                    //Set the slug
+                                    $page->slug = basename($path, '.html');
+
+                                    //Set the process
+                                    if (!$page->process) {
+                                        $page->process = array();
+                                    }
+
+                                    //Set the published state (if not set yet)
+                                    if (!isset($page->published)) {
+                                        $page->published = true;
+                                    }
+
+                                    //Set the date (if not set yet)
+                                    if (!isset($page->date)) {
+                                        $page->date = filemtime($file);
+                                    }
+
+                                    //Handle dynamic data
+                                    array_walk_recursive ($page, function(&$value, $key)
+                                    {
+                                        if(is_string($value) && strpos($value, 'data://') === 0)
+                                        {
+                                            $matches = array();
+                                            preg_match('#data\:\/\/([^\[]+)(?:\[(.*)\])*#si', $value, $matches);
+
+                                            if(!empty($matches[0]))
+                                            {
+                                                $data = $this->getObject('data.registry')->getData($matches[1]);
+
+                                                if($data && !empty($matches[2])) {
+                                                    $data = $data->get($matches[2]);
+                                                }
+
+                                                $value = $data;
+                                            }
+                                        }
+                                    });
+
+                                    //Store the relative file path
+                                    $file = trim(str_replace($basedir, '', $file), '/');
+
+                                    $data[$file] = $page->toArray();
+
+                                    if (strpos($node, 'index') === false) {
+                                        $files[$path] = $file;
                                     }
                                 }
                                 else
                                 {
-                                    if(false !== $result = $iterate($filepath))
-                                    {
-                                        if($result) {
-                                            $files[$filepath] = $result;
-                                        } else {
-                                            $files[$filepath] = $filepath;
-                                        }
+                                    if($result = $iterate($file)) {
+                                        $files[$path] = $result;
                                     }
                                 }
                             }
                         }
                     }
+
+                    return $files;
                 }
+                else return false;
+            };
 
-                $this->__paths[$path] = $files;
+            Closure::bind($iterate, $this, get_class());
+
+            $result['files'] = $iterate($basedir);
+            $result['pages'] = $data;
+
+            $this->storeCache($basedir, $result);
+        }
+        else
+        {
+            if (!$result = require($cache)) {
+                throw new RuntimeException(sprintf('The page registry "%s" cannot be loaded from cache.', $cache));
             }
-            else $files = $this->__paths[$path];
+        }
 
-            return $files;
-        };
+        return $result;
 
-        Closure::bind($iterate, $this, get_class());
-        $files = $iterate($path);
-
-        return $files;
     }
 
-    protected function _writeCache($file, $data, $group = 'page')
+    public function storeCache($file, $data)
     {
         if($this->_cache)
         {
             $path = $this->_cache_path;
 
             if(!is_dir($path) && (false === @mkdir($path, 0755, true) && !is_dir($path))) {
-                throw new RuntimeException(sprintf('The page cache path "%s" does not exist', $path));
+                throw new RuntimeException(sprintf('The page registry cache path "%s" does not exist', $path));
             }
 
             if(!is_writable($path)) {
-                throw new RuntimeException(sprintf('The page cache path "%s" is not writable', $path));
+                throw new RuntimeException(sprintf('The page registry cache path "%s" is not writable', $path));
+            }
+
+            if(!is_string($data))
+            {
+                $result = '<?php /*//path:'.$file.'*/'."\n";
+                $result .= 'return '.var_export($data, true).';';
             }
 
             $hash = crc32($file.PHP_VERSION);
-            $file  = $this->_cache_path.'/'.$group.'_'.$hash.'.php';
+            $file  = $this->_cache_path.'/page_'.$hash.'.php';
 
-            if(!is_string($data)) {
-                $data = '<?php return '.var_export($data, true).';';
-            }
-
-            if(@file_put_contents($file, $data) === false) {
-                throw new RuntimeException(sprintf('The page cannot be cached in "%s"', $file));
+            if(@file_put_contents($file, $result) === false) {
+                throw new RuntimeException(sprintf('The page registry cannot be cached in "%s"', $file));
             }
 
             //Override default permissions for cache files
@@ -348,61 +355,24 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return false;
     }
 
-    protected function _normalisePage($page)
+    public function isCached($file)
     {
-        //Set the process
-        if(!$page->process) {
-            $page->process = array();
-        }
+        $result = false;
 
-        //Set the published state (if not set yet)
-        if (!isset($page->published)) {
-            $page->published = true;
-        }
-
-        //Set the date (if not set yet)
-        if (!isset($page->date)) {
-            $page->date = filemtime($page->getFilename());
-        }
-
-        //Set page default properties from collection
-        if($collection = $this->getObject('page.registry')->isCollection($page->path))
+        if($this->_cache)
         {
-            if(isset($collection['page']))
+            $hash   = crc32($file.PHP_VERSION);
+            $cache  = $this->_cache_path.'/page_'.$hash.'.php';
+            $result = is_file($cache) ? $cache : false;
+
+            if($result && file_exists($file))
             {
-                foreach($collection['page'] as $property => $value)
-                {
-                    if(!$page->has($property)) {
-                        $page->set($property, $value);
-                    }
+                if((filemtime($cache) < filemtime($file)) || ((time() - filemtime($cache)) > $this->_cache_time)) {
+                    $result = false;
                 }
             }
         }
 
-        //Set the layout (if not set yet)
-        if($page->has('layout') && is_string($page->layout)) {
-            $page->layout = array('path' => $page->layout);
-        }
-
-        //Handle dynamic data
-        array_walk_recursive ($page, function(&$value, $key)
-        {
-            if(is_string($value) && strpos($value, 'data://') === 0)
-            {
-                $matches = array();
-                preg_match('#data\:\/\/([^\[]+)(?:\[(.*)\])*#si', $value, $matches);
-
-                if(!empty($matches[0]))
-                {
-                    $data = $this->getObject('data.registry')->getData($matches[1]);
-
-                    if($data && !empty($matches[2])) {
-                        $data = $data->get($matches[2]);
-                    }
-
-                    $value = $data;
-                }
-            }
-        });
+        return $result;
     }
 }
