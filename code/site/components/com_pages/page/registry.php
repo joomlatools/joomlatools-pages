@@ -111,6 +111,8 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
     public function getPage($path)
     {
+        $page = false;
+
         $path = ltrim($path, './');
 
         if($path && !isset($this->__pages[$path]))
@@ -148,7 +150,11 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             else $this->__pages[$path] = false;
         }
 
-        return $this->__pages[$path];
+        if (isset($this->__pages[$path])) {
+            $page = $this->__pages[$path];
+        }
+
+        return $page;
     }
 
     public function isPage($path)
@@ -230,7 +236,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     $path = trim(str_replace($basedir, '', $dir . '/' . $info['filename']), '/');
                                 }
 
-                                if ($info['extension'])
+                                if (isset($info['extension']))
                                 {
                                     //Load the page
                                     $page = (new ComPagesPage())->fromFile($file);

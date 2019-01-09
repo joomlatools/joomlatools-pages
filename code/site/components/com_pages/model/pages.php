@@ -53,11 +53,14 @@ class ComPagesModelPages extends KModelAbstract
             $pages = array();
             if($path = $state->path)
             {
-                if (!$this->getState()->isUnique()) {
-                    $pages = array_values($registry->getPages($path, $state->recurse, $state->level - 1));
-                } else {
-                    $pages = $registry->getPage($path.'/'.$this->getState()->slug)->toArray();
+                if ($this->getState()->isUnique()) {
+                    $page = $registry->getPage($path.'/'.$this->getState()->slug);
+
+                    if ($page) {
+                        $pages = $page->toArray();
+                    }
                 }
+                else $pages = array_values($registry->getPages($path, $state->recurse, $state->level - 1));
             }
 
             $this->_pages = $pages;
