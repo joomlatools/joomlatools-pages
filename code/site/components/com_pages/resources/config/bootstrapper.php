@@ -34,7 +34,7 @@ return array(
             'cache_path' => $config['data_cache_path'] ?? null
         ],
         'object.config.factory' => [
-            'formats' => ['md' => 'ComPagesDataMarkdown']
+            'formats' => ['md' => 'ComPagesObjectConfigMarkdown']
         ],
         'template.locator.factory' => [
             'locators' => [
