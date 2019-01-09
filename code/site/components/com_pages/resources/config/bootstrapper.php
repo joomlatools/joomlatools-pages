@@ -24,12 +24,14 @@ return array(
 
     'identifiers' => [
         'page.registry' => [
-            'cache'         => $config['page_cache'] ?? (JDEBUG ? false : true),
-            'cache_time'    => $config['page_cache_time'] ?? 60*60*24, //1d
+            'cache'      => $config['page_cache'] ?? (JDEBUG ? false : true),
+            'cache_time' => $config['page_cache_time'] ?? 60*60*24, //1d
+            'cache_path' => $config['page_cache_path'] ?? null
         ],
         'data.registry' => [
-            'cache'         => $config['data_cache'] ?? (JDEBUG ? false : true),
-            'cache_time'    => $config['data_cache_time'] ?? 60*60*24, //1d
+            'cache'      => $config['data_cache'] ?? (JDEBUG ? false : true),
+            'cache_time' => $config['data_cache_time'] ?? 60*60*24, //1d
+            'cache_path' => $config['data_cache_path'] ?? null
         ],
         'object.config.factory' => [
             'formats' => ['md' => 'ComPagesDataMarkdown']
@@ -64,8 +66,9 @@ return array(
             }
         ],
         'com://site/pages.dispatcher.behavior.cacheable' => [
-            'cache'         => $config['http_cache'] ?? false,
-            'cache_time'    => $config['http_cache_time'] ?? 7200, //2h
+            'cache'      => $config['http_cache'] ?? false,
+            'cache_time' => $config['http_cache_time'] ?? 7200, //2h
+            'cache_path' => $config['http_cache_path'] ?? null
         ],
     ]
 );
