@@ -15,12 +15,17 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
         $this->getObject('event.publisher')
             ->addListener('onAfterApplicationRespond', array($this, 'onAfterApplicationRespond'));
+
+        if(empty($config->cache_path)) {
+            $config->cache_path = Koowa::getInstance()->getRootPath().'/joomlatools-pages/cache';
+        }
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
             'cache'      => false,
+            'cache_path' => '',
             'cache_time' => 7200, //2h
         ));
 
@@ -31,8 +36,11 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     {
         if($this->isCacheable())
         {
-            if($data = $this->_getCache()->get($this->_getCacheKey()))
+            if($file = $this->isCached($this->cacheKey()))
             {
+                //Require the file from cache
+                $data = require $file;
+
                 $content = $this->_prepareContent($data['content']);
                 $headers = $this->_prepareHeaders($data['headers']);
 
@@ -87,7 +95,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                     'content' => $content,
                 );
 
-                $this->_getCache()->store($data, $this->_getCacheKey());
+                $this->storeCache($this->cacheKey(), $data);
             }
         }
     }
@@ -113,34 +121,9 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                     'content' => $content
                 );
 
-                $this->_getCache()->store($data, $this->_getCacheKey());
+                $this->storeCache($this->cacheKey(), $data);
             }
         }
-    }
-
-    protected function _getCache()
-    {
-        if (!$this->__cache)
-        {
-            $options = array(
-                'caching'      => true,
-                'defaultgroup' => 'com_pages',
-                'lifetime'     => 60*24*7, //1 week
-            );
-
-            $this->__cache = JCache::getInstance('output', $options);
-        }
-
-        return $this->__cache;
-    }
-
-    protected function _getCacheKey()
-    {
-        $url     = $this->getRequest()->getUrl()->toString(KHttpUrl::HOST + KHttpUrl::PATH + KHttpUrl::QUERY);
-        $format  = $this->getRequest()->getFormat();
-        $user    = $this->getUser()->getId();
-
-        return crc32($url.$format.$user);
     }
 
     protected function _prepareContent($content)
@@ -158,5 +141,71 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         unset($headers['Expires']);
 
         return $headers;
+    }
+
+    public function cacheKey()
+    {
+        $url     = $this->getRequest()->getUrl()->toString(KHttpUrl::HOST + KHttpUrl::PATH + KHttpUrl::QUERY);
+        $format  = $this->getRequest()->getFormat();
+        $user    = $this->getUser()->getId();
+
+        return 'path:'.$url.'#format:'.$format.'#user:'.$user;
+    }
+
+    public function storeCache($key, $data)
+    {
+        if($this->getConfig()->cache)
+        {
+            $path = $this->getConfig()->cache_path;
+
+            if(!is_dir($path) && (false === @mkdir($path, 0755, true) && !is_dir($path))) {
+                throw new RuntimeException(sprintf('The document cache path "%s" does not exist', $path));
+            }
+
+            if(!is_writable($path)) {
+                throw new RuntimeException(sprintf('The document cache path "%s" is not writable', $path));
+            }
+
+            if(!is_string($data))
+            {
+                $result = '<?php /*//request:'.$key.'*/'."\n";
+                $result .= 'return '.var_export($data, true).';';
+            }
+
+            $hash = crc32($key.PHP_VERSION);
+            $file  = $path.'/document_'.$hash.'.php';
+
+            if(@file_put_contents($file, $result) === false) {
+                throw new RuntimeException(sprintf('The document cannot be cached in "%s"', $file));
+            }
+
+            //Override default permissions for cache files
+            @chmod($file, 0666 & ~umask());
+
+            return $file;
+        }
+
+        return false;
+    }
+
+    public function isCached($key)
+    {
+        $result = false;
+
+        if($this->getConfig()->cache)
+        {
+            $hash   = crc32($key.PHP_VERSION);
+            $cache  = $this->getConfig()->cache_path.'/document_'.$hash.'.php';
+            $result = is_file($cache) ? $cache : false;
+
+            if($result)
+            {
+                if(((time() - filemtime($cache)) > 60*24*7)) {
+                    $result = false;
+                }
+            }
+        }
+
+        return $result;
     }
 }
