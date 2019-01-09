@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesPage extends ComPagesObjectConfigFrontmatter
+class ComPagesPageObject extends ComPagesObjectConfigFrontmatter
 {
 
 }

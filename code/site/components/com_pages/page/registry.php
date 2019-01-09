@@ -122,7 +122,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 $file    = trim(str_replace($basedir, '', $file), '/');
 
                 //Load the page
-                $page = new ComPagesPage($this->__data['pages'][$file]);
+                $page = new ComPagesPageObject($this->__data['pages'][$file]);
 
                 //Set page default properties from collection
                 if($collection = $this->isCollection($page->path))
@@ -233,7 +233,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                 if ($info['extension'])
                                 {
                                     //Load the page
-                                    $page = (new ComPagesPage())->fromFile($file);
+                                    $page = (new ComPagesPageObject())->fromFile($file);
 
                                     //Set the path
                                     $page->path = trim(dirname($path), '.');

@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesDataMarkdown extends ComPagesObjectConfigFrontmatter
+class ComPagesObjectConfigMarkdown extends ComPagesObjectConfigFrontmatter
 {
     public function setContent($content)
     {
