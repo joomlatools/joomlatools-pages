@@ -90,7 +90,7 @@ class ComPagesTemplateDefault extends KTemplate
             $template = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
 
             if(isset($template->page) || isset($template->pages)) {
-                throw new KTemplateExceptionSyntaxError('Using "page or pages" in layout frontmatter is now allowed');
+                throw new KTemplateExceptionSyntaxError('Using "page or pages" in layout frontmatter is not allowed');
             }
 
             //Set the parent layout

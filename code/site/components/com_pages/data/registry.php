@@ -145,7 +145,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         {
             $info = pathinfo($node);
 
-            if($info['extension']) {
+            if(isset($info['extension'])) {
                 $files[$info['filename']] = $basepath.'/'.$node;
             } else {
                 $dirs[$node] = $basepath.'/'.$node;
