@@ -47,8 +47,8 @@ class ComPagesModelBehaviorSortable extends KModelBehaviorAbstract
 
                     if($name == 'date')
                     {
-                        $first_value  = strtotime($first_value);
-                        $second_value = strtotime($second_value);
+                        $first_value  = is_int($first_value) ? $first_value : strtotime($first_value);
+                        $second_value = is_int($second_value) ? $second_value : strtotime($second_value);
                     }
 
                     if($first_value > $second_value) {
