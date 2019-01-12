@@ -33,10 +33,9 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
         //Render the page if it hasn't been rendered yet
         if(empty($this->getPage()->content))
         {
-            //Create template
-            $page = clone $this->getTemplate();
+            //Create template (add parameters BEFORE cloning)
+            $page = clone $this->getTemplate()->setParameters($parameters);
             $page->addFilters($this->getPage()->process->filters)
-                ->setParameters($parameters)
                 ->loadFile('page://pages/'.$this->getPage()->route);
 
             //Render page
