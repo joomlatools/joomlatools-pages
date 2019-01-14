@@ -116,7 +116,10 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
 
                 if (!$state->isUnique())
                 {
-                    $data = $registry->getPage($state->path);
+                    $data = $this->getObject('dispatcher')
+                        ->getRouter()
+                        ->getPage();
+
                     $page = $this->getObject('com:pages.model.pages')->create($data->toArray());
 
                     $this->_page = $page;
@@ -183,33 +186,20 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
         return $metadata;
     }
 
-    public function getRoute($route = '', $fqr = true, $escape = true)
+    public function getRoute($page = '', $query = array(), $escape = false)
     {
-        //Parse route
-        $query = array();
-
-        if(is_string($route))
-        {
-            if(strpos($route, '=')) {
-                parse_str(trim($route), $query);
-            } else {
-                $query['path'] = $route;
-            }
-        }
-        else
-        {
-            if($route instanceof KModelEntityInterface)
-            {
-                $query['path'] = $route->path;
-                $query['slug'] = $route->slug;
-            }
-            else $query = $route;
+        if($page instanceof KModelEntityInterface) {
+            $page = $page->route;
         }
 
-        //Add add if the query is not unique
-        if(!isset($query['slug']))
+        if(!is_array($query)) {
+            $query = array();
+        }
+
+        //Add the model state only for routes to the same page
+        if($page == $this->getPage()->route)
         {
-            if($collection = $this->getPage()->collection)
+            if($collection = $this->getPage($page)->collection)
             {
                 $states = array();
                 foreach ($this->getModel()->getState() as $name => $state)
@@ -217,13 +207,15 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
                     if ($state->default != $state->value && !$state->internal) {
                         $states[$name] = $state->value;
                     }
-
-                    $query = array_merge($states, $query);
                 }
+
+                $query = array_merge($states, $query);
             }
         }
 
-        //Build the route
-        return $this->getObject('com:pages.dispatcher.router.route',  array('escape'  => $escape))->build($query);
+        $route = $this->getObject('dispatcher')->getRouter()
+            ->generate($page, $query, $escape);
+
+        return $route;
     }
 }

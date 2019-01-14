@@ -33,8 +33,5 @@ class ComPagesViewPagesRss extends ComPagesViewXml
         ));
 
         parent::_fetchData($context);
-
-        //Set the layout
-        $context->layout = 'page://pages/'.$context->layout;
     }
 }

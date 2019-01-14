@@ -11,15 +11,15 @@ class ComPagesTemplateHelperPaginator extends KTemplateHelperPaginator
 {
     protected function _link($page, $title)
     {
-        $query = array();
-        $query['limit']  = $page->limit;
-        $query['offset'] = $page->offset;
-        $query['page']   = $this->getTemplate()->getParameters()->page;
+        $query = (array(
+            'limit'  => $page->limit,
+            'offset' => $page->offset,
+        ));
 
-        $url = $this->getTemplate()->route($query);
+        $route = $this->getTemplate()->route($this->getTemplate()->page(), $query);
 
         if ($page->active && !$page->current) {
-            $html = '<a href="'.$url.'">'.$this->getObject('translator')->translate($title).'</a>';
+            $html = '<a href="'.$route.'">'.$this->getObject('translator')->translate($title).'</a>';
         } else {
             $html = '<a>'.$this->getObject('translator')->translate($title).'</a>';
         }

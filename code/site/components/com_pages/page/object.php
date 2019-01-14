@@ -9,5 +9,13 @@
 
 class ComPagesPageObject extends ComPagesObjectConfigFrontmatter
 {
+    public function isStatic()
+    {
+        return (strpos($this->route, '[') === false);
+    }
 
+    public function isCollection()
+    {
+        return isset($this->collection) && $this->collection !== false ? KObjectConfig::unbox($this->collection) : false;
+    }
 }

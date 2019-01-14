@@ -33,13 +33,10 @@ class ComPagesControllerAbstract extends KControllerModel
     {
         $formats = parent::getFormats();
 
-        if($page = $this->getRequest()->query->get('page', 'url', false))
-        {
-            if($this->getObject('page.registry')->isPage($page)) {
-                $formats = array($this->getRequest()->getFormat());
-            } else {
-                $formats = array();
-            }
+        if($this->getObject('dispatcher')->getRouter()->match()) {
+            $formats = array($this->getRequest()->getFormat());
+        }  else {
+            $formats = array();
         }
 
         return $formats;

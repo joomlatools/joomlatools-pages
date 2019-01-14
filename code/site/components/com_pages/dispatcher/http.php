@@ -9,23 +9,54 @@
 
 class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 {
+    protected $_router;
+
+    public function __construct( KObjectConfig $config)
+    {
+        parent::__construct($config);
+
+        $this->_router = $config->router;
+    }
+
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
             'behaviors' => ['cacheable'],
+            'router'    => 'com:pages.dispatcher.router',
         ]);
 
         parent::_initialize($config);
     }
 
+    public function setRouter(KDispatcherRouterInterface $router)
+    {
+        $this->_router = $router;
+        return $this;
+    }
+
+    public function getRouter()
+    {
+        if(!$this->_router instanceof KDispatcherRouterInterface)
+        {
+            $this->_router = $this->getObject($this->_router, array(
+                'request' => $this->getRequest(),
+            ));
+
+            if(!$this->_router instanceof KDispatcherRouterInterface)
+            {
+                throw new UnexpectedValueException(
+                    'Router: '.get_class($this->_router).' does not implement KDispatcherRouterInterface'
+                );
+            }
+        }
+
+        return $this->_router;
+    }
+
     protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
-        $url = $context->request->getUrl();
-
         //Throw 4054 if the page cannot be found
-        if($query = $this->getObject('com:pages.dispatcher.router.route')->parse($url)) {
-            $context->request->query->add($query);
-        } else {
+        if(!$this->getRouter()->match()) {
             throw new KHttpExceptionNotFound('Page Not Found');
         }
     }
@@ -42,5 +73,17 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         $this->execute($method, $context);
 
         KDispatcherAbstract::_actionDispatch($context);
+    }
+
+    public function getContext()
+    {
+        $context = new ComPagesDispatcherContext();
+        $context->setSubject($this);
+        $context->setRequest($this->getRequest());
+        $context->setResponse($this->getResponse());
+        $context->setUser($this->getUser());
+        $context->setRouter($this->getRouter());
+
+        return $context;
     }
 }
