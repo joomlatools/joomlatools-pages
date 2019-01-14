@@ -25,7 +25,7 @@ class ComPagesDataObject extends KObjectConfig
         return new self($data);
     }
 
-    public function flatten($property = null)
+    public function flatten($folder = false)
     {
         $data = array();
 
@@ -33,12 +33,12 @@ class ComPagesDataObject extends KObjectConfig
         {
             if(is_array($values))
             {
-                if (isset($property) && !is_numeric($key))
+                if ($folder && !is_numeric($key))
                 {
                     // Keep current key as a property of the data object
 
                     foreach ($values as &$value) {
-                        $value[$property] = $key;
+                        $value['folder'] = $key;
                     }
                 }
 
