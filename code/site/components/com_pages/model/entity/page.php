@@ -128,6 +128,11 @@ class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerial
         return new KObjectConfig($value);
     }
 
+    public function setPropertyCollection($value)
+    {
+        return new KObjectConfig($value);
+    }
+
     public function setPropertyDate($value)
     {
         //Set the date based on the modified time of the file
