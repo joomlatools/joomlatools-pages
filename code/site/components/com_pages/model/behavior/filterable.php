@@ -25,7 +25,7 @@ abstract class ComPagesModelBehaviorFilterable extends KModelBehaviorAbstract
             });
 
             $context->entity = $pages;
-            $context->page   = $pages;
+            $context->pages  = $pages;
         }
     }
 
