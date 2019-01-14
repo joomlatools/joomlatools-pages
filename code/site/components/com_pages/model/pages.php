@@ -30,6 +30,7 @@ class ComPagesModelPages extends KModelAbstract
             'identity_key' => 'path',
             'behaviors'    => [
                 'recursable',
+                'dateable',
                 'sortable',
                 'categorizable',
                 'accessible',
@@ -53,7 +54,8 @@ class ComPagesModelPages extends KModelAbstract
             $pages = array();
             if($path = $state->path)
             {
-                if ($this->getState()->isUnique()) {
+                if ($this->getState()->isUnique())
+                {
                     $page = $registry->getPage($path.'/'.$this->getState()->slug);
 
                     if ($page) {
