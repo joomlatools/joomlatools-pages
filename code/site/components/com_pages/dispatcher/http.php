@@ -55,7 +55,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
-        //Throw 4054 if the page cannot be found
+        //Throw 404 if the page cannot be found
         if(!$this->getRouter()->match()) {
             throw new KHttpExceptionNotFound('Page Not Found');
         }
