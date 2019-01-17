@@ -38,11 +38,11 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
     protected $_match_types;
 
     /**
-     * The matched page
+     * The resolved rotue
      *
      * @var KHttpUrl
      */
-    protected $_matched_route;
+    protected $_resolved_route;
 
     /**
      * Constructor
@@ -128,7 +128,7 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
      *
      * If only a page path is defined the route is considered a static route
      *
-     * @param string $route The route regex, custom regex must start with an @. You can use multiple pre-set regex filters, like [digit:id]
+     * @param string $route The route regex You can use multiple pre-set regex filters, like [digit:id]
      * @param string $page The page path this route should point to.
      * @return ComPagesDispatcherRouterInterface
      */
@@ -167,13 +167,13 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
     }
 
     /**
-     * Match the request
+     * Resolve the request
      *
      * @return false|KHttpUrl Returns the matched route or false if no match was found
      */
     public function resolve()
     {
-        if(!isset($this->_matched_route))
+        if(!isset($this->_resolved_route))
         {
             $query = array();
             $match = false;
@@ -188,26 +188,13 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
                     // Compare longest non-param string with url, if match compile route and try to match it
                     if (strncmp($path.'/', $route, strpos($route, '[')) === 0)
                     {
-                        //Compile the regex for the route
-                        $regex = $this->__compileRoute($route);
-
                         //Try to match
-                        if (preg_match($regex, $path, $query) === 1)
+                        if (false !== $query = $this->parseRoute($route, $path))
                         {
-                            //Set the matched params in the request query
-                            foreach((array) $query as $key => $value)
-                            {
-                                if(!is_numeric($key)) {
-                                    $this->getRequest()->query->set($key, $value);
-                                } else {
-                                    unset($query[$key]);
-                                }
-                            }
-
-                            $match = $page;
+                            $match = $this->__dynamic_routes[$route];
 
                             //Move matched route to the top of the stack for reverse lookups
-                            $this->__dynamic_routes = array($route => $page) + $this->__dynamic_routes;
+                            $this->__dynamic_routes = array($route => $match) + $this->__dynamic_routes;
                             break;
                         }
                     }
@@ -219,19 +206,56 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
 
                 //Move matched route to the top of the stack for reverse lookups
                 $this->__static_routes = array($path => $match) + $this->__static_routes;
-
             }
 
             //Create the match
             if($match)
             {
-                $this->_matched_route = $this->getObject('http.url')
+                //Set the matched params in the request query
+                foreach($query as $key => $value) {
+                    $this->getRequest()->query->set($key, $value);
+                }
+
+                //Store the matched route
+                $this->_resolved_route = $this->getObject('http.url')
                     ->setQuery($query)
                     ->setPath($match);
             }
         }
 
-        return $this->_matched_route;
+        return $this->_resolved_route;
+    }
+
+    /**
+     * Parse a route
+     *
+     * @param string $route The route regex You can use multiple pre-set regex filters, like [digit:id]
+     * @param string $path  The path to parse
+     * @return false|array
+     */
+    public function parseRoute($route, $path)
+    {
+        $result = false;
+        $query  = array();
+
+        //Compile the regex for the route
+        $regex = $this->__compileRegex($route);
+
+        //Try to match
+        if (preg_match($regex, $path, $query) === 1)
+        {
+            //Set the matched params in the request query
+            foreach((array) $query as $key => $value)
+            {
+                if(is_numeric($key)) {
+                    unset($query[$key]);
+                }
+            }
+
+            $result = $query;
+        }
+
+        return $result;
     }
 
     /**
@@ -241,7 +265,7 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
      *
      * @param string $path The path to generate a route for
      * @param array @params Associative array of parameters to replace placeholders with.
-     * @return KHttpUrl Returns the generated route
+     * @return null|KHttpUrl Returns the generated route
      */
     public function generate($path, array $query = array())
     {
@@ -253,61 +277,69 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
             $routes = array_flip(array_reverse($this->__dynamic_routes));
 
             //Generate the dynamic route
-            if(isset($routes[$path]))
-            {
+            if(isset($routes[$path])) {
                 $route = $routes[$path];
-
-                //Prepend base path to route url again
-                if (preg_match_all('`(/|\.|)\[([^:\]]*+)(?::([^:\]]*+))?\](\?|)`', $route, $matches, PREG_SET_ORDER))
-                {
-                    foreach($matches as $index => $match)
-                    {
-                        list($block, $pre, $type, $param, $optional) = $match;
-
-                        if ($pre) {
-                            $block = substr($block, 1);
-                        }
-
-                        if(isset($query[$param]))
-                        {
-                            //Part is found, replace for param value
-                            $route = str_replace($block, $query[$param], $route);
-                            unset($query[$param]);
-                        }
-                        elseif ($optional && $index !== 0)
-                        {
-                            //Only strip preceeding slash if it's not at the base
-                            $route = str_replace($pre . $block, '', $route);
-                        }
-                        else
-                        {
-                            //Strip match block
-                            $route = str_replace($block, '', $route);
-                        }
-                    }
-                }
-
-                $path = $route;
             }
         }
-        else $path = $routes[$path];
+        else $route = $routes[$path];
 
+        return $route ? $this->buildRoute($route, $query) : null;
+    }
+
+
+    /**
+     * Build a route
+     *
+     * @param string $route The route regex You can use multiple pre-set regex filters, like [digit:id]
+     * @param array @params Associative array of parameters to replace placeholders with.
+     * @return KHttpUrl Returns the generated route
+     */
+    public function buildRoute($route, array $query = array())
+    {
+        if(strpos($route, '[') !== false)
+        {
+            //Prepend base path to route url again
+            if (preg_match_all('`(/|\.|)\[([^:\]]*+)(?::([^:\]]*+))?\](\?|)`', $route, $matches, PREG_SET_ORDER))
+            {
+                foreach ($matches as $index => $match)
+                {
+                    list($block, $pre, $type, $param, $optional) = $match;
+
+                    if ($pre) {
+                        $block = substr($block, 1);
+                    }
+
+                    if (isset($query[$param])) {
+                        //Part is found, replace for param value
+                        $route = str_replace($block, $query[$param], $route);
+                        unset($query[$param]);
+                    } elseif ($optional && $index !== 0) {
+                        //Only strip preceeding slash if it's not at the base
+                        $route = str_replace($pre . $block, '', $route);
+                    } else {
+                        //Strip match block
+                        $route = str_replace($block, '', $route);
+                    }
+                }
+            }
+        }
 
         //Create the route
         $url = $this->getRequest()->getUrl();
 
-        $route = $this->getObject('http.url')
+        $result = $this->getObject('http.url')
             ->setUrl($url->toString(KHttpUrl::AUTHORITY))
             ->setQuery($query);
 
+        //Add index.php
         $base = $this->getRequest()->getBasePath();
         if(strpos($url->getPath(), 'index.php') !== false) {
-            $route->setPath($base.'/index.php/'.$path);
+            $result->setPath($base.'/index.php/'.$route);
         } else {
-            $route->setPath($base.'/'.$path);
+            $result->setPath($base.'/'.$route);
         }
 
-        return $route;
+        return $result;
     }
 
     /**
@@ -316,7 +348,7 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
      * @param  string $route
      * @return string
      */
-    private function __compileRoute($route)
+    private function __compileRegex($route)
     {
         if (preg_match_all('`(/|\.|)\[([^:\]]*+)(?::([^:\]]*+))?\](\?|)`', $route, $matches, PREG_SET_ORDER))
         {
