@@ -157,9 +157,15 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $page;
     }
 
-    public function getRoutes()
+    public function getRoutes($path = null)
     {
-        return $this->__data['routes'];
+        if($path) {
+            $result = $this->__data['routes'][$path];
+        } else {
+            $result = $this->__data['routes'];
+        }
+
+        return $result;
     }
 
     public function isPage($path)
