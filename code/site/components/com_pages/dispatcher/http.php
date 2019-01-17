@@ -28,7 +28,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         parent::_initialize($config);
     }
 
-    public function setRouter(KDispatcherRouterInterface $router)
+    public function setRouter(ComPagesDispatcherRouterInterface $router)
     {
         $this->_router = $router;
         return $this;
@@ -36,16 +36,16 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     public function getRouter()
     {
-        if(!$this->_router instanceof KDispatcherRouterInterface)
+        if(!$this->_router instanceof ComPagesDispatcherRouterInterface)
         {
             $this->_router = $this->getObject($this->_router, array(
                 'request' => $this->getRequest(),
             ));
 
-            if(!$this->_router instanceof KDispatcherRouterInterface)
+            if(!$this->_router instanceof ComPagesDispatcherRouterInterface)
             {
                 throw new UnexpectedValueException(
-                    'Router: '.get_class($this->_router).' does not implement KDispatcherRouterInterface'
+                    'Router: '.get_class($this->_router).' does not implement ComPagesDispatcherRouterInterface'
                 );
             }
         }
@@ -55,9 +55,18 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
+        $router = $context->router;
+
         //Throw 404 if the page cannot be found
-        if(!$this->getRouter()->match()) {
+        if(!$match = $router->resolve()) {
             throw new KHttpExceptionNotFound('Page Not Found');
+        }
+
+        //Add a (self-referential) ccanonical URL.
+        if($routes = $this->getObject('page.registry')->getRoutes($match->getPath()))
+        {
+            $url = $router->generate($routes[0], $context->request->query->toArray());
+            $context->response->headers->set('Link', array((string) $url => array('rel' => 'canonical')));
         }
     }
 

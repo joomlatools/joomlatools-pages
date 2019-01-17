@@ -1,10 +1,10 @@
 <?php
 /**
- * Joomlatools Framework - https://www.joomlatools.com/developer/framework/
+ * Joomlatools Pages
  *
- * @copyright   Copyright (C) 2007 Johan Janssens and Timble CVBA. (http://www.timble.net)
+ * @copyright   Copyright (C) 2018 Johan Janssens and Timble CVBA. (http://www.timble.net)
  * @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl.html>
- * @link        https://github.com/joomlatools/joomlatools-framework for the canonical source repository
+ * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
 class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract
@@ -20,14 +20,20 @@ class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract
 
     public function getPage()
     {
-        return $this->match();
+        $page = false;
+
+        if($route = $this->resolve()) {
+            $page = $this->getObject('page.registry')->getPage($route->getPath());
+        }
+
+        return $page;
     }
 
-    public function match()
+    public function resolve()
     {
         $page = false;
 
-        if($route = parent::match())
+        if($route = parent::resolve())
         {
             $path = $route->getPath();
 
@@ -65,12 +71,12 @@ class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract
             }
         }
 
-        return $page;
+        return $route;
     }
 
-    public function generate($page, array $query = array(), $escape = true)
+    public function generate($page, array $query = array())
     {
-        $url = parent::generate($page, $query, $escape);
+        $url = parent::generate($page, $query);
 
         //Remove hardcoded collection states
         if($page = $this->getObject('page.registry')->getPage($page))

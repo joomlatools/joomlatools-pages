@@ -33,7 +33,7 @@ class ComPagesControllerAbstract extends KControllerModel
     {
         $formats = parent::getFormats();
 
-        if($this->getObject('dispatcher')->getRouter()->match()) {
+        if($this->getObject('dispatcher')->getRouter()->resolve()) {
             $formats = array($this->getRequest()->getFormat());
         }  else {
             $formats = array();
