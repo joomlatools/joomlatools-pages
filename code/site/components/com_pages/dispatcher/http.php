@@ -58,14 +58,12 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         $router = $context->router;
 
         //Throw 404 if the page cannot be found
-        if(!$match = $router->resolve()) {
+        if(!$router->resolve()) {
             throw new KHttpExceptionNotFound('Page Not Found');
         }
 
         //Add a (self-referential) ccanonical URL.
-        if($routes = $this->getObject('page.registry')->getRoutes($match->getPath()))
-        {
-            $url = $router->generate($routes[0], $context->request->query->toArray());
+        if($url = $router->getCanonicalUrl()) {
             $context->response->headers->set('Link', array((string) $url => array('rel' => 'canonical')));
         }
     }

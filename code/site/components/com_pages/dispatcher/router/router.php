@@ -29,6 +29,20 @@ class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract
         return $page;
     }
 
+    public function getCanonicalUrl()
+    {
+        $url = false;
+
+        if($route = $this->resolve())
+        {
+            if($routes = $this->getObject('page.registry')->getRoutes($route->getPath())) {
+                $url = $this->buildRoute($routes[0],  $route->getQuery(true));
+            }
+        }
+
+        return $url;
+    }
+
     public function resolve()
     {
         $page = false;
@@ -76,20 +90,22 @@ class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract
 
     public function generate($page, array $query = array())
     {
-        $url = parent::generate($page, $query);
-
-        //Remove hardcoded collection states
-        if($page = $this->getObject('page.registry')->getPage($page))
+        if($url = parent::generate($page, $query))
         {
-            if(($collection = $page->isCollection()) && isset($collection['state'])) {
-                $url->query = array_diff_key($url->query, $collection['state']);
+            //Remove hardcoded collection states
+            if($page = $this->getObject('page.registry')->getPage($page))
+            {
+                if(($collection = $page->isCollection()) && isset($collection['state'])) {
+                    $url->query = array_diff_key($url->query, $collection['state']);
+                }
             }
-        }
 
-        ///Remove hardcoded model states
-        unset($url->query['path']);
-        unset($url->query['slug']);
-        unset($url->query['view']);
+            ///Remove hardcoded model states
+            unset($url->query['path']);
+            unset($url->query['slug']);
+            unset($url->query['view']);
+
+        }
 
         return $url;
     }
