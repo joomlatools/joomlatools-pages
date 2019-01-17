@@ -17,8 +17,8 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
             'decorator' => 'joomla',
             'template_filters' => ['asset'], //Redefine asset to run before the script filter
             'template_functions' => [
-                'page'       => [$this, 'getPage'],
-                'pages'      => [$this, 'getPages'],
+                'page'   => [$this, 'getPage'],
+                'pages'  => [$this, 'getPages'],
             ],
         ]);
 
@@ -214,7 +214,9 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
         }
 
         $route = $this->getObject('dispatcher')->getRouter()
-            ->generate($page, $query, $escape);
+            ->generate($page, $query)
+            ->setEscape($escape)
+            ->toString(KHttpUrl::BASE + KHttpUrl::QUERY);
 
         return $route;
     }

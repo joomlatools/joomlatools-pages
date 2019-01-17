@@ -113,7 +113,9 @@ class ComPagesViewXml extends KViewTemplate
         }
 
         $route = $this->getObject('dispatcher')->getRouter()
-            ->generate($page, $query, $escape);
+            ->generate($page, $query)
+            ->setEscape($escape)
+            ->toString(KHttpUrl::FULL);
 
         return $route;
     }
