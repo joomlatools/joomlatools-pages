@@ -43,7 +43,10 @@ interface ComPagesDispatcherRouterInterface
     /**
      * Qualify a url
      *
-     * @param KhttpUrl $url The url to qualify
+     * Replace the url authority with the authority of the request url
+     *
+     * @param KHttpUrl $url The url to qualify
+     * @param bool $replace If the url is already qualified replace the authority
      * @return KHttpUrl
      */
     public function qualifyUrl(KHttpUrl $url);

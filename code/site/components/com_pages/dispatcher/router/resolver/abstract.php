@@ -318,8 +318,7 @@ abstract class ComPagesDispatcherRouterResolverAbstract extends KObject implemen
         }
 
         //Create the route
-        $route = $this->getObject('http.url')
-                ->setPath($route)
+        $route = $this->getObject('http.url', array('url' => $route))
                 ->setQuery($query);
 
         return $route;

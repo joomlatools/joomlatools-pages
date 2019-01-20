@@ -161,23 +161,29 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
     /**
      * Qualify a url
      *
-     * @param KhttpUrl $url The url to qualify
+     * Replace the url authority with the authority of the request url
+     *
+     * @param KHttpUrl $url The url to qualify
+     * @param bool $replace If the url is already qualified replace the authority
      * @return KHttpUrl
      */
-    public function qualifyUrl(KHttpUrl $url)
+    public function qualifyUrl(KHttpUrl $url, $force = false)
     {
-        $request = $this->getResponse()->getRequest();
+        if($force || !$url->toString(KHttpUrl::AUTHORITY))
+        {
+            $request = $this->getResponse()->getRequest();
 
-        //Qualify the url
-        $url->setUrl($request->getUrl()->toString(KHttpUrl::AUTHORITY));
+            //Qualify the url
+            $url->setUrl($request->getUrl()->toString(KHttpUrl::AUTHORITY));
 
-        //Add index.php
-        $base = $request->getBasePath();
-        $path = $url->getPath();
-        if(strpos($request->getUrl()->getPath(), 'index.php') !== false) {
-            $url->setPath($base . '/index.php/' . $path);
-        } else {
-            $url->setPath($base.'/'.$path);
+            //Add index.php
+            $base = $request->getBasePath();
+            $path = $url->getPath();
+            if(strpos($request->getUrl()->getPath(), 'index.php') !== false) {
+                $url->setPath($base . '/index.php/' . $path);
+            } else {
+                $url->setPath($base.'/'.$path);
+            }
         }
 
         return $url;
@@ -230,7 +236,7 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
             {
                 if(false !== $route = $resolver->generate($path, $query, $this))
                 {
-                    $route = $this->qualifyUrl($route);
+                    $route = $this->qualifyUrl($route, true);
                     break;
                 }
             }
