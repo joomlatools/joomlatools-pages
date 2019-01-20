@@ -22,7 +22,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     {
         $config->append([
             'behaviors' => ['cacheable'],
-            'router'    => 'com:pages.dispatcher.router',
+            'router'    => 'com://site/pages.dispatcher.router',
         ]);
 
         parent::_initialize($config);
@@ -39,7 +39,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         if(!$this->_router instanceof ComPagesDispatcherRouterInterface)
         {
             $this->_router = $this->getObject($this->_router, array(
-                'request' => $this->getRequest(),
+                'response' => $this->getResponse(),
             ));
 
             if(!$this->_router instanceof ComPagesDispatcherRouterInterface)
@@ -55,17 +55,16 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
-        $router = $context->router;
-
         //Throw 404 if the page cannot be found
-        if(!$router->resolve()) {
+        if(!$route = $context->router->resolve()) {
             throw new KHttpExceptionNotFound('Page Not Found');
         }
 
-        //Add a (self-referential) ccanonical URL.
-        if($url = $router->getCanonicalUrl()) {
-            $context->response->headers->set('Link', array((string) $url => array('rel' => 'canonical')));
+        //Send redirect 
+        if($context->response->isRedirect()) {
+            $this->redirect($route);
         }
+
     }
 
     protected function _actionDispatch(KDispatcherContextInterface $context)

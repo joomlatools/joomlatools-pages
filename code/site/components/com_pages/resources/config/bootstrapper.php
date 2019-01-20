@@ -60,7 +60,7 @@ return array(
             }
         ],
         'com://site/pages.template.filter.highlight' => [
-            'highlighter'  => function($source, $language) {
+            'highlighter' => function($source, $language) {
                 //See: https://github.com/scrivo/highlight.php
                 return (new \Highlight\Highlighter())->highlight($language, $source, false)->value;
             }
@@ -69,6 +69,9 @@ return array(
             'cache'      => $config['http_cache'] ?? false,
             'cache_time' => $config['http_cache_time'] ?? 7200, //2h
             'cache_path' => $config['http_cache_path'] ?? null
+        ],
+        'com://site/pages.dispatcher.router.resolver.redirect' => [
+            'routes'  => array_flip($config['redirects']) ?? false,
         ],
     ]
 );
