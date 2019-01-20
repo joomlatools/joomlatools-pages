@@ -14,10 +14,24 @@
 
 function PagesBuildRoute(&$query)
 {
-    $url = KObjectManager::getInstance()->getObject('com:pages.dispatcher.http')->getRouter()->getCanonicalUrl();
+    $path = false;
 
-    $query = array_merge($query, $url->query);
-    $path  = $url->path;
+    if($query['option'] == 'com_pages')
+    {
+        $router = KObjectManager::getInstance()
+            ->getObject('com://site/pages.dispatcher.http')
+            ->getRouter();
 
-    return $path;
+
+        if($router->resolve())
+        {
+            if($canonical = $router->getCanonicalUrl())
+            {
+                $query = array_merge($query, $canonical->query);
+                $path  = $canonical->path;
+            }
+        }
+    }
+
+   return $path;
 }
