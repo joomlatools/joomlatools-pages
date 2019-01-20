@@ -7,40 +7,46 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
+/**
+ * Abstract Dispatcher Router
+ *
+ * @author  Johan Janssens <https://github.com/johanjanssens>
+ * @package Koowa\Library\Dispatcher\Router
+ */
 abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPagesDispatcherRouterInterface, KObjectMultiton
 {
     /**
-     * Static page routes
+     * Response object
+     *
+     * @var	KControllerResponseInterface
+     */
+    private $__response;
+
+    /**
+     * The resolver queue
+     *
+     * @var	KObjectQueue
+     */
+    private $__queue;
+
+    /**
+     * List of router resolvers
      *
      * @var array
      */
-    private $__static_routes = array();
+    protected $__resolvers;
 
     /**
-     * Dynamic page routes
+     * The canonical url
      *
-     * @var array
+     * @var KHttpUrl
      */
-    private $__dynamic_routes = array();
-
-    /**
-     * Request object
-     *
-     * @var	KControllerRequestInterface
-     */
-    private $__request;
-
-    /**
-     * Array of default match types (regex helpers)
-     *
-     * @var array
-     */
-    protected $_match_types;
+    protected $_canonical;
 
     /**
      * The resolved rotue
      *
-     * @var KHttpUrl
+     * @var false|KHttpUrl
      */
     protected $_resolved_route;
 
@@ -53,13 +59,22 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
     {
         parent::__construct($config);
 
-        $this->setRequest($config->request);
+        $this->setResponse($config->response);
 
-        // The match types
-        $this->_match_types = $config->types;
+        //Create the resolver queue
+        $this->__queue = $this->getObject('lib:object.queue');
 
-        //Add the routes
-        $this->addRoutes($config->routes);
+        //Attach the router resolvers
+        $resolvers = (array) KObjectConfig::unbox($config->resolvers);
+
+        foreach ($resolvers as $key => $value)
+        {
+            if (is_numeric($key)) {
+                $this->attachResolver($value);
+            } else {
+                $this->attachResolver($key, $value);
+            }
+        }
     }
 
     /**
@@ -67,47 +82,39 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
      *
      * Called from {@link __construct()} as a first step of object instantiation.
      *
-     * @param   KObjectConfig $config Configuration options
+     * @param   KObjectConfig $config    An optional ObjectConfig object with configuration options.
      * @return 	void
      */
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'request' => null,
-            'routes'  => array('index' => ''),
-            'types'   =>  [
-                'digit' => '[0-9]++',
-                'alnum' => '[0-9A-Za-z]++',
-                'alpha' => '[A-Za-z]++',
-                '*'     => '.+?',
-                '**'    => '.++',
-                ''      => '[^/\.]++',
-            ],
+            'response'   => null,
+            'resolvers'  => array('redirect', 'http'),
         ));
 
         parent::_initialize($config);
     }
 
     /**
-     * Set the request object
+     * Set the response object
      *
-     * @param KControllerRequestInterface $request A request object
+     * @param KControllerResponseInterface $response A response object
      * @return ComPagesDispatcherRouterInterface
      */
-    public function setRequest(KControllerRequestInterface $request)
+    public function setResponse(KControllerResponseInterface $response)
     {
-        $this->__request = $request;
+        $this->__response = $response;
         return $this;
     }
 
     /**
-     * Get the request object
+     * Get the response object
      *
-     * @return KControllerRequestInterface
+     * @return KControllerResponseInterface
      */
-    public function getRequest()
+    public function getResponse()
     {
-        return $this->__request;
+        return $this->__response;
     }
 
     /**
@@ -117,57 +124,69 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
      */
     public function getPath()
     {
-        $base = $this->getRequest()->getBasePath();
-        $url  = $this->getRequest()->getUrl()->getPath();
+        $base = $this->getResponse()->getRequest()->getBasePath();
+        $url  = $this->getResponse()->getRequest()->getUrl()->getPath();
 
         return trim(str_replace(array($base, '/index.php'), '', $url), '/');
     }
 
     /**
-     * Add a route for matching
+     * Get the canonical url
      *
-     * If only a page path is defined the route is considered a static route
+     * @return  KHttpUrl|null  A HttpUrl object or NULL if no canonical url could be found
+     */
+    public function getCanonicalUrl()
+    {
+        return $this->_canonical;
+    }
+
+    /**
+     * Sets the canonical url
      *
-     * @param string $route The route regex You can use multiple pre-set regex filters, like [digit:id]
-     * @param string $page The page path this route should point to.
+     * @param  string|KHttpUrlInterface $canonical
      * @return ComPagesDispatcherRouterInterface
      */
-    public function addRoute($route, $page)
+    public function setCanonicalUrl($canonical)
     {
-        if(strpos($route, '[') !== false) {
-            $this->__dynamic_routes[$route] = $page;
-        } else {
-            $this->__static_routes[$route] = $page;
+        if(!($canonical instanceof KHttpUrlInterface)) {
+            $canonical = $this->getObject('lib:http.url', array('url' => $canonical));
         }
+
+        $this->getResponse()->getHeaders()->set('Link', array((string) $canonical => array('rel' => 'canonical')));
+        $this->_canonical = $canonical;
 
         return $this;
     }
 
     /**
-     * Add routes for matching
+     * Qualify a url
      *
-     * @param array $routes  The routes to be added
-     * @return ComPagesDispatcherRouterInterface
+     * @param KhttpUrl $url The url to qualify
+     * @return KHttpUrl
      */
-    public function addRoutes($routes)
+    public function qualifyUrl(KHttpUrl $url)
     {
-        foreach((array)KObjectConfig::unbox($routes) as $page => $routes)
-        {
-            foreach((array) $routes as $route)
-            {
-                if (is_numeric($page)) {
-                    $this->addRoute($route, $route);
-                } else {
-                    $this->addRoute($route, $page);
-                }
-            }
+        $request = $this->getResponse()->getRequest();
+
+        //Qualify the url
+        $url->setUrl($request->getUrl()->toString(KHttpUrl::AUTHORITY));
+
+        //Add index.php
+        $base = $request->getBasePath();
+        $path = $url->getPath();
+        if(strpos($request->getUrl()->getPath(), 'index.php') !== false) {
+            $url->setPath($base . '/index.php/' . $path);
+        } else {
+            $url->setPath($base.'/'.$path);
         }
 
-        return $this;
+        return $url;
     }
 
     /**
      * Resolve the request
+     *
+     * Iterate through the router resolvers. If a resolver returns not FALSE the chain will be stopped.
      *
      * @return false|KHttpUrl Returns the matched route or false if no match was found
      */
@@ -175,51 +194,18 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
     {
         if(!isset($this->_resolved_route))
         {
-            $query = array();
-            $match = false;
-            $path  = $this->getPath();
+            $this->_resolved_route = false;
 
-            //Check if we have a static route
-            if(!isset($this->__static_routes[$path]))
+            foreach($this->__queue as $resolver)
             {
-                //Match against the dynamic routes
-                foreach($this->__dynamic_routes as $route => $page)
+                if($resolver instanceof ComPagesDispatcherRouterResolverInterface)
                 {
-                    // Compare longest non-param string with url, if match compile route and try to match it
-                    if (strncmp($path.'/', $route, strpos($route, '[')) === 0)
+                    if(false !== $result = $resolver->resolve($this))
                     {
-                        //Try to match
-                        if (false !== $query = $this->parseRoute($route, $path))
-                        {
-                            $match = $this->__dynamic_routes[$route];
-
-                            //Move matched route to the top of the stack for reverse lookups
-                            $this->__dynamic_routes = array($route => $match) + $this->__dynamic_routes;
-                            break;
-                        }
+                        $this->_resolved_route = $result;
+                        break;
                     }
                 }
-            }
-            else
-            {
-                $match = $this->__static_routes[$path];
-
-                //Move matched route to the top of the stack for reverse lookups
-                $this->__static_routes = array($path => $match) + $this->__static_routes;
-            }
-
-            //Create the match
-            if($match)
-            {
-                //Set the matched params in the request query
-                foreach($query as $key => $value) {
-                    $this->getRequest()->query->set($key, $value);
-                }
-
-                //Store the matched route
-                $this->_resolved_route = $this->getObject('http.url')
-                    ->setQuery($query)
-                    ->setPath($match);
             }
         }
 
@@ -227,161 +213,95 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
     }
 
     /**
-     * Parse a route
+     * Generate a route
      *
-     * @param string $route The route regex You can use multiple pre-set regex filters, like [digit:id]
-     * @param string $path  The path to parse
-     * @return false|array
-     */
-    public function parseRoute($route, $path)
-    {
-        $result = false;
-        $query  = array();
-
-        //Compile the regex for the route
-        $regex = $this->__compileRegex($route);
-
-        //Try to match
-        if (preg_match($regex, $path, $query) === 1)
-        {
-            //Set the matched params in the request query
-            foreach((array) $query as $key => $value)
-            {
-                if(is_numeric($key)) {
-                    unset($query[$key]);
-                }
-            }
-
-            $result = $query;
-        }
-
-        return $result;
-    }
-
-    /**
-     * Reversed routing
-     *
-     * Generate the URL for a route. Replace regexes with supplied parameters
+     * Iterate through the router resolvers. If a resolver returns not FALSE the chain will be stopped.
      *
      * @param string $path The path to generate a route for
      * @param array @params Associative array of parameters to replace placeholders with.
-     * @return null|KHttpUrl Returns the generated route
+     * @return false|KHttpUrl Returns the generated route
      */
     public function generate($path, array $query = array())
     {
-        $routes = array_flip(array_reverse($this->__static_routes));
-
-        //Check if we have a static route
-        if(!isset($routes[$path]))
+        $route = false;
+        foreach($this->__queue as $resolver)
         {
-            $routes = array_flip(array_reverse($this->__dynamic_routes));
-
-            //Generate the dynamic route
-            if(isset($routes[$path])) {
-                $route = $routes[$path];
-            }
-        }
-        else $route = $routes[$path];
-
-        return $route ? $this->buildRoute($route, $query) : null;
-    }
-
-
-    /**
-     * Build a route
-     *
-     * @param string $route The route regex You can use multiple pre-set regex filters, like [digit:id]
-     * @param array @params Associative array of parameters to replace placeholders with.
-     * @return KHttpUrl Returns the generated route
-     */
-    public function buildRoute($route, array $query = array())
-    {
-        if(strpos($route, '[') !== false)
-        {
-            //Prepend base path to route url again
-            if (preg_match_all('`(/|\.|)\[([^:\]]*+)(?::([^:\]]*+))?\](\?|)`', $route, $matches, PREG_SET_ORDER))
+            if($resolver instanceof ComPagesDispatcherRouterResolverInterface)
             {
-                foreach ($matches as $index => $match)
+                if(false !== $route = $resolver->generate($path, $query, $this))
                 {
-                    list($block, $pre, $type, $param, $optional) = $match;
-
-                    if ($pre) {
-                        $block = substr($block, 1);
-                    }
-
-                    if (isset($query[$param])) {
-                        //Part is found, replace for param value
-                        $route = str_replace($block, $query[$param], $route);
-                        unset($query[$param]);
-                    } elseif ($optional && $index !== 0) {
-                        //Only strip preceeding slash if it's not at the base
-                        $route = str_replace($pre . $block, '', $route);
-                    } else {
-                        //Strip match block
-                        $route = str_replace($block, '', $route);
-                    }
+                    $route = $this->qualifyUrl($route);
+                    break;
                 }
             }
         }
 
-        //Create the route
-        $url = $this->getRequest()->getUrl();
-
-        $result = $this->getObject('http.url')
-            ->setUrl($url->toString(KHttpUrl::AUTHORITY))
-            ->setQuery($query);
-
-        //Add index.php
-        $base = $this->getRequest()->getBasePath();
-        if(strpos($url->getPath(), 'index.php') !== false) {
-            $result->setPath($base.'/index.php/'.$route);
-        } else {
-            $result->setPath($base.'/'.$route);
-        }
-
-        return $result;
+        return $route;
     }
 
     /**
-     * Compile the regex for a given route
+     * Get a resolver handler by identifier
      *
-     * @param  string $route
-     * @return string
+     * @param   mixed $resolver An object that implements ObjectInterface, ObjectIdentifier object
+     *                                 or valid identifier string
+     * @param   array $config An optional associative array of configuration settings
+     * @throws UnexpectedValueException
+     * @return ComPagesDispatcherRouterInterface
      */
-    private function __compileRegex($route)
+    public function getResolver($resolver, $config = array())
     {
-        if (preg_match_all('`(/|\.|)\[([^:\]]*+)(?::([^:\]]*+))?\](\?|)`', $route, $matches, PREG_SET_ORDER))
+        //Create the complete identifier if a partial identifier was passed
+        if (is_string($resolver) && strpos($resolver, '.') === false)
         {
-            foreach($matches as $match)
-            {
-                list($block, $pre, $type, $param, $optional) = $match;
+            $identifier = $this->getIdentifier()->toArray();
 
-                if (isset($this->_match_types[$type])) {
-                    $type = $this->_match_types[$type];
-                }
-
-                if ($pre === '.') {
-                    $pre = '\.';
-                }
-
-                $optional = $optional !== '' ? '?' : null;
-
-                //Older versions of PCRE require the 'P' in (?P<named>)
-                $pattern = '(?:'
-                    . ($pre !== '' ? $pre : null)
-                    . '('
-                    . ($param !== '' ? "?P<$param>" : null)
-                    . $type
-                    . ')'
-                    . $optional
-                    . ')'
-                    . $optional;
-
-                $route = str_replace($block, $pattern, $route);
+            if($identifier['package'] != 'dispatcher') {
+                $identifier['path'] = array('dispatcher', 'router', 'resolver');
+            } else {
+                $identifier['path'] = array('router', 'resolver');
             }
+
+            $identifier['name'] = $resolver;
+            $identifier = $this->getIdentifier($identifier);
+        }
+        else $identifier = $this->getIdentifier($resolver);
+
+        if (!isset($this->__resolvers[$identifier->name]))
+        {
+            $resolver = $this->getObject($identifier, array_merge($config, array('response' => $this)));
+
+            if (!($resolver instanceof ComPagesDispatcherRouterResolverInterface))
+            {
+                throw new UnexpectedValueException(
+                    "Resolver $identifier does not implement DispatcherRouterResolverInterface"
+                );
+            }
+
+            $this->__resolvers[$resolver->getIdentifier()->name] = $resolver;
+        }
+        else $resolver = $this->__resolvers[$identifier->name];
+
+        return $resolver;
+    }
+
+    /**
+     * Attach a router resolver
+     *
+     * @param   mixed  $resolver An object that implements ObjectInterface, ObjectIdentifier object
+     *                            or valid identifier string
+     * @param   array $config  An optional associative array of configuration settings
+     * @return ComPagesDispatcherRouterInterface
+     */
+    public function attachResolver($resolver, $config = array())
+    {
+        if (!($resolver instanceof ComPagesDispatcherRouterResolverInterface)) {
+            $resolver = $this->getResolver($resolver, $config);
         }
 
-        return "`^$route$`u";
+        //Enqueue the resolver
+        $this->__queue->enqueue($resolver, $resolver->getPriority());
+
+        return $this;
     }
 
     /**
@@ -393,7 +313,8 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
     {
         parent::__clone();
 
-        $this->__request = clone $this->__request;
+        $this->__queue    = clone $this->__queue;
+        $this->__response = clone $this->__response;
     }
 
 }
