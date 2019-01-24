@@ -7,15 +7,15 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesPageObject extends ComPagesObjectConfigFrontmatter
+class ComPagesDispatcherContext extends KDispatcherContext implements KDispatcherContextInterface
 {
-    public function isStatic()
+    public function getRouter()
     {
-        return (strpos($this->route, '[') === false);
+        return KObjectConfig::get('router');
     }
 
-    public function isCollection()
+    public function setRouter(ComPagesDispatcherRouterInterface $router)
     {
-        return isset($this->collection) && $this->collection !== false ? KObjectConfig::unbox($this->collection) : false;
+        return KObjectConfig::set('router', $router);
     }
 }

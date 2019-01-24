@@ -7,14 +7,25 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesDatabaseTableGroups extends KDatabaseTableAbstract
+class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract
 {
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append([
-            'name' => defined('JOOMLATOOLS_PLATFORM') ? 'users_groups' : 'usergroups'
-        ]);
+        $config->append(array(
+            'resolvers'  => array('page'),
+        ));
 
         parent::_initialize($config);
+    }
+
+    public function getPage()
+    {
+        $page = false;
+
+        if($route = $this->resolve()) {
+            $page = $this->getObject('page.registry')->getPage($route->getPath());
+        }
+
+        return $page;
     }
 }

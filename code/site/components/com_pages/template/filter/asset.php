@@ -14,7 +14,11 @@ class ComPagesTemplateFilterAsset extends ComKoowaTemplateFilterAsset
     {
         $config->append(array(
             'priority' => self::PRIORITY_LOW,
-            'schemes' => array('theme://' => 'base://templates/'.JFactory::getApplication()->getTemplate().'/'),
+            'schemes' => array(
+                'theme://'    => 'basepath://templates/'.JFactory::getApplication()->getTemplate().'/',
+                'baseurl://'  => rtrim($this->getObject('request')->getBaseUrl(), '/').'/',
+                'basepath://' => rtrim($this->getObject('request')->getBaseUrl()->getPath(), '/').'/'
+            ),
         ));
 
         parent::_initialize($config);

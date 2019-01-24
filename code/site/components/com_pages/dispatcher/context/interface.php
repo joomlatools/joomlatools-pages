@@ -7,14 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesDatabaseTableGroups extends KDatabaseTableAbstract
+interface ComPagesDispatcherContextInterface extends KDispatcherContextInterface
 {
-    protected function _initialize(KObjectConfig $config)
-    {
-        $config->append([
-            'name' => defined('JOOMLATOOLS_PLATFORM') ? 'users_groups' : 'usergroups'
-        ]);
-
-        parent::_initialize($config);
-    }
+    public function getRouter();
 }

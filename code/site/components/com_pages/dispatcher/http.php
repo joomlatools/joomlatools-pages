@@ -9,25 +9,62 @@
 
 class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 {
+    protected $_router;
+
+    public function __construct( KObjectConfig $config)
+    {
+        parent::__construct($config);
+
+        $this->_router = $config->router;
+    }
+
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
             'behaviors' => ['cacheable'],
+            'router'    => 'com://site/pages.dispatcher.router',
         ]);
 
         parent::_initialize($config);
     }
 
+    public function setRouter(ComPagesDispatcherRouterInterface $router)
+    {
+        $this->_router = $router;
+        return $this;
+    }
+
+    public function getRouter()
+    {
+        if(!$this->_router instanceof ComPagesDispatcherRouterInterface)
+        {
+            $this->_router = $this->getObject($this->_router, array(
+                'response' => $this->getResponse(),
+            ));
+
+            if(!$this->_router instanceof ComPagesDispatcherRouterInterface)
+            {
+                throw new UnexpectedValueException(
+                    'Router: '.get_class($this->_router).' does not implement ComPagesDispatcherRouterInterface'
+                );
+            }
+        }
+
+        return $this->_router;
+    }
+
     protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
-        $url = $context->request->getUrl();
-
-        //Throw 4054 if the page cannot be found
-        if($query = $this->getObject('com:pages.dispatcher.router.route')->parse($url)) {
-            $context->request->query->add($query);
-        } else {
+        //Throw 404 if the page cannot be found
+        if(!$route = $context->router->resolve()) {
             throw new KHttpExceptionNotFound('Page Not Found');
         }
+
+        //Send redirect 
+        if($context->response->isRedirect()) {
+            $this->redirect($route);
+        }
+
     }
 
     protected function _actionDispatch(KDispatcherContextInterface $context)
@@ -42,5 +79,17 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         $this->execute($method, $context);
 
         KDispatcherAbstract::_actionDispatch($context);
+    }
+
+    public function getContext()
+    {
+        $context = new ComPagesDispatcherContext();
+        $context->setSubject($this);
+        $context->setRequest($this->getRequest());
+        $context->setResponse($this->getResponse());
+        $context->setUser($this->getUser());
+        $context->setRouter($this->getRouter());
+
+        return $context;
     }
 }

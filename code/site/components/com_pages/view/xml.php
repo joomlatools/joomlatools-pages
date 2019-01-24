@@ -14,8 +14,6 @@ class ComPagesViewXml extends KViewTemplate
         $config->append([
             'mimetype'   => 'text/xml',
             'auto_fetch' => false,
-            'template'   => 'layout',
-            'behaviors'  => ['routable'],
         ]);
 
         parent::_initialize($config);
@@ -30,46 +28,77 @@ class ComPagesViewXml extends KViewTemplate
         return $result;
     }
 
-    public function getPage()
+    public function getLayout()
     {
-        $registry = $this->getObject('page.registry');
-        $state    = $this->getModel()->getState();
-
-        if ($state->isUnique()) {
-            $page = $registry->getPage($state->path.'/'.$state->slug);
-        } else {
-            $page = $registry->getPage($state->path);
+        if($layout = $this->getPage()->layout) {
+            $layout = $layout->path;
         }
 
-        return $page;
+        return $layout;
     }
 
-    public function getRoute($route = '', $fqr = true, $escape = true)
+    public function getLayoutData()
     {
-        //Parse route
-        $query = array();
-
-        if(is_string($route))
+        $data = array();
+        if($layout = $this->getPage()->layout)
         {
-            if(strpos($route, '=')) {
-                parse_str(trim($route), $query);
-            } else {
-                $query['path'] = $route;
+            unset($layout->path);
+            $data = $layout;
+        }
+
+        return $data;
+    }
+
+    public function getPage($path = null)
+    {
+        $result   = array();
+        $registry = $this->getObject('page.registry');
+
+        if (is_null($path))
+        {
+            if (!isset($this->_page))
+            {
+                $state = $this->getModel()->getState();
+
+                if (!$state->isUnique())
+                {
+                    $data = $this->getObject('dispatcher')
+                        ->getRouter()
+                        ->getPage();
+
+                    $page = $this->getObject('com:pages.model.pages')->create($data->toArray());
+
+                    $this->_page = $page;
+                }
+                else $this->_page = $this->getModel()->fetch();
             }
+
+            $result = $this->_page;
         }
         else
         {
-            if($route instanceof KModelEntityInterface)
-            {
-                $query['path'] = $route->path;
-                $query['slug'] = $route->slug;
+            if ($data = $registry->getPage($path)) {
+                $result = $this->getObject('com:pages.model.pages')->create($data->toArray());
             }
-            else $query = $route;
         }
 
-        if(!$query['slug'])
+        return $result;
+    }
+
+    public function getRoute($page = '', $query = array(), $escape = false)
+    {
+        if($page instanceof KModelEntityInterface) {
+            $page = $page->route;
+        }
+
+        if(!is_array($query)) {
+            $query = array();
+        }
+
+        //Add the model state only for routes to the same page
+        if($page == $this->getPage()->route)
         {
-            if($collection = $this->getPage()->collection)
+            if($collection = $this->getPage($page)->collection)
             {
                 $states = array();
                 foreach ($this->getModel()->getState() as $name => $state)
@@ -77,12 +106,17 @@ class ComPagesViewXml extends KViewTemplate
                     if ($state->default != $state->value && !$state->internal) {
                         $states[$name] = $state->value;
                     }
-
-                    $query = array_merge($states, $query);
                 }
+
+                $query = array_merge($states, $query);
             }
         }
 
-        return $this->getObject('com:pages.dispatcher.router.route',  array('escape'  => $escape))->build($query);
+        $route = $this->getObject('dispatcher')->getRouter()
+            ->generate($page, $query)
+            ->setEscape($escape)
+            ->toString(KHttpUrl::FULL);
+
+        return $route;
     }
 }
