@@ -54,33 +54,14 @@ class ComPagesViewXml extends KViewTemplate
         $result   = array();
         $registry = $this->getObject('page.registry');
 
-        if (is_null($path))
-        {
-            if (!isset($this->_page))
-            {
-                $state = $this->getModel()->getState();
-
-                if (!$state->isUnique())
-                {
-                    $data = $this->getObject('dispatcher')
-                        ->getRouter()
-                        ->getPage();
-
-                    $page = $this->getObject('com:pages.model.pages')->create($data->toArray());
-
-                    $this->_page = $page;
-                }
-                else $this->_page = $this->getModel()->fetch();
-            }
-
-            $result = $this->_page;
-        }
-        else
+        if (!is_null($path))
         {
             if ($data = $registry->getPage($path)) {
                 $result = $this->getObject('com:pages.model.pages')->create($data->toArray());
             }
+
         }
+        else $result = $this->getModel()->getPage();
 
         return $result;
     }
