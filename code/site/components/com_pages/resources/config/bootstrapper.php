@@ -71,7 +71,7 @@ return array(
             'cache_path' => $config['http_cache_path'] ?? null
         ],
         'com://site/pages.dispatcher.router.resolver.redirect' => [
-            'routes'  => array_flip($config['redirects']) ?? false,
+            'routes'  => isset($config['redirects']) ? array_flip($config['redirects']) : false,
         ],
     ]
 );
