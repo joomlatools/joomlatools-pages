@@ -61,7 +61,10 @@ class ComPagesModelPages extends KModelAbstract
                 }
             }
 
-            $this->_page = $this->create($page->toArray());
+            $context = $this->getContext();
+            $context->entity = $page->toArray();
+
+            $this->_page = $this->_actionCreate($context);
         }
 
         return $this->_page;
