@@ -223,16 +223,14 @@ abstract class ComPagesDispatcherRouterResolverAbstract extends KObject implemen
      *
      * @param string $route The route regex You can use multiple pre-set regex filters, like [digit:id]
      * @param string $path  The path to parse
-     * @return array
+     * @return array|false
      */
     public function parseRoute($route, $path)
     {
-        $query = array();
+        $result = false;
 
         if(strpos($route, '[') !== false)
         {
-            $query = array();
-
             //Compile the regex for the route
             if (preg_match_all('`(/|\.|)\[([^:\]]*+)(?::([^:\]]*+))?\](\?|)`', $route, $matches, PREG_SET_ORDER))
             {
@@ -265,6 +263,7 @@ abstract class ComPagesDispatcherRouterResolverAbstract extends KObject implemen
                 }
             }
 
+
             //Try to match
             if (preg_match("`^$route$`u", $path, $query) === 1)
             {
@@ -274,10 +273,12 @@ abstract class ComPagesDispatcherRouterResolverAbstract extends KObject implemen
                         unset($query[$key]);
                     }
                 }
+
+                $result = $query;
             }
         }
 
-        return  $query;
+        return $result;
     }
 
     /**
