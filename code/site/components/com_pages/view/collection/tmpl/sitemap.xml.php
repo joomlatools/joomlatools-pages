@@ -13,7 +13,7 @@ defined('KOOWA') or die; ?>
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"
         xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
-    <? foreach($pages as $page): ?>
+    <? foreach(collection() as $page): ?>
     <url>
         <loc><?= route($page) ?></loc>
         <lastmod><?= $page->date->format(DateTime::ATOM) ?></lastmod>

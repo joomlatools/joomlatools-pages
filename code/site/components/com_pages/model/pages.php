@@ -9,7 +9,6 @@
 
 class ComPagesModelPages extends KModelAbstract
 {
-    protected $_page;
     protected $_pages;
 
     public function __construct(KObjectConfig $config)
@@ -44,34 +43,7 @@ class ComPagesModelPages extends KModelAbstract
         parent::_initialize($config);
     }
 
-    public function getPage()
-    {
-        if(!isset($this->_page))
-        {
-            $state    = $this->getState();
-            $registry = $this->getObject('page.registry');
-
-            //Make sure we have a valid path
-            if($path = $state->path)
-            {
-                if ($this->getState()->isUnique()) {
-                    $page = $registry->getPage($path.'/'.$this->getState()->slug);
-                } else {
-                    $page = $registry->getPage($path);
-                }
-            }
-
-            $context = $this->getContext();
-            $context->entity = $page->toArray();
-
-            $this->_page = $this->_actionCreate($context);
-        }
-
-        return $this->_page;
-    }
-
-
-    public function getCollection()
+    public function getPages()
     {
         if(!isset($this->_pages))
         {
@@ -101,7 +73,7 @@ class ComPagesModelPages extends KModelAbstract
 
     protected function _prepareContext(KModelContext $context)
     {
-        $pages = $this->getCollection();
+        $pages = $this->getPages();
 
         $context->pages  = $pages;
         $context->entity = $pages;

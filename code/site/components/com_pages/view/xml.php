@@ -12,8 +12,11 @@ class ComPagesViewXml extends KViewTemplate
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'mimetype'   => 'text/xml',
             'auto_fetch' => false,
+            'template_functions' => [
+                'page'        => [$this, 'getPage'],
+                'collection'  => [$this, 'getCollection'],
+            ],
         ]);
 
         parent::_initialize($config);
@@ -21,9 +24,61 @@ class ComPagesViewXml extends KViewTemplate
 
     protected function _actionRender(KViewContext $context)
     {
+        $data       = $context->data;
+        $parameters = $context->parameters;
+
+        //Render the page if it hasn't been rendered yet
+        if(empty($this->getPage()->content))
+        {
+            //Create template (add parameters BEFORE cloning)
+            $page = clone $this->getTemplate()->setParameters($parameters);
+            $page->addFilters($this->getPage()->process->filters)
+                ->loadFile('page://pages/'.$this->getPage()->route);
+
+            //Render page
+            $content = $page->render(KObjectConfig::unbox($data->append($page->getData())));
+            $this->getPage()->content = $content;
+        }
+        else $content = $this->getPage()->content;
+
+        //Set the rendered page in the view to allow for view decoration
+        $this->setContent($content);
+
+        if($layout = $this->getLayout())
+        {
+            //Render the layout
+            $renderLayout = function($layout, $data, $parameters) use(&$renderLayout)
+            {
+                $template = $this->getTemplate()
+                    ->setParameters($parameters)
+                    ->loadFile($layout);
+
+                //Append the template layout data
+                //
+                //Do not overwrite existing data, only add it not defined yet
+                $this->getLayoutData()->append($template->getData());
+
+                //Merge the page layout data
+                //
+                //Allow the layout data to be modified during template rendering
+                $data->merge($this->getLayoutData());
+
+                //Render the template
+                $this->setContent($template->render(KObjectConfig::unbox($data)));
+
+                //Handle recursive layout
+                if($layout = $template->getLayout()) {
+                    $renderLayout($layout, $data, $parameters);
+                }
+            };
+
+            Closure::bind($renderLayout, $this, get_class());
+            $renderLayout($layout, $data, $parameters);
+        }
+
         //Prepend the xml prolog
         $result  = '<?xml version="1.0" encoding="utf-8" ?>';
-        $result .=  parent::_actionRender($context);
+        $result .=  KViewAbstract::_actionRender($context);
 
         return $result;
     }
@@ -51,52 +106,29 @@ class ComPagesViewXml extends KViewTemplate
 
     public function getPage($path = null)
     {
-        $result   = array();
-        $registry = $this->getObject('page.registry');
+        return $this->getModel()->getPage($path);
+    }
 
-        if (!is_null($path))
-        {
-            if ($data = $registry->getPage($path)) {
-                $result = $this->getObject('com:pages.model.pages')->create($data->toArray());
-            }
-
+    public function getCollection($source = '', $state = array())
+    {
+        if($source) {
+            $result = $this->getModel()->getCollection($source, $state)->fetch();
+        } else {
+            $result = $this->getModel()->fetch();
         }
-        else $result = $this->getModel()->getPage();
 
         return $result;
     }
 
     public function getRoute($page = '', $query = array(), $escape = false)
     {
-        if($page instanceof KModelEntityInterface) {
-            $page = $page->route;
+        if(empty($page)) {
+            $page = $this->getPage();
         }
 
-        if(!is_array($query)) {
-            $query = array();
+        if($route = $this->getObject('dispatcher')->getRouter()->generate($page, $query)) {
+            $route->setEscape($escape)->toString(KHttpUrl::FULL);
         }
-
-        //Add the model state only for routes to the same page
-        if($page == $this->getPage()->route)
-        {
-            if($collection = $this->getPage($page)->collection)
-            {
-                $states = array();
-                foreach ($this->getModel()->getState() as $name => $state)
-                {
-                    if ($state->default != $state->value && !$state->internal) {
-                        $states[$name] = $state->value;
-                    }
-                }
-
-                $query = array_merge($states, $query);
-            }
-        }
-
-        $route = $this->getObject('dispatcher')->getRouter()
-            ->generate($page, $query)
-            ->setEscape($escape)
-            ->toString(KHttpUrl::FULL);
 
         return $route;
     }

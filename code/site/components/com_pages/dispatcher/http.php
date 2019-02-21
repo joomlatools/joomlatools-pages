@@ -65,6 +65,15 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             $this->redirect($route);
         }
 
+        //Get the page from the router
+        $page = $context->router->getPage();
+
+        //Set the controller
+        $this->setController('page', ['view' => $page->getType()]);
+
+        //Set page in model
+        $this->getController()->getModel()->setPage($page, $context->request->query->toArray());
+
     }
 
     protected function _actionDispatch(KDispatcherContextInterface $context)

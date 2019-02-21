@@ -19,16 +19,6 @@ class ComPagesControllerAbstract extends KControllerModel
         parent::_initialize($config);
     }
 
-    public function getRequest()
-    {
-        $request = parent::getRequest();
-
-        //Remove the view query parameter
-        $request->query->remove('view');
-
-        return $request;
-    }
-
     public function getFormats()
     {
         $formats = parent::getFormats();
@@ -57,5 +47,19 @@ class ComPagesControllerAbstract extends KControllerModel
                 JFactory::getDocument()->setTitle($title);
             }
         }
+    }
+
+    public function getView()
+    {
+        if(!$this->_view instanceof KViewInterface)
+        {
+            //Get the view
+            $view = KControllerView::getView();
+
+            //Set the model in the view
+            $view->setModel($this->getModel());
+        }
+
+        return parent::getView();
     }
 }

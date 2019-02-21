@@ -7,7 +7,10 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesViewPagesHtml extends ComPagesViewHtml
+class ComPagesViewCollectionHtml extends ComPagesViewHtml
 {
-
+    public function isCollection()
+    {
+        return (bool) !$this->getModel()->getState()->isUnique();
+    }
 }

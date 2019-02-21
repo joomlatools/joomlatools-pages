@@ -11,7 +11,7 @@ class ComPagesControllerBehaviorRedirectable extends KControllerBehaviorAbstract
 {
     protected function _beforeRender(KControllerContextInterface $context)
     {
-        if($url = $this->getModel()->fetch()->redirect)
+        if($url = $this->getModel()->getPage()->redirect)
         {
             if(!parse_url($url, PHP_URL_SCHEME))
             {

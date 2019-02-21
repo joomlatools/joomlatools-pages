@@ -24,13 +24,13 @@ defined('KOOWA') or die; ?>
                 <link><?= route('format=html') ?></link>
             </image>
         <? endif; ?>
-        <lastBuildDate><?= count($pages) ? $pages->top()->date->format(DateTime::RSS) : '' ?></lastBuildDate>
+        <lastBuildDate><?= count(collection()) ? collection()->top()->date->format(DateTime::RSS) : '' ?></lastBuildDate>
         <atom:link href="<?=  url() ?>" rel="self" type="application/rss+xml"/>
         <language><?= $language ?></language>
         <sy:updatePeriod><?= $update_period ?></sy:updatePeriod>
         <sy:updateFrequency><?= $update_frequency ?></sy:updateFrequency>
 
-        <?foreach($pages as $page):?>
+        <?foreach(collection() as $page):?>
             <item>
                 <title><?= escape($page->title); ?></title>
                 <link><?= route($page); ?></link>

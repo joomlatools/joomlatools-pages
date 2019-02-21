@@ -16,6 +16,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
     private $__pages  = array();
     private $__data   = null;
+    private $__collections = array();
 
     protected $_cache;
     protected $_cache_path;
@@ -43,14 +44,18 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         //Load the cache and do not refresh it
         $basedir = $this->getLocator()->getBasePath().'/pages';
         $this->__data = $this->loadCache($basedir, false);
+
+        //Set the collection
+        $this->__collections = array_merge(KObjectConfig::unbox($config->collections), $this->__data['collections']);
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'cache'      => JDEBUG ? false : true,
-            'cache_path' => '',
-            'cache_time' => 60*60*24 //1 day
+            'cache'       => JDEBUG ? false : true,
+            'cache_path'  => '',
+            'cache_time'  => 60*60*24, //1 day
+            'collections' => array(),
         ]);
 
         parent::_initialize($config);
@@ -59,6 +64,22 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     public function getLocator()
     {
         return $this->__locator;
+    }
+
+    public function getCollection($source)
+    {
+        $result = false;
+
+        if(isset($this->__collections[$source]))
+        {
+            $result = new KObjectConfig($this->__collections[$source]);
+
+            if(!isset($result->source)) {
+                $result->source = 'com:pages.model.pages';
+            }
+        }
+
+        return $result;
     }
 
     public function getPages($path = '', $mode = self::PAGES_ONLY, $depth = -1)
@@ -194,11 +215,12 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     {
         if ($refresh || (!$cache = $this->isCached($basedir)))
         {
-            $pages  = array();
-            $routes = array();
+            $pages       = array();
+            $routes      = array();
+            $collections = array();
 
             //Create the data
-            $iterate = function ($dir) use (&$iterate, $basedir, &$pages, &$routes)
+            $iterate = function ($dir) use (&$iterate, $basedir, &$pages, &$routes, &$collections)
             {
                 $nodes = array();
                 $order = array();
@@ -290,6 +312,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                         }
                                     });
 
+
                                     $file = trim(str_replace($basedir, '', $file), '/');
                                     $path = $page->path ? $page->path.'/'.$page->slug : $page->slug;
 
@@ -304,8 +327,13 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     }
 
                                     //File
-                                    if ($page->isStatic() && strpos($node, 'index') === false) {
+                                    if (strpos($node, 'index') === false) {
                                         $files[$path] = $file;
+                                    }
+
+                                    //Collection
+                                    if($collection = $page->isCollection()) {
+                                        $collections[$path] = KObjectConfig::unbox($collection);
                                     }
                                 }
                                 else
@@ -326,11 +354,13 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
             Closure::bind($iterate, $this, get_class());
 
-            $result['files']  = $iterate($basedir);
-            $result['pages']  = $pages;
-            $result['routes'] = $routes;
+            $result['files']       = $iterate($basedir);
+            $result['pages']       = $pages;
+            $result['routes']      = $routes;
+            $result['collections'] = $collections;
 
             $this->storeCache($basedir, $result);
+
         }
         else
         {
