@@ -7,8 +7,16 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract
+class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract implements KObjectSingleton
 {
+    public function __construct(KObjectConfig $config)
+    {
+        parent::__construct($config);
+
+        //Add a global object alias
+        $this->getObject('manager')->registerAlias($this->getIdentifier(), 'router');
+    }
+
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
