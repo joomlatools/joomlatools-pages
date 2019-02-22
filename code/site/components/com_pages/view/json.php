@@ -40,6 +40,29 @@ class ComPagesViewJson extends KViewJson
             $query = array();
         }
 
+        if($page instanceof ComPagesModelEntityPage) {
+            $route = $page->route;
+        } else {
+            $route = $page;
+        }
+
+        //Add the model state only for routes to the same page
+        if($page == $this->getPage()->route)
+        {
+            if($collection = $this->getPage($page)->collection)
+            {
+                $states = array();
+                foreach ($this->getModel()->getState() as $name => $state)
+                {
+                    if ($state->default != $state->value && !$state->internal) {
+                        $states[$name] = $state->value;
+                    }
+                }
+
+                $query = array_merge($states, $query);
+            }
+        }
+
         if($route = $this->getObject('dispatcher')->getRouter()->generate($page, $query)) {
             $route->setEscape($escape)->toString(KHttpUrl::FULL);
         }
