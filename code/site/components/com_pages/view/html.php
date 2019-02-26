@@ -12,11 +12,13 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'decorator' => 'joomla',
+            'auto_fetch'  => false,
+            'decorator'   => 'joomla',
             'template_filters' => ['asset'], //Redefine asset to run before the script filter
             'template_functions' => [
                 'page'        => [$this, 'getPage'],
                 'collection'  => [$this, 'getCollection'],
+                'state'       => [$this, 'getState']
             ],
         ]);
 
@@ -115,6 +117,11 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
         }
 
         return $result;
+    }
+
+    public function getState()
+    {
+        return $this->getModel()->getState();
     }
 
     public function getTitle()

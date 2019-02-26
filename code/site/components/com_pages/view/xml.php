@@ -16,6 +16,7 @@ class ComPagesViewXml extends KViewTemplate
             'template_functions' => [
                 'page'        => [$this, 'getPage'],
                 'collection'  => [$this, 'getCollection'],
+                'state'       => [$this, 'getState']
             ],
         ]);
 
@@ -118,6 +119,11 @@ class ComPagesViewXml extends KViewTemplate
         }
 
         return $result;
+    }
+
+    public function getState()
+    {
+        return $this->getModel()->getState();
     }
 
     public function getRoute($page = '', $query = array(), $escape = false)

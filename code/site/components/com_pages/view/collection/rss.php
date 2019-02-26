@@ -24,8 +24,6 @@ class ComPagesViewCollectionRss extends ComPagesViewXml
     protected function _fetchData(KViewContext $context)
     {
         $context->data->append(array(
-            'collection'   => $this->getModel()->fetch(),
-            'total'        => $this->getModel()->count(),
             'sitename'     => JFactory::getApplication()->getCfg('sitename'),
             'language'     => JFactory::getLanguage()->getTag(),
             'description'  => $this->getPage()->summary ?: '',

@@ -11,12 +11,9 @@ class ComPagesViewCollectionXml extends ComPagesViewXml
 {
     protected function _fetchData(KViewContext $context)
     {
-        $context->data->append(array(
-            'collection' => $this->getModel()->limit(0)->fetch(),
-            'total'      => $this->getModel()->count(),
-        ));
-
         parent::_fetchData($context);
+
+        $context->parameters->total = $this->getModel()->count();
     }
 
     public function isCollection()

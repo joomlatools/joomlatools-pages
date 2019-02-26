@@ -9,6 +9,13 @@
 
 class ComPagesViewCollectionHtml extends ComPagesViewHtml
 {
+    protected function _fetchData(KViewContext $context)
+    {
+        parent::_fetchData($context);
+
+        $context->parameters->total = $this->getModel()->count();
+    }
+
     public function isCollection()
     {
         return (bool) !$this->getModel()->getState()->isUnique();
