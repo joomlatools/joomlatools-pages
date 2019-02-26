@@ -36,6 +36,7 @@ class ComPagesModelPages extends KModelAbstract
                 'accessible',
                 'crawlable',
                 'visible',
+                'collectable',
                 'paginatable',
             ]
         ]);
