@@ -33,11 +33,11 @@ class ComPagesModelBehaviorSortable extends KModelBehaviorAbstract
 
         if(!$state->isUnique())
         {
-            $pages = KObjectConfig::unbox($context->pages);
+            $entities = KObjectConfig::unbox($context->entity);
 
             if($state->sort && $state->sort != 'order')
             {
-                usort($pages, function($first, $second) use($state)
+                usort($entities, function($first, $second) use($state)
                 {
                     $sorting = 0;
                     $name    = $state->sort;
@@ -67,18 +67,17 @@ class ComPagesModelBehaviorSortable extends KModelBehaviorAbstract
                 {
                     case 'desc':
                     case 'descending':
-                        $pages = array_reverse($pages);
+                        $entities = array_reverse($entities);
                         break;
 
                     case 'shuffle':
-                        shuffle($pages);
+                        shuffle($entities);
                         break;
 
                 }
             }
 
-            $context->pages  = $pages;
-            $context->entity = $pages;
+            $context->entity = $entities;
         }
     }
 }

@@ -7,10 +7,8 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelPages extends KModelAbstract
+class ComPagesModelPages extends  ComPagesModelAbstract
 {
-    protected $_pages;
-
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
@@ -18,10 +16,7 @@ class ComPagesModelPages extends KModelAbstract
             ->insert('path', 'url', '.')
             ->insert('slug', 'cmd', '', true, array('path'))
             ->insert('recurse', 'boolean', true, false, array(), true) //internal state
-            ->insert('level', 'int', 0, false, array(), true);      //internal state
-
-        $this->addCommandCallback('before.fetch', '_prepareContext');
-        $this->addCommandCallback('before.count', '_prepareContext');
+            ->insert('level', 'int', 0, false, array(), true);         //internal state
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -44,9 +39,9 @@ class ComPagesModelPages extends KModelAbstract
         parent::_initialize($config);
     }
 
-    public function getPages()
+    public function getData()
     {
-        if(!isset($this->_pages))
+        if(!isset($this->_data))
         {
             $state    = $this->getState();
             $registry = $this->getObject('page.registry');
@@ -66,34 +61,9 @@ class ComPagesModelPages extends KModelAbstract
                 else $pages = array_values($registry->getPages($path, $state->recurse, $state->level - 1));
             }
 
-            $this->_pages = $pages;
+            $this->_data = $pages;
         }
 
-        return $this->_pages;
-    }
-
-    protected function _prepareContext(KModelContext $context)
-    {
-        $pages = $this->getPages();
-
-        $context->pages  = $pages;
-        $context->entity = $pages;
-    }
-
-    protected function _actionFetch(KModelContext $context)
-    {
-        return parent::_actionCreate($context);
-    }
-
-    protected function _actionCount(KModelContext $context)
-    {
-        return count($context->pages);
-    }
-
-    protected function _actionReset(KModelContext $context)
-    {
-        $this->_pages = null;
-
-        parent::_actionReset($context);
+        return $this->_data;
     }
 }

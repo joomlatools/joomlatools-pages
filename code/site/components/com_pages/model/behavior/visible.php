@@ -22,14 +22,14 @@ class ComPagesModelBehaviorVisible extends ComPagesModelBehaviorFilterable
         return !is_null($context->state->visible);
     }
 
-    protected function _accept($page, $context)
+    protected function _accept($entity, $context)
     {
         if($context->state->visible === true) {
-            $result = !isset($page['visible']) || $page['visible'] !== false;
+            $result = !isset($entity['visible']) || $entity['visible'] !== false;
         }
 
         if($context->state->visible === false) {
-            $result = isset($page['visible']) && $page['visible'] === false;
+            $result = isset($entity['visible']) && $entity['visible'] === false;
         }
 
         return $result;

@@ -22,14 +22,14 @@ class ComPagesModelBehaviorCollectable extends ComPagesModelBehaviorFilterable
         return !is_null($context->state->collection);
     }
 
-    protected function _accept($page, $context)
+    protected function _accept($entity, $context)
     {
         if($context->state->collection === true) {
-            $result = isset($page['collection']) && $page['collection'] !== false;
+            $result = isset($entity['collection']) && $entity['collection'] !== false;
         }
 
         if($context->state->collection === false) {
-            $result = !isset($page['collection']) || $page['collection'] === false;
+            $result = !isset($entity['collection']) || $entity['collection'] === false;
         }
 
         return $result;
