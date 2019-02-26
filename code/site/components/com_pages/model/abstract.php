@@ -26,7 +26,7 @@ abstract class ComPagesModelAbstract extends KModelAbstract
 
     protected function _prepareContext(KModelContext $context)
     {
-        $context->entity = $this->getData();
+        $context->entity = (array) $this->getData();
     }
 
     protected function _actionFetch(KModelContext $context)
