@@ -29,33 +29,20 @@ class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResol
             if($page = $this->getObject('page.registry')->getPage($path))
             {
                 $query = array();
-                if(isset($page->collection) && $page->collection !== false)
+                if($collection = $page->isCollection())
                 {
                     //Set path
                     $query['path'] = $path;
 
                     //Set collection states
-                    if(isset($page->collection->state)) {
-                        $query = array_merge($query, KObjectConfig::unbox($page->collection->state));
+                    if(isset($collection['state'])) {
+                        $query = array_merge($query, KObjectConfig::unbox($collection['state']));
                     }
 
-                    //Set route states in page collection
-                    foreach($route->query as $key => $value) {
-                        $page->collection->state->set($key, $value);
+                    //Set the params in the query overwriting existing values
+                    foreach($query as $key => $value) {
+                        $response->getRequest()->query->set($key, $value);
                     }
-                }
-                else
-                {
-                    $segments = explode('/', $path);
-
-                    //Set path and slug
-                    $query['slug'] = array_pop($segments);
-                    $query['path'] = implode($segments, '/') ?: '.';
-                }
-
-                //Set the params in the query overwriting existing values
-                foreach($query as $key => $value) {
-                    $response->getRequest()->query->set($key, $value);
                 }
             }
 
@@ -77,6 +64,10 @@ class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResol
 
     public function generate($page, array $query, ComPagesDispatcherRouterInterface $router)
     {
+        if($page instanceof ComPagesModelEntityPage) {
+            $page = $page->route;
+        }
+
         if($url = parent::generate($page, $query, $router))
         {
             //Remove hardcoded collection states
@@ -90,7 +81,6 @@ class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResol
             ///Remove hardcoded model states
             unset($url->query['path']);
             unset($url->query['slug']);
-            unset($url->query['view']);
         }
 
         return $url;

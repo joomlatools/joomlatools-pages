@@ -24,29 +24,29 @@ class ComPagesModelBehaviorDateable extends ComPagesModelBehaviorFilterable
         return (bool) ($context->state->year || $context->state->month || $context->state->day);
     }
 
-    protected function _accept($page, $context)
+    protected function _accept($entity, $context)
     {
         $result = true;
 
-        if(isset($page['date']))
+        if(isset($entity['date']))
         {
             //Get the timestamp
-            if(!is_integer($page['date'])) {
-                $page_date = strtotime($page['date']);
+            if(!is_integer($entity['date'])) {
+                $entity_date = strtotime($entity['date']);
             } else {
-                $page_date = $page['date'];
+                $entity_date = $entity['date'];
             }
 
             if($context->state->year) {
-                $result = ($context->state->year == date('Y', $page_date));
+                $result = ($context->state->year == date('Y', $entity_date));
             }
 
             if($result && $context->state->month) {
-                $result = ($context->state->month == date('m', $page_date));
+                $result = ($context->state->month == date('m', $entity_date));
             }
 
             if($result && $context->state->day) {
-                $result = ($context->state->day == date('d', $page_date));
+                $result = ($context->state->day == date('d', $entity_date));
             }
         }
 

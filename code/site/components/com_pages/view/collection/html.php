@@ -7,21 +7,17 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesPageObject extends ComPagesObjectConfigFrontmatter
+class ComPagesViewCollectionHtml extends ComPagesViewHtml
 {
-    public function getType()
+    protected function _fetchData(KViewContext $context)
     {
-        $type = 'page';
+        parent::_fetchData($context);
 
-        if($this->isCollection()) {
-            $type = 'collection';
-        }
-
-        return $type;
+        $context->parameters->total = $this->getModel()->count();
     }
-    
+
     public function isCollection()
     {
-        return isset($this->collection) && $this->collection !== false ? KObjectConfig::unbox($this->collection) : false;
+        return (bool) !$this->getModel()->getState()->isUnique();
     }
 }

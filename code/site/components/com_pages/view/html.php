@@ -12,11 +12,13 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'decorator' => 'joomla',
+            'auto_fetch'  => false,
+            'decorator'   => 'joomla',
             'template_filters' => ['asset'], //Redefine asset to run before the script filter
             'template_functions' => [
-                'page'   => [$this, 'getPage'],
-                'pages'  => [$this, 'getPages'],
+                'page'        => [$this, 'getPage'],
+                'collection'  => [$this, 'getCollection'],
+                'state'       => [$this, 'getState']
             ],
         ]);
 
@@ -103,38 +105,23 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
 
     public function getPage($path = null)
     {
-        $result   = array();
-        $registry = $this->getObject('page.registry');
+        return $this->getModel()->getPage($path);
+    }
 
-        if (!is_null($path))
-        {
-            if ($data = $registry->getPage($path)) {
-                $result = $this->getObject('com:pages.model.pages')->create($data->toArray());
-            }
-
+    public function getCollection($source = '', $state = array())
+    {
+        if($source) {
+            $result = $this->getModel()->getCollection($source, $state)->fetch();
+        } else {
+            $result = $this->getModel()->fetch();
         }
-        else $result = $this->getModel()->getPage();
 
         return $result;
     }
 
-    public function getPages($path = '.', $state = array())
+    public function getState()
     {
-        $result = array();
-
-        if ($path && $this->getObject('page.registry')->isPage($path))
-        {
-            if(is_string($state)) {
-                $state = json_decode('{'.preg_replace('/(\w+)/', '"$1"', $state).'}', true);
-            }
-
-            $result = $this->getObject('com:pages.model.pages')
-                ->setState($state)
-                ->path($path)
-                ->fetch();
-        }
-
-        return $result;
+        return $this->getModel()->getState();
     }
 
     public function getTitle()
@@ -165,20 +152,22 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
         return $metadata;
     }
 
-    public function getRoute($page = '', $query = array(), $escape = false)
+    public function getRoute($page, $query = array(), $escape = false)
     {
-        if($page instanceof KModelEntityInterface) {
-            $page = $page->route;
-        }
-
         if(!is_array($query)) {
             $query = array();
         }
 
+        if($page instanceof ComPagesModelEntityPage) {
+            $route = $page->route;
+        } else {
+            $route = $page;
+        }
+
         //Add the model state only for routes to the same page
-        if($page == $this->getPage()->route)
+        if($route == $this->getPage()->route)
         {
-            if($collection = $this->getPage($page)->collection)
+            if($collection = $this->getPage()->collection)
             {
                 $states = array();
                 foreach ($this->getModel()->getState() as $name => $state)
@@ -192,10 +181,9 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
             }
         }
 
-        $route = $this->getObject('dispatcher')->getRouter()
-            ->generate($page, $query)
-            ->setEscape($escape)
-            ->toString(KHttpUrl::BASE + KHttpUrl::QUERY);
+        if($route = $this->getObject('dispatcher')->getRouter()->generate($page, $query)) {
+            $route->setEscape($escape)->toString(KHttpUrl::BASE + KHttpUrl::QUERY);
+        }
 
         return $route;
     }

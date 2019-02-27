@@ -7,29 +7,29 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelBehaviorVisible extends ComPagesModelBehaviorFilterable
+class ComPagesModelBehaviorCollectable extends ComPagesModelBehaviorFilterable
 {
     public function onMixin(KObjectMixable $mixer)
     {
         parent::onMixin($mixer);
 
         $mixer->getState()
-            ->insert('visible', 'boolean');
+            ->insert('collection', 'boolean');
     }
 
     protected function _canFilter($context)
     {
-        return !is_null($context->state->visible);
+        return !is_null($context->state->collection);
     }
 
     protected function _accept($entity, $context)
     {
-        if($context->state->visible === true) {
-            $result = !isset($entity['visible']) || $entity['visible'] !== false;
+        if($context->state->collection === true) {
+            $result = isset($entity['collection']) && $entity['collection'] !== false;
         }
 
-        if($context->state->visible === false) {
-            $result = isset($entity['visible']) && $entity['visible'] === false;
+        if($context->state->collection === false) {
+            $result = !isset($entity['collection']) || $entity['collection'] === false;
         }
 
         return $result;

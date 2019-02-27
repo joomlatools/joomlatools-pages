@@ -20,29 +20,30 @@ class ComPagesViewJson extends KViewJson
 
     public function getPage($path = null)
     {
-        $result   = array();
-        $registry = $this->getObject('page.registry');
+        return $this->getModel()->getPage($path);
+    }
 
-        if (!is_null($path))
-        {
-            if ($data = $registry->getPage($path)) {
-                $result = $this->getObject('com:pages.model.pages')->create($data->toArray());
-            }
-
+    public function getCollection($source = '', $state = array())
+    {
+        if($source) {
+            $result = $this->getModel()->getCollection($source, $state)->fetch();
+        } else {
+            $result = $this->getModel()->fetch();
         }
-        else $result = $this->getModel()->getPage();
 
         return $result;
     }
 
-    public function getRoute($page = '', $query = array(), $escape = false)
+    public function getRoute($page, $query = array(), $escape = false)
     {
-        if($page instanceof KModelEntityInterface) {
-            $page = $page->route;
-        }
-
         if(!is_array($query)) {
             $query = array();
+        }
+
+        if($page instanceof ComPagesModelEntityPage) {
+            $route = $page->route;
+        } else {
+            $route = $page;
         }
 
         //Add the model state only for routes to the same page
@@ -62,10 +63,9 @@ class ComPagesViewJson extends KViewJson
             }
         }
 
-        $route = $this->getObject('dispatcher')->getRouter()
-            ->generate($page, $query)
-            ->setEscape($escape)
-            ->toString(KHttpUrl::FULL);
+        if($route = $this->getObject('dispatcher')->getRouter()->generate($page, $query)) {
+            $route->setEscape($escape)->toString(KHttpUrl::FULL);
+        }
 
         return $route;
     }

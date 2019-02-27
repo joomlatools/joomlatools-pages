@@ -18,7 +18,7 @@ class ComPagesViewPageHtml extends ComPagesViewHtml
 
     protected function _processPlugins(KViewContextInterface $context)
     {
-        $page = $context->data->page;
+        $page = $this->getModel()->getPage();
 
         if($page->process->plugins)
         {

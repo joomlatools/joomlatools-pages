@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerializable
+class ComPagesModelEntityPage extends ComPagesModelEntityItem
 {
     protected function _initialize(KObjectConfig $config)
     {
@@ -180,7 +180,7 @@ class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerial
 
     public function jsonSerialize()
     {
-        $data = $this->toArray();
+        $data = parent::jsonSerialize();
 
         unset($data['process']);
         unset($data['layout']);
@@ -192,25 +192,5 @@ class ComPagesModelEntityPage extends KModelEntityAbstract implements JsonSerial
     public function isCollection()
     {
         return isset($this->collection) && $this->collection !== false ? $this->collection : false;
-    }
-
-    public function __call($method, $arguments)
-    {
-        $parts = KStringInflector::explode($method);
-
-        //Check if a behavior is mixed
-        if ($parts[0] == 'is' && isset($parts[1]))
-        {
-            if(!isset($this->_mixed_methods[$method])) {
-                return false;
-            }
-        }
-
-        return parent::__call($method, $arguments);
-    }
-
-    public function __debugInfo()
-    {
-        return $this->toArray();
     }
 }

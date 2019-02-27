@@ -16,6 +16,7 @@ return array(
 
     'priority' => KObjectBootstrapper::PRIORITY_HIGH,
     'aliases' => [
+        'router'        => 'com:pages.dispatcher.router',
         'page.registry' => 'com:pages.page.registry',
         'data.registry' => 'com:pages.data.registry',
         'com:pages.version'     => 'com://admin/pages.version',
@@ -24,9 +25,10 @@ return array(
 
     'identifiers' => [
         'page.registry' => [
-            'cache'      => $config['page_cache'] ?? (JDEBUG ? false : true),
-            'cache_time' => $config['page_cache_time'] ?? 60*60*24, //1d
-            'cache_path' => $config['page_cache_path'] ?? null
+            'cache'       => $config['page_cache'] ?? (JDEBUG ? false : true),
+            'cache_time'  => $config['page_cache_time'] ?? 60*60*24, //1d
+            'cache_path'  => $config['page_cache_path'] ?? null,
+            'collections' => $config['collections'] ?? array(),
         ],
         'data.registry' => [
             'cache'      => $config['data_cache'] ?? (JDEBUG ? false : true),

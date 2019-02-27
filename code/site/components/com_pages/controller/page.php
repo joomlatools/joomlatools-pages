@@ -9,29 +9,13 @@
 
 class ComPagesControllerPage extends ComPagesControllerAbstract
 {
-    protected function _beforeRender(KControllerContextInterface $context)
+    protected function _initialize(KObjectConfig $config)
     {
-        if($context->request->getFormat() == 'html')
-        {
-            //Set the path in the pathway to allow for module injection
-            $router = $this->getObject('dispatcher')->getRouter();
+        $config->append(array(
+            'model'	=> 'com://site/pages.model.page',
+            'behaviors' => ['breadcrumbable'],
+        ));
 
-            $page_route = $router->getPath();
-            $menu_route = JFactory::getApplication()->getMenu()->getActive();
-
-            if($path = ltrim(str_replace($menu_route->route, '', $page_route), '/'))
-            {
-                $pathway = JFactory::getApplication()->getPathway();
-
-                $segments = array();
-                foreach(explode('/', $path) as $segment)
-                {
-                    $segments[] = $segment;
-                    $route      = $router->generate(implode('/', $segments));
-
-                    $pathway->addItem(ucfirst($segment), (string) $route);
-                }
-            }
-        }
+        parent::_initialize($config);
     }
 }

@@ -61,23 +61,24 @@ class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
 
         if (!$state->isUnique() && $state->recurse && ($state->level == 0 || $state->level > 1))
         {
-            $pages = clone $context->entity;
+            $entities = clone $context->entity;
+            $key      = $context->getIdentityKey();
 
             //Filter children
-            foreach ($pages as $path => $page)
+            foreach ($entities as $index => $entity)
             {
                 //Mixin the behavior
-                $page->mixin($this);
+                $entity->mixin($this);
 
-                if($pages->find($page->path))
+                if($entities->find($entity->$key))
                 {
                     //Get the parent
-                    $parent = $page->path;
+                    $parent = $entity->$key;
 
                     //Store the nodes by parent
-                    $this->__children[$parent][$path] = $page;
+                    $this->__children[$parent][$index] = $entity;
 
-                    $context->entity->remove($page);
+                    $context->entity->remove($entity);
                 }
             }
 

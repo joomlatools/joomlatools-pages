@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelEntityPages extends KModelEntityComposite implements JsonSerializable
+class ComPagesModelEntityPages extends ComPagesModelEntityItems
 {
     protected function _initialize(KObjectConfig $config)
     {
@@ -17,16 +17,6 @@ class ComPagesModelEntityPages extends KModelEntityComposite implements JsonSeri
         ]);
 
         parent::_initialize($config);
-    }
-
-    public function jsonSerialize()
-    {
-        $result = array();
-        foreach ($this as $key => $entity) {
-            $result[$key] = $entity->jsonSerialize();
-        }
-
-        return $result;
     }
 
     public function get($property, $default)
@@ -53,10 +43,5 @@ class ComPagesModelEntityPages extends KModelEntityComposite implements JsonSeri
         } else $result = KObject::__call($method, $arguments);
 
         return $result;
-    }
-
-    public function __debugInfo()
-    {
-        return $this->toArray();
     }
 }
