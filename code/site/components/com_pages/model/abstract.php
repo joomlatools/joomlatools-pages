@@ -41,7 +41,13 @@ abstract class ComPagesModelAbstract extends KModelAbstract
 
     protected function _actionFetch(KModelContext $context)
     {
-        return $this->_actionCreate($context);
+        $entities = $this->_actionCreate($context);
+
+        if($unique = $context->state->getValues(true)) {
+            $entities = $entities->find($unique);
+        }
+
+        return $entities;
     }
 
     protected function _actionCount(KModelContext $context)
