@@ -31,7 +31,7 @@ abstract class ComPagesModelAbstract extends KModelAbstract
 
     public function getData()
     {
-        return array();
+        return (array) $this->_data;
     }
 
     protected function _prepareContext(KModelContext $context)
