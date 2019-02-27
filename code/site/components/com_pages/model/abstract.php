@@ -19,6 +19,16 @@ abstract class ComPagesModelAbstract extends KModelAbstract
         $this->addCommandCallback('before.count', '_prepareContext');
     }
 
+    protected function _initialize(KObjectConfig $config)
+    {
+        $config->append([
+            'behaviors'   => ['com:pages.model.behavior.paginatable'],
+            'identity_key' => 'id',
+        ]);
+
+        parent::_initialize($config);
+    }
+
     public function getData()
     {
         return array();
@@ -31,12 +41,33 @@ abstract class ComPagesModelAbstract extends KModelAbstract
 
     protected function _actionFetch(KModelContext $context)
     {
-        return parent::_actionCreate($context);
+        return $this->_actionCreate($context);
     }
 
     protected function _actionCount(KModelContext $context)
     {
         return count($this->getData());
+    }
+
+    protected function _actionCreate(KModelContext $context)
+    {
+        $data = KModelContext::unbox($context->entity);
+
+        $identifier = $this->getIdentifier()->toArray();
+        $identifier['path'] = ['model', 'entity'];
+        $identifier['name'] = KStringInflector::pluralize($identifier['name']);
+
+        //Fallback to default
+        if(!$this->getObject('manager')->getClass($identifier, false)) {
+            $identifier = 'com:pages.model.entity.items';
+        }
+
+        $options = array(
+            'data'         => $data,
+            'identity_key' => $context->getIdentityKey()
+        );
+
+        return $this->getObject($identifier, $options);
     }
 
     protected function _actionReset(KModelContext $context)
