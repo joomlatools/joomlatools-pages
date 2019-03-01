@@ -8,7 +8,7 @@
     <license>GNU GPLv3 - http://www.gnu.org/licenses/gpl.html</license>
     <authorEmail>support@joomlatools.com</authorEmail>
     <authorUrl>www.joomlatools.com</authorUrl>
-    <version>0.5.0</version>
+    <version>0.6.0</version>
     <description>COM_PAGES_XML_DESCRIPTION</description>
 
     <files folder="site/components/com_pages">
