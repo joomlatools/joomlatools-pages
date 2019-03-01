@@ -29,27 +29,11 @@ class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResol
 
             if($page = $this->getObject('page.registry')->getPage($path))
             {
-                $query = array();
                 if($collection = $page->isCollection())
                 {
                     //Set collection states
-                    if(isset($collection['state']))
-                    {
-                        //Handle pagination
-                        if (isset($collection['state']['limit']) && isset($request->query['page']))
-                        {
-                            $limit = $collection['state']['limit'];
-                            $page = $request->query['page'] - 1;
-
-                            $query['offset'] = $page * $limit;
-
-                            unset($query['page']);
-                        }
-                    }
-
-                    //Set the params in the query overwriting existing values
-                    foreach($query as $key => $value) {
-                        $request->query->set($key, $value);
+                    if(isset($collection['state']) && isset($collection['state']['limit'])) {
+                        $this->_resolvePagination($request, $collection['state']['limit']);
                     }
                 }
             }
@@ -58,7 +42,15 @@ class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResol
             if($routes = $this->getObject('page.registry')->getRoutes($route->getPath()))
             {
                 //Build the route
-                $url = $this->buildRoute($routes[0],  $route->getQuery(true));
+                $url = $this->buildRoute($routes[0],  $request->query->toArray());
+
+                if($collection = $page->isCollection())
+                {
+                    //Handle pagination
+                    if(isset($collection['state']) && isset($collection['state']['limit'])) {
+                        $this->_generatePagination($url, $collection['state']['limit']);
+                    }
+                }
 
                 //Qualify the url
                 $url = $router->qualifyUrl($url);
@@ -86,20 +78,36 @@ class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResol
                     $url->query = array_diff_key($url->query, $collection['state']);
 
                     //Handle pagination
-                    if(isset($collection['state']['limit']) && isset($url->query['offset']))
-                    {
-                        if($offset = $url->query['offset'])
-                        {
-                            $limit = $collection['state']['limit'];
-                            $url->query['page'] = $offset/$limit + 1;
-                        }
-
-                        unset($url->query['offset']);
+                    if(isset($collection['state']['limit'])) {
+                        $this->_generatePagination($url, $collection['state']['limit']);
                     }
                 }
             }
         }
 
         return $url;
+    }
+
+    protected function _resolvePagination(KDispatcherRequestInterface $request, $limit)
+    {
+        if(isset($request->query['page']))
+        {
+            $page = $request->query['page'] - 1;
+            $request->query['offset'] = $page * $limit;
+
+            unset($request->query['page']);
+        }
+    }
+
+    protected function _generatePagination(KHttpUrlInterface $url, $limit)
+    {
+        if(isset($url->query['offset']))
+        {
+            if($offset = $url->query['offset']) {
+                $url->query['page'] = $offset/$limit + 1;
+            }
+
+            unset($url->query['offset']);
+        }
     }
 }
