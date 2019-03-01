@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelPages extends  ComPagesModelAbstract
+class ComPagesModelPages extends ComPagesModelAbstract
 {
     public function __construct(KObjectConfig $config)
     {
@@ -32,7 +32,6 @@ class ComPagesModelPages extends  ComPagesModelAbstract
                 'crawlable',
                 'visible',
                 'collectable',
-                'paginatable',
             ]
         ]);
 

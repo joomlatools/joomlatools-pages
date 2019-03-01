@@ -73,7 +73,18 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
         //Set page in model
         $this->getController()->getModel()->setPage($page, $context->request->query->toArray());
+    }
 
+    protected function _actionGet(KDispatcherContextInterface $context)
+    {
+        //Do not force set a limit for html requests.
+        if($context->getRequest()->getFormat() == 'html') {
+            $result =  $this->getController()->execute('render', $context);
+        } else {
+            $result = parent::_actionGet($context);
+        }
+
+        return $result;
     }
 
     protected function _actionDispatch(KDispatcherContextInterface $context)

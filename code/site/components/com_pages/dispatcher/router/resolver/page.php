@@ -24,6 +24,7 @@ class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResol
         if($route = parent::resolve($router))
         {
             $response = $router->getResponse();
+            $request  = $response->getRequest();
             $path     = $route->getPath();
 
             if($page = $this->getObject('page.registry')->getPage($path))
@@ -31,17 +32,24 @@ class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResol
                 $query = array();
                 if($collection = $page->isCollection())
                 {
-                    //Set path
-                    $query['path'] = $path;
-
                     //Set collection states
-                    if(isset($collection['state'])) {
-                        $query = array_merge($query, KObjectConfig::unbox($collection['state']));
+                    if(isset($collection['state']))
+                    {
+                        //Handle pagination
+                        if (isset($collection['state']['limit']) && isset($request->query['page']))
+                        {
+                            $limit = $collection['state']['limit'];
+                            $page = $request->query['page'] - 1;
+
+                            $query['offset'] = $page * $limit;
+
+                            unset($query['page']);
+                        }
                     }
 
                     //Set the params in the query overwriting existing values
                     foreach($query as $key => $value) {
-                        $response->getRequest()->query->set($key, $value);
+                        $request->query->set($key, $value);
                     }
                 }
             }
@@ -73,14 +81,23 @@ class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResol
             //Remove hardcoded collection states
             if($page = $this->getObject('page.registry')->getPage($page))
             {
-                if(($collection = $page->isCollection()) && isset($collection['state'])) {
+                if(($collection = $page->isCollection()) && isset($collection['state']))
+                {
                     $url->query = array_diff_key($url->query, $collection['state']);
+
+                    //Handle pagination
+                    if(isset($collection['state']['limit']) && isset($url->query['offset']))
+                    {
+                        if($offset = $url->query['offset'])
+                        {
+                            $limit = $collection['state']['limit'];
+                            $url->query['page'] = $offset/$limit + 1;
+                        }
+
+                        unset($url->query['offset']);
+                    }
                 }
             }
-
-            ///Remove hardcoded model states
-            unset($url->query['path']);
-            unset($url->query['slug']);
         }
 
         return $url;
