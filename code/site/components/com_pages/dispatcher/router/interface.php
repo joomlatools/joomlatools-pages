@@ -69,6 +69,8 @@ interface ComPagesDispatcherRouterInterface
     /**
      * Get the canonical url
      *
+     * If no canonical url is set return the request url
+     *
      * @return  KHttpUrl|null  A HttpUrl object or NULL if no canonical url could be found
      */
     public function getCanonicalUrl();

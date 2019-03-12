@@ -133,11 +133,19 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
     /**
      * Get the canonical url
      *
+     *  If no canonical url is set return the request url
+     *
      * @return  KHttpUrl|null  A HttpUrl object or NULL if no canonical url could be found
      */
     public function getCanonicalUrl()
     {
-        return $this->_canonical;
+        if(!$this->_canonical) {
+            $url = $this->getResponse()->getRequest()->getUrl();
+        } else {
+            $url = $this->_canonical;
+        }
+
+        return $url;
     }
 
     /**
