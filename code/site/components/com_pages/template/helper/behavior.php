@@ -22,7 +22,7 @@ class ComPagesTemplateHelperBehavior extends ComKoowaTemplateHelperBehavior
                 'truncate'  => null,
                 'arialabel' => 'Anchor',
             ),
-            'selector' => null,
+            'selector' => 'article h2, article h3, article h4, article h5, article h6',
         ));
 
         $html = '';
@@ -33,7 +33,7 @@ class ComPagesTemplateHelperBehavior extends ComKoowaTemplateHelperBehavior
             anchors.options = '.$config->options.'   
             // Add anchors on DOMContentLoaded
             document.addEventListener("DOMContentLoaded", function(event) {
-                anchors.add('.$config->selector.');if(document.querySelector(\'.no-anchor\')!==null){anchors.remove(\'.no-anchor\');}
+                anchors.add('.json_encode($config->selector).');if(document.querySelector(\'.no-anchor\')!==null){anchors.remove(\'.no-anchor\');}
             }); </script>';
 
             static::setLoaded('anchor');

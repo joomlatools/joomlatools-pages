@@ -24,7 +24,7 @@ class ComPagesTemplateFilterToc extends KTemplateFilterAbstract
                     'truncate'  => null,
                     'arialabel' => 'Anchor',
                 ],
-                'selector' => null,
+                'selector' => 'article h2, article h3, article h4, article h5, article h6',
             ],
         ));
 
