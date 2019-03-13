@@ -125,7 +125,7 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
     public function getPath()
     {
         $base = $this->getResponse()->getRequest()->getBasePath();
-        $url  = $this->getResponse()->getRequest()->getUrl()->getPath();
+        $url  = urldecode($this->getResponse()->getRequest()->getUrl()->getPath());
 
         return trim(str_replace(array($base, '/index.php'), '', $url), '/');
     }
