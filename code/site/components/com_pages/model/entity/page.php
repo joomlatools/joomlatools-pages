@@ -33,7 +33,6 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                 'metadata'    => [],
                 'process'     => [
                     'filters' => array(),
-                    'plugins' => true
                 ],
                 'layout'      => array(),
                 'colllection' => false,
