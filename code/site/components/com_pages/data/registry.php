@@ -96,7 +96,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
                 $result = $this->__fromFile($file);
             }
         }
-        else $result = $this->__fromUrl($path, $format);
+        else $result =  $this->getObject('com:pages.data.client')->fromUrl($path, false);
 
         return $result;
     }
@@ -108,7 +108,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
 
         $url = trim(fgets(fopen($file, 'r')));
         if(strpos($url, '://') === 0) {
-            $result = $this->__fromUrl($url, pathinfo($file, PATHINFO_EXTENSION));
+            $result =  $this->getObject('com:pages.data.client')->fromUrl($url, false);
         } else {
             $result = $this->getObject('object.config.factory')->fromFile($file, false);
         }
@@ -166,38 +166,6 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         }
 
         return $data;
-    }
-
-    private function __fromUrl($url, $format = '')
-    {
-        if(!ini_get('allow_url_fopen')) {
-            throw new RuntimeException(sprintf('Cannot open url: "%s".', $url));
-        }
-
-        if(empty($format))
-        {
-            if(!$format = pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_EXTENSION)) {
-                throw new InvalidArgumentException(sprintf('Cannot determine data type of "%s".', $url));
-            }
-        }
-
-        //Set the user agents
-        $version = $this->getObject('com:pages.version');
-        $context = stream_context_create(array('http' => array(
-            'user_agent' => 'Joomlatools/Pages/'.$version,
-        )));
-
-        if(!$content = file_get_contents($url, false, $context))
-        {
-            if($error = error_get_last()) {
-                throw new RuntimeException(sprintf('Cannot get content from url error: "%s"', trim($error['message'])));
-            } else {
-                throw new RuntimeException(sprintf('Cannot get content from url: "%s"', $url));
-            }
-        }
-
-        $result = $this->getObject('object.config.factory')->fromString($format, $content, false);
-        return $result;
     }
 
     public function buildCache()
