@@ -24,60 +24,27 @@ class ComPagesModelPage extends KModelAbstract
         return $this;
     }
 
-    public function getPage($path = '')
+    public function getPage()
     {
-        $result = null;
-
-        if ($path)
+        if($this->__page && !$this->__page instanceof ComPagesModelEntityPage)
         {
-            if ($page = $this->getObject('page.registry')->getPage($path))
-            {
-                $result = $this->getObject('com:pages.model.entity.page',
-                    array('data'  => $page->toArray())
-                );
-            }
-        }
-        else
-        {
-            if($this->__page && !$this->__page instanceof ComPagesModelEntityPage)
-            {
-                $this->__page = $this->getObject('com:pages.model.entity.page',
-                    array('data'  =>  $this->__page->toArray())
-                );
-            }
-
-            $result = $this->__page;
+            $this->__page = $this->getObject('com:pages.model.entity.page',
+                array('data'  =>  $this->__page->toArray())
+            );
         }
 
-        return $result;
+        return  $this->__page;
     }
 
-    public function getCollection($source = '', $state = array())
+    public function getCollection()
     {
-        $collection = false;
-
-        if(!$source)
+        if(is_null($this->__collection) && $page = $this->getPage())
         {
-            if($page = $this->getPage())
-            {
-                if(is_null($this->__collection)) {
-                    $this->__collection = $this->_createCollection($this->getPage()->route);
-                }
-
-                $collection = $this->__collection;
-            }
-        }
-        else
-        {
-            if(!$collection = $this->_createCollection($source, $state))
-            {
-                throw new UnexpectedValueException(
-                    'Collection: '.$source.' does not exist'
-                );
-            }
+            $this->__collection = $this->getObject('com:pages.model.factory')
+                    ->createCollection($this->getPage()->route);
         }
 
-        return $collection;
+        return  $this->__collection;
     }
 
     public function setState(array $values)
@@ -131,32 +98,5 @@ class ComPagesModelPage extends KModelAbstract
         } else {
             parent::_actionReset($context);
         }
-    }
-
-    protected function _createCollection($source, $state = array())
-    {
-        $model = false;
-
-        if($collection = $this->getObject('page.registry')->getCollection($source))
-        {
-            //Create the model
-            $model = $this->getObject($collection->source);
-
-            if(!$model instanceof KModelInterface)
-            {
-                throw new UnexpectedValueException(
-                    'Collection: '.get_class($model).' does not implement KModelInterface'
-                );
-            }
-
-            //Set the state
-            if(isset($collection->state)) {
-                $state  = $collection->state->merge($state);
-            }
-
-            $model->setState(KObjectConfig::unbox($state));
-        }
-
-        return $model;
     }
 }

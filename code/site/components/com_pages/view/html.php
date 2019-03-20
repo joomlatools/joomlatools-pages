@@ -105,13 +105,19 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
 
     public function getPage($path = null)
     {
-        return $this->getModel()->getPage($path);
+        if($path) {
+            $result = $this->getObject('com:pages.model.factory')->createPage($path);
+        } else {
+            $result = $this->getModel()->getPage();
+        }
+
+        return $result;
     }
 
     public function getCollection($source = '', $state = array())
     {
         if($source) {
-            $result = $this->getModel()->getCollection($source, $state)->fetch();
+            $result = $this->getObject('com:pages.model.factory')->createCollection($source, $state)->fetch();
         } else {
             $result = $this->getModel()->fetch();
         }
