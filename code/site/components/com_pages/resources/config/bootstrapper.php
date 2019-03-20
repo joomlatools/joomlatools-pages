@@ -21,6 +21,7 @@ return array(
         'data.registry' => 'com:pages.data.registry',
         'com:pages.version'     => 'com://admin/pages.version',
         'com:pages.data.object' => 'com://site/pages.data.object',
+        'com:pages.data.client' => 'com://site/pages.data.client',
     ],
 
     'identifiers' => [
@@ -74,6 +75,11 @@ return array(
         ],
         'com://site/pages.dispatcher.router.resolver.redirect' => [
             'routes'  => isset($config['redirects']) ? array_flip($config['redirects']) : false,
+        ],
+        'com://site/pages.data.client' => [
+            'cache'      => $config['remote_cache'] ?? (JDEBUG ? false : true),
+            'cache_time' => $config['remote_cache_time'] ?? 60*60*24, //1d
+            'cache_path' => $config['remote_cache_path'] ?? null
         ],
     ]
 );
