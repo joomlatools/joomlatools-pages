@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-abstract class ComPagesModelAbstract extends KModelAbstract
+abstract class ComPagesModelCollection extends KModelAbstract
 {
     protected $_data;
 

@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelPages extends ComPagesModelAbstract
+class ComPagesModelPages extends ComPagesModelCollection
 {
     public function __construct(KObjectConfig $config)
     {
