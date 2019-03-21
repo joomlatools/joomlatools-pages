@@ -77,14 +77,19 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     protected function _actionGet(KDispatcherContextInterface $context)
     {
-        //Do not force set a limit for html requests.
-        if($context->getRequest()->getFormat() == 'html') {
-            $result =  $this->getController()->execute('render', $context);
-        } else {
-            $result = parent::_actionGet($context);
+        //Use hardcoded limit if page has one
+        $page = $context->router->getPage();
+
+        if($collection = $page->isCollection())
+        {
+            if(isset($collection['state']) && isset($collection['state']['limit']))
+            {
+                $this->getConfig()->limit->default  = $collection['state']['limit'];
+                $this->getConfig()->limit->max      = $collection['state']['limit'];
+            }
         }
 
-        return $result;
+        return parent::_actionGet($context);
     }
 
     protected function _actionDispatch(KDispatcherContextInterface $context)
