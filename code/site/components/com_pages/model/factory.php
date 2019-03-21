@@ -30,18 +30,10 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
         if($collection = $this->getObject('page.registry')->getCollection($source))
         {
             //Create the model
-            $source = KObjectConfig::unbox($collection->source);
+            $source = KHttpUrl::fromString($collection->source);
 
-            if(is_array($source))
-            {
-                $model  = key($source);
-                $config = current($source);
-            }
-            else
-            {
-                $model  = $source;
-                $config = array();
-            }
+            $model  = $source->toString(KHttpUrl::BASE);
+            $config = $source->query;
 
             if(is_string($model) && strpos($model, '.') === false )
             {
@@ -49,7 +41,6 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
                 $identifier['name'] = $model;
             }
             else $identifier = $model;
-
 
             $model = $this->getObject($identifier, $config);
 
