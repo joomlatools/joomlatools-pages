@@ -41,7 +41,7 @@ class ComPagesDataClient extends KObject implements KObjectSingleton
         parent::_initialize($config);
     }
 
-    public function fromUrl($url, $object = true)
+    public function fromUrl($url, $object = true, KHttpRequest $request = null)
     {
         $config = null;
 
@@ -51,13 +51,15 @@ class ComPagesDataClient extends KObject implements KObjectSingleton
                 throw new \RuntimeException('Cannot use a stream transport when "allow_url_fopen" is disabled.');
             }
 
+            if(!$request) {
+                $request = $this->getObject('http.request');
+            }
+
             $version = $this->getObject('com:pages.version');
             $context = stream_context_create(array('http' => array(
                 'user_agent' => 'Joomlatools/Pages/'.$version,
                 'protocol_version' => 1.1,
-                'header'           => [
-                    'Connection: close',
-                ],
+                'header'           => (string) $request->getHeaders()->set('Connection', 'close')
             )));
 
             if($headers = get_headers($url, true, $context))
