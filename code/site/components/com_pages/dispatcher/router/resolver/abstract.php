@@ -215,7 +215,7 @@ abstract class ComPagesDispatcherRouterResolverAbstract extends KObject implemen
         }
         else $route = $routes[$path];
 
-        return $route ? $this->buildRoute($route, $query) : false;
+        return $route !== false ? $this->buildRoute($route, $query) : false;
     }
 
     /**
