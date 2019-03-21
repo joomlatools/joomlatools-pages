@@ -21,8 +21,6 @@ class ComPagesControllerAbstract extends KControllerModel
 
     public function getFormats()
     {
-        $formats = parent::getFormats();
-
         if($this->getObject('dispatcher')->getRouter()->resolve()) {
             $formats = array($this->getRequest()->getFormat());
         }  else {
