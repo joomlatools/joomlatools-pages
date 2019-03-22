@@ -68,6 +68,8 @@ class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResol
             $page = $page->route;
         }
 
+        $page = ltrim($page, './');
+
         if($url = parent::generate($page, $query, $router))
         {
             //Remove hardcoded collection states
