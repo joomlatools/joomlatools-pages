@@ -69,9 +69,10 @@ return array(
             }
         ],
         'com://site/pages.dispatcher.behavior.cacheable' => [
-            'cache'      => $config['http_cache'] ?? false,
-            'cache_time' => $config['http_cache_time'] ?? 7200, //2h
-            'cache_path' => $config['http_cache_path'] ?? null
+            'cache'             => $config['http_cache'] ?? false,
+            'cache_path'        => $config['http_cache_path'] ?? null,
+            'cache_time'        => $config['http_cache_time']       ?? 60*15,  //15min
+            'cache_time_shared' => $config['http_cache_time_proxy'] ?? 60*60*2, //2h
         ],
         'com://site/pages.dispatcher.router.resolver.redirect' => [
             'routes'  => isset($config['redirects']) ? array_flip($config['redirects']) : false,

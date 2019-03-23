@@ -26,7 +26,8 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         $config->append(array(
             'cache'      => false,
             'cache_path' => '',
-            'cache_time' => 7200, //2h
+            'cache_time'        => 60*15,   //15min
+            'cache_time_shared' => 60*60*2, //2h
         ));
 
         parent::_initialize($config);
@@ -71,7 +72,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                 if ($cache !== false)
                 {
                     if(is_int($cache)) {
-                        $context->getResponse()->setMaxAge($cache);
+                        $context->getResponse()->setMaxAge($this->getConfig()->cache_time, $cache);
                     }
                 }
                 else $this->getConfig()->cache = false;
@@ -91,7 +92,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             if($content = $response->getContent())
             {
                 $data = array(
-                    'headers' => $this->getResponse()->getHeaders(),
+                    'headers' => $response->getHeaders()->toArray(),
                     'content' => $content,
                 );
 
