@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelBehaviorSortable extends KModelBehaviorAbstract
+class ComPagesModelBehaviorSortable extends ComPagesModelBehaviorQueryable
 {
     protected function _initialize(KObjectConfig $config)
     {
@@ -27,71 +27,63 @@ class ComPagesModelBehaviorSortable extends KModelBehaviorAbstract
             ->insert('order', 'word', 'asc');
     }
 
-    protected function _beforeFetch(KModelContextInterface $context)
+    protected function _queryCollection(array $data, KModelStateInterface $state)
     {
-        $state = $context->state;
-
-        if(!$state->isUnique())
+        if($state->sort && $state->sort != 'order')
         {
-            if($context instanceof ComPagesModelContextCollection && $context->data)
+            usort($data, function($first, $second) use($state)
             {
-                $data = $context->data;
+                $sorting = 0;
+                $name    = $state->sort;
 
-                if($state->sort && $state->sort != 'order')
+                $first_value  = $first[$name];
+                $second_value = $second[$name];
+
+                if($name == 'date')
                 {
-                    usort($data, function($first, $second) use($state)
-                    {
-                        $sorting = 0;
-                        $name    = $state->sort;
-
-                        $first_value  = $first[$name];
-                        $second_value = $second[$name];
-
-                        if($name == 'date')
-                        {
-                            $first_value  = is_int($first_value) ? $first_value : strtotime($first_value);
-                            $second_value = is_int($second_value) ? $second_value : strtotime($second_value);
-                        }
-
-                        if($first_value > $second_value) {
-                            $sorting = 1;
-                        } elseif ($first_value < $second_value) {
-                            $sorting = -1;
-                        }
-
-                        return $sorting;
-                    });
+                    $first_value  = is_int($first_value) ? $first_value : strtotime($first_value);
+                    $second_value = is_int($second_value) ? $second_value : strtotime($second_value);
                 }
 
-                if($state->order)
-                {
-                    switch($state->order)
-                    {
-                        case 'desc':
-                        case 'descending':
-                            $data = array_reverse($data);
-                            break;
-
-                        case 'shuffle':
-                            shuffle($data);
-                            break;
-
-                    }
+                if($first_value > $second_value) {
+                    $sorting = 1;
+                } elseif ($first_value < $second_value) {
+                    $sorting = -1;
                 }
 
-                $context->data = $data;
-            }
+                return $sorting;
+            });
+        }
 
-            if($context instanceof ComPagesModelContextDatabase && $context->query)
+        if($state->order)
+        {
+            switch($state->order)
             {
-                if($state->sort && $state->sort != 'order')
-                {
-                    $order   = strtoupper($state->order);
-                    $column = $context->subject->getTable()->mapColumns($state->sort);
+                case 'desc':
+                case 'descending':
+                    $data = array_reverse($data);
+                    break;
 
-                    $context->query->order($column, $order);
-                }
+                case 'shuffle':
+                    shuffle($data);
+                    break;
+
             }
         }
+
+        return $data;
+    }
+
+    protected function _queryDatabase(KDatabaseQuerySelect $query, KModelStateInterface $state)
+    {
+        if($state->sort && $state->sort != 'order')
+        {
+            $order   = strtoupper($state->order);
+            $column = $this->getTable()->mapColumns($state->sort);
+
+            $query->order($column, $order);
+        }
+
+        return $query;
     }
 }

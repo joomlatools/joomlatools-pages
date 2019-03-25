@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelBehaviorPaginatable extends KModelBehaviorPaginatable
+class ComPagesModelBehaviorPaginatable extends ComPagesModelBehaviorQueryable
 {
     protected function _initialize(KObjectConfig $config)
     {
@@ -18,40 +18,74 @@ class ComPagesModelBehaviorPaginatable extends KModelBehaviorPaginatable
         parent::_initialize($config);
     }
 
+    public function onMixin(KObjectMixable $mixer)
+    {
+        parent::onMixin($mixer);
+
+        $mixer->getState()
+            ->insert('limit', 'int')
+            ->insert('offset', 'int');
+    }
+
+    public function getPaginator()
+    {
+        $paginator = new KModelPaginator(array(
+            'offset' => (int)$this->getState()->offset,
+            'limit'  => (int)$this->getState()->limit,
+            'total'  => (int)$this->count(),
+        ));
+
+        return $paginator;
+    }
+
     protected function _beforeFetch(KModelContextInterface $context)
     {
         $state = $context->state;
 
-        if(!$state->isUnique())
+        if ($limit = $state->limit)
         {
-            if ($limit = $state->limit)
+            $offset = $state->offset;
+            $total  = $this->count();
+
+            if ($offset !== 0 && $total !== 0)
             {
-                $offset = $state->offset;
-                $total  = $context->subject->count();
-
-                if ($offset !== 0 && $total !== 0)
-                {
-                    // Recalculate the offset if it is set to the middle of a page.
-                    if ($offset % $limit !== 0) {
-                        $offset -= ($offset % $limit);
-                    }
-
-                    // Recalculate the offset if it is higher than the total
-                    if ($offset >= $total) {
-                        $offset = floor(($total - 1) / $limit) * $limit;
-                    }
-
-                    $state->offset = $offset;
+                // Recalculate the offset if it is set to the middle of a page.
+                if ($offset % $limit !== 0) {
+                    $offset -= ($offset % $limit);
                 }
 
-                if($context instanceof ComPagesModelContextCollection && $context->data) {
-                    $context->data = array_slice($context->data, $offset, $limit);
+                // Recalculate the offset if it is higher than the total
+                if ($offset >= $total) {
+                    $offset = floor(($total - 1) / $limit) * $limit;
                 }
 
-                if($context instanceof ComPagesModelContextDatabase && $context->query) {
-                    $context->query->limit($limit, $offset);
-                }
+                $state->offset = $offset;
+            }
+
+            return parent::_beforeFetch($context);
+        }
+    }
+
+    protected function _afterReset(KModelContextInterface $context)
+    {
+        $modified = (array) KObjectConfig::unbox($context->modified);
+        if (in_array('limit', $modified))
+        {
+            $limit = $context->state->limit;
+
+            if ($limit) {
+                $context->state->offset = floor($context->state->offset / $limit) * $limit;
             }
         }
+    }
+
+    protected function _queryCollection(array $data, KModelStateInterface $state)
+    {
+        return array_slice($data, $state->offset, $state->limit);
+    }
+
+    protected function _queryDatabase(KDatabaseQuerySelect $query, KModelStateInterface $state)
+    {
+        return $query->limit($state->limit, $state->offset);
     }
 }
