@@ -52,7 +52,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         return $this->__locator;
     }
 
-    public function getData($path)
+    public function getData($path, $object = true)
     {
         $result = array();
         if(!isset($this->__data[$path]))
@@ -74,11 +74,18 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
             }
 
             //Create the data object
-            $class = $this->getObject('manager')->getClass('com:pages.data.object');
-            $this->__data[$path] = new $class($data);
+            $this->__data[$path] = $data;
         }
 
-        return $this->__data[$path];
+        if($object)
+        {
+            $class = $this->getObject('manager')->getClass('com:pages.data.object');
+            $result = new $class($this->__data[$path]);
+        }
+        else $result = $this->__data[$path];
+
+
+        return $result;
     }
 
     private function __fromPath($path)
@@ -86,7 +93,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         if(!parse_url($path, PHP_URL_SCHEME) == 'http')
         {
             //Locate the data file
-            if (!$path = $this->getLocator()->locate('data://'.$path)) {
+            if (!$path = $this->getLocator()->locate($path)) {
                 throw new InvalidArgumentException(sprintf('The data path "%s" does not exist.', $path));
             }
 
