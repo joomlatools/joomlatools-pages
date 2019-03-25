@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelRemote extends ComPagesModelCollection
+class ComPagesModelWebservice extends ComPagesModelCollection
 {
     protected $_url;
 
@@ -27,22 +27,33 @@ class ComPagesModelRemote extends ComPagesModelCollection
         parent::_initialize($config);
     }
 
-    public function getUrl(array $variables)
+    public function getUrl(array $variables = array())
     {
         return KHttpUrl::fromTemplate($this->_url, $variables);
     }
 
-    public function getData()
-   {
+    public function setState(array $values)
+    {
+        //Automatically create states that don't exist yet
+        foreach($values as $name => $value)
+        {
+            if(!$this->getState()->has($name)) {
+                $this->getState()->insert($name, 'string');
+            }
+        }
+
+        return parent::setState($values);
+    }
+
+    public function getData($count = false)
+    {
        if(!isset($this->_data))
        {
-           $state = $this->getState();
-
-           if($url = $this->getUrl($state->getValues())) {
+           if($url = $this->getUrl($this->getState()->getValues())) {
                $this->_data = $this->getObject('com:pages.data.client')->fromUrl($url, false);
            }
        }
 
        return (array) $this->_data;
-   }
+    }
 }

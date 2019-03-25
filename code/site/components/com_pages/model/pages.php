@@ -15,8 +15,18 @@ class ComPagesModelPages extends ComPagesModelCollection
         $this->getState()
             ->insert('path', 'url', '.')
             ->insert('slug', 'cmd', '', true, array('path'))
-            ->insert('recurse', 'boolean', true, false, array(), true) //internal state
-            ->insert('level', 'int', 0, false, array(), true);         //internal state
+            //Internal states
+            ->insert('recurse', 'boolean', true, false, array(), true)
+            ->insert('level', 'int', 0, false, array(), true)
+            //Filter states
+            ->insert('visible', 'boolean')
+            ->insert('collection', 'boolean')
+            ->insert('sitemap', 'boolean')
+            ->insert('category', 'cmd')
+            ->insert('year', 'int')
+            ->insert('month', 'int')
+            ->insert('day', 'int')
+            ->insert('published', 'boolean');
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -25,20 +35,13 @@ class ComPagesModelPages extends ComPagesModelCollection
             'identity_key' => 'path',
             'behaviors'    => [
                 'recursable',
-                'dateable',
-                'sortable',
-                'categorizable',
-                'accessible',
-                'crawlable',
-                'visible',
-                'collectable',
             ]
         ]);
 
         parent::_initialize($config);
     }
 
-    public function getData()
+    public function getData($query = null)
     {
         if(!isset($this->_data))
         {
@@ -51,18 +54,133 @@ class ComPagesModelPages extends ComPagesModelCollection
             {
                 if ($this->getState()->isUnique())
                 {
-                    $page = $registry->getPage($path.'/'.$this->getState()->slug);
-
-                    if ($page) {
+                    if($page = $registry->getPage($path.'/'.$this->getState()->slug)) {
                         $pages = $page->toArray();
                     }
                 }
-                else $pages = array_values($registry->getPages($path, $state->recurse, $state->level - 1));
+                else
+                {
+                    $pages = array_values($registry->getPages($path, $state->recurse, $state->level - 1));
+
+                    //Filter the pages
+                    $pages = array_filter($pages, function($page) use ($state) {
+                        return $this->filterData($page, $state);
+                    });
+                }
             }
 
             $this->_data = $pages;
         }
 
         return $this->_data;
+    }
+
+    public function filterData($page, KModelStateInterface $state)
+    {
+        $result = true;
+
+        //Visible
+        if(!is_null($state->visible))
+        {
+            if($state->visible === true) {
+                $result = !isset($page['visible']) || $page['visible'] !== false;
+            }
+
+            if($state->visible === false) {
+                $result = isset($page['visible']) && $page['visible'] === false;
+            }
+        }
+
+        //Published
+        if($result &&  !is_null($state->published))
+        {
+            if($state->published === true) {
+                $result = !isset($page['published']) || $page['published'] !== false;
+            }
+
+            if($state->published === false) {
+                $result = isset($page['published']) && $page['published'] === false;
+            }
+        }
+
+        //Collection
+        if($result && !is_null($state->collection))
+        {
+            if($state->collection === true) {
+                $result = isset($page['collection']) && $page['collection'] !== false;
+            }
+
+            if($state->collection === false) {
+                $result = !isset($page['collection']) || $page['collection'] === false;
+            }
+        }
+
+        //Sitemap
+        if($result && (bool) $state->sitemap) {
+            $result = (isset($page['sitemap']) && $page['sitemap'] == false) ? false : true;
+        }
+
+        //Category
+        if($result && (bool) $state->category) {
+            $result =  isset($page['category']) && $page['category'] == $state->category;
+        }
+
+        //Date
+        if($result &&  (bool) ($state->year || $state->month || $state->day))
+        {
+            if(isset($page['date']))
+            {
+                //Get the timestamp
+                if(!is_integer($page['date'])) {
+                    $date = strtotime($page['date']);
+                } else {
+                    $date = $page['date'];
+                }
+
+                if($state->year) {
+                    $result = ($state->year == date('Y', $date));
+                }
+
+                if($result && $state->month) {
+                    $result = ($state->month == date('m', $date));
+                }
+
+                if($result && $state->day) {
+                    $result = ($state->day == date('d', $date));
+                }
+            }
+        }
+
+        //Permissions
+        if($result)
+        {
+            //Goups
+            if(isset($page['access']['groups']))
+            {
+                $groups = $this->getObject('com:pages.database.table.groups')
+                    ->select($this->getObject('user')->getGroups(), KDatabase::FETCH_ARRAY_LIST);
+
+                $groups = array_map('strtolower', array_column($groups, 'title'));
+
+                if(!array_intersect($groups, $page['access']['groups'])) {
+                    $result = false;
+                }
+            }
+
+            //Roles
+            if($result && isset($page['access']['roles']))
+            {
+                $roles = $this->getObject('com:pages.database.table.roles')
+                    ->select($this->getObject('user')->getRoles(), KDatabase::FETCH_ARRAY_LIST);
+
+                $roles = array_map('strtolower', array_column($roles, 'title'));
+
+                if(!array_intersect($roles, $page['access']['roles'])) {
+                    $result = false;
+                }
+            }
+        }
+
+        return $result;
     }
 }
