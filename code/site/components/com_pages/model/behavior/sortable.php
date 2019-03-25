@@ -33,51 +33,65 @@ class ComPagesModelBehaviorSortable extends KModelBehaviorAbstract
 
         if(!$state->isUnique())
         {
-            $entities = KObjectConfig::unbox($context->entity);
-
-            if($state->sort && $state->sort != 'order')
+            if($context instanceof ComPagesModelContextCollection && $context->data)
             {
-                usort($entities, function($first, $second) use($state)
+                $data = $context->data;
+
+                if($state->sort && $state->sort != 'order')
                 {
-                    $sorting = 0;
-                    $name    = $state->sort;
-
-                    $first_value  = $first[$name];
-                    $second_value = $second[$name];
-
-                    if($name == 'date')
+                    usort($data, function($first, $second) use($state)
                     {
-                        $first_value  = is_int($first_value) ? $first_value : strtotime($first_value);
-                        $second_value = is_int($second_value) ? $second_value : strtotime($second_value);
-                    }
+                        $sorting = 0;
+                        $name    = $state->sort;
 
-                    if($first_value > $second_value) {
-                        $sorting = 1;
-                    } elseif ($first_value < $second_value) {
-                        $sorting = -1;
-                    }
+                        $first_value  = $first[$name];
+                        $second_value = $second[$name];
 
-                    return $sorting;
-                });
+                        if($name == 'date')
+                        {
+                            $first_value  = is_int($first_value) ? $first_value : strtotime($first_value);
+                            $second_value = is_int($second_value) ? $second_value : strtotime($second_value);
+                        }
+
+                        if($first_value > $second_value) {
+                            $sorting = 1;
+                        } elseif ($first_value < $second_value) {
+                            $sorting = -1;
+                        }
+
+                        return $sorting;
+                    });
+                }
+
+                if($state->order)
+                {
+                    switch($state->order)
+                    {
+                        case 'desc':
+                        case 'descending':
+                            $data = array_reverse($data);
+                            break;
+
+                        case 'shuffle':
+                            shuffle($data);
+                            break;
+
+                    }
+                }
+
+                $context->data = $data;
             }
 
-            if($state->order)
+            if($context instanceof ComPagesModelContextDatabase && $context->query)
             {
-                switch($state->order)
+                if($state->sort && $state->sort != 'order')
                 {
-                    case 'desc':
-                    case 'descending':
-                        $entities = array_reverse($entities);
-                        break;
+                    $order   = strtoupper($state->order);
+                    $column = $context->subject->getTable()->mapColumns($state->sort);
 
-                    case 'shuffle':
-                        shuffle($entities);
-                        break;
-
+                    $context->query->order($column, $order);
                 }
             }
-
-            $context->entity = $entities;
         }
     }
 }

@@ -22,14 +22,12 @@ class ComPagesModelBehaviorPaginatable extends KModelBehaviorPaginatable
     {
         $state = $context->state;
 
-        if(!$context->state->isUnique())
+        if(!$state->isUnique())
         {
-            $limit = $state->limit;
-            $total = count($context->subject->getData());
-
-            if ($limit)
+            if ($limit = $state->limit)
             {
                 $offset = $state->offset;
+                $total  = $context->subject->count();
 
                 if ($offset !== 0 && $total !== 0)
                 {
@@ -46,8 +44,13 @@ class ComPagesModelBehaviorPaginatable extends KModelBehaviorPaginatable
                     $state->offset = $offset;
                 }
 
-                $entities = KObjectConfig::unbox($context->entity);
-                $context->entity = array_slice($entities, $offset, $limit);
+                if($context instanceof ComPagesModelContextCollection && $context->data) {
+                    $context->data = array_slice($context->data, $offset, $limit);
+                }
+
+                if($context instanceof ComPagesModelContextDatabase && $context->query) {
+                    $context->query->limit($limit, $offset);
+                }
             }
         }
     }
