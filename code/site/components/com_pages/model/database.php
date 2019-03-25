@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelDatabase extends ComPagesModelAbstract
+class ComPagesModelDatabase extends ComPagesModelCollection
 {
     protected $_table;
 
@@ -28,12 +28,8 @@ class ComPagesModelDatabase extends ComPagesModelAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'behaviors'   => [
-                'com:pages.model.behavior.paginatable',
-                'com:pages.model.behavior.sortable',
-                'com:pages.model.behavior.searchable'
-            ],
-            'table'  => '',
+            'table'        => '',
+            'identity_key' => null
         ));
 
         parent::_initialize($config);
@@ -66,6 +62,19 @@ class ComPagesModelDatabase extends ComPagesModelAbstract
         }
 
         return $query;
+    }
+
+    public function getData($query = null)
+    {
+        $data = array();
+
+        if($query)
+        {
+            $data = $this->getTable()
+                ->select($query, KDatabase::FETCH_ARRAY_LIST, ['identity_column' => $this->_identity_key]);
+        }
+
+        return $data;
     }
 
     public function getTable()
@@ -105,13 +114,7 @@ class ComPagesModelDatabase extends ComPagesModelAbstract
 
     protected function _actionFetch(KModelContext $context)
     {
-        $data = array();
-
-        if($context->query)
-        {
-            $data = $this->getTable()
-                ->select($context->query, KDatabase::FETCH_ARRAY_LIST, ['identity_column' => $this->_identity_key]);
-        }
+        $data = $this->getData($context->query);
 
         return $this->create($data);
     }
@@ -120,22 +123,10 @@ class ComPagesModelDatabase extends ComPagesModelAbstract
     {
         $result = 0;
 
-        if($context->query)
-        {
-            $result =  $this->getTable()
-                ->count($context->query);
+        if($context->query) {
+            $result =  $this->getTable()->count($context->query);
         }
 
         return $result;
-    }
-
-    public function getContext()
-    {
-        $context = new ComPagesModelContextDatabase();
-        $context->setSubject($this);
-        $context->setState($this->getState());
-        $context->setIdentityKey($this->_identity_key);
-
-        return $context;
     }
 }
