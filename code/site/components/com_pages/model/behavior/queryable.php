@@ -15,17 +15,17 @@ abstract class ComPagesModelBehaviorQueryable extends KModelBehaviorAbstract
 
         if(!$state->isUnique() && $context instanceof ComPagesModelContextCollection)
         {
-            if($context->data) {
-                $context->data = $this->_queryCollection($context->data, $state);
+            if(is_array($context->data)) {
+                $context->data = $this->_queryArray($context->data, $state);
             }
 
-            if($context->query) {
-                $context->query = $this->_queryDatabase($context->query, $state);
+            if($context->data instanceof KDatabaseQuerySelect) {
+                $context->data = $this->_queryDatabase($context->data, $state);
             }
         }
     }
 
-    protected function _queryCollection(array $data, KModelStateInterface $state)
+    protected function _queryArray(array $data, KModelStateInterface $state)
     {
         return $data;
     }

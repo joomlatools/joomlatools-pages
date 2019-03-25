@@ -35,7 +35,7 @@ class ComPagesModelDatabase extends ComPagesModelCollection
         parent::_initialize($config);
     }
 
-    public function getQuery($count = false)
+    public function getData($count = false)
     {
         $query = $this->getObject('lib:database.query.select')
             ->table(array('tbl' => $this->getTable()->getName()));
@@ -62,19 +62,6 @@ class ComPagesModelDatabase extends ComPagesModelCollection
         }
 
         return $query;
-    }
-
-    public function getData($query = null)
-    {
-        $data = array();
-
-        if($query)
-        {
-            $data = $this->getTable()
-                ->select($query, KDatabase::FETCH_ARRAY_LIST, ['identity_column' => $this->_identity_key]);
-        }
-
-        return $data;
     }
 
     public function getTable()
@@ -107,14 +94,15 @@ class ComPagesModelDatabase extends ComPagesModelCollection
         return $this->_table;
     }
 
-    protected function _prepareContext(KModelContext $context)
-    {
-        $context->query = $this->getQuery($context->getName == 'before.count');
-    }
-
     protected function _actionFetch(KModelContext $context)
     {
-        $data = $this->getData($context->query);
+        $data = array();
+
+        if($context->data instanceof KDatabaseQueryInterface)
+        {
+            $data = $this->getTable()
+                ->select($context->data, KDatabase::FETCH_ARRAY_LIST, ['identity_column' => $this->_identity_key]);
+        }
 
         return $this->create($data);
     }
@@ -123,8 +111,8 @@ class ComPagesModelDatabase extends ComPagesModelCollection
     {
         $result = 0;
 
-        if($context->query) {
-            $result =  $this->getTable()->count($context->query);
+        if($context->data instanceof KDatabaseQueryInterface) {
+            $result = $this->getTable()->count($context->data);
         }
 
         return $result;

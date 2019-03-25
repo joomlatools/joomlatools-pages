@@ -9,7 +9,5 @@
 
 interface ComPagesModelInterface extends KModelInterface
 {
-    public function getQuery($count = false);
-
-    public function getData($query = null);
+    public function getData($count = false);
 }

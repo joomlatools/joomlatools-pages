@@ -39,20 +39,14 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         parent::_initialize($config);
     }
 
-    public function getQuery($count = false)
-    {
-        return null;
-    }
-
-    public function getData($query = null)
+    public function getData($count = false)
     {
         return (array) $this->_data;
     }
 
     protected function _prepareContext(KModelContext $context)
     {
-        $query = $this->getQuery($context->getName == 'before.count');
-        $context->data = (array) $this->getData($query);
+        $context->data = $this->getData($context->getName() == 'before.count');
     }
 
     protected function _actionFetch(KModelContext $context)

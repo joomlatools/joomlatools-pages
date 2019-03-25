@@ -45,7 +45,7 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         return parent::setState($values);
     }
 
-    public function getData($query = null)
+    public function getData($count = false)
     {
        if(!isset($this->_data))
        {

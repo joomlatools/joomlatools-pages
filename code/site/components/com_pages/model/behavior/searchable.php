@@ -21,7 +21,7 @@ class ComPagesModelBehaviorSearchable extends ComPagesModelBehaviorQueryable
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'columns' => 'title',
+            'columns' => 'element',
         ));
 
         parent::_initialize($config);
@@ -60,7 +60,7 @@ class ComPagesModelBehaviorSearchable extends ComPagesModelBehaviorQueryable
         return $this->_beforeFetch($context);
     }
 
-    protected function _queryCollection(array $data, KModelStateInterface $state)
+    protected function _queryArray(array $data, KModelStateInterface $state)
     {
         $columns = $this->_columns;
         $value   = $state->search;

@@ -27,7 +27,7 @@ class ComPagesModelBehaviorSortable extends ComPagesModelBehaviorQueryable
             ->insert('order', 'word', 'asc');
     }
 
-    protected function _queryCollection(array $data, KModelStateInterface $state)
+    protected function _queryArray(array $data, KModelStateInterface $state)
     {
         if($state->sort && $state->sort != 'order')
         {

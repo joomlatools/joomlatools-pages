@@ -79,7 +79,7 @@ class ComPagesModelBehaviorPaginatable extends ComPagesModelBehaviorQueryable
         }
     }
 
-    protected function _queryCollection(array $data, KModelStateInterface $state)
+    protected function _queryArray(array $data, KModelStateInterface $state)
     {
         return array_slice($data, $state->offset, $state->limit);
     }
