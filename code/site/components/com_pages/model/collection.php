@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelCollection extends ComPagesModelAbstract
+abstract class ComPagesModelCollection extends KModelAbstract implements ComPagesModelInterface
 {
     protected $_data;
 
@@ -19,6 +19,10 @@ class ComPagesModelCollection extends ComPagesModelAbstract
         if($config->identity_key) {
             $this->getState()->insert($config->identity_key, 'cmd', null, true);
         }
+
+        //Setup callbacks
+        $this->addCommandCallback('before.fetch', '_prepareContext');
+        $this->addCommandCallback('before.count', '_prepareContext');
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -35,28 +39,20 @@ class ComPagesModelCollection extends ComPagesModelAbstract
         parent::_initialize($config);
     }
 
-    public function getData()
+    public function getQuery($count = false)
+    {
+        return null;
+    }
+
+    public function getData($query = null)
     {
         return (array) $this->_data;
     }
 
-    public function filterData($item, KModelStateInterface $state)
-    {
-        return true;
-    }
-
     protected function _prepareContext(KModelContext $context)
     {
-        $data = (array) $this->getData();
-
-        //Only filter collections
-        if(!$context->state->isUnique())
-        {
-            $context->data = array_filter($data, function($item) use ($context) {
-                return $this->filterData($item, $context->state);
-            });
-        }
-        else $context->data = $data;
+        $query = $this->getQuery($context->getName == 'before.count');
+        $context->data = (array) $this->getData($query);
     }
 
     protected function _actionFetch(KModelContext $context)
@@ -87,6 +83,27 @@ class ComPagesModelCollection extends ComPagesModelAbstract
         $this->_data = null;
 
         parent::_actionReset($context);
+    }
+
+    protected function _actionCreate(KModelContext $context)
+    {
+        $data = KModelContext::unbox($context->entity);
+
+        $identifier = $this->getIdentifier()->toArray();
+        $identifier['path'] = ['model', 'entity'];
+        $identifier['name'] = KStringInflector::pluralize($identifier['name']);
+
+        //Fallback to default
+        if(!$this->getObject('manager')->getClass($identifier, false)) {
+            $identifier = 'com:pages.model.entity.items';
+        }
+
+        $options = array(
+            'data'         => $data,
+            'identity_key' => $context->getIdentityKey()
+        );
+
+        return $this->getObject($identifier, $options);
     }
 
     public function getContext()
