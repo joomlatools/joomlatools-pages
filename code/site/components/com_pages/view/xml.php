@@ -107,7 +107,7 @@ class ComPagesViewXml extends KViewTemplate
 
     public function getPage($path = null)
     {
-        if($path) {
+        if(!is_null($path)) {
             $result = $this->getObject('com:pages.model.factory')->createPage($path);
         } else {
             $result = $this->getModel()->getPage();

@@ -136,10 +136,11 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
         $path = ltrim($path, './');
 
-        if($path && !isset($this->__pages[$path]))
+        if(!isset($this->__pages[$path]))
         {
             if($file = $this->getLocator()->locate('page://pages/'. $path))
             {
+
                 //Get the relative file path
                 $basedir = $this->getLocator()->getBasePath().'/pages';
                 $file    = trim(str_replace($basedir, '', $file), '/');
@@ -148,7 +149,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 $page = new ComPagesPageObject($this->__data['pages'][$file]);
 
                 //Set page default properties from collection
-                if($parent = $this->getPage($page->path))
+                if($page->path && $parent = $this->getPage($page->path))
                 {
                     if(($collection = $parent->isCollection()) && isset($collection['page']))
                     {
@@ -180,7 +181,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
     public function getRoutes($path = null)
     {
-        if($path) {
+        if(!is_null($path)) {
             $result = $this->__data['routes'][$path];
         } else {
             $result = $this->__data['routes'];
@@ -320,11 +321,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     $pages[$file] = $page->toArray();
 
                                     //Route (make exception for index.php)
-                                    if($path) {
-                                        $routes[$path] = (array) KObjectConfig::unbox($page->route);
-                                    } else {
-                                        $routes['index'] = array('');
-                                    }
+                                    $routes[$path] = (array) KObjectConfig::unbox($page->route);
 
                                     //File
                                     if (strpos($node, 'index') === false) {
