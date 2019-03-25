@@ -32,8 +32,21 @@ class ComPagesModelRemote extends ComPagesModelCollection
         return KHttpUrl::fromTemplate($this->_url, $variables);
     }
 
+    public function setState(array $values)
+    {
+        //Automatically create states that don't exist yet
+        foreach($values as $name => $value)
+        {
+            if(!$this->getState()->has($name)) {
+                $this->getState()->insert($name, 'string');
+            }
+        }
+
+        return parent::setState($values);
+    }
+
     public function getData()
-   {
+    {
        if(!isset($this->_data))
        {
            $state = $this->getState();
@@ -44,5 +57,5 @@ class ComPagesModelRemote extends ComPagesModelCollection
        }
 
        return (array) $this->_data;
-   }
+    }
 }
