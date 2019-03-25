@@ -18,4 +18,15 @@ class ComPagesModelContextCollection extends KModelContext
     {
         return KObjectConfig::unbox(KObjectConfig::get('data'));
     }
+
+    public function setQuery($query)
+    {
+        return KObjectConfig::set('query', $query);
+    }
+
+    public function getQuery()
+    {
+        return KObjectConfig::unbox(KObjectConfig::get('query'));
+    }
+
 }
