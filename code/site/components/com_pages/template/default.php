@@ -188,7 +188,7 @@ class ComPagesTemplateDefault extends KTemplate
         return implode(' ', $output);
     }
 
-    protected function _fetchData($path, $format = '')
+    protected function _fetchData($path)
     {
         $result = false;
         if(is_array($path))
@@ -196,13 +196,13 @@ class ComPagesTemplateDefault extends KTemplate
             foreach($path as $directory)
             {
                 if (!$result instanceof ComPagesDataObject) {
-                    $result = $this->getObject('data.registry')->getData($directory, $format);
+                    $result = $this->getObject('data.registry')->getData($directory);
                 } else {
-                    $result->append($this->getObject('data.registry')->getData($directory, $format));
+                    $result->append($this->getObject('data.registry')->getData($directory));
                 }
             }
         }
-        else $result = $this->getObject('data.registry')->getData($path, $format);
+        else $result = $this->getObject('data.registry')->getData($path);
 
         return $result;
     }
