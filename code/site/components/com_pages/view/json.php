@@ -20,7 +20,7 @@ class ComPagesViewJson extends KViewJson
 
     public function getPage($path = null)
     {
-        if($path) {
+        if(!is_null($path)) {
             $result = $this->getObject('com:pages.model.factory')->createPage($path);
         } else {
             $result = $this->getModel()->getPage();
