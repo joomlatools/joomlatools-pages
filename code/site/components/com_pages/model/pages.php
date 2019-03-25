@@ -41,7 +41,7 @@ class ComPagesModelPages extends ComPagesModelCollection
         parent::_initialize($config);
     }
 
-    public function getData()
+    public function getData($query = null)
     {
         if(!isset($this->_data))
         {
@@ -58,7 +58,15 @@ class ComPagesModelPages extends ComPagesModelCollection
                         $pages = $page->toArray();
                     }
                 }
-                else $pages = array_values($registry->getPages($path, $state->recurse, $state->level - 1));
+                else
+                {
+                    $pages = array_values($registry->getPages($path, $state->recurse, $state->level - 1));
+
+                    //Filter the pages
+                    $pages = array_filter($pages, function($page) use ($state) {
+                        return $this->filterData($page, $state);
+                    });
+                }
             }
 
             $this->_data = $pages;
@@ -67,7 +75,7 @@ class ComPagesModelPages extends ComPagesModelCollection
         return $this->_data;
     }
 
-    public function filterData($item, KModelStateInterface $state)
+    public function filterData($page, KModelStateInterface $state)
     {
         $result = true;
 
@@ -75,11 +83,11 @@ class ComPagesModelPages extends ComPagesModelCollection
         if(!is_null($state->visible))
         {
             if($state->visible === true) {
-                $result = !isset($item['visible']) || $item['visible'] !== false;
+                $result = !isset($page['visible']) || $page['visible'] !== false;
             }
 
             if($state->visible === false) {
-                $result = isset($item['visible']) && $item['visible'] === false;
+                $result = isset($page['visible']) && $page['visible'] === false;
             }
         }
 
@@ -87,11 +95,11 @@ class ComPagesModelPages extends ComPagesModelCollection
         if($result &&  !is_null($state->published))
         {
             if($state->published === true) {
-                $result = !isset($item['published']) || $item['published'] !== false;
+                $result = !isset($page['published']) || $page['published'] !== false;
             }
 
             if($state->published === false) {
-                $result = isset($item['published']) && $item['published'] === false;
+                $result = isset($page['published']) && $page['published'] === false;
             }
         }
 
@@ -99,34 +107,34 @@ class ComPagesModelPages extends ComPagesModelCollection
         if($result && !is_null($state->collection))
         {
             if($state->collection === true) {
-                $result = isset($item['collection']) && $item['collection'] !== false;
+                $result = isset($page['collection']) && $page['collection'] !== false;
             }
 
             if($state->collection === false) {
-                $result = !isset($item['collection']) || $item['collection'] === false;
+                $result = !isset($page['collection']) || $page['collection'] === false;
             }
         }
 
         //Sitemap
         if($result && (bool) $state->sitemap) {
-            $result = (isset($item['sitemap']) && $item['sitemap'] == false) ? false : true;
+            $result = (isset($page['sitemap']) && $page['sitemap'] == false) ? false : true;
         }
 
         //Category
         if($result && (bool) $state->category) {
-            $result =  isset($item['category']) && $item['category'] == $state->category;
+            $result =  isset($page['category']) && $page['category'] == $state->category;
         }
 
         //Date
         if($result &&  (bool) ($state->year || $state->month || $state->day))
         {
-            if(isset($item['date']))
+            if(isset($page['date']))
             {
                 //Get the timestamp
-                if(!is_integer($item['date'])) {
-                    $date = strtotime($item['date']);
+                if(!is_integer($page['date'])) {
+                    $date = strtotime($page['date']);
                 } else {
-                    $date = $item['date'];
+                    $date = $page['date'];
                 }
 
                 if($state->year) {
@@ -147,27 +155,27 @@ class ComPagesModelPages extends ComPagesModelCollection
         if($result)
         {
             //Goups
-            if(isset($item['access']['groups']))
+            if(isset($page['access']['groups']))
             {
                 $groups = $this->getObject('com:pages.database.table.groups')
                     ->select($this->getObject('user')->getGroups(), KDatabase::FETCH_ARRAY_LIST);
 
                 $groups = array_map('strtolower', array_column($groups, 'title'));
 
-                if(!array_intersect($groups, $item['access']['groups'])) {
+                if(!array_intersect($groups, $page['access']['groups'])) {
                     $result = false;
                 }
             }
 
             //Roles
-            if($result && isset($item['access']['roles']))
+            if($result && isset($page['access']['roles']))
             {
                 $roles = $this->getObject('com:pages.database.table.roles')
                     ->select($this->getObject('user')->getRoles(), KDatabase::FETCH_ARRAY_LIST);
 
                 $roles = array_map('strtolower', array_column($roles, 'title'));
 
-                if(!array_intersect($roles, $item['access']['roles'])) {
+                if(!array_intersect($roles, $page['access']['roles'])) {
                     $result = false;
                 }
             }
