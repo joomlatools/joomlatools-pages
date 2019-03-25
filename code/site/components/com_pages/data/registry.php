@@ -93,14 +93,14 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         if(!parse_url($path, PHP_URL_SCHEME) == 'http')
         {
             //Locate the data file
-            if (!$path = $this->getLocator()->locate($path)) {
+            if (!$file = $this->getLocator()->locate($path)) {
                 throw new InvalidArgumentException(sprintf('The data path "%s" does not exist.', $path));
             }
 
-            if(is_dir($path)) {
-                $result = $this->__fromDirectory($path);
+            if(is_dir($file)) {
+                $result = $this->__fromDirectory($file);
             } else {
-                $result = $this->__fromFile($path);
+                $result = $this->__fromFile($file);
             }
         }
         else $result =  $this->getObject('com:pages.data.client')->fromUrl($path, false);
