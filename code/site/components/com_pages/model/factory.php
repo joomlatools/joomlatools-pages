@@ -29,6 +29,11 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
 
         if($collection = $this->getObject('page.registry')->getCollection($source))
         {
+            //Set the state
+            if(isset($collection->state)) {
+                $state = KObjectConfig::unbox($collection->state->merge($state));
+            }
+
             //Create the model
             $source = KHttpUrl::fromString($collection->source);
 
@@ -44,19 +49,19 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
 
             $model = $this->getObject($identifier, $config);
 
-            if(!$model instanceof KModelInterface)
+            if(!$model instanceof KModelInterface && !$model instanceof KControllerModellable)
             {
                 throw new UnexpectedValueException(
-                    'Collection: '.get_class($model).' does not implement KModelInterface'
+                    'Collection: '.get_class($model).' does not implement KModelInterface or KControllerModellable'
                 );
             }
 
-            //Set the state
-            if(isset($collection->state)) {
-                $state  = $collection->state->merge($state);
+            if($model instanceof KControllerModellable)
+            {
+                $model->getModel()->setState($state);
+                $model = $this->getObject('com:pages.model.controller', ['controller' => $model]);
             }
-
-            $model->setState(KObjectConfig::unbox($state));
+            else $model->setState($state);
         }
 
         return $model;
