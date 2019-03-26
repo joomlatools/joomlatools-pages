@@ -89,6 +89,13 @@ class ComPagesModelDatabase extends ComPagesModelCollection
             }
 
             $this->_table = $this->getObject($this->_table);
+
+            if(!$this->_table instanceof KDatabaseTableInterface)
+            {
+                throw new UnexpectedValueException(
+                    'Table: '.get_class($this->_table).' does not implement KDatabaseTableInterface'
+                );
+            }
         }
 
         return $this->_table;
