@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesDataObject extends KObjectConfig
+class ComPagesDataObject extends KObjectConfig implements JsonSerializable
 {
     public function shuffle()
     {
@@ -76,8 +76,47 @@ class ComPagesDataObject extends KObjectConfig
         return new self($data);
     }
 
+    public function toString()
+    {
+        // Encode <, >, ', &, and " for RFC4627-compliant JSON, which may also be embedded into HTML.
+        $data = json_encode($this->toArray(), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+        if (JSON_ERROR_NONE !== json_last_error())
+        {
+            throw new InvalidArgumentException(
+                'Cannot encode data to JSON string: ' . json_last_error_msg()
+            );
+        }
+
+        return $data;
+    }
+
+    public function jsonSerialize()
+    {
+        return $this->toArray();
+    }
+
     public function __debugInfo()
     {
         return self::unbox($this);
+    }
+
+    /**
+     * Allow PHP casting of this object
+     *
+     * @return string
+     */
+    final public function __toString()
+    {
+        $result = '';
+
+        //Not allowed to throw exceptions in __toString() See : https://bugs.php.net/bug.php?id=53648
+        try {
+            $result = $this->toString();
+        } catch (Exception $e) {
+            trigger_error('KObjectConfigFormat::__toString exception: '. (string) $e, E_USER_ERROR);
+        }
+
+        return $result;
     }
 }
