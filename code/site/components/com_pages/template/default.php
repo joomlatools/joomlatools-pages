@@ -193,14 +193,23 @@ class ComPagesTemplateDefault extends KTemplate
         $result = false;
         if(is_array($path))
         {
-            foreach($path as $directory)
+            if(is_numeric(key($path)))
             {
-                if (!$result instanceof ComPagesDataObject) {
-                    $result = $this->getObject('data.registry')->getData($directory);
-                } else {
-                    $result->append($this->getObject('data.registry')->getData($directory));
+                foreach($path as $directory)
+                {
+                    if (!$result instanceof ComPagesDataObject) {
+                        $result = $this->getObject('data.registry')->getData($directory);
+                    } else {
+                        $result->append($this->getObject('data.registry')->getData($directory));
+                    }
                 }
             }
+            else
+            {
+                $class = $this->getObject('manager')->getClass('com:pages.data.object');
+                $result = new $class($path);
+            }
+
         }
         else $result = $this->getObject('data.registry')->getData($path);
 
