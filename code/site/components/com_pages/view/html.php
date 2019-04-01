@@ -151,7 +151,9 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
 
                 if($page->metadata->has('og:type'))
                 {
-                    $metadata['og:image'] = rtrim($this->getObject('request')->getBaseUrl(), '/').'/'.ltrim($metadata['og:image'], '/');
+                    if(strpos($metadata['og:image'], 'http') === false) {
+                        $metadata['og:image'] = rtrim($this->getObject('request')->getBaseUrl(), '/').'/'.ltrim($metadata['og:image'], '/');
+                    }
 
                     if(!$metadata['og:url']) {
                         $metadata['og:url'] = (string) $this->getRoute($page);
