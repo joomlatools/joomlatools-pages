@@ -29,6 +29,8 @@ function PagesBuildRoute(&$query)
             {
                 $query = array_merge($query, $canonical->query);
                 $path  = $canonical->path;
+
+                unset($query['view']);
             }
         }
     }
