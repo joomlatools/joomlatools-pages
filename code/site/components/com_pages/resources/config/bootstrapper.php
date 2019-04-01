@@ -22,6 +22,7 @@ return array(
         'com:pages.version'     => 'com://admin/pages.version',
         'com:pages.data.object' => 'com://site/pages.data.object',
         'com:pages.data.client' => 'com://site/pages.data.client',
+        'com:pages.model.entity.page' => 'com://site/pages.model.entity.page',
     ],
 
     'identifiers' => [
@@ -81,6 +82,11 @@ return array(
             'cache'      => $config['remote_cache'] ?? (JDEBUG ? false : true),
             'cache_time' => $config['remote_cache_time'] ?? 60*60*24, //1d
             'cache_path' => $config['remote_cache_path'] ?? null
+        ],
+        'com://site/pages.model.entity.page' => [
+            'data' => [
+                'metadata' => $config['metadata'] ?? array(),
+            ]
         ],
     ]
 );

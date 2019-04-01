@@ -21,6 +21,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                 'content'     => '',
                 'excerpt'     => '',
                 'text'        => '',
+                'image'       => '',
                 'date'        => 'now',
                 'author'      => '',
                 'published'   => true,
@@ -30,7 +31,13 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                     'groups' => ['public', 'guest']
                 ],
                 'redirect'    => '',
-                'metadata'    => [],
+                'metadata'    => [
+                    'og:type'        => 'website',
+                    'og:title'       => null,
+                    'og:url'         => null,
+                    'og:image'       => null,
+                    'og:description' => null,
+                ],
                 'process'     => [
                     'filters' => array(),
                 ],
@@ -97,6 +104,42 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
     public function getPropertyRoute()
     {
         return $this->getHandle();
+    }
+
+    public function getPropertyMetadata()
+    {
+        $metadata = $this->getConfig()->data->metadata;
+
+        if(!isset($metadata->description) && $this->summary) {
+            $metadata->set('description', $this->summary);
+        }
+
+        //Type and image are required. If they are not set remove any opengraph properties
+        if(!empty($metadata->get('og:type')) && !empty($metadata->get('og:image')))
+        {
+            if($this->title) {
+                $metadata->set('og:title', $this->title);
+            }
+
+            if($this->summary) {
+                $metadata->set('og:description', $this->summary);
+            }
+
+            if($this->image) {
+                $metadata->set('og:image', $this->image);
+            }
+        }
+        else
+        {
+            foreach($metadata as $name => $value)
+            {
+                if(strpos($name, 'og:') === 0 || strpos($name, 'twitter:') === 0) {
+                    $metadata->remove($name);
+                }
+            }
+        }
+
+        return $metadata;
     }
 
     public function setPropertyName($name)
