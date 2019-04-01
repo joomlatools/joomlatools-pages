@@ -143,15 +143,22 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
     public function getMetadata()
     {
         $metadata = array();
-        if($data = $this->getPage())
+        if($page = $this->getPage())
         {
-            if(isset($data->metadata)) {
-                $metadata = KObjectConfig::unbox($data->metadata);
-            }
+            if($page->metadata)
+            {
+                $metadata = KObjectConfig::unbox($page->metadata);
 
-            //Set the description into the metadata if it doesn't exist.
-            if(!empty($data->summary) && !isset($data->metadata->description)) {
-                $metadata['description'] = $data->summary;
+                if(!empty($page->metadata->get('og:type')))
+                {
+                    if($metadata['og:image']) {
+                        $metadata['og:image'] = rtrim($this->getObject('request')->getBaseUrl(), '/').'/'.ltrim($metadata['og:image'], '/');
+                    }
+
+                    if(!$metadata['og:url']) {
+                        $metadata['og:url'] = (string) $this->getRoute($page);
+                    }
+                }
             }
         }
 
