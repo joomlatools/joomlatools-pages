@@ -114,7 +114,8 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
             $metadata->set('description', $this->summary);
         }
 
-        if(!empty($metadata->get('og:type')))
+        //Type and image are required. If they are not set remove any opengraph properties
+        if(!empty($metadata->get('og:type')) && !empty($metadata->get('og:image')))
         {
             if($this->title) {
                 $metadata->set('og:title', $this->title);
@@ -126,6 +127,15 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
 
             if($this->image) {
                 $metadata->set('og:image', $this->image);
+            }
+        }
+        else
+        {
+            foreach($metadata as $name => $value)
+            {
+                if(strpos($name, 'og:') === 0 || strpos($name, 'twitter:') === 0) {
+                    $metadata->remove($name);
+                }
             }
         }
 
