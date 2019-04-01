@@ -21,6 +21,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                 'content'     => '',
                 'excerpt'     => '',
                 'text'        => '',
+                'image'       => '',
                 'date'        => 'now',
                 'author'      => '',
                 'published'   => true,
@@ -30,7 +31,13 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                     'groups' => ['public', 'guest']
                 ],
                 'redirect'    => '',
-                'metadata'    => [],
+                'metadata'    => [
+                    'og:type'        => 'website',
+                    'og:title'       => null,
+                    'og:url'         => null,
+                    'og:image'       => null,
+                    'og:description' => null,
+                ],
                 'process'     => [
                     'filters' => array(),
                 ],
@@ -97,6 +104,32 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
     public function getPropertyRoute()
     {
         return $this->getHandle();
+    }
+
+    public function getPropertyMetadata()
+    {
+        $metadata = $this->getConfig()->data->metadata;
+
+        if(!isset($metadata->description) && $this->summary) {
+            $metadata->set('description', $this->summary);
+        }
+
+        if(!empty($metadata->get('og:type')))
+        {
+            if($this->title) {
+                $metadata->set('og:title', $this->title);
+            }
+
+            if($this->summary) {
+                $metadata->set('og:description', $this->summary);
+            }
+
+            if($this->image) {
+                $metadata->set('og:image', $this->image);
+            }
+        }
+
+        return $metadata;
     }
 
     public function setPropertyName($name)
