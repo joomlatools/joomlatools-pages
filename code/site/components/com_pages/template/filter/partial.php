@@ -22,9 +22,10 @@ class ComPagesTemplateFilterPartial extends KTemplateFilterAbstract
                 $engine = $this->getObject('template.engine.factory')
                     ->createEngine($matches[1][$key], array('template' => $this->getTemplate()));
 
-                $result = $engine->loadString($matches[2][$key])->render();
+                $result = $engine->loadString(trim($matches[2][$key]))->render();
 
                 $text = str_replace($match, $result, $text);
+
             }
         }
     }
