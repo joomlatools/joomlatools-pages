@@ -13,7 +13,7 @@ class ComPagesViewCollectionRss extends ComPagesViewCollectionXml
     {
         $config->append(array(
             'data'     => array(
-                'update_period'    => 'hourly',
+                'update_period'    => 'daily',
                 'update_frequency' => 1
             )
         ));
