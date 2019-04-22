@@ -37,7 +37,7 @@ defined('KOOWA') or die; ?>
                 <link><?= route($page); ?></link>
                 <guid isPermaLink="true"><?= route($page); ?></guid>
                 <? if($page->image): ?>
-                    <media:content medium="image" url="baseurl://image://<?= $page->image ?>" />
+                    <media:content medium="image" url="baseurl://<?= $page->image ?>" />
                 <? endif ?>
                 <description><?=  escape($page->summary) ?></description>
                 <? if($page->category): ?>
