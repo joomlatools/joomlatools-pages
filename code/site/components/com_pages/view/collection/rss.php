@@ -7,13 +7,13 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesViewCollectionRss extends ComPagesViewXml
+class ComPagesViewCollectionRss extends ComPagesViewCollectionXml
 {
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
             'data'     => array(
-                'update_period'    => 'hourly',
+                'update_period'    => 'daily',
                 'update_frequency' => 1
             )
         ));
@@ -24,10 +24,7 @@ class ComPagesViewCollectionRss extends ComPagesViewXml
     protected function _fetchData(KViewContext $context)
     {
         $context->data->append(array(
-            'sitename'     => JFactory::getApplication()->getCfg('sitename'),
-            'language'     => JFactory::getLanguage()->getTag(),
-            'description'  => $this->getPage()->summary ?: '',
-            'image'        => $this->getPage()->image ?: ''
+            'language' => JFactory::getLanguage()->getTag(),
         ));
 
         parent::_fetchData($context);

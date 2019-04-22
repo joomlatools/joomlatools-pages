@@ -119,7 +119,7 @@ class ComPagesViewXml extends KViewTemplate
     public function getCollection($source = '', $state = array())
     {
         if($source) {
-            $result = $this->getObject('com:pages.model.factory')->getCollection($source, $state)->fetch();
+            $result = $this->getObject('com:pages.model.factory')->createCollection($source, $state)->fetch();
         } else {
             $result = $this->getModel()->fetch();
         }
@@ -132,10 +132,10 @@ class ComPagesViewXml extends KViewTemplate
         return $this->getModel()->getState();
     }
 
-    public function getRoute($page = '', $query = array(), $escape = false)
+    public function getRoute($page, $query = array(), $escape = false)
     {
-        if(empty($page)) {
-            $page = $this->getPage();
+        if(!is_array($query)) {
+            $query = array();
         }
 
         if($route = $this->getObject('dispatcher')->getRouter()->generate($page, $query)) {

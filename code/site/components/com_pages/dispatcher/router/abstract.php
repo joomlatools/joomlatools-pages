@@ -184,7 +184,6 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
             //Qualify the url
             $url->setUrl($request->getUrl()->toString(KHttpUrl::AUTHORITY));
 
-
             //Add index.php
             $base = $request->getBasePath();
             $path = trim($url->getPath(), '/');

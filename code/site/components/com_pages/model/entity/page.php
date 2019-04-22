@@ -103,7 +103,14 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
 
     public function getPropertyRoute()
     {
-        return $this->getHandle();
+        $handle = $this->path ? $this->path.'/'.$this->slug : $this->slug;
+
+        //Add the extension
+        if($this->format !== 'html') {
+            $handle .= '.'.$this->format;
+        }
+
+        return $handle;
     }
 
     public function getPropertyMetadata()
@@ -216,8 +223,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
 
     public function getHandle()
     {
-        $handle = $this->path ? $this->path.'/'.$this->slug : $this->slug;
-        return $handle;
+        return $this->route;
     }
 
     public function jsonSerialize()

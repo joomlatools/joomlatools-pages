@@ -140,7 +140,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         {
             if($file = $this->getLocator()->locate('page://pages/'. $path))
             {
-
                 //Get the relative file path
                 $basedir = $this->getLocator()->getBasePath().'/pages';
                 $file    = trim(str_replace($basedir, '', $file), '/');
@@ -148,8 +147,8 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 //Load the page
                 $page = new ComPagesPageObject($this->__data['pages'][$file]);
 
-                //Set page default properties from collection
-                if($page->path && $parent = $this->getPage($page->path))
+                //Set page default properties from parent collection
+                if(!$page->isCollection() && $page->path && $parent = $this->getPage($page->path))
                 {
                     if(($collection = $parent->isCollection()) && isset($collection['page']))
                     {
@@ -254,23 +253,47 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                 $info = pathinfo($node);
 
                                 $file = $dir . '/' . $node;
-
-                                if (strpos($node, 'index') !== false) {
-                                    $path = trim(str_replace($basedir, '', $dir), '/');
-                                } else {
-                                    $path = trim(str_replace($basedir, '', $dir . '/' . $info['filename']), '/');
-                                }
+                                $path = trim(str_replace($basedir, '', $dir . '/' . $info['filename']), '/');
 
                                 if (isset($info['extension']))
                                 {
-                                    //Load the page
+                                    /**
+                                     * Variables
+                                     *
+                                     * Calculate the path specific variables
+                                     */
+                                    $format = pathinfo($path, PATHINFO_EXTENSION);
+                                    $slug   = pathinfo($path, PATHINFO_FILENAME);
+                                    $path   = trim(dirname($path), '.');
+
+                                    //Handle index pages
+                                    if($slug == 'index')
+                                    {
+                                        $slug = pathinfo($path, PATHINFO_FILENAME);
+                                        $path = trim(dirname($path), '.');
+                                    }
+
+                                    //Setup the route
+                                    $route = $path ? $path . '/' . $slug : $slug;
+                                    if($format !== 'html') {
+                                        $route .= '.'.$format;
+                                    }
+
+                                    /**
+                                     * Page
+                                     *
+                                     * Load and initialise the page object
+                                     */
                                     $page = (new ComPagesPageObject())->fromFile($file);
 
                                     //Set the path
-                                    $page->path = trim(dirname($path), '.');
+                                    $page->path = $path;
 
                                     //Set the slug
-                                    $page->slug = basename($path, '.html');
+                                    $page->slug = $slug;
+
+                                    //Set the format
+                                    $page->format = $format;
 
                                     //Set the process
                                     if (!$page->process) {
@@ -279,7 +302,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
                                     //Set the route
                                     if (!$page->route) {
-                                        $page->route = $page->path ? $page->path . '/' . $page->slug : $page->slug;
+                                        $page->route = $route;
                                     }
 
                                     //Set the published state (if not set yet)
@@ -313,17 +336,21 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                         }
                                     });
 
-
+                                    /**
+                                     * Cache
+                                     *
+                                     * Inject data into the cache
+                                     */
                                     $file = trim(str_replace($basedir, '', $file), '/');
-                                    $path = $page->path ? $page->path.'/'.$page->slug : $page->slug;
+                                    $path = $route;
 
                                     //Page
                                     $pages[$file] = $page->toArray();
 
-                                    //Route (make exception for index.php)
+                                    //Route
                                     $routes[$path] = (array) KObjectConfig::unbox($page->route);
 
-                                    //File
+                                    //File (make exception for /index.php)
                                     if (strpos($node, 'index') === false) {
                                         $files[$path] = $file;
                                     }

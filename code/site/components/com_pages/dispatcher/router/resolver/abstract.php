@@ -201,7 +201,8 @@ abstract class ComPagesDispatcherRouterResolverAbstract extends KObject implemen
     public function generate($path, array $query, ComPagesDispatcherRouterInterface $router)
     {
         $route  = false;
-        $routes = array_flip(array_reverse($this->__static_routes));
+
+        $routes = array_flip(array_reverse($this->__static_routes, true));
 
         //Check if we have a static route
         if(!isset($routes[$path]))
@@ -319,7 +320,7 @@ abstract class ComPagesDispatcherRouterResolverAbstract extends KObject implemen
         }
 
         //Create the route
-        $route = $this->getObject('http.url', array('url' => $route))
+        $route = $this->getObject('http.url', array('url' => (string) $route))
                 ->setQuery($query);
 
         return $route;

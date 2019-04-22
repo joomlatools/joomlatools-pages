@@ -11,17 +11,18 @@ defined('KOOWA') or die; ?>
 
 <rss version="2.0"
      xmlns:atom="http://www.w3.org/2005/Atom"
-     xmlns:sy="http://purl.org/rss/1.0/modules/syndication/">
+     xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+     xmlns:media="http://search.yahoo.com/mrss/">
 
     <channel>
-        <title><?= translate('Pages') ?> - <?= escape($sitename)?></title>
-        <description><![CDATA[<?= $description ?>]]></description>
-        <link><?= url() ?></link>
-        <? if (!empty($image)): ?>
+        <title><?= page()->title ?></title>
+        <description><?= page()->summary ?></description>
+        <link><?= route(page()->path.'/'.page()->slug) ?></link>
+        <? if (!empty($page->image)): ?>
             <image>
-                <url><?=$image?></url>
-                <title><?= translate('Pages') ?> - <?= escape($sitename)?></title>
-                <link><?= route('format=html') ?></link>
+                <url>baseurl://image://<?= $page->image ?></url>
+                <title><<?= page()->title ?></title>
+                <link><?= route(page()->path.'/'.page()->slug) ?></link>
             </image>
         <? endif; ?>
         <lastBuildDate><?= count(collection()) ? collection()->top()->date->format(DateTime::RSS) : '' ?></lastBuildDate>
@@ -35,14 +36,13 @@ defined('KOOWA') or die; ?>
                 <title><?= escape($page->title); ?></title>
                 <link><?= route($page); ?></link>
                 <guid isPermaLink="true"><?= route($page); ?></guid>
-                <description><![CDATA[
-                 <? if($page->image): ?>
-                    <img width="800" href="<?= $page->image ?>" />
-                 <? endif ?>
-                 <?= $page->content ?>
-                ?>]]></description>
-                <author><?= escape($page->author) ?></author>
-                <category><?= escape($page->category) ?></category>
+                <? if($page->image): ?>
+                    <media:content medium="image" url="baseurl://image://<?= $page->image ?>" />
+                <? endif ?>
+                <description><?=  escape($page->summary) ?></description>
+                <? if($page->category): ?>
+                    <category><?= escape($page->category) ?></category>
+                <? endif; ?>
                 <pubDate><?= $page->date->format(DateTime::RSS) ?></pubDate>
             </item>
         <?endforeach?>
