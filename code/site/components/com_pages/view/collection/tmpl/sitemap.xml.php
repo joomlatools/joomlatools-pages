@@ -14,10 +14,12 @@ defined('KOOWA') or die; ?>
         xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
     <? foreach(collection() as $page): ?>
+    <? if(!$page->metadata->has('robots') || !in_array('noindex', (array) KObjectConfig::unbox($page->metadata->robots))): ?>
     <url>
         <loc><?= route($page) ?></loc>
         <lastmod><?= $page->date->format(DateTime::ATOM) ?></lastmod>
     </url>
+    <? endif; ?>
     <? endforeach ?>
 
 </urlset>

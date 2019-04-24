@@ -40,6 +40,7 @@ class ComPagesControllerAbstract extends KControllerModel
             {
                 if($content)
                 {
+                    $content =  is_array($content) ? implode(', ', $content) : $content;
                     $content =  htmlspecialchars($content, ENT_HTML5 | ENT_SUBSTITUTE, 'UTF-8', false);
 
                     if(strpos($name, 'og:') === 0) {
