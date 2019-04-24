@@ -342,22 +342,19 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                      * Inject data into the cache
                                      */
                                     $file = trim(str_replace($basedir, '', $file), '/');
-                                    $path = $route;
 
                                     //Page
                                     $pages[$file] = $page->toArray();
 
                                     //Route
-                                    $routes[$path] = (array) KObjectConfig::unbox($page->route);
+                                    $routes[$route] = (array) KObjectConfig::unbox($page->route);
 
-                                    //File (make exception for /index.php)
-                                    if (strpos($node, 'index') === false) {
-                                        $files[$path] = $file;
-                                    }
+                                    //File
+                                    $files[$route] = $file;
 
                                     //Collection
                                     if($collection = $page->isCollection()) {
-                                        $collections[$path] = KObjectConfig::unbox($collection);
+                                        $collections[$route] = KObjectConfig::unbox($collection);
                                     }
                                 }
                                 else
