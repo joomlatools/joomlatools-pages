@@ -66,7 +66,7 @@ class ComPagesDispatcherRouterResolverHttp extends ComPagesDispatcherRouterResol
 
         if($url = parent::generate($parts[0], $query, $router))
         {
-            if($parts[1]) {
+            if(isset($parts[1])) {
                 $url->setFragment($parts[1]);
             }
         }
