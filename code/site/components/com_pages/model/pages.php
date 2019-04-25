@@ -21,7 +21,6 @@ class ComPagesModelPages extends ComPagesModelCollection
             //Filter states
             ->insert('visible', 'boolean')
             ->insert('collection', 'boolean')
-            ->insert('sitemap', 'boolean')
             ->insert('category', 'cmd')
             ->insert('year', 'int')
             ->insert('month', 'int')
@@ -113,11 +112,6 @@ class ComPagesModelPages extends ComPagesModelCollection
             if($state->collection === false) {
                 $result = !isset($page['collection']) || $page['collection'] === false;
             }
-        }
-
-        //Sitemap
-        if($result && (bool) $state->sitemap) {
-            $result = (isset($page['sitemap']) && $page['sitemap'] == false) ? false : true;
         }
 
         //Category
