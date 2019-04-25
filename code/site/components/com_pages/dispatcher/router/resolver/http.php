@@ -50,4 +50,27 @@ class ComPagesDispatcherRouterResolverHttp extends ComPagesDispatcherRouterResol
 
         return $route;
     }
+
+    /**
+     * Reversed routing
+     *
+     * Generate the URL for a route. Replace regexes with supplied parameters
+     *
+     * @param string $path The path to generate a route for
+     * @param array @params Associative array of parameters to replace placeholders with.
+     * @return false|KHttpUrl Returns the generated route
+     */
+    public function generate($path, array $query, ComPagesDispatcherRouterInterface $router)
+    {
+        $parts = explode('#', $path, 2);
+
+        if($url = parent::generate($parts[0], $query, $router))
+        {
+            if($parts[1]) {
+                $url->setFragment($parts[1]);
+            }
+        }
+
+        return $url;
+    }
 }
