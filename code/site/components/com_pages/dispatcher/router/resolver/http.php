@@ -62,7 +62,7 @@ class ComPagesDispatcherRouterResolverHttp extends ComPagesDispatcherRouterResol
      */
     public function generate($path, array $query, ComPagesDispatcherRouterInterface $router)
     {
-        $parts = explode('#', $path);
+        $parts = explode('#', $path, 2);
 
         if($url = parent::generate($parts[0], $query, $router))
         {
