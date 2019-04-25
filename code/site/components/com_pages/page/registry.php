@@ -349,10 +349,8 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     //Route
                                     $routes[$route] = (array) KObjectConfig::unbox($page->route);
 
-                                    //File (make exception for /index.php)
-                                    if (strpos($node, 'index') === false) {
-                                        $files[$route] = $file;
-                                    }
+                                    //File
+                                    $files[$route] = $file;
 
                                     //Collection
                                     if($collection = $page->isCollection()) {
