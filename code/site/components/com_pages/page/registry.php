@@ -262,7 +262,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                      *
                                      * Calculate the path specific variables
                                      */
-                                    $format = pathinfo($path, PATHINFO_EXTENSION);
+                                    $format = pathinfo($path, PATHINFO_EXTENSION) ?: $info['extension'];
                                     $slug   = pathinfo($path, PATHINFO_FILENAME);
                                     $path   = trim(dirname($path), '.');
 
