@@ -9,8 +9,8 @@
 
 class ComPagesPageRegistry extends KObject implements KObjectSingleton
 {
-    const PAGES_ONLY = \RecursiveIteratorIterator::LEAVES_ONLY;
     const PAGES_TREE = \RecursiveIteratorIterator::SELF_FIRST;
+    const PAGES_ONLY = \RecursiveIteratorIterator::CHILD_FIRST;
 
     private  $__locator = null;
 
@@ -349,8 +349,10 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     //Route
                                     $routes[$route] = (array) KObjectConfig::unbox($page->route);
 
-                                    //File
-                                    $files[$route] = $file;
+                                    //File (do not include index pages)
+                                    if(strpos($file, '/index') === false) {
+                                        $files[$route] = $file;
+                                    }
 
                                     //Collection
                                     if($collection = $page->isCollection()) {
