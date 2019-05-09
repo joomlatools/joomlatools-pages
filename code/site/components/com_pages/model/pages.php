@@ -59,7 +59,13 @@ class ComPagesModelPages extends ComPagesModelCollection
                 }
                 else
                 {
-                    $pages = array_values($registry->getPages($path, $state->recurse, $state->level - 1));
+                    if($state->recurse) {
+                        $mode = ComPagesPageRegistry::PAGES_ONLY;
+                    } else {
+                        $mode = ComPagesPageRegistry::PAGES_TREE;
+                    }
+
+                    $pages = array_values($registry->getPages($path, $mode, $state->level - 1));
 
                     //Filter the pages
                     $pages = array_filter($pages, function($page) use ($state) {
