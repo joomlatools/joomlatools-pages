@@ -43,6 +43,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                 ],
                 'layout'      => array(),
                 'colllection' => false,
+                'direction'   => 'auto',
             ],
         ]);
 

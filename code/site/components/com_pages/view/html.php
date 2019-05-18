@@ -165,6 +165,16 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
         return $metadata;
     }
 
+    public function getDirection()
+    {
+        $result = '';
+        if($page = $this->getPage()) {
+            $result = $page->direction ? $page->direction :  'auto';
+        }
+
+        return $result;
+    }
+
     public function getRoute($page, $query = array(), $escape = false)
     {
         if(!is_array($query)) {
