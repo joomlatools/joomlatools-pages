@@ -57,6 +57,11 @@ class ComPagesControllerAbstract extends KControllerModel
             if($title = $this->getView()->getTitle()) {
                 JFactory::getDocument()->setTitle($title);
             }
+
+            //Set the direction
+            if($direction = $this->getView()->getDirection()) {
+                JFactory::getDocument()->setDirection($direction);
+            }
         }
     }
 
