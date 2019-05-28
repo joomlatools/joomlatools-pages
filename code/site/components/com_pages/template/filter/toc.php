@@ -35,17 +35,42 @@ class ComPagesTemplateFilterToc extends KTemplateFilterAbstract
     {
         $toc = '';
 
+        //Create attributes array
+        $attributes = array(
+            'min' => $this->getConfig()->min_level,
+            'max' => $this->getConfig()->max_level,
+        );
+
+        /*
+         * Headings
+         */
+
+        $matches = array();
+        if(preg_match_all('#<h(['.$attributes['min'].'-'.$attributes['max'].'])\s*[^>]*>(.+?)</h\1>#is', $text, $headers))
+        {
+            $toc = '<ul id="toc">';
+            foreach($headers[1] as $key => $level)
+            {
+                $content = $headers[2][$key];
+                $id      = $this->_generateId($content);
+
+                $result = '<h'.$level.' id="'.$id.'">'.$content.'</h'.$level.'>';
+                $text   = str_replace($headers[0][$key], $result, $text);
+
+                if($this->getConfig()->anchor->enabled) {
+                    $text .= $this->getTemplate()->helper('behavior.anchor', KObjectConfig::unbox($this->getConfig()->anchor));
+                }
+            }
+        }
+
+        /*
+         * Table of content
+         */
         $matches = array();
         if(preg_match_all('#<ktml:toc\s*([^>]*)>#siU', $text, $matches))
         {
             foreach($matches[0] as $key => $match)
             {
-                //Create attributes array
-                $attributes = array(
-                    'min' => $this->getConfig()->min_level,
-                    'max' => $this->getConfig()->max_level,
-                );
-
                 $attributes = array_merge($attributes, $this->parseAttributes($matches[1][$key]));
 
                 $headers = array();
@@ -57,9 +82,6 @@ class ComPagesTemplateFilterToc extends KTemplateFilterAbstract
                     {
                         $content = $headers[2][$key];
                         $id      = $this->_generateId($content);
-
-                        $result = '<h'.$level.' id="'.$id.'">'.$content.'</h'.$level.'>';
-                        $text   = str_replace($headers[0][$key], $result, $text);
 
                         $toc .= '<li><a href="#'.$id.'">'.$content.'</a>';
 
@@ -83,10 +105,6 @@ class ComPagesTemplateFilterToc extends KTemplateFilterAbstract
                     }
 
                     $toc .= '</ul>';
-
-                    if($this->getConfig()->anchor->enabled) {
-                        $toc .= $this->getTemplate()->helper('behavior.anchor', KObjectConfig::unbox($this->getConfig()->anchor));
-                    }
                 }
 
                 //Remove the <khtml:toc> tags
