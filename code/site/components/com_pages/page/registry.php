@@ -222,8 +222,8 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             //Create the data
             $iterate = function ($dir) use (&$iterate, $basedir, &$pages, &$routes, &$collections)
             {
+                $order = false;
                 $nodes = array();
-                $order = array();
                 $files = array();
 
                 //Only include pages
@@ -232,15 +232,20 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     //List
                     foreach (new DirectoryIterator($dir) as $node)
                     {
-                        if (strpos($node->getFilename(), '.order.') !== false) {
+                        if (strpos($node->getFilename(), '.order.') !== false && !is_array($order)) {
                             $order = $this->getObject('object.config.factory')->fromFile((string)$node->getFileInfo(), false);
                         } else {
                             $nodes[] = $node->getFilename();
                         }
                     }
 
-                    //Remove files that don't exist from ordering (to prevent loops)
-                    $nodes = array_merge(array_intersect($order, $nodes), $nodes);
+                    if(is_array($order)) {
+                        //Remove files that don't exist from ordering (to prevent loops)
+                        $nodes = array_merge(array_intersect($order, $nodes), $nodes);
+                    } else {
+                        //Order the files alphabetically
+                        natsort($nodes);
+                    }
 
                     //Prevent duplicates
                     if ($nodes = array_unique($nodes))
