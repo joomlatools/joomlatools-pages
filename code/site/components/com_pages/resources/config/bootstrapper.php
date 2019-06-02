@@ -8,11 +8,11 @@
  */
 
 $config = array();
-if(file_exists(Koowa::getInstance()->getRootPath().'/joomlatools-pages/config.php')) {
-    $config = (array) include Koowa::getInstance()->getRootPath().'/joomlatools-pages/config.php';
+if(file_exists(JPATH_CONFIGURATION.'/configuration-pages.php')) {
+    $config = (array) include JPATH_CONFIGURATION.'/configuration-pages.php';
 }
 
-return array(
+return [
 
     'priority' => KObjectBootstrapper::PRIORITY_HIGH,
     'aliases' => [
@@ -26,17 +26,6 @@ return array(
     ],
 
     'identifiers' => [
-        'page.registry' => [
-            'cache'       => $config['page_cache'] ?? (JDEBUG ? false : true),
-            'cache_time'  => $config['page_cache_time'] ?? 60*60*24, //1d
-            'cache_path'  => $config['page_cache_path'] ?? null,
-            'collections' => $config['collections'] ?? array(),
-        ],
-        'data.registry' => [
-            'cache'      => $config['data_cache'] ?? (JDEBUG ? false : true),
-            'cache_time' => $config['data_cache_time'] ?? 60*60*24, //1d
-            'cache_path' => $config['data_cache_path'] ?? null
-        ],
         'object.config.factory' => [
             'formats' => ['md' => 'ComPagesObjectConfigMarkdown']
         ],
@@ -48,8 +37,6 @@ return array(
             ]
         ],
         'template.engine.factory' => [
-            'cache'      => $config['template_cache'] ?? (JDEBUG ? false : true),
-            'cache_path' => $config['template_cache_path'] ?? JPATH_ADMINISTRATOR.'/cache/koowa.templates',
             'engines' => [
                 'lib:template.engine.markdown',
             ]
@@ -69,24 +56,8 @@ return array(
                 return (new \Highlight\Highlighter())->highlight($language, $source, false)->value;
             }
         ],
-        'com://site/pages.dispatcher.behavior.cacheable' => [
-            'cache'             => $config['http_cache'] ?? false,
-            'cache_path'        => $config['http_cache_path'] ?? null,
-            'cache_time'        => $config['http_cache_time']       ?? 60*15,  //15min
-            'cache_time_shared' => $config['http_cache_time_proxy'] ?? 60*60*2, //2h
-        ],
-        'com://site/pages.dispatcher.router.resolver.redirect' => [
-            'routes'  => isset($config['redirects']) ? array_flip($config['redirects']) : false,
-        ],
-        'com://site/pages.data.client' => [
-            'cache'      => $config['remote_cache'] ?? (JDEBUG ? false : true),
-            'cache_time' => $config['remote_cache_time'] ?? 60*60*24, //1d
-            'cache_path' => $config['remote_cache_path'] ?? null
-        ],
-        'com://site/pages.model.entity.page' => [
-            'data' => [
-                'metadata' => $config['metadata'] ?? array(),
-            ]
+        'com://site/pages.dispatcher.router.resolver.site' => [
+            'routes'  => isset($config['sites']) ? array_flip($config['sites']) : array(JPATH_ROOT.'/joomlatools-pages' => '[*]'),
         ],
     ]
-);
+];

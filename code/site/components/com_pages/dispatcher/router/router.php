@@ -20,7 +20,7 @@ class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract implemen
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'resolvers'  => array('page'),
+            'resolvers'  => array('site', 'page'),
         ));
 
         parent::_initialize($config);
