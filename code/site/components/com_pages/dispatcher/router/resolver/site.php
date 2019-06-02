@@ -50,6 +50,24 @@ class ComPagesDispatcherRouterResolverSite extends ComPagesDispatcherRouterResol
             //Configure redirect resolver
             /*$routes = $this->getObject('page.registry')->getRedirects();
             $router->getResolver('redirect')->addRoutes($routes);*/
+
+            //Configure the template
+            if($config['template'])
+            {
+                if($config['template']) {
+                    $template = $config['template'];
+                } else {
+                    $template = JFactory::getApplication()->getTemplate();
+                }
+
+                if(isset($config['template_config']) && is_array($config['template_config'])) {
+                    $params = $config['template_config'];
+                } else {
+                    $params = null;
+                }
+
+                JFactory::getApplication()->setTemplate($template, $params);
+            }
         }
 
         return false;
