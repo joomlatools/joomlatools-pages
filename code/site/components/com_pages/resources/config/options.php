@@ -13,19 +13,19 @@ return [
         'page.registry' => [
             'cache'       => $config['page_cache'] ?? (JDEBUG ? false : true),
             'cache_time'  => $config['page_cache_time'] ?? 60*60*24, //1d
-            'cache_path'  => $config['page_cache_path'] ?? $config['base_path'].'/cache',
+            'cache_path'  => $config['page_cache_path'] ?? $base_path.'/cache',
             'collections' => $config['collections'] ?? array(),
         ],
         'com:pages.page.locator' => [
-            'base_path' => $config['base_path'] ? $config['base_path'] : null
+            'base_path' => $base_path
         ],
         'data.registry' => [
             'cache'      => $config['data_cache'] ?? (JDEBUG ? false : true),
             'cache_time' => $config['data_cache_time'] ?? 60*60*24, //1d
-            'cache_path' => $config['data_cache_path'] ?? $config['base_path'].'/cache',
+            'cache_path' => $config['data_cache_path'] ?? $base_path.'/cache',
         ],
         'com:/pages.data.locator' => [
-            'base_path' => $config['base_path'] ? $config['base_path'].'/data' : null
+            'base_path' => $base_path.'/data'
          ],
         'template.engine.factory' => [
             'cache'      => $config['template_cache'] ?? (JDEBUG ? false : true),
@@ -33,7 +33,7 @@ return [
         ],
         'com://site/pages.dispatcher.behavior.cacheable' => [
             'cache'             => $config['http_cache'] ?? false,
-            'cache_path'        => $config['http_cache_path'] ?? $config['base_path'].'/cache',
+            'cache_path'        => $config['http_cache_path'] ?? $base_path.'/cache',
             'cache_time'        => $config['http_cache_time']       ?? 60*15,  //15min
             'cache_time_shared' => $config['http_cache_time_proxy'] ?? 60*60*2, //2h
         ],
@@ -43,7 +43,7 @@ return [
         'com://site/pages.data.client' => [
             'cache'      => $config['remote_cache'] ?? (JDEBUG ? false : true),
             'cache_time' => $config['remote_cache_time'] ?? 60*60*24, //1d
-            'cache_path' => $config['remote_cache_path'] ?? $config['base_path'].'/cache',
+            'cache_path' => $config['remote_cache_path'] ??  $base_path.'/cache',
         ],
         'com://site/pages.model.entity.page' => [
             'data' => [
