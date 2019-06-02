@@ -30,6 +30,7 @@ class ComPagesDispatcherRouterResolverSite extends ComPagesDispatcherRouterResol
             $path = $route->getPath();
             $file = $path.'/config.php';
 
+            //Configure object manager
             if(file_exists($file))
             {
                 $config = $this->getObject('object.config.factory')->fromFile($file, false);
