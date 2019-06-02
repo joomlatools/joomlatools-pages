@@ -12,7 +12,7 @@ if(file_exists(JPATH_CONFIGURATION.'/configuration-pages.php')) {
     $config = (array) include JPATH_CONFIGURATION.'/configuration-pages.php';
 }
 
-return [
+$default = [
 
     'priority' => KObjectBootstrapper::PRIORITY_HIGH,
     'aliases' => [
@@ -61,3 +61,5 @@ return [
         ],
     ]
 ];
+
+return array_merge_recursive($default, $config);
