@@ -100,6 +100,21 @@ abstract class ComPagesDispatcherRouterResolverAbstract extends KObject implemen
         return $this->_priority;
     }
 
+    /*
+     * Get the path to be resolved
+     *
+     *  @param ComPagesDispatcherRouterInterface $router
+     * @return string
+     */
+    public function getPath(ComPagesDispatcherRouterInterface $router)
+    {
+        $request = $router->getResponse()->getRequest();
+        $base    = $request->getBasePath();
+        $url     = urldecode($request->getUrl()->getPath());
+
+        return trim(str_replace(array($base, '/index.php'), '', $url), '/');
+    }
+
     /**
      * Add a route for matching
      *
@@ -110,7 +125,7 @@ abstract class ComPagesDispatcherRouterResolverAbstract extends KObject implemen
     public function addRoute($route, $path)
     {
         $route = trim($route, '/');
-        $path  = trim($path, '/');
+        $path  = rtrim($path, '/');
 
         if(strpos($route, '[') !== false) {
             $this->__dynamic_routes[$route] = $path;
@@ -155,7 +170,7 @@ abstract class ComPagesDispatcherRouterResolverAbstract extends KObject implemen
         $query = array();
         $match = false;
 
-        $path = $router->getPath();
+        $path = $this->getPath($router);
 
         //Check if we have a static route
         if(!isset($this->__static_routes[$path]))
