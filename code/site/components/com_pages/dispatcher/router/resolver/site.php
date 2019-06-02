@@ -27,7 +27,21 @@ class ComPagesDispatcherRouterResolverSite extends ComPagesDispatcherRouterResol
     {
         if($route = parent::resolve($router))
         {
-            $this->getObject('com:pages.object.manager.options', array('path' => $route->getPath()))->configure();
+            $path = $route->getPath();
+            $file = $path.'/config.php';
+
+            if(file_exists($file))
+            {
+                $config = $this->getObject('object.config.factory')->fromFile($file, false);
+                $config['base_path'] = $path;
+
+                $path    = $this->getObject('object.bootstrapper')->getComponentPath('pages');
+                $options = include $path.'/resources/config/options.php';
+
+                foreach($options['identifiers'] as $identifier => $values) {
+                    $this->getConfig($identifier)->merge($values);
+                }
+            }
 
             //Configure page resolver
             $routes = $this->getObject('page.registry')->getRoutes();
