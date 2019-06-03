@@ -32,10 +32,17 @@ class ComPagesDispatcherRouterResolverSite extends ComPagesDispatcherRouterResol
             //Configure object manager
             if(file_exists($file))
             {
-                $config    = $this->getObject('object.config.factory')->fromFile($file, false);
-                $base_path = $route->getPath();
+                $config = $this->getObject('object.config.factory')->fromFile($file, false);
 
-                $path    = $this->getObject('object.bootstrapper')->getComponentPath('pages');
+                if(file_exists(JPATH_CONFIGURATION.'/configuration-pages.php'))
+                {
+                    $default = (array) include JPATH_CONFIGURATION.'/configuration-pages.php';
+                    $config = array_merge_recursive($default, $config);
+                }
+
+                $base_path = $route->getPath();
+                $path      = $this->getObject('object.bootstrapper')->getComponentPath('pages');
+
                 $options = include $path.'/resources/config/options.php';
 
                 foreach($options['identifiers'] as $identifier => $values) {
@@ -43,13 +50,18 @@ class ComPagesDispatcherRouterResolverSite extends ComPagesDispatcherRouterResol
                 }
             }
 
-            //Configure page resolver
+            //Set the page routes
             $routes = $this->getObject('page.registry')->getRoutes();
             $router->getResolver('page')->addRoutes($routes);
 
-            //Configure redirect resolver
+            //Set the redirect routes
             /*$routes = $this->getObject('page.registry')->getRedirects();
             $router->getResolver('redirect')->addRoutes($routes);*/
+
+            //Add the cacheable behavior, if http cache is enabled
+            if($config['http_cache']) {
+                $this->getObject('dispatcher')->addBehavior('cacheable');
+            }
 
             //Configure the template
             if($config['template'])

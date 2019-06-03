@@ -15,17 +15,13 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
         $this->getObject('event.publisher')
             ->addListener('onAfterApplicationRespond', array($this, 'onAfterApplicationRespond'));
-
-        if(empty($config->cache_path)) {
-            $config->cache_path = Koowa::getInstance()->getRootPath().'/joomlatools-pages/cache';
-        }
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
             'cache'      => false,
-            'cache_path' => '',
+            'cache_path' =>  Koowa::getInstance()->getRootPath().'/joomlatools-pages/cache',
             'cache_time'        => 60*15,   //15min
             'cache_time_shared' => 60*60*2, //2h
         ));

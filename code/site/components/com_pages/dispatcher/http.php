@@ -21,7 +21,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'behaviors' => ['cacheable'],
+            //'behaviors' => ['cacheable'],  Injected by ComPagesDispatcherRouterResolverSite
             'router'    => 'com://site/pages.dispatcher.router',
         ]);
 
