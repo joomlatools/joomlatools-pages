@@ -24,7 +24,7 @@ return [
             'cache_time' => $config['data_cache_time'] ?? 60*60*24, //1d
             'cache_path' => $config['data_cache_path'] ?? $base_path.'/cache',
         ],
-        'com:/pages.data.locator' => [
+        'com:pages.data.locator' => [
             'base_path' => $base_path.'/data'
          ],
         'template.engine.factory' => [
