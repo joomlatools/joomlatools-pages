@@ -33,6 +33,13 @@ interface ComPagesDispatcherRouterResolverInterface
      */
     public function getPriority();
 
+    /*
+    * Get the path to be resolved
+    *
+    * @return string
+    */
+    public function getPath(ComPagesDispatcherRouterInterface $router);
+
     /**
      * Add a route for matching
      *

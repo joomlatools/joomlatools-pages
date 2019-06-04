@@ -12,35 +12,19 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
     private $__data    = array();
     private $__locator = null;
 
-    protected $_cache;
-    protected $_cache_path;
-    protected $_cache_time;
-
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
 
         //Create the locator
         $this->__locator = $this->getObject('com:pages.data.locator');
-
-        //Set the cache
-        $this->_cache = $config->cache;
-
-        //Set the cache time
-        $this->_cache_time = $config->cache_time;
-
-        if(empty($config->cache_path)) {
-            $this->_cache_path = Koowa::getInstance()->getRootPath().'/joomlatools-pages/cache';
-        } else {
-            $this->_cache_path = $config->cache_path;
-        }
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
             'cache'      => JDEBUG ? false : true,
-            'cache_path' => '',
+            'cache_path'  => Koowa::getInstance()->getRootPath().'/joomlatools-pages/cache',
             'cache_time' => 60*60*24 //1 day
         ]);
 
@@ -177,7 +161,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
 
     public function buildCache()
     {
-        if($this->_cache)
+        if($this->getConfig()->cache)
         {
             $basedir = $this->getLocator()->getBasePath();
 
@@ -213,9 +197,9 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
 
     public function storeCache($file, $data)
     {
-        if($this->_cache)
+        if($this->getConfig()->cache)
         {
-            $path = $this->_cache_path;
+            $path = $this->getConfig()->cache_path;
 
             if(!is_dir($path) && (false === @mkdir($path, 0755, true) && !is_dir($path))) {
                 throw new RuntimeException(sprintf('The data cache path "%s" does not exist', $path));
@@ -232,7 +216,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
             }
 
             $hash = crc32($file.PHP_VERSION);
-            $file  = $this->_cache_path.'/data_'.$hash.'.php';
+            $file  = $this->getConfig()->cache_path.'/data_'.$hash.'.php';
 
             if(@file_put_contents($file, $result) === false) {
                 throw new RuntimeException(sprintf('The data cannot be cached in "%s"', $file));
@@ -251,16 +235,16 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
     {
         $result = false;
 
-        if($this->_cache)
+        if($this->getConfig()->cache)
         {
             $hash   = crc32($file.PHP_VERSION);
-            $cache  = $this->_cache_path.'/data_'.$hash.'.php';
+            $cache  = $this->getConfig()->cache_path.'/data_'.$hash.'.php';
             $result = is_file($cache) ? $cache : false;
 
             if($result && file_exists($file))
             {
                 //Refresh cache if the file has changed or if the cache expired
-                if((filemtime($cache) < filemtime($file)) || ((time() - filemtime($cache)) > $this->_cache_time)) {
+                if((filemtime($cache) < filemtime($file)) || ((time() - filemtime($cache)) > $this->getConfig()->cache_time)) {
                     $result = false;
                 }
             }

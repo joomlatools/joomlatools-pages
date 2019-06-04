@@ -21,7 +21,7 @@ class ComPagesModelBehaviorSearchable extends ComPagesModelBehaviorQueryable
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'columns' => 'element',
+            'columns' => '',
         ));
 
         parent::_initialize($config);

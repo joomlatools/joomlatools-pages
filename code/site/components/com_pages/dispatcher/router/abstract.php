@@ -118,26 +118,6 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
     }
 
     /**
-     * Get the request path
-     *
-     * @return string
-     */
-    public function getPath()
-    {
-        $request = $this->getResponse()->getRequest();
-        $base    = $request->getBasePath();
-        $url     = urldecode($request->getUrl()->getPath());
-        $format  = $request->getFormat();
-
-        //Append the format
-        if($format !== 'html' && strpos($url,  '.'.$format) == false ) {
-            $url .= '.'.$format;
-        }
-
-        return trim(str_replace(array($base, '/index.php'), '', $url), '/');
-    }
-
-    /**
      * Get the canonical url
      *
      *  If no canonical url is set return the request url

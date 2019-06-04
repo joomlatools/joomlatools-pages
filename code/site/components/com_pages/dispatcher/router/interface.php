@@ -34,13 +34,6 @@ interface ComPagesDispatcherRouterInterface
     public function generate($path, array $query = array());
 
     /**
-     * Get the request path
-     *
-     * @return string
-     */
-    public function getPath();
-
-    /**
      * Qualify a url
      *
      * Replace the url authority with the authority of the request url

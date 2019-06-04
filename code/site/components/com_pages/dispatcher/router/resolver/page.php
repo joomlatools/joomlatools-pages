@@ -13,10 +13,22 @@ class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResol
     {
         $config->append(array(
             'priority' => self::PRIORITY_NORMAL,
-            'routes'   => $this->getObject('page.registry')->getRoutes()
         ));
 
         parent::_initialize($config);
+    }
+
+    public function getPath(ComPagesDispatcherRouterInterface $router)
+    {
+        $path   = parent::getPath($router);
+        $format = $router->getResponse()->getRequest()->getFormat();
+
+        //Append the format
+        if($format !== 'html' && strpos($path,  '.'.$format) == false ) {
+            $path .= '.'.$format;
+        }
+
+        return $path;
     }
 
     public function resolve(ComPagesDispatcherRouterInterface $router)
