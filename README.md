@@ -1,18 +1,14 @@
 # Joomlatools Pages
 
-## What is Joomlatools Pages?
-
 Joomlatools Pages is a simple, static content generator for **[Joomla](http://www.joomla.org)**. It's inspired by the ideas 
 and concepts of flat-file CMS systems like [Jekhyll]( https://jekyllrb.com), [Grav](https://getgrav.org/), etc. Pages takes 
 your html content or renders Markdown, Twig, Joomla templates, ... spits out the result and injects it in your site.
 
-## Why Joomlatools Pages?
+#### Why Joomlatools Pages?
 
-At Joomlatools we often need to include static content into a Joomla site, using articles for this is cumbersome and comes 
-with many challenges, developing a custom component would be too much overhead. Pages solves this in an elegant and 
-simple way, and not to mention it's super fast too!
+For the rebuild of Joomlatools.com we needed a solution that allowed us to easily include static content into the site. Using Joomla modules would make the site very hard to manage and comes with many challenges. Pages solves this in an elegant and simple way, and not to mention it's super fast too!
 
-## Who is Joomlatools Pages for?
+#### Who is Joomlatools Pages for?
 
 Joomlatools Pages is for website developers and designers who create bespoke Joomla sites and have experience with html, 
 markdown, etc.
