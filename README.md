@@ -6,7 +6,7 @@ your html content or renders Markdown, Twig, Joomla templates, ... spits out the
 
 ### Why Joomlatools Pages?
 
-For the rebuild of Joomlatools.com we needed a solution that allowed us to easily include static content into the site. Using Joomla modules would make the site very hard to manage and comes with many challenges. Pages solves this in an elegant and simple way, and not to mention it's super fast too!
+For the rebuild of [Joomlatools.com](http://joomlatools.test/blog/services/introducing-our-brand-new-website) we needed a solution that allowed us to easily include and update static content into our site. Using Joomla modules would make the site very hard to manage. Pages solves this in an elegant and  simple way, and not to mention it's super fast too!
 
 ### Who is Joomlatools Pages for?
 
