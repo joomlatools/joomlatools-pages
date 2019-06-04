@@ -64,21 +64,25 @@ class ComPagesDispatcherRouterResolverSite extends ComPagesDispatcherRouterResol
             }
 
             //Configure the template
-            if($config['template'])
+            if(isset($config['template']) || isset($config['template_config']))
             {
-                if($config['template']) {
-                    $template = $config['template'];
-                } else {
-                    $template = JFactory::getApplication()->getTemplate();
-                }
+                if(isset($config['template']) && $config['template'] != false)
+                {
+                    if(isset($config['template'])) {
+                        $template = $config['template'];
+                    } else {
+                        $template = JFactory::getApplication()->getTemplate();
+                    }
 
-                if(isset($config['template_config']) && is_array($config['template_config'])) {
-                    $params = $config['template_config'];
-                } else {
-                    $params = null;
-                }
+                    if(isset($config['template_config']) && is_array($config['template_config'])) {
+                        $params = $config['template_config'];
+                    } else {
+                        $params = null;
+                    }
 
-                JFactory::getApplication()->setTemplate($template, $params);
+                    JFactory::getApplication()->setTemplate($template, $params);
+                }
+                else $router->getResponse()->getRequest()->headers->set('X-Flush-Response', 1);
             }
         }
 
