@@ -33,6 +33,10 @@ composer require joomlatools/pages --ignore-platform-reqs
 Note: You need to use the --ignore-platform-reqs flag if not the installation will fail due to a mismatch in the platform
 constraint. Joomla's requires PHP 5.3.10 as minimum while Joomlatools Pages is set to minimum PHP7
 
+## Documentation
+
+You can find all the documentation for Joomlatools Pages [in the wiki](https://github.com/joomlatools/joomlatools-pages/wiki). Happy coding!
+
 ## Contributing
 
 Joomlatools Pages is an open source, community-driven project. Contributions are welcome from everyone. 
