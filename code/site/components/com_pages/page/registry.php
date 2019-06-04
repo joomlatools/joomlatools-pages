@@ -17,6 +17,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     private $__pages  = array();
     private $__data   = null;
     private $__collections = array();
+    private $__redirects   = array();
 
     public function __construct(KObjectConfig $config)
     {
@@ -31,6 +32,9 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
         //Set the collection
         $this->__collections = array_merge(KObjectConfig::unbox($config->collections), $this->__data['collections']);
+
+        //Set the redirects
+        $this->__redirects = array_merge(KObjectConfig::unbox($config->redirects), $this->__data['redirects']);
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -40,6 +44,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             'cache_path'  => Koowa::getInstance()->getRootPath().'/joomlatools-pages/cache',
             'cache_time'  => 60*60*24, //1 day
             'collections' => array(),
+            'redirects'   => array(),
         ]);
 
         parent::_initialize($config);
@@ -64,6 +69,11 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         }
 
         return $result;
+    }
+
+    public function getRedirects()
+    {
+        return $this->__redirects;
     }
 
     public function getPages($path = '', $mode = self::PAGES_ONLY, $depth = -1)
@@ -202,9 +212,10 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             $pages       = array();
             $routes      = array();
             $collections = array();
+            $redirects   = array();
 
             //Create the data
-            $iterate = function ($dir) use (&$iterate, $basedir, &$pages, &$routes, &$collections)
+            $iterate = function ($dir) use (&$iterate, $basedir, &$pages, &$routes, &$collections, &$redirects)
             {
                 $order = false;
                 $nodes = array();
@@ -347,6 +358,11 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     if($collection = $page->isCollection()) {
                                         $collections[$route] = KObjectConfig::unbox($collection);
                                     }
+
+                                    //Redirects
+                                    if($page->redirect) {
+                                        $redirects[$route] = $page->redirect;
+                                    }
                                 }
                                 else
                                 {
@@ -370,6 +386,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             $result['pages']       = $pages;
             $result['routes']      = $routes;
             $result['collections'] = $collections;
+            $result['redirects']   = array_flip($redirects);
 
             $this->storeCache($basedir, $result);
 

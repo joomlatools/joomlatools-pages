@@ -15,6 +15,7 @@ return [
             'cache_time'  => $config['page_cache_time'] ?? 60*60*24, //1d
             'cache_path'  => $config['page_cache_path'] ?? $base_path.'/cache',
             'collections' => $config['collections'] ?? array(),
+            'redirects'   => isset($config['redirects']) ? array_flip($config['redirects']) : array(),
         ],
         'com:pages.page.locator' => [
             'base_path' => $base_path
@@ -36,9 +37,6 @@ return [
             'cache_path'        => $config['http_cache_path'] ?? $base_path.'/cache',
             'cache_time'        => $config['http_cache_time']       ?? 60*15,  //15min
             'cache_time_shared' => $config['http_cache_time_proxy'] ?? 60*60*2, //2h
-        ],
-        'com://site/pages.dispatcher.router.resolver.redirect' => [
-            'routes'  => isset($config['redirects']) ? array_flip($config['redirects']) : array(),
         ],
         'com://site/pages.data.client' => [
             'cache'      => $config['remote_cache'] ?? (JDEBUG ? false : true),

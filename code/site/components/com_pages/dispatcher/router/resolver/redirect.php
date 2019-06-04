@@ -15,6 +15,15 @@
  */
 class ComPagesDispatcherRouterResolverRedirect extends ComPagesDispatcherRouterResolverAbstract
 {
+    protected function _initialize(KObjectConfig $config)
+    {
+        $config->append(array(
+            'priority' => self::PRIORITY_HIGH,
+        ));
+
+        parent::_initialize($config);
+    }
+
     /**
      * Resolve the request
      *

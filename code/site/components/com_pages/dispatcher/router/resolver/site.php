@@ -12,7 +12,7 @@ class ComPagesDispatcherRouterResolverSite extends ComPagesDispatcherRouterResol
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'priority' => self::PRIORITY_HIGH,
+            'priority' => self::PRIORITY_HIGHEST,
         ));
 
         parent::_initialize($config);
@@ -55,8 +55,8 @@ class ComPagesDispatcherRouterResolverSite extends ComPagesDispatcherRouterResol
             $router->getResolver('page')->addRoutes($routes);
 
             //Set the redirect routes
-            /*$routes = $this->getObject('page.registry')->getRedirects();
-            $router->getResolver('redirect')->addRoutes($routes);*/
+            $routes = $this->getObject('page.registry')->getRedirects();
+            $router->getResolver('redirect')->addRoutes($routes);
 
             //Add the cacheable behavior, if http cache is enabled
             if($config['http_cache']) {

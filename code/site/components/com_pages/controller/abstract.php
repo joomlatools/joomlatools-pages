@@ -12,8 +12,7 @@ class ComPagesControllerAbstract extends KControllerModel
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'model'     => 'pages',
-            'behaviors' => ['redirectable'],
+            'model' => 'pages',
         ]);
 
         parent::_initialize($config);
