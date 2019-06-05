@@ -59,7 +59,7 @@ class ComPagesDispatcherRouterResolverSite extends ComPagesDispatcherRouterResol
             $router->getResolver('redirect')->addRoutes($routes);
 
             //Add the cacheable behavior, if http cache is enabled
-            if($config['http_cache']) {
+            if(isset($config['http_cache']) && $config['http_cache']) {
                 $this->getObject('dispatcher')->addBehavior('cacheable');
             }
 
