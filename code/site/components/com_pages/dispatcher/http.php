@@ -62,7 +62,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
         //Send redirect 
         if($context->response->isRedirect()) {
-            $this->redirect($route);
+            $this->send($route);
         }
 
         //Get the page from the router
