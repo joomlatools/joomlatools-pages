@@ -52,7 +52,7 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
            if($path = $this->getPath($this->getState()->getValues()))
            {
                if(strpos($path, 'data://') === 0) {
-                   $this->_data = $this->getObject('data.registry')->getData((string)$path, false);
+                   $this->_data = $this->getObject('data.registry')->getData(str_replace('data://', '', (string)$path), false);
                } else {
                    $this->_data = $this->getObject('object.config.factory')->fromFile($path, false);
                }
