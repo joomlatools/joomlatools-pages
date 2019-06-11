@@ -11,15 +11,19 @@ class ComPagesTemplateHelperPaginator extends KTemplateHelperPaginator
 {
     public function pagination($config = array())
     {
+        $html = '';
+
         //If the limit is hardcoded in the collection dont allow it to be changed.
         if($collection = $this->getTemplate()->page()->collection)
         {
             if($collection->state->limit) {
                 $config['show_limit'] = false;
             }
+
+            $html = parent::pagination($config);
         }
 
-        return parent::pagination($config);
+        return $html;
     }
 
     protected function _link($page, $title)
