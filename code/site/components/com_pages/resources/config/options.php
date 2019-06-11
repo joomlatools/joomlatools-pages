@@ -30,7 +30,7 @@ return [
          ],
         'template.engine.factory' => [
             'cache'      => $config['template_cache'] ?? (JDEBUG ? false : true),
-            'cache_path' => $config['template_cache_path'] ?? JPATH_ADMINISTRATOR.'/cache/koowa.templates',
+            'cache_path' => $config['template_cache_path'] ?? $base_path.'/cache',
         ],
         'com://site/pages.dispatcher.behavior.cacheable' => [
             'cache'             => $config['http_cache'] ?? false,
