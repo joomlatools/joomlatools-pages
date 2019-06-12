@@ -145,33 +145,35 @@ class ComPagesTemplateDefault extends KTemplate
 
     protected function _createAttribute($name, $value)
     {
-        $result = '';
-
-        if($value)
-        {
-            if(is_array($value)) {
-                $value = implode(' ', $value);
-            }
-
-            $result = ' '.$name.'="'.$value.'"';
-        }
-
-        return $result;
+        return $this->_createAttributes($name, $value);
     }
 
-    protected function _createAttributes($array)
+    protected function _createAttributes($name, $value = null)
     {
-        $output = array();
+        $result = '';
 
-        if($array instanceof KObjectConfig) {
-            $array = KObjectConfig::unbox($array);
+        if(!is_array($name) && $value) {
+            $name = array($name => $value);
         }
 
-        if(is_array($array))
+        if($name instanceof KObjectConfig) {
+            $name = KObjectConfig::unbox($name);
+        }
+
+        if(is_array($name))
         {
-            foreach($array as $key => $item)
+            $output = array();
+            foreach($name as $key => $item)
             {
-                if(is_array($item)) {
+                if(is_array($item))
+                {
+                    foreach($item as $k => $v)
+                    {
+                        if(empty($v)) {
+                            unset($item[$k]);
+                        }
+                    }
+
                     $item = implode(' ', $item);
                 }
 
@@ -183,9 +185,11 @@ class ComPagesTemplateDefault extends KTemplate
 
                 $output[] = $key.'="'.str_replace('"', '&quot;', $item).'"';
             }
+
+            $result = ' '.implode(' ', $output);
         }
 
-        return implode(' ', $output);
+        return $result;
     }
 
     protected function _fetchData($path)
