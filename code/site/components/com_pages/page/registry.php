@@ -222,7 +222,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 $files = array();
 
                 //Only include pages
-                if(is_dir($dir) && !empty(glob($dir.'/index*')))
+                if(is_dir($dir) && !file_exists($dir.'/.ignore'))
                 {
                     //List
                     foreach (new DirectoryIterator($dir) as $node)
