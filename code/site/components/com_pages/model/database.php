@@ -28,8 +28,7 @@ class ComPagesModelDatabase extends ComPagesModelCollection
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'table'        => '',
-            'identity_key' => null
+            'table'  => '',
         ));
 
         parent::_initialize($config);

@@ -33,7 +33,6 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
                 'com:pages.model.behavior.sortable',
                 'com:pages.model.behavior.searchable'
             ],
-            'identity_key' => 'id',
         ]);
 
         parent::_initialize($config);
