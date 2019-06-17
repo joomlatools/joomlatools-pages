@@ -143,11 +143,6 @@ class ComPagesTemplateDefault extends KTemplate
         return $this->getObject('filter.factory')->createFilter('slug')->sanitize($string);
     }
 
-    protected function _createAttribute($name, $value)
-    {
-        return $this->_createAttributes($name, $value);
-    }
-
     protected function _createAttributes($name, $value = null)
     {
         $result = '';
