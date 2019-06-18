@@ -7,18 +7,19 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesViewHtml extends ComKoowaViewPageHtml
+class ComPagesViewHtml extends ComKoowaViewHtml
 {
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
             'auto_fetch'  => false,
-            'decorator'   => 'joomla',
-            'template_filters' => ['asset'], //Redefine asset to run before the script filter
+            'template_filters' => ['asset', 'meta'], //Redefine asset to run before the script filter
             'template_functions' => [
                 'page'        => [$this, 'getPage'],
                 'collection'  => [$this, 'getCollection'],
-                'state'       => [$this, 'getState']
+                'state'       => [$this, 'getState'],
+                'direction'   => [$this, 'getDirection'],
+                'language'    => [$this, 'getLanguage'],
             ],
         ]);
 
@@ -140,31 +141,6 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
         return $result;
     }
 
-    public function getMetadata()
-    {
-        $metadata = array();
-        if($page = $this->getPage())
-        {
-            if($page->metadata)
-            {
-                $metadata = KObjectConfig::unbox($page->metadata);
-
-                if($page->metadata->has('og:type'))
-                {
-                    if(strpos($metadata['og:image'], 'http') === false) {
-                        $metadata['og:image'] = rtrim($this->getObject('request')->getBaseUrl(), '/').'/'.ltrim($metadata['og:image'], '/');
-                    }
-
-                    if(!$metadata['og:url']) {
-                        $metadata['og:url'] = (string) $this->getRoute($page);
-                    }
-                }
-            }
-        }
-
-        return $metadata;
-    }
-
     public function getDirection()
     {
         $result = '';
@@ -173,6 +149,11 @@ class ComPagesViewHtml extends ComKoowaViewPageHtml
         }
 
         return $result;
+    }
+
+    public function getLanguage()
+    {
+        return JFactory::getDocument()->language ?? 'en-GB';
     }
 
     public function getRoute($page, $query = array(), $escape = false)

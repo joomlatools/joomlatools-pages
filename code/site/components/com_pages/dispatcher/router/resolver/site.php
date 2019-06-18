@@ -43,8 +43,10 @@ class ComPagesDispatcherRouterResolverSite extends ComPagesDispatcherRouterResol
                 $base_path = $route->getPath();
                 $path      = $this->getObject('object.bootstrapper')->getComponentPath('pages');
 
+                //Load config options
                 $options = include $path.'/resources/config/options.php';
 
+                //Set config options
                 foreach($options['identifiers'] as $identifier => $values) {
                     $this->getConfig($identifier)->merge($values);
                 }
@@ -66,7 +68,7 @@ class ComPagesDispatcherRouterResolverSite extends ComPagesDispatcherRouterResol
             //Configure the template
             if(isset($config['template']) || isset($config['template_config']))
             {
-                if(isset($config['template']) && $config['template'] != false)
+                if(isset($config['template']))
                 {
                     if(isset($config['template'])) {
                         $template = $config['template'];
@@ -82,7 +84,6 @@ class ComPagesDispatcherRouterResolverSite extends ComPagesDispatcherRouterResol
 
                     JFactory::getApplication()->setTemplate($template, $params);
                 }
-                else $router->getResponse()->getRequest()->headers->set('X-Flush-Response', 1);
             }
         }
 
