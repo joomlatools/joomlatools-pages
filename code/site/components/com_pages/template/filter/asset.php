@@ -15,8 +15,8 @@ class ComPagesTemplateFilterAsset extends ComKoowaTemplateFilterAsset
         $config->append(array(
             'priority' => self::PRIORITY_LOW,
             'schemes' => array(
-                'theme://'    => 'basepath://templates/'.JFactory::getApplication()->getTemplate().'/',
                 'image://'    => '/images/',
+                'theme://'    => 'basepath://joomlatools-pages/theme/',
                 'baseurl://'  => rtrim($this->getObject('request')->getBaseUrl(), '/').'/',
                 'basepath://' => rtrim($this->getObject('request')->getBaseUrl()->getPath(), '/').'/'
             ),
