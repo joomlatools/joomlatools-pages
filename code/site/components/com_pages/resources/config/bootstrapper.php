@@ -48,7 +48,10 @@ $default = [
             ]
         ],
         'event.subscriber.factory' => [
-            'subscribers' => ['com:pages.event.subscriber.decorator']
+            'subscribers' => [
+                'com:pages.event.subscriber.pagedecorator',
+                'com:pages.event.subscriber.htmlpurifier',
+            ]
         ],
         'lib:template.engine.markdown' => [
             'compiler' => function($text) {
