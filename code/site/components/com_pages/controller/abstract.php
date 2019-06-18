@@ -34,24 +34,6 @@ class ComPagesControllerAbstract extends KControllerModel
         //Set metadata
         if($context->request->getFormat() == 'html')
         {
-            //Set the metadata
-            foreach($this->getView()->getMetadata() as $name => $content)
-            {
-                if($content)
-                {
-                    $content =  is_array($content) ? implode(', ', $content) : $content;
-                    $content =  htmlspecialchars($content, ENT_HTML5 | ENT_SUBSTITUTE, 'UTF-8', false);
-
-                    if(strpos($name, 'og:') === 0) {
-                        $tag = sprintf('<meta property="%s" content="%s" />', $name, $content);
-                    } else {
-                        $tag = sprintf('<meta name="%s" content="%s" />', $name, $content);
-                    }
-
-                    JFactory::getDocument()->addCustomTag($tag);
-                }
-            }
-
             //Set the title
             if($title = $this->getView()->getTitle()) {
                 JFactory::getDocument()->setTitle($title);
@@ -60,6 +42,11 @@ class ComPagesControllerAbstract extends KControllerModel
             //Set the direction
             if($direction = $this->getView()->getDirection()) {
                 JFactory::getDocument()->setDirection($direction);
+            }
+
+            //Set the language
+            if($language = $this->getView()->getLanguage()) {
+                JFactory::getDocument()->setLanguage($language);
             }
         }
     }
