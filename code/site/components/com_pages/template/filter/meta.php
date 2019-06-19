@@ -7,14 +7,12 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesTemplateFilterMeta extends ComKoowaTemplateFilterMeta
+class ComPagesTemplateFilterMeta extends KTemplateFilterAbstract
 {
-    protected function _parseTags(&$text)
+    public function filter(&$text)
     {
-        $tags = parent::_parseTags($text);
-
-        //Set the metadata
         $meta = array();
+
         foreach($this->_getMetadata() as $name => $content)
         {
             if($content)
@@ -23,16 +21,14 @@ class ComPagesTemplateFilterMeta extends ComKoowaTemplateFilterMeta
                 $content =  htmlspecialchars($content, ENT_HTML5 | ENT_SUBSTITUTE, 'UTF-8', false);
 
                 if(strpos($name, 'og:') === 0) {
-                    $meta[] = sprintf('<meta content="%s" property="%s" />', $content,  $name);
+                    $meta[] = sprintf('<meta property="%s" content="%s" />', $content,  $name);
                 } else {
-                    $meta[]  = sprintf('<meta content="%s" name="%s" />', $content, $name);
+                    $meta[]  = sprintf('<meta name="%s" content="%s" />', $content, $name);
                 }
             }
         }
 
-        $tags = $tags.implode("\n", $meta);
-
-        return $tags;
+        $text = str_replace('<ktml:meta:page>', implode("", $meta), $text);
     }
 
     protected function _getMetadata()
