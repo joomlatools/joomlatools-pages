@@ -106,6 +106,41 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         KDispatcherAbstract::_actionDispatch($context);
     }
 
+    protected function _renderError(KDispatcherContextInterface $context)
+    {
+        if(!JDEBUG && $this->getObject('request')->getFormat() == 'html')
+        {
+            //Get the exception object
+            if($context->param instanceof KEventException) {
+                $exception = $context->param->getException();
+            } else {
+                $exception = $context->param;
+            }
+
+            foreach([(int) $exception->getCode(), '500'] as $code)
+            {
+                if($page = $this->getObject('page.registry')->getPage($code))
+                {
+                    //Set the controller
+                    $this->setController('page', ['view' => $page->getType()]);
+
+                    //Set page in model
+                    $this->getController()->getModel()->setPage($page, $context->request->query->toArray());
+
+                    //Render the error
+                    $content = $this->getController()->render($exception);
+
+                    //Set error in the response
+                    $context->response->setContent($content);
+
+                    return true;
+                }
+            }
+        }
+
+        return parent::_renderError($context);
+    }
+
     public function getContext()
     {
         $context = new ComPagesDispatcherContext();
