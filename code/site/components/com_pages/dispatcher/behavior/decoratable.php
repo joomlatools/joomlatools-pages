@@ -33,7 +33,7 @@ class ComPagesDispatcherBehaviorDecoratable extends ComKoowaDispatcherBehaviorDe
         $content = $this->getResponse()->getContent();
 
         //Do not decorate if we are outputting a html document
-        if(strpos($content, '<head>') === false) {
+        if(preg_match('#<html(.*)\/>#siU', $content) === false) {
             $result = 'joomla';
         } else {
             $result = 'koowa';
