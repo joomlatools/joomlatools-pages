@@ -11,24 +11,32 @@ class ComPagesTemplateFilterMeta extends KTemplateFilterAbstract
 {
     public function filter(&$text)
     {
-        $meta = array();
+        static $included;
 
-        foreach($this->_getMetadata() as $name => $content)
+        //Ensure we are only including the page metadata once
+        if(!$included)
         {
-            if($content)
-            {
-                $content =  is_array($content) ? implode(', ', $content) : $content;
-                $content =  htmlspecialchars($content, ENT_HTML5 | ENT_SUBSTITUTE, 'UTF-8', false);
+            $meta = array();
 
-                if(strpos($name, 'og:') === 0) {
-                    $meta[] = sprintf('<meta property="%s" content="%s" />', $content,  $name);
-                } else {
-                    $meta[]  = sprintf('<meta name="%s" content="%s" />', $content, $name);
+            foreach($this->_getMetadata() as $name => $content)
+            {
+                if($content)
+                {
+                    $content =  is_array($content) ? implode(', ', $content) : $content;
+                    $content =  htmlspecialchars($content, ENT_HTML5 | ENT_SUBSTITUTE, 'UTF-8', false);
+
+                    if(strpos($name, 'og:') === 0) {
+                        $meta[] = sprintf('<meta property="%s" content="%s" />', $content,  $name);
+                    } else {
+                        $meta[]  = sprintf('<meta name="%s" content="%s" />', $content, $name);
+                    }
                 }
             }
-        }
 
-        $text = str_replace('<ktml:meta:page>', implode("", $meta), $text);
+            $text = implode("", $meta).$text;
+
+            $included = true;
+        }
     }
 
     protected function _getMetadata()
