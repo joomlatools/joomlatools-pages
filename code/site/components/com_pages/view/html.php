@@ -13,7 +13,7 @@ class ComPagesViewHtml extends ComKoowaViewHtml
     {
         $config->append([
             'auto_fetch'  => false,
-            'template_filters' => ['asset', 'meta'], //Redefine asset to run before the script filter
+            'template_filters' => ['asset', 'meta', 'whitespace'],
             'template_functions' => [
                 'page'        => [$this, 'getPage'],
                 'collection'  => [$this, 'getCollection'],
