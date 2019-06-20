@@ -302,7 +302,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     }
 
                                     //Set the route
-                                    if (!$page->route) {
+                                    if (!$page->route && $page->route !== false) {
                                         $page->route = $route;
                                     }
 
@@ -347,8 +347,11 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     //Page
                                     $pages[$file] = $page->toArray();
 
+
                                     //Route
-                                    $routes[$route] = (array) KObjectConfig::unbox($page->route);
+                                    if($page->route !== false) {
+                                        $routes[$route] = (array) KObjectConfig::unbox($page->route);
+                                    }
 
                                     //File (do not include index pages)
                                     if(strpos($file, '/index') === false) {
