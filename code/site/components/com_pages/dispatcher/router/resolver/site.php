@@ -68,22 +68,19 @@ class ComPagesDispatcherRouterResolverSite extends ComPagesDispatcherRouterResol
             //Configure the template
             if(isset($config['template']) || isset($config['template_config']))
             {
-                if(isset($config['template']))
-                {
-                    if(isset($config['template'])) {
-                        $template = $config['template'];
-                    } else {
-                        $template = JFactory::getApplication()->getTemplate();
-                    }
-
-                    if(isset($config['template_config']) && is_array($config['template_config'])) {
-                        $params = $config['template_config'];
-                    } else {
-                        $params = null;
-                    }
-
-                    JFactory::getApplication()->setTemplate($template, $params);
+                if(isset($config['template'])) {
+                    $template = $config['template'];
+                } else {
+                    $template = JFactory::getApplication()->getTemplate();
                 }
+
+                if(isset($config['template_config']) && is_array($config['template_config'])) {
+                    $params = $config['template_config'];
+                } else {
+                    $params = null;
+                }
+
+                JFactory::getApplication()->setTemplate($template, $params);
             }
         }
 
