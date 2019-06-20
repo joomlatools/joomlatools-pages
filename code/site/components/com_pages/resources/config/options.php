@@ -10,6 +10,18 @@
 return [
 
     'identifiers' => [
+        'com:pages.page.locator' => [
+            'base_path' => $base_path
+        ],
+        'com:pages.data.locator' => [
+            'base_path' => $base_path.'/data'
+        ],
+        'com:pages.template.locator.theme' => [
+            'base_path' => $base_path.'/theme',
+        ],
+        'com://site/pages.template.filter.asset' => [
+            'schemes' =>  $config['aliases'] ?? array()
+        ],
         'page.registry' => [
             'cache'       => $config['page_cache'] ?? (JDEBUG ? false : true),
             'cache_time'  => $config['page_cache_time'] ?? 60*60*24, //1d
@@ -17,17 +29,11 @@ return [
             'collections' => $config['collections'] ?? array(),
             'redirects'   => isset($config['redirects']) ? array_flip($config['redirects']) : array(),
         ],
-        'com:pages.page.locator' => [
-            'base_path' => $base_path
-        ],
         'data.registry' => [
             'cache'      => $config['data_cache'] ?? (JDEBUG ? false : true),
             'cache_time' => $config['data_cache_time'] ?? 60*60*24, //1d
             'cache_path' => $config['data_cache_path'] ?? $base_path.'/cache',
         ],
-        'com:pages.data.locator' => [
-            'base_path' => $base_path.'/data'
-         ],
         'template.engine.factory' => [
             'cache'      => $config['template_cache'] ?? (JDEBUG ? false : true),
             'cache_path' => $config['template_cache_path'] ?? $base_path.'/cache',

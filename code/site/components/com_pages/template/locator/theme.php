@@ -13,10 +13,8 @@ class ComPagesTemplateLocatorTheme extends KTemplateLocatorFile
 
     protected function _initialize(KObjectConfig $config)
     {
-        $template  = JFactory::getApplication()->getTemplate();
-
         $config->append([
-            'base_path' =>  JPATH_THEMES.'/'.$template,
+            'base_path' =>  JPATH_ROOT.'/joomlatools-pages/theme'
         ]);
 
         parent::_initialize($config);

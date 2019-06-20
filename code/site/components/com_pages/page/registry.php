@@ -108,8 +108,9 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             {
                 if(!is_string($file))
                 {
+                    //Do not include a directory without an index file (no existing page)
                     if(!$file = $this->getLocator()->locate('page://pages/'. $page)) {
-                        throw new RuntimeException(sprintf('The page "%s"does not exist.', $page));
+                        continue;
                     }
                 }
 
