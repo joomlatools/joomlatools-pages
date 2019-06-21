@@ -50,6 +50,15 @@ class ComPagesDispatcherRouterResolverSite extends ComPagesDispatcherRouterResol
                 foreach($options['identifiers'] as $identifier => $values) {
                     $this->getConfig($identifier)->merge($values);
                 }
+
+                //Add extension locators
+                $this->getObject('manager')->getClassLoader()->registerLocator(new ComPagesClassLocatorExtension(array(
+                    'namespaces' => array(
+                        '\\'  => $base_path.'/extensions',
+                    )
+                )));
+
+                $this->getObject('manager')->registerLocator('com:pages.object.locator.extension');
             }
 
             //Set the page routes
