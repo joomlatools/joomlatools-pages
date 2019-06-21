@@ -88,7 +88,7 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
 
         //Fallback to default
         if(!$this->getObject('manager')->getClass($identifier, false)) {
-            $identifier = 'com:pages.model.entity.items';
+            $identifier = 'com://site/pages.model.entity.items';
         }
 
         $options = array(
