@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesEventSubscriberErrorhandler extends KEventSubscriberAbstract
+class ComPagesEventSubscriberErrorhandler extends ComPagesEventSubscriberAbstract
 {
     public function __construct( KObjectConfig $config)
     {
