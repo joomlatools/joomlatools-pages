@@ -27,7 +27,6 @@ class ComPagesTemplateDefault extends KTemplate
                 'date'       => [$this, '_formatDate'],
                 'data'       => [$this, '_fetchData'],
                 'slug'       => [$this, '_createSlug'],
-                'attribute'  => [$this, '_createAttribute'],
                 'attributes' => [$this, '_createAttributes']
             ],
             'cache'           => false,
@@ -36,6 +35,45 @@ class ComPagesTemplateDefault extends KTemplate
         ]);
 
         parent::_initialize($config);
+    }
+
+    public function invoke($identifier, $params = array())
+    {
+        //Get the function and helper based on the identifier
+        if(strpos($identifier, '.') === false) {
+            $identifier = $identifier.'.__invoke';
+        }
+
+        return parent::invoke($identifier, $params);
+    }
+
+    public function createHelper($helper, $config = array())
+    {
+        //Create the complete extension identifier if a partial identifier was passed
+        if (is_string($helper) && strpos($helper, ':') === false)
+        {
+            $identifier = 'ext:template.helper.'.$helper;
+
+            //Create the template helper
+            if($this->getObject('manager')->getClass($identifier)) {
+                $helper = $identifier;
+            }
+
+        }
+
+        return parent::createHelper($helper, $config);
+    }
+
+    public function registerFunction($name, $function)
+    {
+        if (!is_callable($function))
+        {
+            if(file_exists($function)) {
+                $function = include $function;
+            }
+        }
+
+        return parent::registerFunction($name, $function);
     }
 
     public function handleException(Exception &$exception)
