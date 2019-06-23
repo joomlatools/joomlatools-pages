@@ -51,7 +51,6 @@ $default = [
             'subscribers' => [
                 'com:pages.event.subscriber.pagedecorator',
                 'com:pages.event.subscriber.errorhandler',
-                //'com:pages.event.subscriber.htmlpurifier',
             ]
         ],
         'lib:template.engine.markdown' => [
