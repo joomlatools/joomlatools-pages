@@ -50,24 +50,31 @@ class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResol
                 }
             }
 
-            //Add a (self-referential) ccanonical URL using the first route for the specific page
-            if($routes = $this->getObject('page.registry')->getRoutes($route->getPath()))
+            if(!$canonical = $page->canonical)
             {
-                //Build the route
-                $url = $this->buildRoute($routes[0],  $request->query->toArray());
-
-                if($collection = $page->isCollection())
+                //Add a (self-referential) canonical URL using the first route for the specific page
+                if($routes = $this->getObject('page.registry')->getRoutes($route->getPath()))
                 {
-                    //Handle pagination
-                    if(isset($collection['state']) && isset($collection['state']['limit'])) {
-                        $this->_generatePagination($url, $collection['state']['limit']);
+                    //Build the route
+                    $canonical = $this->buildRoute($routes[0],  $request->query->toArray());
+
+                    if($collection = $page->isCollection())
+                    {
+                        //Handle pagination
+                        if(isset($collection['state']) && isset($collection['state']['limit'])) {
+                            $this->_generatePagination($canonical, $collection['state']['limit']);
+                        }
                     }
+
+                    $canonical = $router->qualifyUrl($canonical);
+
+                    //Set the canonical in the page
+                    $page->canonical = $canonical;
                 }
+            }
 
-                //Qualify the url
-                $url = $router->qualifyUrl($url);
-
-                $router->setCanonicalUrl($url);
+            if($canonical) {
+                $router->setCanonicalUrl($canonical);
             }
         }
 
