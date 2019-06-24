@@ -33,6 +33,8 @@ class ComPagesTemplateFilterMeta extends ComPagesTemplateFilterAbstract
                 }
             }
 
+            $meta[] = $this->_getCanonical();
+
             $text = implode("", $meta).$text;
 
             $included = true;
@@ -62,5 +64,18 @@ class ComPagesTemplateFilterMeta extends ComPagesTemplateFilterAbstract
         }
 
         return $metadata;
+    }
+
+    protected function _getCanonical()
+    {
+        $canonical = '';
+        if($page = $this->getTemplate()->page())
+        {
+            if($page->canonical) {
+                $canonical = sprintf('<link href="%s" rel="canonical" />', $page->canonical);
+            }
+        }
+
+        return $canonical;
     }
 }
