@@ -67,6 +67,9 @@ class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResol
                     }
 
                     $canonical = $router->qualifyUrl($canonical);
+
+                    //Set the canonical in the page
+                    $page->canonical = $canonical;
                 }
             }
 
