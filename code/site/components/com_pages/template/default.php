@@ -11,12 +11,17 @@ class ComPagesTemplateDefault extends KTemplate
 {
     protected $_layout;
 
+    private $__helpers = array();
+
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
 
         //Intercept template exception
         $this->getObject('exception.handler')->addExceptionCallback(array($this, 'handleException'), true);
+
+        //Re-register the helper() template function
+        $this->registerFunction('helper', [$this, 'invokeHelper']);
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -27,7 +32,7 @@ class ComPagesTemplateDefault extends KTemplate
                 'date'       => [$this, '_formatDate'],
                 'data'       => [$this, '_fetchData'],
                 'slug'       => [$this, '_createSlug'],
-                'attributes' => [$this, '_createAttributes']
+                'attributes' => [$this, '_createAttributes'],
             ],
             'cache'           => false,
             'cache_namespace' => 'pages',
@@ -35,80 +40,6 @@ class ComPagesTemplateDefault extends KTemplate
         ]);
 
         parent::_initialize($config);
-    }
-
-    public function invoke($identifier, $params = array())
-    {
-        //Get the function and helper based on the identifier
-        if(strpos($identifier, '.') === false) {
-            $identifier = $identifier.'.__invoke';
-        }
-
-        return parent::invoke($identifier, $params);
-    }
-
-    public function createHelper($helper, $config = array())
-    {
-        //Create the complete extension identifier if a partial identifier was passed
-        if (is_string($helper) && strpos($helper, ':') === false)
-        {
-            $identifier = 'ext:template.helper.'.$helper;
-
-            //Create the template helper
-            if($this->getObject('manager')->getClass($identifier)) {
-                $helper = $identifier;
-            }
-
-        }
-
-        return parent::createHelper($helper, $config);
-    }
-
-    public function registerFunction($name, $function)
-    {
-        if (!is_callable($function))
-        {
-            if(file_exists($function)) {
-                $function = include $function;
-            }
-        }
-
-        return parent::registerFunction($name, $function);
-    }
-
-    public function handleException(Exception &$exception)
-    {
-        if($exception instanceof KTemplateExceptionError)
-        {
-            $file   = $exception->getFile();
-            $buffer = $exception->getPrevious()->getFile();
-
-            //Get the real file if it can be found
-            $line = count(file($file)) - count(file($buffer)) + $exception->getLine() - 1;
-
-            $exception = new KTemplateExceptionError(
-                $exception->getMessage(),
-                $exception->getCode(),
-                $exception->getSeverity(),
-                $file,
-                $line,
-                $exception->getPrevious()
-            );
-        }
-    }
-
-    public function addFilters($filters)
-    {
-        foreach((array)KObjectConfig::unbox($filters) as $key => $value)
-        {
-            if (is_numeric($key)) {
-                $this->addFilter($value);
-            } else {
-                $this->addFilter($key, $value);
-            }
-        }
-
-        return $this;
     }
 
     public function loadFile($url)
@@ -159,6 +90,105 @@ class ComPagesTemplateDefault extends KTemplate
         unset($data['layout']);
 
         return parent::render($data);
+    }
+
+    public function invokeHelper($identifier, ...$params)
+    {
+        //Get the function and helper based on the identifier
+        if(strpos($identifier, '.') === false) {
+            $identifier = $identifier.'.__invoke';
+        }
+
+        //Get the function and helper based on the identifier
+        $parts      = explode('.', $identifier);
+        $function   = array_pop($parts);
+        $identifier = array_pop($parts);
+
+        //Handle schema:package.helper.function identifiers
+        if(!empty($parts)) {
+            $identifier = implode('.', $parts).'.template.helper.'.$identifier;
+        }
+
+        $helper = $this->createHelper($identifier, $params);
+
+        //Call the helper function
+        if (!is_callable(array($helper, $function))) {
+            throw new BadMethodCallException(get_class($helper) . '::' . $function . ' not supported.');
+        }
+
+        //Merge the parameters if helper asks for it
+        if ($helper instanceof KTemplateHelperParameterizable) {
+            $params = array_merge($this->getParameters()->toArray(), $params);
+        }
+
+        return $helper->$function(...$params);
+    }
+
+    public function createHelper($helper, $config = array())
+    {
+        //Create the complete extension identifier if a partial identifier was passed
+        if (is_string($helper) && strpos($helper, ':') === false)
+        {
+            $identifier = 'ext:template.helper.'.$helper;
+
+            //Create the template helper
+            if($this->getObject('manager')->getClass($identifier)) {
+                $helper = $identifier;
+            }
+         }
+
+        if(!isset($this->__helpers[$helper])) {
+            $this->__helpers[$helper] = parent::createHelper($helper, $config);
+        }
+
+        return $this->__helpers[$helper];
+    }
+
+    public function registerFunction($name, $function)
+    {
+        if (!is_callable($function))
+        {
+            if(file_exists($function)) {
+                $function = include $function;
+            }
+        }
+
+        return parent::registerFunction($name, $function);
+    }
+
+    public function handleException(Exception &$exception)
+    {
+        if($exception instanceof KTemplateExceptionError)
+        {
+            $file   = $exception->getFile();
+            $buffer = $exception->getPrevious()->getFile();
+
+            //Get the real file if it can be found
+            $line = count(file($file)) - count(file($buffer)) + $exception->getLine() - 1;
+
+            $exception = new KTemplateExceptionError(
+                $exception->getMessage(),
+                $exception->getCode(),
+                $exception->getSeverity(),
+                $file,
+                $line,
+                $exception->getPrevious()
+            );
+        }
+    }
+
+    public function addFilters($filters)
+    {
+        foreach((array)KObjectConfig::unbox($filters) as $key => $value)
+        {
+            if (is_numeric($key)) {
+                $this->addFilter($value);
+            } else {
+                $this->addFilter($key, $value);
+            }
+        }
+
+        return $this;
     }
 
     protected function _formatDate($date, $format = '')
