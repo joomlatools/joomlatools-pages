@@ -9,17 +9,5 @@
 
 abstract class ComPagesTemplateHelperAbstract extends KTemplateHelperAbstract
 {
-    public function evaluateString($string, array $variables = array())
-    {
-        //Use the stream buffer to evaluate the partial
-        $str = "<?php \n return <<<STRING\n$string\nSTRING;\n";
 
-        $buffer = $this->getObject('filesystem.stream.factory')->createStream('koowa-buffer://temp', 'w+b');
-        $buffer->truncate(0);
-        $buffer->write($str);
-
-        extract($variables, EXTR_OVERWRITE);
-
-        return include $buffer->getPath();
-    }
 }
