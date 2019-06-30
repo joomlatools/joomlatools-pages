@@ -1,6 +1,6 @@
 <?php
 
-class ExtensionTemplateHelperSnippet extends ComPagesTemplateHelperAbstract
+class ComPagesTemplateHelperSnippet extends ComPagesTemplateHelperAbstract
 {
     private $__snippets = array();
 
