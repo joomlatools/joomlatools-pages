@@ -108,8 +108,8 @@ class ComPagesTemplateDefault extends KTemplate
         if(!empty($parts)) {
             $identifier = implode('.', $parts).'.template.helper.'.$identifier;
         }
-
-        $helper = $this->createHelper($identifier, $params);
+        
+        $helper = $this->createHelper($identifier);
 
         //Call the helper function
         if (!is_callable(array($helper, $function))) {
