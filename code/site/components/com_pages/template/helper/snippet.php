@@ -51,6 +51,7 @@ class ComPagesTemplateHelperSnippet extends ComPagesTemplateHelperAbstract
                 $result = str_replace($tag,  str_replace(array(' >', ' "'), array('>', '"'), $tag), $result);
             }
         }
+        else throw new RuntimeException('Snippet: '.$name.' does not exist');
 
         return $result;
     }
