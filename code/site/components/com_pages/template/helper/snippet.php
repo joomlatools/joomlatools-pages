@@ -20,18 +20,15 @@ class ComPagesTemplateHelperSnippet extends ComPagesTemplateHelperAbstract
             $snippet = $this->__snippets[$name];
 
             //Use the stream buffer to evaluate the partial
-            $str = "<?php \n return <<<SNIPPET\n$snippet\nSNIPPET;\n";
+            $str = "<?php \n echo <<<SNIPPET\n$snippet\nSNIPPET;\n";
 
-            $buffer = $this->getObject('filesystem.stream.factory')->createStream('koowa-buffer://temp', 'w+b');
-            $buffer->truncate(0);
-            $buffer->write($str);
-
-            extract($variables, EXTR_OVERWRITE);
-
-            $result = include $buffer->getPath();
+            $result = $this->getObject('template.engine.factory')
+                ->createEngine('php')
+                ->loadString($str)
+                ->render($variables);
 
             //Cleanup whitespace
-            $result = str_replace(array(' >', ' "'), array('>', '"'), $result);
+            //$result = str_replace(array(' >', ' "'), array('>', '"'), $result);
         }
 
         return $result;
