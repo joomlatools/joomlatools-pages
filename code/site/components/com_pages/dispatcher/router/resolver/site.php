@@ -41,13 +41,27 @@ class ComPagesDispatcherRouterResolverSite extends ComPagesDispatcherRouterResol
                 }
 
                 $base_path = $route->getPath();
-                $path      = $this->getObject('object.bootstrapper')->getComponentPath('pages');
+
+                //Add extension locators
+                $this->getObject('manager')->getClassLoader()->registerLocator(new ComPagesClassLocatorExtension(array(
+                    'namespaces' => array(
+                        '\\'  => $base_path.'/extensions',
+                    )
+                )));
+
+                $this->getObject('manager')->registerLocator('com:pages.object.locator.extension');
 
                 //Load config options
+                $path    = $this->getObject('object.bootstrapper')->getComponentPath('pages');
                 $options = include $path.'/resources/config/options.php';
 
                 //Set config options
                 foreach($options['identifiers'] as $identifier => $values) {
+                    $this->getConfig($identifier)->merge($values);
+                }
+
+                //Set config options
+                foreach($options['extensions'] as $identifier => $values) {
                     $this->getConfig($identifier)->merge($values);
                 }
             }
@@ -82,6 +96,22 @@ class ComPagesDispatcherRouterResolverSite extends ComPagesDispatcherRouterResol
 
                 JFactory::getApplication()->setTemplate($template, $params);
             }
+
+            //Register event subscribers
+            foreach (glob($base_path.'/extensions/subscriber/[!_]*.php') as $filename) {
+                $this->getObject('event.subscriber.factory')->registerSubscriber('ext:subscriber.'.basename($filename, '.php'));
+            }
+
+            //Register template filters
+            foreach (glob($base_path.'/extensions/template/filter/[!_]*.php') as $filename) {
+                $this->getConfig('com://site/pages.template.default')->merge(['filters' => ['ext:template.filter.'.basename($filename, '.php')]]);
+            }
+
+            //Register template function
+            foreach (glob($base_path.'/extensions/template/function/[!_]*.php') as $filename) {
+                $this->getConfig('com://site/pages.template.default')->merge(['functions' => [basename($filename, '.php') => $filename]]);
+            }
+
         }
 
         return false;

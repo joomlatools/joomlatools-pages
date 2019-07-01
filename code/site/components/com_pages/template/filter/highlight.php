@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesTemplateFilterHighlight extends KTemplateFilterAbstract
+class ComPagesTemplateFilterHighlight extends ComPagesTemplateFilterAbstract
 {
     protected $_highlighter;
 

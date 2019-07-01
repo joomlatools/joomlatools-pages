@@ -54,5 +54,6 @@ return [
                 'metadata' => $config['metadata'] ?? array(),
             ]
         ],
-    ]
+    ],
+    'extensions' => $config['extensions'] ?? array(),
 ];

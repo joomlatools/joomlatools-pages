@@ -7,22 +7,18 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesTemplateFilterMarkdown extends ComPagesTemplateFilterAbstract
+class ComPagesObjectLocatorExtension extends KObjectLocatorAbstract
 {
+    protected static $_name = 'ext';
+
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'priority' => self::PRIORITY_HIGH,
+            'sequence' => array(
+                'Extension<Package><Class>',
+            )
         ));
 
         parent::_initialize($config);
-    }
-
-    public function filter(&$text)
-    {
-        $engine = $this->getObject('template.engine.factory')
-                ->createEngine('markdown', array('template' => $this->getTemplate()));
-
-        $text = $engine->loadString($text)->render();
     }
 }
