@@ -29,6 +29,9 @@ class ComPagesTemplateHelperSnippet extends ComPagesTemplateHelperAbstract
             extract($variables, EXTR_OVERWRITE);
 
             $result = include $buffer->getPath();
+
+            //Cleanup whitespace
+            $result = str_replace(array(' >', ' "'), array('>', '"'), $result);
         }
 
         return $result;
