@@ -19,7 +19,7 @@ class ComPagesTemplateHelperSnippet extends ComPagesTemplateHelperAbstract
         {
             $snippet = $this->__snippets[$name];
 
-            //Use the stream buffer to evaluate the partial
+            //Use the php template engine to evaluate
             $str = "<?php \n echo <<<SNIPPET\n$snippet\nSNIPPET;\n";
 
             $result = $this->getObject('template.engine.factory')
@@ -27,8 +27,12 @@ class ComPagesTemplateHelperSnippet extends ComPagesTemplateHelperAbstract
                 ->loadString($str)
                 ->render($variables);
 
-            //Cleanup whitespace
-            //$result = str_replace(array(' >', ' "'), array('>', '"'), $result);
+            //Find single whitespace before " or before > in html tags and remove it
+            preg_match_all('#<\s*\w.*?>#', $result, $tags);
+
+            foreach($tags as $tag) {
+                $result = str_replace($tag,  str_replace(array(' >', ' "'), array('>', '"'), $tag), $result);
+            }
         }
 
         return $result;
