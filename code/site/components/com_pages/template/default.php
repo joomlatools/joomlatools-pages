@@ -108,8 +108,8 @@ class ComPagesTemplateDefault extends KTemplate
         if(!empty($parts)) {
             $identifier = implode('.', $parts).'.template.helper.'.$identifier;
         }
-
-        $helper = $this->createHelper($identifier, $params);
+        
+        $helper = $this->createHelper($identifier);
 
         //Call the helper function
         if (!is_callable(array($helper, $function))) {
@@ -121,7 +121,13 @@ class ComPagesTemplateDefault extends KTemplate
             $params = array_merge($this->getParameters()->toArray(), $params);
         }
 
-        return $helper->$function(...$params);
+        if(is_numeric(key($params))) {
+            $result = $helper->$function(...$params);
+        } else {
+            $result = $helper->$function($params);
+        }
+
+        return $result;
     }
 
     public function createHelper($helper, $config = array())
