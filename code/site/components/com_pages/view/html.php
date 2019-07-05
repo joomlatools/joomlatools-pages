@@ -163,7 +163,7 @@ class ComPagesViewHtml extends ComKoowaViewHtml
         }
 
         if($route = $this->getObject('dispatcher')->getRouter()->generate($page, $query)) {
-            $route->setEscape($escape)->toString(KHttpUrl::BASE + KHttpUrl::QUERY);
+            $route = $route->setEscape($escape)->toString(KHttpUrl::PATH + KHttpUrl::QUERY);
         }
 
         return $route;

@@ -47,7 +47,7 @@ class ComPagesViewJson extends KViewJson
         }
 
         if($route = $this->getObject('dispatcher')->getRouter()->generate($page, $query)) {
-            $route->setEscape($escape)->toString(KHttpUrl::FULL);
+            $route = $route->setEscape($escape)->toString(KHttpUrl::FULL);
         }
 
         return $route;
