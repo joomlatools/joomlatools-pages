@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-interface ComPagesModelInterface extends KModelInterface
+interface ComPagesCollectionInterface extends KModelInterface
 {
     public function getData($count = false);
 }

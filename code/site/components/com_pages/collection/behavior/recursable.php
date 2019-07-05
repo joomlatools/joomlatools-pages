@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
+class ComPagesCollectionBehaviorRecursable extends ComPagesCollectionBehaviorAbstract
 {
     private $__children = array();
 

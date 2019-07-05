@@ -83,7 +83,7 @@ class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResol
 
     public function generate($page, array $query, ComPagesDispatcherRouterInterface $router)
     {
-        if($page instanceof ComPagesModelEntityPage) {
+        if($page instanceof ComPagesCollectionEntityPage) {
             $page = $page->route;
         }
 

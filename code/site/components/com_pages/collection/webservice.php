@@ -7,29 +7,29 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelFilesystem extends ComPagesModelCollection
+class ComPagesCollectionWebservice extends ComPagesCollectionAbstract
 {
-    protected $_path;
+    protected $_url;
 
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
 
-        $this->_path = $config->path;
+        $this->_url = $config->url;
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'path'  => '',
+            'url'  => '',
         ]);
 
         parent::_initialize($config);
     }
 
-    public function getPath(array $variables = array())
+    public function getUrl(array $variables = array())
     {
-        return KHttpUrl::fromTemplate($this->_path, $variables);
+        return KHttpUrl::fromTemplate($this->_url, $variables);
     }
 
     public function setState(array $values)
@@ -49,13 +49,8 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
     {
        if(!isset($this->_data))
        {
-           if($path = $this->getPath($this->getState()->getValues()))
-           {
-               if(strpos($path, 'data://') === 0) {
-                   $this->_data = $this->getObject('data.registry')->getData(str_replace('data://', '', (string)$path), false);
-               } else {
-                   $this->_data = $this->getObject('object.config.factory')->fromFile($path, false);
-               }
+           if($url = $this->getUrl($this->getState()->getValues())) {
+               $this->_data = $this->getObject('com:pages.data.client')->fromUrl($url, false);
            }
        }
 

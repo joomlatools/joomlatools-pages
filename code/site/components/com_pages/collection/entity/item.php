@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelEntityItem extends KModelEntityAbstract implements JsonSerializable
+class ComPagesCollectionEntityItem extends KModelEntityAbstract implements JsonSerializable
 {
     public function jsonSerialize()
     {

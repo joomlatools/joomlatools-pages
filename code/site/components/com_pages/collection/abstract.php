@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-abstract class ComPagesModelCollection extends KModelAbstract implements ComPagesModelInterface
+abstract class ComPagesCollectionAbstract extends KModelAbstract implements ComPagesCollectionInterface
 {
     protected $_data;
 
@@ -29,9 +29,9 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
     {
         $config->append([
             'behaviors'   => [
-                'com:pages.model.behavior.paginatable',
-                'com:pages.model.behavior.sortable',
-                'com:pages.model.behavior.searchable'
+                'com:pages.collection.behavior.paginatable',
+                'com:pages.collection.behavior.sortable',
+                'com:pages.collection.behavior.searchable'
             ],
         ]);
 
@@ -54,7 +54,7 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
 
         //Find the unique entity
         if($context->state->isUnique()) {
-            $entities = $entities->find($context->state->getValues(true));
+           $entities = $entities->find($context->state->getValues(true));
         }
 
         return $entities;
@@ -83,12 +83,12 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         $data = KModelContext::unbox($context->entity);
 
         $identifier = $this->getIdentifier()->toArray();
-        $identifier['path'] = ['model', 'entity'];
+        $identifier['path'] = ['collection', 'entity'];
         $identifier['name'] = KStringInflector::pluralize($identifier['name']);
 
         //Fallback to default
         if(!$this->getObject('manager')->getClass($identifier, false)) {
-            $identifier = 'com://site/pages.model.entity.items';
+            $identifier = 'com://site/pages.collection.entity.items';
         }
 
         $options = array(
@@ -101,7 +101,7 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
 
     public function getContext()
     {
-        $context = new ComPagesModelContextCollection();
+        $context = new ComPagesCollectionContext();
         $context->setSubject($this);
         $context->setState($this->getState());
         $context->setIdentityKey($this->_identity_key);

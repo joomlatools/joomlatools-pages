@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelBehaviorSearchable extends ComPagesModelBehaviorQueryable
+class ComPagesCollectionBehaviorSearchable extends ComPagesCollectionBehaviorQueryable
 {
     protected $_columns;
 

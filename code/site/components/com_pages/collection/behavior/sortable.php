@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelBehaviorSortable extends ComPagesModelBehaviorQueryable
+class ComPagesCollectionBehaviorSortable extends ComPagesCollectionBehaviorQueryable
 {
     protected function _initialize(KObjectConfig $config)
     {
