@@ -23,11 +23,11 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
         return $entity;
     }
 
-    public function createCollection($source, $state = array())
+    public function createCollection($name, $state = array())
     {
         $model = false;
 
-        if($collection = $this->getObject('page.registry')->getCollection($source))
+        if($collection = $this->getObject('page.registry')->getCollection($name))
         {
             //Set the state
             if(isset($collection->state)) {
@@ -35,17 +35,16 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
             }
 
             //Create the model
-            $source = KHttpUrl::fromString($collection->source);
+            $model = KHttpUrl::fromString($collection->model);
 
-            $model  = $source->toString(KHttpUrl::BASE);
-            $config = $source->query;
+            $identifier = $model->toString(KHttpUrl::BASE);
+            $config     = $model->query;
 
-            if(is_string($model) && strpos($model, '.') === false )
+            if(is_string($identifier) && strpos($identifier, '.') === false )
             {
                 $identifier = $this->getIdentifier()->toArray();
                 $identifier['name'] = $model;
             }
-            else $identifier = $model;
 
             $model = $this->getObject($identifier, $config);
 

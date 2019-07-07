@@ -116,10 +116,10 @@ class ComPagesViewXml extends KViewTemplate
         return $result;
     }
 
-    public function getCollection($source = '', $state = array())
+    public function getCollection($model = '', $state = array())
     {
-        if($source) {
-            $result = $this->getObject('com:pages.model.factory')->createCollection($source, $state)->fetch();
+        if($model) {
+            $result = $this->getObject('com:pages.model.factory')->createCollection($model, $state)->fetch();
         } else {
             $result = $this->getModel()->fetch();
         }

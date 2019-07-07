@@ -55,16 +55,16 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $this->__locator;
     }
 
-    public function getCollection($source)
+    public function getCollection($name)
     {
         $result = false;
 
-        if(isset($this->__collections[$source]))
+        if(isset($this->__collections[$name]))
         {
-            $result = new KObjectConfig($this->__collections[$source]);
+            $result = new KObjectConfig($this->__collections[$name]);
 
-            if(!isset($result->source)) {
-                $result->source = 'com:pages.model.pages';
+            if(!isset($result->model)) {
+                $result->model = 'com:pages.model.pages';
             }
         }
 
