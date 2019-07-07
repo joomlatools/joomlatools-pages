@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstract
+class ComPagesSubscriberPagedecorator extends ComPagesSubscriberAbstract
 {
     protected function _initialize(KObjectConfig $config)
     {
