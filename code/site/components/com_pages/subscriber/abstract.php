@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-abstract class ComPagesEventSubscriberAbstract extends KEventSubscriberAbstract
+abstract class ComPagesSubscriberAbstract extends KEventSubscriberAbstract
 {
 
 }
