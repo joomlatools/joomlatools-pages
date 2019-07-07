@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-framework for the canonical source repository
  */
 
-class ComPagesCollectionContext extends KModelContext
+class ComPagesModelContextCollection extends KModelContext
 {
     public function setData($data)
     {

@@ -49,7 +49,7 @@ return [
             'cache_time' => $config['remote_cache_time'] ?? 60*60*24, //1d
             'cache_path' => $config['remote_cache_path'] ??  $base_path.'/cache',
         ],
-        'com://site/pages.collection.entity.page' => [
+        'com://site/pages.model.entity.page' => [
             'data' => [
                 'metadata' => $config['metadata'] ?? array(),
             ]

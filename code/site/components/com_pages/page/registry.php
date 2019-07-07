@@ -64,7 +64,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             $result = new KObjectConfig($this->__collections[$source]);
 
             if(!isset($result->source)) {
-                $result->source = 'com:pages.collection.pages';
+                $result->source = 'com:pages.model.pages';
             }
         }
 

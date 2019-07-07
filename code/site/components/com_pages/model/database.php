@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesCollectionDatabase extends ComPagesCollectionAbstract
+class ComPagesModelDatabase extends ComPagesModelCollection
 {
     protected $_table;
 

@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesCollectionPages extends ComPagesCollectionAbstract
+class ComPagesModelPages extends ComPagesModelCollection
 {
     public function __construct(KObjectConfig $config)
     {
@@ -33,7 +33,7 @@ class ComPagesCollectionPages extends ComPagesCollectionAbstract
         $config->append([
             'identity_key' => 'path',
             'behaviors'    => [
-                'com:pages.collection.behavior.recursable',
+                'recursable',
             ]
         ]);
 

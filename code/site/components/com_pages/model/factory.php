@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-final class ComPagesCollectionFactory extends KObject implements KObjectSingleton
+class ComPagesModelFactory extends KObject implements KObjectSingleton
 {
     public function createPage($path)
     {
@@ -15,7 +15,7 @@ final class ComPagesCollectionFactory extends KObject implements KObjectSingleto
 
         if ($page = $this->getObject('page.registry')->getPage($path))
         {
-            $entity = $this->getObject('com:pages.collection.entity.page',
+            $entity = $this->getObject('com:pages.model.entity.page',
                 array('data'  => $page->toArray())
             );
         }
@@ -59,7 +59,7 @@ final class ComPagesCollectionFactory extends KObject implements KObjectSingleto
             if($model instanceof KControllerModellable)
             {
                 $model->getModel()->setState($state);
-                $model = $this->getObject('com:pages.collection.controller', ['controller' => $model]);
+                $model = $this->getObject('com:pages.model.controller', ['controller' => $model]);
             }
             else $model->setState($state);
         }

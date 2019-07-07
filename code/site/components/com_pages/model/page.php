@@ -26,9 +26,9 @@ class ComPagesModelPage extends KModelAbstract
 
     public function getPage()
     {
-        if($this->__page && !$this->__page instanceof ComPagesCollectionEntityPage)
+        if($this->__page && !$this->__page instanceof ComPagesModelEntityPage)
         {
-            $this->__page = $this->getObject('com:pages.collection.entity.page',
+            $this->__page = $this->getObject('com:pages.model.entity.page',
                 array('data'  =>  $this->__page->toArray())
             );
         }
@@ -40,7 +40,7 @@ class ComPagesModelPage extends KModelAbstract
     {
         if(is_null($this->__collection) && $page = $this->getPage())
         {
-            $this->__collection = $this->getObject('com:pages.collection.factory')
+            $this->__collection = $this->getObject('com:pages.model.factory')
                     ->createCollection($this->getPage()->route);
         }
 

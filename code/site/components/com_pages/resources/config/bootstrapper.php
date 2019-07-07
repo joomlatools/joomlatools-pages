@@ -28,7 +28,7 @@ $default = [
         'com:pages.version'     => 'com://admin/pages.version',
         'com:pages.data.object' => 'com://site/pages.data.object',
         'com:pages.data.client' => 'com://site/pages.data.client',
-        'com:pages.collection.entity.page' => 'com://site/pages.collection.entity.page',
+        'com:pages.model.entity.page' => 'com://site/pages.model.entity.page',
     ],
 
     'identifiers' => [

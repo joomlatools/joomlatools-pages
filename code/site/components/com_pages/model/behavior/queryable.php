@@ -7,13 +7,13 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-abstract class ComPagesCollectionBehaviorQueryable extends ComPagesCollectionBehaviorAbstract
+abstract class ComPagesModelBehaviorQueryable extends KModelBehaviorAbstract
 {
     protected function _beforeFetch(KModelContextInterface $context)
     {
         $state = $context->state;
 
-        if(!$state->isUnique() && $context instanceof ComPagesCollectionContext)
+        if(!$state->isUnique() && $context instanceof ComPagesModelContextCollection)
         {
             if(is_array($context->data)) {
                 $context->data = $this->_queryArray($context->data, $state);
