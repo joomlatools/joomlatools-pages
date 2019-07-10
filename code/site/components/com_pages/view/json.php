@@ -40,7 +40,7 @@ class ComPagesViewJson extends KViewJson
         return $result;
     }
 
-    public function getRoute($page, $query = array(), $escape = false)
+    public function getRoute($page = null, $query = array(), $escape = false)
     {
         if(!is_array($query)) {
             $query = array();

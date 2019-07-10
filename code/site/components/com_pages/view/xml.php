@@ -132,7 +132,7 @@ class ComPagesViewXml extends KViewTemplate
         return $this->getModel()->getState();
     }
 
-    public function getRoute($page, $query = array(), $escape = false)
+    public function getRoute($page = null, $query = array(), $escape = false)
     {
         if(!is_array($query)) {
             $query = array();
