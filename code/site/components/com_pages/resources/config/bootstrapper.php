@@ -49,8 +49,8 @@ $default = [
         ],
         'event.subscriber.factory' => [
             'subscribers' => [
-                'com:pages.subscriber.pagedecorator',
-                'com:pages.subscriber.errorhandler',
+                'com:pages.event.subscriber.pagedecorator',
+                'com:pages.event.subscriber.errorhandler',
             ]
         ],
         'lib:template.engine.markdown' => [
