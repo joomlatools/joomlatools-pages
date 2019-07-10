@@ -156,7 +156,7 @@ class ComPagesViewHtml extends ComKoowaViewHtml
         return JFactory::getDocument()->language ?? 'en-GB';
     }
 
-    public function getRoute($page, $query = array(), $escape = false)
+    public function getRoute($page = null, $query = array(), $escape = false)
     {
         if(!is_array($query)) {
             $query = array();
