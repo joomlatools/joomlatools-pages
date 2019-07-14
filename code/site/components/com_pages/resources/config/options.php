@@ -13,6 +13,9 @@ return [
         'com:pages.page.locator' => [
             'base_path' => $base_path
         ],
+        'com:pages.model.filesystem' => [
+            'base_path' => $base_path,
+        ],
         'com:pages.data.locator' => [
             'base_path' => $base_path.'/data'
         ],
