@@ -22,7 +22,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     {
         $config->append([
             //'behaviors' => ['cacheable'],  Injected by ComPagesDispatcherRouterResolverSite
-            'router'    => 'com://site/pages.dispatcher.router',
+            'router' => 'com://site/pages.dispatcher.router',
         ]);
 
         parent::_initialize($config);
@@ -69,7 +69,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         $page = $context->router->getPage();
 
         //Set the controller
-        $this->setController('page', ['view' => $page->getType()]);
+        $this->setController($page->getType());
 
         //Set page in model
         $this->getController()->getModel()->setPage($page, $context->request->query->toArray());
@@ -122,7 +122,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
                 if($page = $this->getObject('page.registry')->getPage($code))
                 {
                     //Set the controller
-                    $this->setController('page', ['view' => $page->getType()]);
+                    $this->setController($page->getType());
 
                     //Set page in model
                     $this->getController()->getModel()->setPage($page, $context->request->query->toArray());
