@@ -11,17 +11,21 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
 {
     protected $_path;
 
+    protected $_base_path;
+
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
 
-        $this->_path = $config->path;
+        $this->_path      = $config->path;
+        $this->_base_path = $config->base_path;
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'path'  => '',
+            'path'      => '',
+            'base_path' =>  Koowa::getInstance()->getRootPath().'/joomlatools-pages',
         ]);
 
         parent::_initialize($config);
@@ -47,15 +51,16 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
 
     public function getData($count = false)
     {
-       if(!isset($this->_data))
-       {
-           if($path = $this->getPath($this->getState()->getValues()))
+        if(!isset($this->_data))
+        {
+           if($path = (string) $this->getPath($this->getState()->getValues()))
            {
-               if(strpos($path, 'data://') === 0) {
-                   $this->_data = $this->getObject('data.registry')->getData(str_replace('data://', '', (string)$path), false);
-               } else {
+               if(strpos($path, 'data://') === false)
+               {
+                   $path = $path[0] != '/' ?  $this->_base_path.'/'.$path : $path;
                    $this->_data = $this->getObject('object.config.factory')->fromFile($path, false);
                }
+               else $this->_data = $this->getObject('data.registry')->getData(str_replace('data://', '', (string)$path), false);
            }
        }
 
