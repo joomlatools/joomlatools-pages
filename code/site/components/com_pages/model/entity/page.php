@@ -43,6 +43,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                 ],
                 'layout'      => array(),
                 'colllection' => false,
+                'form'        => false,
                 'direction'   => 'auto',
                 'canonical'   => null,
             ],
@@ -184,6 +185,11 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         return new KObjectConfig($value);
     }
 
+    public function setPropertyForm($value)
+    {
+        return new KObjectConfig($value);
+    }
+
     public function setPropertyDate($value)
     {
         //Set the date based on the modified time of the file
@@ -242,5 +248,10 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
     public function isCollection()
     {
         return isset($this->collection) && $this->collection !== false ? $this->collection : false;
+    }
+
+    public function isForm()
+    {
+        return isset($this->form) && $this->form !== false ? $this->form : false;
     }
 }

@@ -17,11 +17,20 @@ class ComPagesPageObject extends ComPagesObjectConfigFrontmatter
             $type = 'collection';
         }
 
+        if($this->isForm()) {
+            $type = 'form';
+        }
+
         return $type;
     }
     
     public function isCollection()
     {
         return isset($this->collection) && $this->collection !== false ? KObjectConfig::unbox($this->collection) : false;
+    }
+
+    public function isForm()
+    {
+        return isset($this->form) && $this->form !== false ? KObjectConfig::unbox($this->form) : false;
     }
 }
