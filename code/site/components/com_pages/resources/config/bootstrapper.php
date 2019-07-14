@@ -33,7 +33,10 @@ $default = [
 
     'identifiers' => [
         'object.config.factory' => [
-            'formats' => ['md' => 'ComPagesObjectConfigMarkdown']
+            'formats' => [
+                'md'  => 'ComPagesObjectConfigMarkdown',
+                'csv' => 'ComPagesObjectConfigCsv'
+            ],
         ],
         'template.locator.factory' => [
             'locators' => [
