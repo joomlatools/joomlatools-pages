@@ -11,16 +11,8 @@ class ComPagesTemplateFilterForm extends KTemplateFilterForm
 {
     public function filter(&$text)
     {
-        if($this->getTemplate()->page()->isForm())
-        {
-            $this->_addMetatag($text);
-            $this->_addAction($text);
-
-            if($this->getObject('user')->getSession()->isActive()) {
-                $this->_addToken($text);
-            }
-
-            $this->_addQueryParameters($text);
+        if($this->getTemplate()->page()->isForm()) {
+            parent::filter($text);
         }
 
         return $this;
