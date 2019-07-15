@@ -16,7 +16,7 @@ class ComPagesTemplateFilterForm extends KTemplateFilterForm
             $this->_addMetatag($text);
             $this->_addAction($text);
 
-            if($this->getObject('user')->isAuthentic()) {
+            if($this->getObject('user')->getSession()->isActive()) {
                 $this->_addToken($text);
             }
 
