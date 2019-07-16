@@ -11,8 +11,13 @@ class ComPagesTemplateFilterForm extends KTemplateFilterForm
 {
     public function filter(&$text)
     {
-        if($this->getTemplate()->page()->isForm()) {
+        if($form = $this->getTemplate()->page()->isForm())
+        {
             parent::filter($text);
+
+            if($name = $form->honeypot) {
+                $this->_addHoneypot($text, $name);
+            }
         }
 
         return $this;
@@ -40,5 +45,18 @@ class ComPagesTemplateFilterForm extends KTemplateFilterForm
         );
 
         return $this;
+    }
+
+    protected function _addHoneypot(&$text, $name)
+    {
+        $html  = '<div style="display:none !important;">';
+        $html .= '    <input type="text" name="'.$name.'" value="" autocomplete="false" tabindex="-1">';
+        $html .= '</div>';
+
+        // POST: Add honeyput to the form
+        $text  = preg_replace('#(<\s*form[^>]+method="post"[^>]*>)#si',
+            '\1'.PHP_EOL.$html,
+            $text
+        );
     }
 }

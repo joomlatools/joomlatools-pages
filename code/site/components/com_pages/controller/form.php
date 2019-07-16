@@ -23,8 +23,8 @@ class ComPagesControllerForm extends ComPagesControllerPage
         $page = $this->getModel()->getPage();
 
         //Validate the request
-        $rules = (array) KObjectConfig::unbox($page->form->rules);
-        $this->setValidationtRules($rules);
+        $this->setHoneypot($page->form->honeypot);
+        $this->setValidationtRules((array) KObjectConfig::unbox($page->form->rules));
 
         if($data = $this->validateRequest())
         {

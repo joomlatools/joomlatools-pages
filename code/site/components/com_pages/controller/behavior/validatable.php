@@ -10,6 +10,7 @@
 class ComPagesControllerBehaviorValidatable extends KControllerBehaviorAbstract
 {
     private $__rules;
+    private $__honeypot;
     private $__valid_data;
 
     public function __construct(KObjectConfig $config)
@@ -17,6 +18,17 @@ class ComPagesControllerBehaviorValidatable extends KControllerBehaviorAbstract
         parent::__construct($config);
 
         $this->__valid_data = null;
+    }
+
+    public function setHoneypot($name)
+    {
+        $this->__honeypot = $name;
+        return $this;
+    }
+
+    public function getHoneypot()
+    {
+        return $this->__honeypot;
     }
 
     public function setValidationtRules(array $rules)
@@ -38,6 +50,15 @@ class ComPagesControllerBehaviorValidatable extends KControllerBehaviorAbstract
         {
             $data = $this->getRequest()->data;
 
+            //Honeypot
+            if($honeypot = $this->getHoneyPot())
+            {
+                if($data->get($honeypot, 'raw')) {
+                    throw new ComPagesControllerExceptionRequestBlocked('Spam attempt blcoked');
+                }
+            }
+
+            //Payload
             foreach($this->getValidationRules() as $key => $filters)
             {
                 $filters = (array) $filters;
@@ -46,7 +67,7 @@ class ComPagesControllerBehaviorValidatable extends KControllerBehaviorAbstract
                 if(in_array('required', $filters))
                 {
                     if(!$data->has($key) || empty($data->get($key, 'raw'))) {
-                        throw new KControllerExceptionRequestInvalid(sprintf('%s is required', ucfirst($key)));
+                        throw new ComPagesControllerExceptionRequestInvalid(sprintf('%s is required', ucfirst($key)));
                     } else {
                        $filters = array_diff($filters, ['required']);
                     }
@@ -56,7 +77,7 @@ class ComPagesControllerBehaviorValidatable extends KControllerBehaviorAbstract
                 $value = $data->get($key, 'raw');
                 $chain = $this->getObject('filter.factory')->createChain($filters);
                 if(!$chain->validate($value)) {
-                    throw new KControllerExceptionRequestInvalid(sprintf('%s is not valid', ucfirst($key)));
+                    throw new ComPagesControllerExceptionRequestInvalid(sprintf('%s is not valid', ucfirst($key)));
                 }
 
                 //Santize data just in case
