@@ -93,7 +93,7 @@ class ComPagesControllerProcessorEmail extends ComPagesControllerProcessorAbstra
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Hybrid Grid Master</title>
+<title>$title</title>
 <style type="text/css">
 
   @media only screen and (max-width: 600px) {
