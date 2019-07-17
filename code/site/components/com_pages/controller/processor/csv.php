@@ -16,7 +16,7 @@ class ComPagesControllerProcessorCsv extends ComPagesControllerProcessorAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'base_path'  => Koowa::getInstance()->getRootPath().'/joomlatools-pages/logs',
+            'path'  => Koowa::getInstance()->getRootPath().'/joomlatools-pages/logs',
         ]);
 
         parent::_initialize($config);
@@ -24,7 +24,7 @@ class ComPagesControllerProcessorCsv extends ComPagesControllerProcessorAbstract
 
     public function getFile()
     {
-        return $this->getConfig()->base_path.'/'.$this->getChannel().'.csv';
+        return $this->getConfig()->path.'/'.$this->getChannel().'.csv';
     }
 
     public function processData(array $data)

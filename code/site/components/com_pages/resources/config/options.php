@@ -20,7 +20,7 @@ return [
             'base_path' => $base_path.'/theme',
         ],
         'com://site//pages.controller.processor.csv' => [
-            'base_path' => $base_path.'/logs',
+            'path' => $base_path.'/logs',
         ],
         'com://site/pages.template.filter.asset' => [
             'schemes' =>  $config['aliases'] ?? array()
