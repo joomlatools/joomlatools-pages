@@ -13,8 +13,8 @@ class ComPagesTemplateFilterMeta extends ComPagesTemplateFilterAbstract
     {
         static $included;
 
-        //Ensure we are only including the page metadata once
-        if(!$included)
+        //Ensure we are only including the page metadata once and do not include metadata of the page is empty
+        if(!$included && !empty($text))
         {
             $meta = array();
 
