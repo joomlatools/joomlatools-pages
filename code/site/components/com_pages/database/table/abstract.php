@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-final class ComPagesDatabaseTableDefault extends ComPagesDatabaseTableAbstract
+abstract class ComPagesDatabaseTableAbstract extends KDatabaseTableAbstract
 {
 
 }
