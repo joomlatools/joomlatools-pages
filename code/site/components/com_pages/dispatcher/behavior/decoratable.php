@@ -19,13 +19,24 @@ class ComPagesDispatcherBehaviorDecoratable extends ComKoowaDispatcherBehaviorDe
 
             $controller->getView()
                 ->setDecorator($this->getDecorator())
-                ->setLayout('joomla');
+                ->setLayout($this->getLayout());
 
             $content = $controller->render();
 
             //Set the result in the response
             $response->setContent($content);
         }
+    }
+
+    public function getLayout()
+    {
+        $result = 'joomla';
+
+        if(JDEBUG && $this->getResponse()->isError()) {
+            $result = 'koowa';
+        }
+
+        return $result;
     }
 
     public function getDecorator()
@@ -40,6 +51,10 @@ class ComPagesDispatcherBehaviorDecoratable extends ComKoowaDispatcherBehaviorDe
             } else {
                 $result = 'koowa';
             }
+        }
+
+        if(JDEBUG && $this->getResponse()->isError()) {
+            $result = 'koowa';
         }
 
         return $result;
