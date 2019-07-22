@@ -20,12 +20,7 @@ class ComPagesTemplateFilterForm extends KTemplateFilterForm
 
     protected function _addAction(&$text)
     {
-        // POST: Add submit action
-        $text    = preg_replace('#(<\s*form[^>]+method="post"[^>]*>)#si',
-            '\1'.PHP_EOL.'<input type="hidden" name="_action" value="submit" />',
-            $text
-        );
-
+        //Action can be empty in HTML5 forms
         return $this;
     }
 }

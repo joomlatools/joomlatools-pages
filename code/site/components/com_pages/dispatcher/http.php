@@ -110,6 +110,17 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         return parent::_actionGet($context);
     }
 
+    protected function _actionPost(KDispatcherContextInterface $context)
+    {
+        if($context->router->getPage()->isForm()) {
+            $result = $this->getController()->execute('submit', $context);
+        } else {
+            $result = parent::_actionPost($context);
+        }
+
+        return $result;
+    }
+
     protected function _renderError(KDispatcherContextInterface $context)
     {
         if(!JDEBUG && $this->getObject('request')->getFormat() == 'html')
