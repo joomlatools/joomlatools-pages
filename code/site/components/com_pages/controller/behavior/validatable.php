@@ -31,7 +31,7 @@ class ComPagesControllerBehaviorValidatable extends KControllerBehaviorAbstract
         return $this->__honeypot;
     }
 
-    public function setValidationtRules(array $rules)
+    public function setValidationRules(array $rules)
     {
         $this->__valid_data = null; //reset
         $this->__rules = $rules;

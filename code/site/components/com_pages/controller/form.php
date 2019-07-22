@@ -24,7 +24,7 @@ class ComPagesControllerForm extends ComPagesControllerPage
 
         //Validate the request
         $this->setHoneypot($page->form->honeypot);
-        $this->setValidationtRules((array) KObjectConfig::unbox($page->form->fields));
+        $this->setValidationRules((array) KObjectConfig::unbox($page->form->fields));
 
         if($data = $this->validateRequest())
         {
