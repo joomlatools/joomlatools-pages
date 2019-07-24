@@ -14,7 +14,7 @@ class ComPagesTemplateLocatorTheme extends KTemplateLocatorFile
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'base_path' =>  JPATH_ROOT.'/joomlatools-pages/theme'
+            'base_path' => $this->getObject('com:pages.config')->getSitePath('theme')
         ]);
 
         parent::_initialize($config);

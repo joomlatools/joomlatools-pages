@@ -9,6 +9,7 @@
 
 class ComPagesConfig extends KObject implements KObjectSingleton
 {
+    protected $_base_paths;
     protected $_site_path;
 
     protected $_boootstrapped;
@@ -19,19 +20,35 @@ class ComPagesConfig extends KObject implements KObjectSingleton
 
         $this->_bootstrapped = false;
 
-        $this->_site_path = $config->site_path;
+        $this->_base_paths = $config->base_paths;
+        $this->_site_path  = $config->site_path;
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
+            'base_paths'     => [
+                'cache'      => null,
+                'data'       => null,
+                'extensions' => null,
+                'logs'       => null,
+                'theme'      => null,
+            ],
             'site_path' => Koowa::getInstance()->getRootPath().'/joomlatools-pages'
         ));
     }
 
-    public function getSitePath()
+    public function getSitePath($path = null)
     {
-        return $this->_site_path;
+        if($path)
+        {
+            if(!$result = $this->_base_paths[$path]) {
+                $result = $this->_site_path.'/'.$path;
+            }
+        }
+        else $result = $this->_site_path;
+
+        return $result;
     }
 
     public function bootstrap($path)
@@ -41,10 +58,10 @@ class ComPagesConfig extends KObject implements KObjectSingleton
             $this->_site_path = $path;
 
             //Configure object manager
-            $this->_loadConfig($path);
+            $this->_loadConfig($this->getSitePath());
 
             //Load the extensions
-            $this->_loadExtensions($path);
+            $this->_loadExtensions($this->getSitePath('extensions'));
 
             $this->_bootstrapped = true;
         }
@@ -116,23 +133,23 @@ class ComPagesConfig extends KObject implements KObjectSingleton
     {
         //Add extension locators
         $this->getObject('manager')->getClassLoader()->registerLocator(new ComPagesClassLocatorExtension(array(
-            'namespaces' => array('\\'  => $path.'/extensions')
+            'namespaces' => array('\\'  => $path)
         )));
 
         $this->getObject('manager')->registerLocator('com:pages.object.locator.extension');
 
         //Register event subscribers
-        foreach (glob($path.'/extensions/subscriber/[!_]*.php') as $filename) {
+        foreach (glob($path.'/subscriber/[!_]*.php') as $filename) {
             $this->getObject('event.subscriber.factory')->registerSubscriber('ext:subscriber.'.basename($filename, '.php'));
         }
 
         //Register template filters
-        foreach (glob($path.'/extensions/template/filter/[!_]*.php') as $filename) {
+        foreach (glob($path.'/template/filter/[!_]*.php') as $filename) {
             $this->getConfig('com://site/pages.template.default')->merge(['filters' => ['ext:template.filter.'.basename($filename, '.php')]]);
         }
 
         //Register template function
-        foreach (glob($path.'/extensions/template/function/[!_]*.php') as $filename) {
+        foreach (glob($path.'/template/function/[!_]*.php') as $filename) {
             $this->getConfig('com://site/pages.template.default')->merge(['functions' => [basename($filename, '.php') => $filename]]);
         }
     }

@@ -24,7 +24,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
     {
         $config->append([
             'cache'      => JDEBUG ? false : true,
-            'cache_path'  => $this->getObject('com:pages.config')->getSitePath().'/cache',
+            'cache_path'  => $this->getObject('com:pages.config')->getSitePath('cache'),
             'cache_time' => 60*60*24 //1 day
         ]);
 
