@@ -1,4 +1,11 @@
 <?php
+/**
+ * Joomlatools Pages
+ *
+ * @copyright   Copyright (C) 2018 Johan Janssens and Timble CVBA. (http://www.timble.net)
+ * @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl.html>
+ * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
+ */
 
 class ComPagesTemplateHelperSnippet extends ComPagesTemplateHelperAbstract
 {
@@ -32,7 +39,7 @@ class ComPagesTemplateHelperSnippet extends ComPagesTemplateHelperAbstract
     {
         $result = false;
 
-        if(isset($this->__snippets[$name]))
+        if($this->exists($name))
         {
             $snippet = $this->__snippets[$name];
 
@@ -52,6 +59,17 @@ class ComPagesTemplateHelperSnippet extends ComPagesTemplateHelperAbstract
             }
         }
         else throw new RuntimeException('Snippet: '.$name.' does not exist');
+
+        return $result;
+    }
+
+    public function exists(string $name)
+    {
+        $result = false;
+
+        if(isset($this->__snippets[$name])) {
+            $result = true;
+        }
 
         return $result;
     }

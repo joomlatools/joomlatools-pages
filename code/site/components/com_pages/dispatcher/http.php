@@ -9,20 +9,24 @@
 
 class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 {
-    protected $_router;
+    private $__router;
 
     public function __construct( KObjectConfig $config)
     {
         parent::__construct($config);
 
-        $this->_router = $config->router;
+        $this->__router  = $config->router;
+
+        //Re-register the exception event listener to run through pages scope
+        $this->addEventListener('onException', array($this, 'fail'));
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
+
             //'behaviors' => ['cacheable'],  Injected by ComPagesDispatcherRouterResolverSite
-            'router'    => 'com://site/pages.dispatcher.router',
+            'router'  => 'com://site/pages.dispatcher.router',
         ]);
 
         parent::_initialize($config);
@@ -30,27 +34,27 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     public function setRouter(ComPagesDispatcherRouterInterface $router)
     {
-        $this->_router = $router;
+        $this->__router = $router;
         return $this;
     }
 
     public function getRouter()
     {
-        if(!$this->_router instanceof ComPagesDispatcherRouterInterface)
+        if(!$this->__router instanceof ComPagesDispatcherRouterInterface)
         {
-            $this->_router = $this->getObject($this->_router, array(
+            $this->__router = $this->getObject($this->__router, array(
                 'response' => $this->getResponse(),
             ));
 
-            if(!$this->_router instanceof ComPagesDispatcherRouterInterface)
+            if(!$this->__router instanceof ComPagesDispatcherRouterInterface)
             {
                 throw new UnexpectedValueException(
-                    'Router: '.get_class($this->_router).' does not implement ComPagesDispatcherRouterInterface'
+                    'Router: '.get_class($this->__router).' does not implement ComPagesDispatcherRouterInterface'
                 );
             }
         }
 
-        return $this->_router;
+        return $this->__router;
     }
 
     protected function _beforeDispatch(KDispatcherContextInterface $context)
@@ -69,10 +73,24 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         $page = $context->router->getPage();
 
         //Set the controller
-        $this->setController('page', ['view' => $page->getType()]);
+        $this->setController($page->getType());
 
         //Set page in model
         $this->getController()->getModel()->setPage($page, $context->request->query->toArray());
+    }
+
+    protected function _actionDispatch(KDispatcherContextInterface $context)
+    {
+        //Throw 405 if the method is not allowed
+        $method = strtolower($context->request->getMethod());
+        if (!in_array($method, $this->getHttpMethods())) {
+            throw new KDispatcherExceptionMethodNotAllowed('Method not allowed');
+        }
+
+        //Execute the component method
+        $this->execute($method, $context);
+
+        KDispatcherAbstract::_actionDispatch($context);
     }
 
     protected function _actionGet(KDispatcherContextInterface $context)
@@ -92,18 +110,15 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         return parent::_actionGet($context);
     }
 
-    protected function _actionDispatch(KDispatcherContextInterface $context)
+    protected function _actionPost(KDispatcherContextInterface $context)
     {
-        //Throw 405 if the method is not allowed
-        $method = strtolower($context->request->getMethod());
-        if (!in_array($method, $this->getHttpMethods())) {
-            throw new KDispatcherExceptionMethodNotAllowed('Method not allowed');
+        if($context->router->getPage()->isForm()) {
+            $result = $this->getController()->execute('submit', $context);
+        } else {
+            $result = parent::_actionPost($context);
         }
 
-        //Execute the component method
-        $this->execute($method, $context);
-
-        KDispatcherAbstract::_actionDispatch($context);
+        return $result;
     }
 
     protected function _renderError(KDispatcherContextInterface $context)
@@ -122,7 +137,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
                 if($page = $this->getObject('page.registry')->getPage($code))
                 {
                     //Set the controller
-                    $this->setController('page', ['view' => $page->getType()]);
+                    $this->setController($page->getType());
 
                     //Set page in model
                     $this->getController()->getModel()->setPage($page, $context->request->query->toArray());
@@ -132,6 +147,9 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
                     //Set error in the response
                     $context->response->setContent($content);
+
+                    //Set status code
+                    $context->response->setStatus($exception->getCode());
 
                     return true;
                 }
@@ -151,5 +169,22 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         $context->setRouter($this->getRouter());
 
         return $context;
+    }
+
+    public function getHttpMethods()
+    {
+        $page = $this->getRouter()->getPage(true);
+
+        if($page->isForm())
+        {
+            if($page->layout || !empty($page->getContent())) {
+                $methods =  array('get', 'head', 'options', 'post');
+            } else {
+                $methods =  array('post');
+            }
+        }
+        else $methods =  array('get', 'head', 'options');
+
+        return $methods;
     }
 }

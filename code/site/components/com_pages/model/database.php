@@ -70,24 +70,12 @@ class ComPagesModelDatabase extends ComPagesModelCollection
             //Make sure we have a table identifier
             if(!($this->_table instanceof KObjectIdentifier))
             {
-                if(is_string($this->_table) && strpos($this->_table, '.') === false )
-                {
-                    $identifier         = $this->getIdentifier()->toArray();
-                    $identifier['path'] = array('database', 'table');
-                    $identifier['name'] = KStringInflector::underscore($this->_table);
-
-                    $identifier = $this->getIdentifier($identifier);
+                if(is_string($this->_table) && strpos($this->_table, '.') !== false ) {
+                    $this->_table = $this->getObject($this->_table);
+                } else {
+                    $this->_table = $this->getObject('com:pages.database.table.default', array('name' => $this->_table));
                 }
-                else  $identifier = $this->getIdentifier($this->_table);
-
-                if($identifier->path[1] != 'table') {
-                    throw new UnexpectedValueException('Identifier: '.$identifier.' is not a table identifier');
-                }
-
-                $this->_table = $identifier;
             }
-
-            $this->_table = $this->getObject($this->_table);
 
             if(!$this->_table instanceof KDatabaseTableInterface)
             {

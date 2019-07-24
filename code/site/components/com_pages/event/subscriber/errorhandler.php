@@ -9,6 +9,13 @@
 
 class ComPagesEventSubscriberErrorhandler extends ComPagesEventSubscriberAbstract
 {
+    protected function _initialize(KObjectConfig $config)
+    {
+        $config->append(array(
+            'debug' => JDEBUG,
+        ));
+    }
+
     public function __construct( KObjectConfig $config)
     {
         parent::__construct($config);
@@ -19,7 +26,7 @@ class ComPagesEventSubscriberErrorhandler extends ComPagesEventSubscriberAbstrac
 
     public function onException(KEventException $event)
     {
-        if(!JDEBUG && $this->getObject('request')->getFormat() == 'html')
+        if(!$this->isDebug() && $this->getObject('request')->getFormat() == 'html')
         {
             if($this->getObject('com://site/pages.dispatcher.http')->fail($event)) {
                 return true;
@@ -27,6 +34,11 @@ class ComPagesEventSubscriberErrorhandler extends ComPagesEventSubscriberAbstrac
         }
 
         return false;
+    }
+
+    public function isDebug()
+    {
+        return $this->getConfig()->debug;
     }
 }
 

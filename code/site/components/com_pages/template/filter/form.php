@@ -9,19 +9,18 @@
 
 class ComPagesTemplateFilterForm extends KTemplateFilterForm
 {
-    /**
-     * Handle form replacements
-     *
-     * @param string
-     * @return $this
-     */
     public function filter(&$text)
     {
-        //$this->_addMetatag($text);
-        $this->_addAction($text);
-        //$this->_addToken($text);
-        $this->_addQueryParameters($text);
+        if($this->getTemplate()->page()->isForm()) {
+            parent::filter($text);
+        }
 
+        return $this;
+    }
+
+    protected function _addAction(&$text)
+    {
+        //Action can be empty in HTML5 forms
         return $this;
     }
 }

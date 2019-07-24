@@ -26,12 +26,12 @@ class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract implemen
         parent::_initialize($config);
     }
 
-    public function getPage()
+    public function getPage($content = false)
     {
         $page = false;
 
         if($route = $this->resolve()) {
-            $page = $this->getObject('page.registry')->getPage($route->getPath());
+            $page = $this->getObject('page.registry')->getPage($route->getPath(), $content);
         }
 
         return $page;
