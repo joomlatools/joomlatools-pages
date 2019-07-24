@@ -14,7 +14,7 @@ class ComPagesDataLocator extends KTemplateLocatorFile
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'base_path' =>  $this->getObject('com:pages.config')->getBasePath().'/data',
+            'base_path' =>  $this->getObject('com:pages.config')->getSitePath().'/data',
         ]);
 
         parent::_initialize($config);

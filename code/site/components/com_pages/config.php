@@ -9,7 +9,7 @@
 
 class ComPagesConfig extends KObject implements KObjectSingleton
 {
-    protected $_base_path;
+    protected $_site_path;
 
     protected $_boootstrapped;
 
@@ -19,26 +19,26 @@ class ComPagesConfig extends KObject implements KObjectSingleton
 
         $this->_bootstrapped = false;
 
-        $this->_base_path = $config->base_path;
+        $this->_site_path = $config->site_path;
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'base_path' => Koowa::getInstance()->getRootPath().'/joomlatools-pages'
+            'site_path' => Koowa::getInstance()->getRootPath().'/joomlatools-pages'
         ));
     }
 
-    public function getBasePath()
+    public function getSitePath()
     {
-        return $this->_base_path;
+        return $this->_site_path;
     }
 
     public function bootstrap($path)
     {
         if(!$this->_boootstrapped)
         {
-            $this->_base_path = $path;
+            $this->_site_path = $path;
 
             //Configure object manager
             $this->_loadConfig($path);
