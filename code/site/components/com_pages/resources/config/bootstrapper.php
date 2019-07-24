@@ -7,8 +7,6 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-$base_path = JPATH_ROOT.'/joomlatools-pages';
-
 //Load config
 if(file_exists(JPATH_CONFIGURATION.'/configuration-pages.php')) {
     $config = (array) include JPATH_CONFIGURATION.'/configuration-pages.php';
@@ -17,8 +15,7 @@ if(file_exists(JPATH_CONFIGURATION.'/configuration-pages.php')) {
 }
 
 //Load config options
-$options = include __DIR__.'/options.php';
-$default = [
+return [
 
     'priority' => KObjectBootstrapper::PRIORITY_HIGH,
     'aliases' => [
@@ -32,6 +29,9 @@ $default = [
     ],
 
     'identifiers' => [
+        'response' => [
+            'headers'  => $config['headers'] ??  array(),
+        ],
         'object.config.factory' => [
             'formats' => ['md' => 'ComPagesObjectConfigMarkdown']
         ],
@@ -66,9 +66,7 @@ $default = [
             }
         ],
         'com://site/pages.dispatcher.router.resolver.site' => [
-            'routes'  => isset($config['sites']) ? array_flip($config['sites']) : array($base_path => '[*]'),
+            'routes'  => isset($config['sites']) ? array_flip($config['sites']) : array(JPATH_ROOT.'/joomlatools-pages' => '[*]'),
         ],
     ]
 ];
-
-return array_merge_recursive($default, $options);
