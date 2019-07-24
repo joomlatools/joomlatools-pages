@@ -16,7 +16,7 @@ class ComPagesControllerProcessorCsv extends ComPagesControllerProcessorAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'path'  => Koowa::getInstance()->getRootPath().'/joomlatools-pages/logs',
+            'path'  => $this->getObject('com:pages.config')->getSitePath().'/logs',
         ]);
 
         parent::_initialize($config);
