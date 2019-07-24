@@ -21,7 +21,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     {
         $config->append(array(
             'cache'      => false,
-            'cache_path' =>  Koowa::getInstance()->getRootPath().'/joomlatools-pages/cache',
+            'cache_path' =>  $this->getObject('com:pages.config')->getBasePath().'/cache',
             'cache_time'        => 60*15,   //15min
             'cache_time_shared' => 60*60*2, //2h
         ));
