@@ -24,7 +24,7 @@ class ComPagesDataClient extends KObject implements KObjectSingleton
         $this->_cache_time = $config->cache_time;
 
         if(empty($config->cache_path)) {
-            $this->_cache_path = Koowa::getInstance()->getRootPath().'/joomlatools-pages/cache';
+            $this->_cache_path = $this->getObject('com:pages.config')->getSitePath().'/cache';
         } else {
             $this->_cache_path = $config->cache_path;
         }

@@ -41,7 +41,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     {
         $config->append([
             'cache'       => JDEBUG ? false : true,
-            'cache_path'  => Koowa::getInstance()->getRootPath().'/joomlatools-pages/cache',
+            'cache_path'  => $this->getObject('com:pages.config')->getSitePath().'/cache',
             'cache_time'  => 60*60*24, //1 day
             'collections' => array(),
             'redirects'   => array(),
