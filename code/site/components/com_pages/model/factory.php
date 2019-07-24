@@ -37,14 +37,15 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
             //Create the model
             $model = KHttpUrl::fromString($collection->model);
 
-            $identifier = $model->toString(KHttpUrl::BASE);
-            $config     = $model->query;
+            $name   = $model->toString(KHttpUrl::BASE);
+            $config = $model->query;
 
-            if(is_string($identifier) && strpos($identifier, '.') === false )
+            if(is_string($name) && strpos($name, '.') === false )
             {
                 $identifier = $this->getIdentifier()->toArray();
-                $identifier['name'] = $model;
+                $identifier['name'] = $name;
             }
+            else $identifier = $name;
 
             $model = $this->getObject($identifier, $config);
 
