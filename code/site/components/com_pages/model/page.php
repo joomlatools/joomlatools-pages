@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelPage extends KModelAbstract
+final class ComPagesModelPage extends KModelAbstract
 {
     private $__page;
     private $__collection;
@@ -45,6 +45,23 @@ class ComPagesModelPage extends KModelAbstract
         }
 
         return  $this->__collection;
+    }
+
+    public function getCollectionType()
+    {
+        $type = null;
+
+        if($collection = $this->getCollection())
+        {
+            if(!$collection instanceof ComPagesModelInterface)
+            {
+                $identifier = $collection>getIdentifier();
+                $type = $identifier->getPackage() .'-'. KStringInflector::pluralize($identifier->getName());
+
+            } else $type = $collection->getType();
+        }
+
+        return $type;
     }
 
     public function setState(array $values)
