@@ -205,11 +205,17 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
 
     public function setPropertyImage($value)
     {
-        if(is_string($value) && strpos($value, '://') === false) {
-            $value = '/'.ltrim($value, '/');
-        }
+        if(!empty($value))
+        {
+            if(is_string($value) && strpos($value, '://') === false) {
+                $value = '/'.ltrim($value, '/');
+            }
 
-        return $this->getObject('lib:http.url')->setUrl($value);
+            $image = $this->getObject('lib:http.url')->setUrl($value);
+        }
+        else $image = null;
+
+        return $image;
     }
 
     public function setPropertyLayout($value)
