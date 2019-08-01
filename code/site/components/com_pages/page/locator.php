@@ -10,7 +10,6 @@
 class ComPagesPageLocator extends KTemplateLocatorFile
 {
     protected static $_name = 'page';
-    protected $_formats;
 
     protected function _initialize(KObjectConfig $config)
     {
