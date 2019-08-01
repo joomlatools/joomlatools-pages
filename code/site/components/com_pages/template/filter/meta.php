@@ -13,7 +13,7 @@ class ComPagesTemplateFilterMeta extends ComPagesTemplateFilterAbstract
     {
         static $included;
 
-        //Ensure we are only including the page metadata once and do not include metadata of the page is empty
+        //Ensure we are only including the page metadata once and do not include metadata if the page is empty
         if(!$included && !empty($text))
         {
             $meta = array();
@@ -53,7 +53,7 @@ class ComPagesTemplateFilterMeta extends ComPagesTemplateFilterAbstract
                 if($page->metadata->has('og:type'))
                 {
                     if(strpos($metadata['og:image'], 'http') === false) {
-                        $metadata['og:image'] = rtrim($this->getObject('request')->getBaseUrl(), '/').'/'.ltrim($metadata['og:image'], '/');
+                        $metadata['og:image'] = (string) $this->getTemplate()->url($metadata['og:image']);
                     }
 
                     if(!$metadata['og:url']) {

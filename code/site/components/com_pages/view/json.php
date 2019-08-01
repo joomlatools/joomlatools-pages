@@ -39,7 +39,7 @@ class ComPagesViewJson extends KViewAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'behaviors'   => ['routable', 'pageable'],
+            'behaviors'   => ['routable'],
             'version'     => '1.0',
         ]);
 

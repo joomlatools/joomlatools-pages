@@ -12,15 +12,9 @@ class ComPagesViewHtml extends ComKoowaViewHtml
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
+            'behaviors'   => ['routable', 'pageable', 'layoutable'],
             'auto_fetch'  => false,
-            'template_filters' => ['asset', 'meta'],
-            'template_functions' => [
-                'page'        => [$this, 'getPage'],
-                'collection'  => [$this, 'getCollection'],
-                'state'       => [$this, 'getState'],
-                'direction'   => [$this, 'getDirection'],
-                'language'    => [$this, 'getLanguage'],
-            ],
+            'template_filters' => ['asset'],
         ]);
 
         parent::_initialize($config);
@@ -28,144 +22,43 @@ class ComPagesViewHtml extends ComKoowaViewHtml
 
     protected function _actionRender(KViewContext $context)
     {
-        $data       = $context->data;
-        $parameters = $context->parameters;
+        $content = $this->getContent();
 
-        //Render the page if it hasn't been rendered yet
-        if(empty($this->getPage()->content))
-        {
-            //Create template (add parameters BEFORE cloning)
-            $page = clone $this->getTemplate()->setParameters($parameters);
-            $page->addFilters($this->getPage()->process->filters)
-                ->loadFile('page://pages/'.$this->getPage()->route);
-
-            //Render page
-            $content = $page->render(KObjectConfig::unbox($data->append($page->getData())));
-            $this->getPage()->content = $content;
-        }
-        else $content = $this->getPage()->content;
-
-        //Set the rendered page in the view to allow for view decoration
-        $this->setContent($content);
-
-        if($layout = $this->getLayout())
-        {
-            //Render the layout
-            $renderLayout = function($layout, $data, $parameters) use(&$renderLayout)
-            {
-                $template = $this->getTemplate()
-                    ->setParameters($parameters)
-                    ->loadFile($layout);
-
-                //Append the template layout data
-                //
-                //Do not overwrite existing data, only add it not defined yet
-                $this->getLayoutData()->append($template->getData());
-
-                //Merge the page layout data
-                //
-                //Allow the layout data to be modified during template rendering
-                $data->merge($this->getLayoutData());
-
-                //Render the template
-                $this->setContent($template->render(KObjectConfig::unbox($data)));
-
-                //Handle recursive layout
-                if($layout = $template->getLayout()) {
-                    $renderLayout($layout, $data, $parameters);
-                }
-            };
-
-            Closure::bind($renderLayout, $this, get_class());
-            $renderLayout($layout, $data, $parameters);
-        }
-
-        return KViewAbstract::_actionRender($context);
-    }
-
-    public function getLayout()
-    {
-        if($layout = $this->getPage()->layout) {
-            $layout = $layout->path;
-        }
-
-        return $layout;
-    }
-
-    public function getLayoutData()
-    {
-        $data = array();
-        if($layout = $this->getPage()->layout)
-        {
-            unset($layout->path);
-            $data = $layout;
-        }
-
-        return $data;
-    }
-
-    public function getPage($path = null)
-    {
-        if(!is_null($path)) {
-            $result = $this->getObject('com:pages.model.factory')->createPage($path);
-        } else {
-            $result = $this->getModel()->getPage();
-        }
-
-        return $result;
-    }
-
-    public function getCollection($model = '', $state = array())
-    {
-        if($model) {
-            $result = $this->getObject('com:pages.model.factory')->createCollection($model, $state)->fetch();
-        } else {
-            $result = $this->getModel()->fetch();
-        }
-
-        return $result;
-    }
-
-    public function getState()
-    {
-        return $this->getModel()->getState();
+        return trim($content);
     }
 
     public function getTitle()
     {
         $result = '';
-        if($page = $this->getPage()) {
+        if($page = $this->getModel()->getPage()) {
             $result = $page->title ? $page->title :  '';
         }
 
         return $result;
     }
 
-    public function getDirection()
-    {
-        $result = '';
-        if($page = $this->getPage()) {
-            $result = $page->direction ? $page->direction :  'auto';
-        }
-
-        return $result;
-    }
-
-    public function getLanguage()
-    {
-        return JFactory::getDocument()->language ?? 'en-GB';
-    }
-
     public function getRoute($page = null, $query = array(), $escape = false)
     {
-        if(!is_array($query)) {
-            $query = array();
-        }
+        return $this->getBehavior('routable')->getRoute($page, $query, $escape);
+    }
 
-        if($route = $this->getObject('dispatcher')->getRouter()->generate($page, $query)) {
-            $route = $route->setEscape($escape)->toString(KHttpUrl::PATH + KHttpUrl::QUERY);
+    public function getUrl($url = null)
+    {
+        if(!empty($url))
+        {
+            if($url instanceof KHttpUrlInterface)
+            {
+                $result = clone $url;
+                $result->setUrl(parent::getUrl()->toString(KHttpUrl::AUTHORITY));
+            }
+            else
+            {
+                $result = clone parent::getUrl();;
+                $result->setUrl($url);
+            }
         }
+        else $result = parent::getUrl();
 
-        return $route;
+        return $result;
     }
 }
