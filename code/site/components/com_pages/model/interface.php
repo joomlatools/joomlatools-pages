@@ -10,4 +10,10 @@
 interface ComPagesModelInterface extends KModelInterface
 {
     public function getData($count = false);
+
+    public function getType();
+
+    public function filterData($data);
+
+    public function filterItem($item, KModelStateInterface $state);
 }

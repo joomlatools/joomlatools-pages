@@ -9,7 +9,8 @@
 
 abstract class ComPagesModelCollection extends KModelAbstract implements ComPagesModelInterface
 {
-    protected $_data;
+    private $__data;
+    private $__type;
 
     public function __construct(KObjectConfig $config)
     {
@@ -23,39 +24,88 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         //Setup callbacks
         $this->addCommandCallback('before.fetch', '_prepareContext');
         $this->addCommandCallback('before.count', '_prepareContext');
+
+        //Set the type
+        $this->__type = $config->type;
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
+            'type' =>  KStringInflector::pluralize($this->getIdentifier()->getName()),
             'behaviors'   => [
                 'com:pages.model.behavior.paginatable',
                 'com:pages.model.behavior.sortable',
                 'com:pages.model.behavior.searchable'
             ],
+            'state' => 'com:pages.model.state.collection',
         ]);
 
         parent::_initialize($config);
     }
 
+    public function getType()
+    {
+        return $this->__type;
+    }
+
     public function getData($count = false)
     {
-        return (array) $this->_data;
+        return array();
+    }
+
+    public function filterData($data)
+    {
+        $state = $this->getState();
+
+        $result = array();
+        foreach($data as $key => $item)
+        {
+            $filtered = $this->filterItem($item, $state);
+
+            //Do not include the item if filtering returns empty array, null, or false
+            if(!empty($filtered))
+            {
+                if(is_array($filtered)) {
+                    $result[$key] = $filtered;
+                } else {
+                    $result[$key] = $item;
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    public function filterItem($item, KModelStateInterface $state)
+    {
+        if($state->isUnique())
+        {
+            foreach($state->getValues(true) as $key => $value)
+            {
+                if(!in_array($item[$key], (array) $value)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     protected function _prepareContext(KModelContext $context)
     {
-        $context->data = $this->getData($context->getName() == 'before.count');
+        if(!$this->__data) {
+            $this->__data = $this->getData($context->getName() == 'before.count');
+        }
+
+        $context->data = $this->__data;
     }
 
     protected function _actionFetch(KModelContext $context)
     {
-        $entities = $this->create($context->data);
+        $data = $this->filterData($context->data);
+        $entities = $this->create($data);
 
-        //Find the unique entity
-        if($context->state->isUnique()) {
-            $entities = $entities->find($context->state->getValues(true));
-        }
 
         return $entities;
     }
@@ -73,7 +123,7 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
 
     protected function _actionReset(KModelContext $context)
     {
-        $this->_data = null;
+        $this->__data = null;
 
         parent::_actionReset($context);
     }
@@ -91,10 +141,11 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
             $identifier = 'com://site/pages.model.entity.items';
         }
 
-        $options = array(
-            'data'         => $data,
-            'identity_key' => $context->getIdentityKey()
-        );
+        $options = array('data' => $data);
+
+        if($identity_key = $context->getIdentityKey()) {
+            $options['identity_key'] = $identity_key;
+        }
 
         return $this->getObject($identifier, $options);
     }
