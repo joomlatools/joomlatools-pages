@@ -7,16 +7,56 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelEntityItem extends KModelEntityAbstract implements JsonSerializable
+class ComPagesModelEntityItem extends KModelEntityAbstract
 {
-    public function jsonSerialize()
+    private $__internal_properties;
+
+    public function __construct(KObjectConfig $config)
     {
-        return $this->toArray();
+        parent::__construct($config);
+
+        $this->__internal_properties = KObjectConfig::unbox($config->internal_properties);
+    }
+
+    protected function _initialize(KObjectConfig $config)
+    {
+        $config->append([
+            'internal_properties' => [],
+        ]);
+
+        parent::_initialize($config);
+    }
+
+    public function getInteralProperties()
+    {
+        return $this->__internal_properties;
+    }
+
+    public function toArray()
+    {
+        $data = parent::toArray();
+
+        $data = array_diff_key($data, array_flip($this->getInteralProperties()));
+
+        foreach($data as $key => $value)
+        {
+            //Remove empty values
+            if(empty($value)) {
+                unset($data[$key]);
+            }
+
+            //Unpack config objects
+            if($value instanceof KObjectConfigInterface) {
+                $data[$key] = KObjectConfig::unbox($value);
+            }
+        }
+
+        return $data;
     }
 
     public function __debugInfo()
     {
-        return $this->toArray();
+        return $this->_data;
     }
 
     public function __call($method, $arguments)
