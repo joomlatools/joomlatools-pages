@@ -108,10 +108,19 @@ class ComPagesViewJson extends KViewAbstract
                     'offset'   => $offset,
                     'limit'    => $limit,
                     'total'	   => $total,
-                    'title'    => $page->title,
-                    'description' => $page->metadata->description,
-                    'image'       => $page->image
                 ];
+
+                if($title = $page->title) {
+                    $document['meta']['title'] = $title;
+                }
+
+                if($description = $page->description) {
+                    $document['meta']['description'] = $description;
+                }
+
+                if($image = $page->image) {
+                    $document['meta']['image'] = $this->getUrl((string)$image);
+                }
 
                 if ($limit) {
                     $document['links']['first'] = $this->getRoute($page, array('offset' => 0));
@@ -199,7 +208,7 @@ class ComPagesViewJson extends KViewAbstract
         {
             //Qualify the url's
             if($value instanceof KHttpUrlInterface) {
-                $value->setUrl($this->getUrl()->toString(KHttpUrl::AUTHORITY));
+                $value = $this->getUrl($value);
             }
 
             if(is_object($value))
@@ -269,5 +278,25 @@ class ComPagesViewJson extends KViewAbstract
     public function getRoute($page = null, $query = array(), $escape = false)
     {
         return $this->getBehavior('routable')->getRoute($page, $query, $escape);
+    }
+
+    public function getUrl($url = null)
+    {
+        if(!empty($url))
+        {
+            if($url instanceof KHttpUrlInterface)
+            {
+                $result = clone $url;
+                $result->setUrl(parent::getUrl()->toString(KHttpUrl::AUTHORITY));
+            }
+            else
+            {
+                $result = clone parent::getUrl();;
+                $result->setUrl($url);
+            }
+        }
+        else $result = parent::getUrl();
+
+        return $result;
     }
 }

@@ -38,19 +38,28 @@ class ComPagesViewXml extends KViewTemplate
         return $result;
     }
 
-    public function getUrl($url = null)
-    {
-        $url = clone parent::getUr(l);
-
-        if($url) {
-            $url->setUrl($url);
-        }
-
-        return $this;
-    }
-
     public function getRoute($page = null, $query = array(), $escape = false)
     {
         return $this->getBehavior('routable')->getRoute($page, $query, $escape);
+    }
+
+    public function getUrl($url = null)
+    {
+        if(!empty($url))
+        {
+            if($url instanceof KHttpUrlInterface)
+            {
+                $result = clone $url;
+                $result->setUrl(parent::getUrl()->toString(KHttpUrl::AUTHORITY));
+            }
+            else
+            {
+                $result = clone parent::getUrl();;
+                $result->setUrl($url);
+            }
+        }
+        else $result = parent::getUrl();
+
+        return $result;
     }
 }
