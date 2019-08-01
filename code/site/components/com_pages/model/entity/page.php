@@ -12,7 +12,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'identity_key'   => 'path',
+            'identity_key'   => 'route',
             'data' => [
                 'name'        => '',
                 'title'       => '',
@@ -39,7 +39,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                     'og:description' => null,
                 ],
                 'process'     => [
-                    'filters' => array(),
+                    'filters' => array('meta'),
                 ],
                 'layout'      => array(),
                 'colllection' => false,
@@ -47,6 +47,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                 'direction'   => 'auto',
                 'canonical'   => null,
             ],
+            'internal_properties' => ['process', 'layout', 'format', 'path', 'direction', 'collection', 'form'],
         ]);
 
         parent::_initialize($config);
@@ -202,47 +203,18 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         return $date;
     }
 
+    public function setPropertyImage($value)
+    {
+        if(is_string($value) && strpos($value, '://') === false) {
+            $value = '/'.ltrim($value, '/');
+        }
+
+        return $this->getObject('lib:http.url')->setUrl($value);
+    }
+
     public function setPropertyLayout($value)
     {
         return new KObjectConfig($value);
-    }
-
-    public function toArray()
-    {
-        $data = parent::toArray();
-
-        foreach($data as $key => $value)
-        {
-            if(empty($value)) {
-                unset($data[$key]);
-            }
-
-            if($value instanceof KObjectConfigInterface) {
-                $data[$key] = KObjectConfig::unbox($value);
-            }
-
-            if($value instanceof KDate) {
-                $data[$key] = $value->format(DateTime::ATOM);
-            }
-        }
-
-        return $data;
-    }
-
-    public function getHandle()
-    {
-        return $this->route;
-    }
-
-    public function jsonSerialize()
-    {
-        $data = parent::jsonSerialize();
-
-        unset($data['process']);
-        unset($data['layout']);
-        unset($data['path']);
-
-        return $data;
     }
 
     public function isCollection()
@@ -253,5 +225,26 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
     public function isForm()
     {
         return isset($this->form) && $this->form !== false ? $this->form : false;
+    }
+
+    public function getContent()
+    {
+        $template = $this->getObject('com:pages.template.default');
+
+        //Load the page
+        $template->loadFile('page://pages/'.$this->route);
+
+        //Render page
+        return $template->render(KObjectConfig::unbox($template->getData()));
+    }
+
+    public function getContentType()
+    {
+        return 'text/html';
+    }
+
+    public function __toString()
+    {
+        return $this->getContent();
     }
 }

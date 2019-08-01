@@ -12,7 +12,7 @@ class ComPagesModelEntityPages extends ComPagesModelEntityItems
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'identity_key' => 'path',
+            'identity_key' => 'route',
             'prototypable' => false
         ]);
 
