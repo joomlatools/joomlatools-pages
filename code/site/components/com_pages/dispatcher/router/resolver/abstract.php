@@ -175,21 +175,26 @@ abstract class ComPagesDispatcherRouterResolverAbstract extends KObject implemen
         //Check if we have a static route
         if(!isset($this->__static_routes[$path]))
         {
+            //Sort routes longest path to shortest
+            arsort($this->__dynamic_routes);
+
             //Match against the dynamic routes
             foreach($this->__dynamic_routes as $route => $target)
             {
-                // Compare longest non-param string with url, if match compile route and try to match it
-                if (strncmp($path.'/', $route, strpos($route, '[')) === 0)
-                {
-                    //Try to match
-                    if (false !== $query = $this->parseRoute($route, $path))
-                    {
-                        $match = $this->__dynamic_routes[$route];
+                //Compare longest non-param string with path, if not match continue
+                //$pos = strpos($route, '/[') ?? strpos($route, '.[');
+                //if (substr($route, 0, $pos) != substr($path, 0, $pos)) {
+                //    continue;
+                //}
 
-                        //Move matched route to the top of the stack for reverse lookups
-                        $this->__dynamic_routes = array($route => $match) + $this->__dynamic_routes;
-                        break;
-                    }
+                //Try to parse the route
+                if (false !== $query = $this->parseRoute($route, $path))
+                {
+                    $match = $this->__dynamic_routes[$route];
+
+                    //Move matched route to the top of the stack for reverse lookups
+                    $this->__dynamic_routes = array($route => $match) + $this->__dynamic_routes;
+                    break;
                 }
             }
         }
@@ -217,12 +222,12 @@ abstract class ComPagesDispatcherRouterResolverAbstract extends KObject implemen
     {
         $route  = false;
 
-        $routes = array_flip(array_reverse($this->__static_routes, true));
+        $routes = array_flip(array_reverse($this->__dynamic_routes));
 
         //Check if we have a static route
         if(!isset($routes[$path]))
         {
-            $routes = array_flip(array_reverse($this->__dynamic_routes));
+            $routes = array_flip(array_reverse($this->__static_routes, true));
 
             //Generate the dynamic route
             if(isset($routes[$path])) {
@@ -323,7 +328,7 @@ abstract class ComPagesDispatcherRouterResolverAbstract extends KObject implemen
                         //Part is found, replace for param value
                         $route = str_replace($block, $query[$param], $route);
                         unset($query[$param]);
-                    } elseif ($optional && $index !== 0) {
+                    } elseif ($optional) {
                         //Only strip preceeding slash if it's not at the base
                         $route = str_replace($pre . $block, '', $route);
                     } else {
