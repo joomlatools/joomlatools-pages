@@ -34,24 +34,27 @@ class ComPagesViewBehaviorPageable extends KViewBehaviorAbstract
             $template->registerFunction($name, $function);
         }
 
-        //Create template (add parameters BEFORE cloning)
-        $template = clone $template->setParameters($context->parameters);
+        //Render the page
+        if($page = $this->getPage())
+        {
+            //Create template (add parameters BEFORE cloning)
+            $template = clone $template->setParameters($context->parameters);
 
-        //Add the filters
-        $template->addFilters($this->getPage()->process->filters);
+            //Add the filters
+            $template->addFilters($page->process->filters);
 
-        //Load the page
-        $template->loadFile('page://pages/'.$this->getPage()->route);
+            //Load the page
+            $template->loadFile('page://pages/'.$page->path);
 
-        //Render page
-        $content = $template->render(KObjectConfig::unbox($context->data->append($template->getData())));
+            //Render page
+            $content = $template->render(KObjectConfig::unbox($context->data->append($template->getData())));
 
-        //Set the content in the object
-        $this->getPage()->content = $content;
+            //Set the content in the object
+            $this->getPage()->content = $content;
 
-        //Set the rendered page in the view to allow for view decoration
-        $this->setContent($content);
-
+            //Set the rendered page in the view to allow for view decoration
+            $this->setContent($content);
+        }
     }
 
     public function getPage($path = null)
@@ -84,9 +87,9 @@ class ComPagesViewBehaviorPageable extends KViewBehaviorAbstract
 
     public function getDirection()
     {
-        $result = '';
-        if($page = $this->getModel()->getPage()) {
-            $result = $page->direction ? $page->direction :  'auto';
+        $result = 'auto';
+        if($page = $this->getPage()) {
+            $result = $page->direction ?: 'auto';
         }
 
         return $result;
@@ -94,7 +97,12 @@ class ComPagesViewBehaviorPageable extends KViewBehaviorAbstract
 
     public function getLanguage()
     {
-        return JFactory::getDocument()->language ?? 'en-GB';
+        $result = 'en-GB';
+        if($page = $this->getPage()) {
+            $result = $page->language ?: 'en-GB';
+        }
+
+        return $result;
     }
 
     public function isSupported()
