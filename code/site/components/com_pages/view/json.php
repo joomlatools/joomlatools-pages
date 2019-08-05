@@ -80,25 +80,25 @@ class ComPagesViewJson extends KViewAbstract
      */
     protected function _fetchData(KViewContext $context)
     {
+        $url = $this->getUrl();
+
         $document = new \ArrayObject(array(
             'jsonapi' => array('version' => $this->_version),
-            'links'   => array('self' => $this->getUrl()->toString()),
+            'links'   => array('self' => (string) $url),
             'data'    => array()
         ));
-
-        $collection = $this->getModel()->getCollection();
 
         if ($this->isCollection())
         {
             $page = $this->getModel()->getPage();
 
-            foreach ($collection->fetch() as $entity) {
+            foreach ($this->getModel()->fetch() as $entity) {
                 $document['data'][] = $this->_createResource($entity);
             }
 
-            if($collection->isPaginatable())
+            if($this->getModel()->isPaginatable())
             {
-                $paginator = $collection->getPaginator();
+                $paginator = $this->getModel()->getPaginator();
 
                 $total  = (int) $paginator->total;
                 $limit  = (int) $paginator->limit;
@@ -123,19 +123,19 @@ class ComPagesViewJson extends KViewAbstract
                 }
 
                 if ($limit) {
-                    $document['links']['first'] = $this->getRoute($page, array('offset' => 0));
+                    $document['links']['first'] = (string) $this->getRoute($url, array('offset' => 0));
                 }
 
                 if ($limit && $total-($limit + $offset) > 0) {
-                    $document['links']['next'] = $this->getRoute($page, array('offset' => $limit+$offset));
+                    $document['links']['next'] = (string) $this->getRoute($url, array('offset' => $limit+$offset));
                 }
 
                 if ($limit && $offset && $offset >= $limit) {
-                    $document['links']['prev'] = $this->getRoute($page, array('offset' => max($offset-$limit, 0)));
+                    $document['links']['prev'] = (string) $this->getRoute($url, array('offset' => max($offset-$limit, 0)));
                 }
             }
         }
-        else $document['data'] = $this->_createResource($entity = $collection->fetch()->top());
+        else $document['data'] = $this->_createResource($entity = $this->getModel()->fetch()->top());
 
         $context->content = $document;
     }
@@ -190,7 +190,7 @@ class ComPagesViewJson extends KViewAbstract
      */
     protected function _getEntityType(KModelEntityInterface $entity)
     {
-        return $this->getModel()->getCollectionType();
+        return $this->getModel()->getType();
     }
 
     /**
@@ -258,7 +258,7 @@ class ComPagesViewJson extends KViewAbstract
 
             $url = $this->getRoute($this->getModel()->getPage(), $query);
 
-            $links =  ['self' => (string) $url];
+            $links = ['self' => (string) $url];
         }
 
         return $links;

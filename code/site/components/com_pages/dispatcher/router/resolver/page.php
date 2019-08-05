@@ -83,13 +83,24 @@ class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResol
 
     public function generate($page, array $query, ComPagesDispatcherRouterInterface $router)
     {
-        if($page instanceof ComPagesModelEntityPage) {
-            $page = $page->route;
+        if(!$page instanceof KHttpUrlInterface)
+        {
+            if($page instanceof ComPagesModelEntityPage) {
+                $page = $page->path;
+            }
+
+            $page = ltrim($page, './');
+            $url  = parent::generate($page, $query, $router);
+        }
+        else
+        {
+            $url = $page;
+            $url->setQuery($query, true);
+
+            $page = ltrim($page->getPath(), './');
         }
 
-        $page = ltrim($page, './');
-
-        if($url = parent::generate($page, $query, $router))
+        if($url instanceof KHttpUrlInterface)
         {
             //Remove hardcoded collection states
             if($page = $this->getObject('page.registry')->getPage($page))
