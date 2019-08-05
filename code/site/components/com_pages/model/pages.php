@@ -13,12 +13,13 @@ class ComPagesModelPages extends ComPagesModelCollection
     {
         parent::__construct($config);
         $this->getState()
-            ->insert('path', 'url', '.')
+            ->insert('path', 'url')
             ->insert('slug', 'cmd', '', true, array('path'))
             //Internal states
             ->insert('recurse', 'boolean', true, false, array(), true)
             ->insert('level', 'int', 0, false, array(), true)
             ->insert('collection', 'boolean', null, false, array(), true)
+            ->insert('format', 'word', null, false, array(), true)
             //Filter states
             ->insert('visible', 'boolean')
             ->insert('category', 'cmd')
@@ -80,6 +81,11 @@ class ComPagesModelPages extends ComPagesModelCollection
         //Un-routable
         if($page['route'] === false) {
             $result = false;
+        }
+
+        //Format
+        if($result && !is_null($state->format)) {
+            $result = isset($page['format']) && $page['format'] == $state->format;
         }
 
         //Visible
