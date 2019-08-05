@@ -64,6 +64,17 @@ class ComPagesModelController extends KModelAbstract
         return $this->_controller;
     }
 
+    public function setState(array $values)
+    {
+        $this->getController()->getModel()->setState($values);
+        return $this;
+    }
+
+    public function getState()
+    {
+        return $this->getController()->getModel()->getState();
+    }
+
     protected function _actionFetch(KModelContext $context)
     {
         if ($this->getState()->isUnique()) {
@@ -78,5 +89,10 @@ class ComPagesModelController extends KModelAbstract
     protected function _actionCount(KModelContext $context)
     {
         return $this->getController()->count();
+    }
+
+    protected function _actionReset(KModelContext $context)
+    {
+        $this->getController()->getModel()->reset();
     }
 }
