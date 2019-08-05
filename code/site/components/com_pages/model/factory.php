@@ -25,15 +25,10 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
 
     public function createCollection($name, $state = array())
     {
-        $model = false;
+        $model = null;
 
         if($collection = $this->getObject('page.registry')->getCollection($name))
         {
-            //Set the state
-            if(isset($collection->state)) {
-                $state = KObjectConfig::unbox($collection->state->merge($state));
-            }
-
             //Create the model
             $model = KHttpUrl::fromString($collection->model);
 
@@ -56,12 +51,16 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
                 );
             }
 
-            if($model instanceof KControllerModellable)
-            {
-                $model->getModel()->setState($state);
+            if($model instanceof KControllerModellable) {
                 $model = $this->getObject('com:pages.model.controller', ['controller' => $model]);
             }
-            else $model->setState($state);
+
+            //Set the model state
+            if(isset($collection->state)) {
+                $state = KObjectConfig::unbox($collection->state->merge($state));
+            }
+
+            $model->setState($state);
         }
 
         return $model;
