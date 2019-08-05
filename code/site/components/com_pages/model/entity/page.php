@@ -12,8 +12,9 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'identity_key'   => 'route',
+            'identity_key'   => 'path',
             'data' => [
+                'path'        => '',
                 'name'        => '',
                 'title'       => '',
                 'summary'     => '',
@@ -45,9 +46,10 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                 'colllection' => false,
                 'form'        => false,
                 'direction'   => 'auto',
+                'language'    => 'en-GB',
                 'canonical'   => null,
             ],
-            'internal_properties' => ['process', 'layout', 'format', 'path', 'direction', 'collection', 'form'],
+            'internal_properties' => ['process', 'layout', 'format', 'collection', 'form'],
         ]);
 
         parent::_initialize($config);
@@ -103,18 +105,6 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         }
 
         return $text;
-    }
-
-    public function getPropertyRoute()
-    {
-        $handle = $this->path ? $this->path.'/'.$this->slug : $this->slug;
-
-        //Add the extension
-        if($this->format !== 'html') {
-            $handle .= '.'.$this->format;
-        }
-
-        return $handle;
     }
 
     public function getPropertyMetadata()
@@ -238,7 +228,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         $template = $this->getObject('com:pages.template.default');
 
         //Load the page
-        $template->loadFile('page://pages/'.$this->route);
+        $template->loadFile('page://pages/'.$this->path);
 
         //Render page
         return $template->render(KObjectConfig::unbox($template->getData()));
