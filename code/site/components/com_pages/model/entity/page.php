@@ -155,7 +155,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
     public function setPropertyCategory($category)
     {
         if(empty($category)) {
-            $category = basename($this->path);
+            $category = trim(basename(dirname($this->path)), './');
         }
 
         return $category;
