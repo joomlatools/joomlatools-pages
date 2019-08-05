@@ -11,7 +11,7 @@ class ComPagesControllerPermissionAbstract extends ComKoowaControllerPermissionA
 {
     public function canRead()
     {
-        $path = $this->getModel()->fetch()->route;
+        $path = $this->getModel()->fetch()->path;
 
         if(!$this->canAccess($path)) {
             return false;
@@ -22,7 +22,7 @@ class ComPagesControllerPermissionAbstract extends ComKoowaControllerPermissionA
 
     public function canBrowse()
     {
-        $path = $this->getModel()->fetch()->route;
+        $path = $this->getModel()->fetch()->path;
 
         if(!$this->canAccess($path)) {
             return false;
