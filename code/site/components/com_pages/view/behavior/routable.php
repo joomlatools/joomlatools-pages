@@ -51,7 +51,7 @@ class ComPagesViewBehaviorRoutable extends KViewBehaviorAbstract
         if($route = $this->getObject('dispatcher')->getRouter()->generate($page, $query))
         {
             if($this->getFormat() == 'html') {
-                $parts =  KHttpUrl::PATH + KHttpUrl::QUERY;
+                $parts = KHttpUrl::PATH + KHttpUrl::QUERY;
             } else {
                 $parts = KHttpUrl::FULL;
             }
