@@ -24,7 +24,7 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
 
         if($menu->component !== 'com_pages')
         {
-            $page_route = $this->getObject('dispatcher')->getRouter()->getPage()->route;
+            $page_route = $this->getObject('dispatcher')->getRouter()->getPage()->path;
 
             $base  = trim(dirname($menu->route), '.');
             $route = trim(str_replace($base, '', $page_route), '/');
