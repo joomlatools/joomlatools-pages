@@ -9,10 +9,17 @@
 
 class ComPagesControllerAbstract extends KControllerModel
 {
+    public function __construct(KObjectConfig $config)
+    {
+        parent::__construct($config);
+
+        $this->setModel($config->model);
+    }
+
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'model' => 'pages',
+            'model' => 'com:pages.model.pages',
         ]);
 
         parent::_initialize($config);
@@ -57,5 +64,25 @@ class ComPagesControllerAbstract extends KControllerModel
         }
 
         return parent::getView();
+    }
+
+    public function setModel($model)
+    {
+        if($model instanceof ComPagesPageObject)
+        {
+            if($model->isCollection())
+            {
+                //Create the collection model
+                $this->_model = $this->getObject('com:pages.model.factory')
+                    ->createCollection($model->path, $this->getRequest()->query->toArray());
+            }
+            else $this->_model = $this->getObject('com:pages.model.pages');
+
+            //Add the pageable behavior to the model
+            $this->_model->addBehavior('com:pages.model.behavior.pageable', ['page' => $model]);
+        }
+        else $this->_model = parent::setModel($model);
+
+        return $this->_model;
     }
 }

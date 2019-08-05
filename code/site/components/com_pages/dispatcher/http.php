@@ -73,10 +73,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         $page = $context->router->getPage();
 
         //Set the controller
-        $this->setController($page->getType());
-
-        //Set page in model
-        $this->getController()->getModel()->setPage($page, $context->request->query->toArray());
+        $this->setController($page->getType(), ['model' => $page]);
     }
 
     protected function _actionDispatch(KDispatcherContextInterface $context)
@@ -137,10 +134,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
                 if($page = $this->getObject('page.registry')->getPage($code))
                 {
                     //Set the controller
-                    $this->setController($page->getType());
-
-                    //Set page in model
-                    $this->getController()->getModel()->setPage($page, $context->request->query->toArray());
+                    $this->setController($page->getType(), ['model' => $page]);
 
                     //Render the error
                     $content = $this->getController()->render($exception);
