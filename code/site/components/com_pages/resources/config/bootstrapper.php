@@ -19,13 +19,10 @@ return [
 
     'priority' => KObjectBootstrapper::PRIORITY_HIGH,
     'aliases' => [
-        'router'        => 'com:pages.dispatcher.router',
-        'page.registry' => 'com:pages.page.registry',
-        'data.registry' => 'com:pages.data.registry',
-        'com:pages.version'     => 'com://admin/pages.version',
-        'com:pages.data.object' => 'com://site/pages.data.object',
-        'com:pages.data.client' => 'com://site/pages.data.client',
-        'com:pages.model.entity.page' => 'com://site/pages.model.entity.page',
+        'router'        => 'com://site/pages.dispatcher.router',
+        'page.registry' => 'com://site/pages.page.registry',
+        'data.registry' => 'com://site/pages.data.registry',
+        'com://site/pages.version' => 'com://admin/pages.version',
     ],
 
     'identifiers' => [
@@ -40,9 +37,9 @@ return [
         ],
         'template.locator.factory' => [
             'locators' => [
-                'com:pages.data.locator',
-                'com:pages.page.locator',
-                'com:pages.template.locator.theme'
+                'com://site/pages.data.locator',
+                'com://site/pages.page.locator',
+                'com://site/pages.template.locator.theme'
             ]
         ],
         'template.engine.factory' => [
@@ -52,8 +49,8 @@ return [
         ],
         'event.subscriber.factory' => [
             'subscribers' => [
-                'com:pages.event.subscriber.pagedecorator',
-                'com:pages.event.subscriber.errorhandler',
+                'com://site/pages.event.subscriber.pagedecorator',
+                'com://site/pages.event.subscriber.errorhandler',
             ]
         ],
         'lib:template.engine.markdown' => [

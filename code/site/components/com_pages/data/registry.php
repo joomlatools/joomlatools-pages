@@ -17,14 +17,14 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         parent::__construct($config);
 
         //Create the locator
-        $this->__locator = $this->getObject('com:pages.data.locator');
+        $this->__locator = $this->getObject('com://site/pages.data.locator');
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
             'cache'      => JDEBUG ? false : true,
-            'cache_path'  => $this->getObject('com:pages.config')->getSitePath('cache'),
+            'cache_path'  => $this->getObject('com://site/pages.config')->getSitePath('cache'),
             'cache_time' => 60*60*24 //1 day
         ]);
 
@@ -63,7 +63,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
 
         if($object)
         {
-            $class = $this->getObject('manager')->getClass('com:pages.data.object');
+            $class = $this->getObject('manager')->getClass('com://site/pages.data.object');
             $result = new $class($this->__data[$path]);
         }
         else $result = $this->__data[$path];
@@ -87,7 +87,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
                 $result = $this->__fromFile($file);
             }
         }
-        else $result =  $this->getObject('com:pages.data.client')->fromUrl($path, false);
+        else $result =  $this->getObject('com://site/pages.data.client')->fromUrl($path, false);
 
         return $result;
     }
@@ -99,7 +99,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
 
         $url = trim(fgets(fopen($file, 'r')));
         if(strpos($url, '://') === 0) {
-            $result =  $this->getObject('com:pages.data.client')->fromUrl($url, false);
+            $result =  $this->getObject('com://site/pages.data.client')->fromUrl($url, false);
         } else {
             $result = $this->getObject('object.config.factory')->fromFile($file, false);
         }

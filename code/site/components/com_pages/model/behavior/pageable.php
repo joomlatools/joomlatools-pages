@@ -31,7 +31,7 @@ class ComPagesModelBehaviorPageable extends KModelBehaviorAbstract
     {
         if($this->__page && !$this->__page instanceof ComPagesModelEntityPage)
         {
-            $this->__page = $this->getObject('com:pages.model.entity.page',
+            $this->__page = $this->getObject('com://site/pages.model.entity.page',
                 array('data'  =>  $this->__page->toArray())
             );
         }

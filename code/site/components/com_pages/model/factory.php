@@ -15,7 +15,7 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
 
         if ($page = $this->getObject('page.registry')->getPage($path))
         {
-            $entity = $this->getObject('com:pages.model.entity.page',
+            $entity = $this->getObject('com://site/pages.model.entity.page',
                 array('data'  => $page->toArray())
             );
         }
@@ -52,7 +52,7 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
             }
 
             if($model instanceof KControllerModellable) {
-                $model = $this->getObject('com:pages.model.controller', ['controller' => $model]);
+                $model = $this->getObject('com://site/pages.model.controller', ['controller' => $model]);
             }
 
             //Set the model state

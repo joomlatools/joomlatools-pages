@@ -50,7 +50,7 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         $data = array();
 
         if($url = $this->getUrl($this->getState()->getValues())) {
-            $data = $this->getObject('com:pages.data.client')->fromUrl($url, false);
+            $data = $this->getObject('com://site/pages.data.client')->fromUrl($url, false);
         }
 
         return $data;

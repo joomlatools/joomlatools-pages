@@ -34,11 +34,11 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         $config->append([
             'type' =>  KStringInflector::pluralize($this->getIdentifier()->getName()),
             'behaviors'   => [
-                'com:pages.model.behavior.paginatable',
-                'com:pages.model.behavior.sortable',
-                'com:pages.model.behavior.searchable'
+                'com://site/pages.model.behavior.paginatable',
+                'com://site/pages.model.behavior.sortable',
+                'com://site/pages.model.behavior.searchable'
             ],
-            'state' => 'com:pages.model.state.collection',
+            'state' => 'com://site/pages.model.state.collection',
         ]);
 
         parent::_initialize($config);

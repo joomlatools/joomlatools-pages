@@ -24,7 +24,7 @@ class ComPagesDataClient extends KObject implements KObjectSingleton
         $this->_cache_time = $config->cache_time;
 
         if(empty($config->cache_path)) {
-            $this->_cache_path = $this->getObject('com:pages.config')->getSitePath('cache');
+            $this->_cache_path = $this->getObject('com://site/pages.config')->getSitePath('cache');
         } else {
             $this->_cache_path = $config->cache_path;
         }
@@ -55,7 +55,7 @@ class ComPagesDataClient extends KObject implements KObjectSingleton
                 $request = $this->getObject('http.request');
             }
 
-            $version = $this->getObject('com:pages.version');
+            $version = $this->getObject('com://site/pages.version');
             $context = stream_context_create(array('http' => array(
                 'user_agent' => 'Joomlatools/Pages/'.$version,
                 'protocol_version' => 1.1,

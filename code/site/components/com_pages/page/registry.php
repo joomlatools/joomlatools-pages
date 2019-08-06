@@ -24,7 +24,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         parent::__construct($config);
 
         //Create the locator
-        $this->__locator = $this->getObject('com:pages.page.locator');
+        $this->__locator = $this->getObject('com://site/pages.page.locator');
 
         //Load the cache and do not refresh it
         $basedir = $this->getLocator()->getBasePath().'/pages';
@@ -41,7 +41,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     {
         $config->append([
             'cache'       => JDEBUG ? false : true,
-            'cache_path'  => $this->getObject('com:pages.config')->getSitePath('cache'),
+            'cache_path'  => $this->getObject('com://site/pages.config')->getSitePath('cache'),
             'cache_time'  => 60*60*24, //1 day
             'collections' => array(),
             'redirects'   => array(),
@@ -64,7 +64,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             $result = new KObjectConfig($this->__collections[$name]);
 
             if(!isset($result->model)) {
-                $result->model = 'com:pages.model.pages';
+                $result->model = 'com://site/pages.model.pages';
             }
         }
 

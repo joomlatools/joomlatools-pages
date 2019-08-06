@@ -136,7 +136,7 @@ class ComPagesConfig extends KObject implements KObjectSingleton
             'namespaces' => array('\\'  => $path)
         )));
 
-        $this->getObject('manager')->registerLocator('com:pages.object.locator.extension');
+        $this->getObject('manager')->registerLocator('com://site/pages.object.locator.extension');
 
         //Register event subscribers
         foreach (glob($path.'/subscriber/[!_]*.php') as $filename) {

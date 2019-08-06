@@ -32,7 +32,7 @@ class ComPagesModelPages extends ComPagesModelCollection
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'behaviors' => ['com:pages.model.behavior.recursable']
+            'behaviors' => ['com://site/pages.model.behavior.recursable']
         ]);
 
         parent::_initialize($config);
@@ -161,7 +161,7 @@ class ComPagesModelPages extends ComPagesModelCollection
             //Goups
             if(isset($page['access']['groups']))
             {
-                $groups = $this->getObject('com:pages.database.table.groups')
+                $groups = $this->getObject('com://site/pages.database.table.groups')
                     ->select($this->getObject('user')->getGroups(), KDatabase::FETCH_ARRAY_LIST);
 
                 $groups = array_map('strtolower', array_column($groups, 'title'));
@@ -174,7 +174,7 @@ class ComPagesModelPages extends ComPagesModelCollection
             //Roles
             if($result && isset($page['access']['roles']))
             {
-                $roles = $this->getObject('com:pages.database.table.roles')
+                $roles = $this->getObject('com://site/pages.database.table.roles')
                     ->select($this->getObject('user')->getRoles(), KDatabase::FETCH_ARRAY_LIST);
 
                 $roles = array_map('strtolower', array_column($roles, 'title'));

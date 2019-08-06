@@ -60,7 +60,7 @@ class ComPagesViewBehaviorPageable extends KViewBehaviorAbstract
     public function getPage($path = null)
     {
         if(!is_null($path)) {
-            $result = $this->getObject('com:pages.model.factory')->createPage($path);
+            $result = $this->getObject('com://site/pages.model.factory')->createPage($path);
         } else {
             $result = $this->getModel()->getPage();
         }
@@ -71,7 +71,7 @@ class ComPagesViewBehaviorPageable extends KViewBehaviorAbstract
     public function getCollection($model = '', $state = array())
     {
         if($model) {
-            $result = $this->getObject('com:pages.model.factory')->createCollection($model, $state)->fetch();
+            $result = $this->getObject('com://site/pages.model.factory')->createCollection($model, $state)->fetch();
         } else {
             $result = $this->getModel()->fetch();
         }
