@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension type="component" version="0.13.0" method="upgrade">
+<extension type="component" version="0.13.1" method="upgrade">
     <identifier>com:pages</identifier>
     <name>com_pages</name>
     <author>Joomlatools</author>
@@ -8,7 +8,7 @@
     <license>GNU GPLv3 - http://www.gnu.org/licenses/gpl.html</license>
     <authorEmail>support@joomlatools.com</authorEmail>
     <authorUrl>www.joomlatools.com</authorUrl>
-    <version>0.13.0</version>
+    <version>0.13.1</version>
     <description>COM_PAGES_XML_DESCRIPTION</description>
 
     <files folder="site/components/com_pages">
