@@ -26,9 +26,9 @@ class ComPagesTemplateFilterMeta extends ComPagesTemplateFilterAbstract
                     $content =  htmlspecialchars($content, ENT_HTML5 | ENT_SUBSTITUTE, 'UTF-8', false);
 
                     if(strpos($name, 'og:') === 0) {
-                        $meta[] = sprintf('<meta property="%s" content="%s" />', $content,  $name);
+                        $meta[] = sprintf('<meta property="%s" content="%s" />', $name,  $content);
                     } else {
-                        $meta[]  = sprintf('<meta name="%s" content="%s" />', $content, $name);
+                        $meta[]  = sprintf('<meta name="%s" content="%s" />', $name, $content);
                     }
                 }
             }
