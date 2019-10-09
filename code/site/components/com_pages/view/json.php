@@ -80,11 +80,11 @@ class ComPagesViewJson extends KViewAbstract
      */
     protected function _fetchData(KViewContext $context)
     {
-        $url = $this->getUrl();
+        $route = $this->getRoute();
 
         $document = new \ArrayObject(array(
             'jsonapi' => array('version' => $this->_version),
-            'links'   => array('self' => (string) $url),
+            'links'   => array('self' => (string) $this->getRoute($route)),
             'data'    => array()
         ));
 
@@ -119,19 +119,19 @@ class ComPagesViewJson extends KViewAbstract
                 }
 
                 if($image = $page->image) {
-                    $document['meta']['image'] = $this->getUrl((string)$image);
+                    $document['meta']['image'] = (string) $this->getUrl((string)$image);
                 }
 
-                if ($limit) {
-                    $document['links']['first'] = (string) $this->getRoute($url, array('offset' => 0));
+                if ($limit && $total > count($this->getModel()->fetch())) {
+                    $document['links']['first'] = (string) $this->getRoute($route, array('offset' => 0));
                 }
 
                 if ($limit && $total-($limit + $offset) > 0) {
-                    $document['links']['next'] = (string) $this->getRoute($url, array('offset' => $limit+$offset));
+                    $document['links']['next'] = (string) $this->getRoute($route, array('offset' => $limit+$offset));
                 }
 
                 if ($limit && $offset && $offset >= $limit) {
-                    $document['links']['prev'] = (string) $this->getRoute($url, array('offset' => max($offset-$limit, 0)));
+                    $document['links']['prev'] = (string) $this->getRoute($route, array('offset' => max($offset-$limit, 0)));
                 }
             }
         }
@@ -179,7 +179,14 @@ class ComPagesViewJson extends KViewAbstract
      */
     protected function _getEntityId(KModelEntityInterface $entity)
     {
-        return $entity->{$entity->getIdentityKey()};
+        $state = $this->getModel()->getState();
+
+        $states = array();
+        foreach($state->getNames(true) as $state){
+            $states[] = $entity->{$state};
+        }
+
+        return implode('/', $states);
     }
 
     /**
