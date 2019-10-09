@@ -33,31 +33,32 @@ class ComPagesViewBehaviorRoutable extends KViewBehaviorAbstract
     }
 
     /**
-     * Get a route based on a page path and query
+     * Get a route based on route and query
      *
      * In templates, use route()
      *
-     * @param   string $page   The page to generate a route for
+     * @param   mixed  $route
      * @param   array  $query  The query string or array used to create the route
-     * @param   boolean      $escpae    If TRUE  escapes '&' to '&amp;' for xml compliance
+     * @param   boolean   $escpae    If TRUE  escapes '&' to '&amp;' for xml compliance
      * @return  KHttpUrl The route
      */
-    public function getRoute($page = null, $query = array(), $escape = false)
+    public function getRoute($route = null, $query = array(), $escape = false)
     {
-        if(!is_array($query)) {
-            $query = array();
-        }
-
-        if($route = $this->getObject('dispatcher')->getRouter()->generate($page, $query))
+        if($route)
         {
-            if($this->getFormat() == 'html') {
-                $parts = KHttpUrl::PATH + KHttpUrl::QUERY;
-            } else {
-                $parts = KHttpUrl::FULL;
+            //Prepend the route with the package
+            if(is_string($route) && strpos($route, ':') === false) {
+                $route = $this->getIdentifier()->getPackage().':'.$route;
             }
 
-            $route = $route->setEscape($escape)->toString($parts);
+            //Generate the route
+            $router = $this->getObject('dispatcher')->getRouter();
+
+            if($route = $router->generate($route, $query)) {
+                $route = $router->qualify($route, $this->getFormat() !== 'html', $escape);
+            }
         }
+        else $route = $this->getObject('dispatcher')->getRoute();
 
         return $route;
     }

@@ -7,8 +7,23 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
+/**
+ * Dispatcher Router Singleton
+ *
+ * Force the router object to a singleton with identifier alias 'router'.
+ *
+ * @author  Johan Janssens <https://github.com/johanjanssens>
+ * @package Koowa\Library\Dispatcher\Router
+ */
 class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract implements KObjectSingleton
 {
+    /**
+     * List of router resolvers
+     *
+     * @var array
+     */
+    private $__resolvers;
+
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
@@ -17,23 +32,60 @@ class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract implemen
         $this->getObject('manager')->registerAlias($this->getIdentifier(), 'router');
     }
 
-    protected function _initialize(KObjectConfig $config)
+    /**
+     * Compile a route
+     *
+     * @param string|ComPagesDispatcherRouterRouteInterface $route The route to compile
+     * @param array $parameters Route parameters
+     * @return ComPagesDispatcherRouterRouteInterface
+     */
+    public function compile($route, array $parameters = array())
     {
-        $config->append(array(
-            'resolvers'  => array('site', 'page'),
-        ));
-
-        parent::_initialize($config);
+        //Do not try to compile the route
+        return $route;
     }
 
-    public function getPage($content = false)
+    /**
+     * Get the resolver
+     *
+     * @param string|ComPagesDispatcherRouterRouteInterface|KObjectInterface $route The route to resolve
+     * @return false|ComPagesDispatcherRouterInterface
+     */
+    public function getResolver($route)
     {
-        $page = false;
+        $resolver = false;
 
-        if($route = $this->resolve()) {
-            $page = $this->getObject('page.registry')->getPage($route->getPath(), $content);
+        if($route instanceof KObjectInterface)
+        {
+            if($route instanceof ComPagesDispatcherRouterRouteInterface) {
+                $component = $route->getScheme();
+            } else {
+                $component = $route->getIdentifier()->getPackage();
+            }
+        }
+        else $component = parse_url($route, PHP_URL_SCHEME);
+
+        if($component)
+        {
+            if (!isset($this->__resolvers[$component]))
+            {
+                $config     = ['request' => $this->getRequest()];
+                $identifier = 'com://site/'.$component.'.dispatcher.router.'.$component;
+
+                $resolver = $this->getObject($identifier, $config);
+
+                if (!($resolver instanceof ComPagesDispatcherRouterInterface))
+                {
+                    throw new UnexpectedValueException(
+                        "Resolver $identifier does not implement DispatcherRouterInterface"
+                    );
+                }
+
+                $this->__resolvers[$component] = $resolver;
+            }
+            else $resolver = $this->__resolvers[$component];
         }
 
-        return $page;
+        return $resolver;
     }
 }

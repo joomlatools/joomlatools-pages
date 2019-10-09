@@ -7,139 +7,91 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResolverHttp
+class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResolverRegex
 {
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'priority' => self::PRIORITY_NORMAL,
+            'routes' => $this->getObject('page.registry')->getRoutes(),
         ));
 
         parent::_initialize($config);
     }
 
-    public function getPath(ComPagesDispatcherRouterInterface $router)
+    public function resolve(ComPagesDispatcherRouterRouteInterface $route)
     {
-        $path   = parent::getPath($router);
-        $format = $router->getResponse()->getRequest()->getFormat();
-
-        //Append the format
-        if($format !== 'html' && strpos($path,  '.'.$format) == false ) {
-            $path .= '.'.$format;
-        }
-
-        return $path;
-    }
-
-    public function resolve(ComPagesDispatcherRouterInterface $router)
-    {
-        if($route = parent::resolve($router))
+        if($route = parent::resolve($route))
         {
-            $response = $router->getResponse();
-            $request  = $response->getRequest();
-            $path     = $route->getPath();
+            $page = $route->getPath();
 
-            if($page = $this->getObject('page.registry')->getPage($path))
+            if($page = $this->getObject('page.registry')->getPage($page))
             {
                 if($collection = $page->isCollection())
                 {
-                    //Set collection states
-                    if(isset($collection['state']) && isset($collection['state']['limit'])) {
-                        $this->_resolvePagination($request, $collection['state']['limit']);
+                    if(isset($collection['state'])) {
+                        $this->_resolvePagination($route, $collection['state']);
                     }
                 }
-            }
-
-            if(!$canonical = $page->canonical)
-            {
-                //Add a (self-referential) canonical URL using the first route for the specific page
-                if($routes = $this->getObject('page.registry')->getRoutes($route->getPath()))
-                {
-                    //Build the route
-                    $canonical = $this->buildRoute($routes[0],  $request->query->toArray());
-
-                    if($collection = $page->isCollection())
-                    {
-                        //Handle pagination
-                        if(isset($collection['state']) && isset($collection['state']['limit'])) {
-                            $this->_generatePagination($canonical, $collection['state']['limit']);
-                        }
-                    }
-
-                    $canonical = $router->qualifyUrl($canonical);
-
-                    //Set the canonical in the page
-                    $page->canonical = $canonical;
-                }
-            }
-
-            if($canonical) {
-                $router->setCanonicalUrl($canonical);
             }
         }
 
         return $route;
     }
 
-    public function generate($page, array $query, ComPagesDispatcherRouterInterface $router)
+    public function generate(ComPagesDispatcherRouterRouteInterface $route)
     {
-        if(!$page instanceof KHttpUrlInterface)
-        {
-            if($page instanceof ComPagesModelEntityPage) {
-                $page = $page->path;
-            }
+        $page = $route->getPath();
 
-            $page = ltrim($page, './');
-            $url  = parent::generate($page, $query, $router);
-        }
-        else
-        {
-            $url = $page;
-            $url->setQuery($query, true);
-
-            $page = ltrim($page->getPath(), './');
-        }
-
-        if($url instanceof KHttpUrlInterface)
+        if($route = parent::generate($route))
         {
             //Remove hardcoded collection states
             if($page = $this->getObject('page.registry')->getPage($page))
             {
                 if(($collection = $page->isCollection()) && isset($collection['state']))
                 {
-                    $url->query = array_diff_key($url->query, $collection['state']);
+                    //Remove any hardcoded states from the generated route
+                    $route->query = array_diff_key($route->query, $collection['state']);
 
-                    //Handle pagination
-                    if(isset($collection['state']['limit'])) {
-                        $this->_generatePagination($url, $collection['state']['limit']);
+                    if(isset($collection['state'])) {
+                        $this->_generatePagination($route, $collection['state']);
                     }
                 }
             }
         }
 
-        return $url;
+        return $route;
     }
 
-    protected function _resolvePagination(KDispatcherRequestInterface $request, $limit)
+    protected function _resolvePagination(ComPagesDispatcherRouterRouteInterface $route, $state)
     {
-        if(isset($request->query['page']))
+        if( isset($state['limit']))
         {
-            $page = $request->query['page'] - 1;
-            $request->query['offset'] = $page * $limit;
+            if(isset($route->query['page']))
+            {
+                $limit = $state['limit'];
+                $page  = $route->query['page'] - 1;
 
-            unset($request->query['page']);
+                $route->query['offset'] = $page * $limit;
+
+                unset($route->query['page']);
+            }
         }
     }
 
-    protected function _generatePagination(KHttpUrlInterface $url, $limit)
+    protected function _generatePagination(ComPagesDispatcherRouterRouteInterface $route, $state)
     {
-        if(isset($url->query['offset']))
+        if(isset($state['limit']))
         {
-            if($offset = $url->query['offset']) {
-                $url->query['page'] = $offset/$limit + 1;
-            }
+            if(isset($route->query['offset']))
+            {
+                $limit = $state['limit'];
 
-            unset($url->query['offset']);
+                if($offset = $route->query['offset']) {
+                    $route->query['page'] = $offset/$limit + 1;
+                }
+
+                unset($route->query['offset']);
+            }
         }
     }
 }

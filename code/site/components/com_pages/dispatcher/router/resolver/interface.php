@@ -18,62 +18,18 @@
 interface ComPagesDispatcherRouterResolverInterface
 {
     /**
-     * Priority levels
-     */
-    const PRIORITY_HIGHEST = 1;
-    const PRIORITY_HIGH    = 2;
-    const PRIORITY_NORMAL  = 3;
-    const PRIORITY_LOW     = 4;
-    const PRIORITY_LOWEST  = 5;
-
-    /**
-     * Get the priority of the resolver
+     *  Resolve the route
      *
-     * @return  integer The resolver priority
+     * @param ComPagesDispatcherRouterInterface $route The route to resolve
+     * @return false| ComPagesDispatcherRouterInterface Returns the matched route or false if no match was found
      */
-    public function getPriority();
-
-    /*
-    * Get the path to be resolved
-    *
-    * @return string
-    */
-    public function getPath(ComPagesDispatcherRouterInterface $router);
-
-    /**
-     * Add a route for matching
-     *
-     * If only a path is defined the route is considered a static route
-     *
-     * @param string $route The route regex You can use multiple pre-set regex filters, like [digit:id]
-     * @param string $path The path this route should point to.
-     * @return ComPagesDispatcherRouterResolverInterface
-     */
-    public function addRoute($route, $path);
-
-    /**
-     * Add routes for matching
-     *
-     * @param array $routes  The routes to be added
-     * @return ComPagesDispatcherRouterResolverInterface
-     */
-    public function addRoutes($routes);
-
-    /**
-     *  Resolve the request
-     *
-     * @param ComPagesDispatcherRouterInterface $router
-     * @return false|KHttpUrl Returns the matched route or false if no match was found
-     */
-    public function resolve(ComPagesDispatcherRouterInterface $router);
+    public function resolve(ComPagesDispatcherRouterRouteInterface $route);
 
     /**
      * Reversed routing
      *
-     * @param string $path The path to generate a route for
-     * @param array $query @params Associative array of parameters to replace placeholders with.
-     * @param ComPagesDispatcherRouterInterface $router
+     * @param ComPagesDispatcherRouterInterface $route The route to generate
      * @return false|KHttpUrl Returns the generated route
      */
-    public function generate($path, array $query, ComPagesDispatcherRouterInterface $router);
+    public function generate(ComPagesDispatcherRouterRouteInterface $route);
 }

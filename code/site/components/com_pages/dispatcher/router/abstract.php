@@ -16,39 +16,18 @@
 abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPagesDispatcherRouterInterface, KObjectMultiton
 {
     /**
-     * Response object
+     * Request object
      *
-     * @var	KControllerResponseInterface
+     * @var	KControllerRequestInterface
      */
-    private $__response;
-
-    /**
-     * The resolver queue
-     *
-     * @var	KObjectQueue
-     */
-    private $__queue;
+    private $__request;
 
     /**
      * List of router resolvers
      *
      * @var array
      */
-    protected $__resolvers;
-
-    /**
-     * The canonical url
-     *
-     * @var KHttpUrl
-     */
-    protected $_canonical;
-
-    /**
-     * The resolved rotue
-     *
-     * @var false|KHttpUrl
-     */
-    protected $_resolved_route;
+    private $__resolvers;
 
     /**
      * Constructor
@@ -59,22 +38,7 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
     {
         parent::__construct($config);
 
-        $this->setResponse($config->response);
-
-        //Create the resolver queue
-        $this->__queue = $this->getObject('lib:object.queue');
-
-        //Attach the router resolvers
-        $resolvers = (array) KObjectConfig::unbox($config->resolvers);
-
-        foreach ($resolvers as $key => $value)
-        {
-            if (is_numeric($key)) {
-                $this->attachResolver($value);
-            } else {
-                $this->attachResolver($key, $value);
-            }
-        }
+        $this->setRequest($config->request);
     }
 
     /**
@@ -88,174 +52,132 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'response'   => null,
-            'resolvers'  => array('redirect', 'http'),
+            'request' => null,
         ));
 
         parent::_initialize($config);
     }
 
     /**
-     * Set the response object
+     * Compile a route
      *
-     * @param KControllerResponseInterface $response A response object
-     * @return ComPagesDispatcherRouterInterface
+     * @param string|ComPagesDispatcherRouterRouteInterface $route The route to compile
+     * @param array $parameters Route parameters
+     * @return ComPagesDispatcherRouterRouteInterface
      */
-    public function setResponse(KControllerResponseInterface $response)
+    public function compile($route, array $parameters = array())
     {
-        $this->__response = $response;
-        return $this;
-    }
-
-    /**
-     * Get the response object
-     *
-     * @return KControllerResponseInterface
-     */
-    public function getResponse()
-    {
-        return $this->__response;
-    }
-
-    /**
-     * Get the canonical url
-     *
-     *  If no canonical url is set return the request url
-     *
-     * @return  KHttpUrl|null  A HttpUrl object or NULL if no canonical url could be found
-     */
-    public function getCanonicalUrl()
-    {
-        if(!$this->_canonical) {
-            $url = $this->getResponse()->getRequest()->getUrl();
+        if(!$route instanceof ComPagesDispatcherRouterRouteInterface) {
+            $route = $this->getObject('com://site/pages.dispatcher.router.route', ['url' => $route]);
         } else {
-            $url = $this->_canonical;
+            $route = clone $route;
         }
 
-        return $url;
+        return $route->setQuery($parameters, true);
     }
 
     /**
-     * Sets the canonical url
+     *  Resolve the route
      *
-     * @param  string|KHttpUrlInterface $canonical
-     * @return ComPagesDispatcherRouterInterface
+     * @param string|ComPagesDispatcherRouterRouteInterface|KObjectInterface $route The route to resolve
+     * @return false| ComPagesDispatcherRouterInterface Returns the matched route or false if no match was found
      */
-    public function setCanonicalUrl($canonical)
+    public function resolve($route)
     {
-        if(!($canonical instanceof KHttpUrlInterface)) {
-            $canonical = $this->getObject('lib:http.url', array('url' => $canonical));
+        $route = $this->compile($route);
+
+        if(!$resolver = $this->getResolver($route)) {
+            throw new RuntimeException('Cannot resolve route');
         }
 
-        $this->getResponse()->getHeaders()->set('Link', array((string) $canonical => array('rel' => 'canonical')));
-        $this->_canonical = $canonical;
-
-        return $this;
-    }
-
-    /**
-     * Qualify a url
-     *
-     * Replace the url authority with the authority of the request url
-     *
-     * @param KHttpUrl $url The url to qualify
-     * @param bool $replace If the url is already qualified replace the authority
-     * @return KHttpUrl
-     */
-    public function qualifyUrl(KHttpUrl $url, $force = false)
-    {
-        if($force || !$url->toString(KHttpUrl::AUTHORITY))
-        {
-            $request = $this->getResponse()->getRequest();
-
-            //Qualify the url
-            $url->setUrl($request->getUrl()->toString(KHttpUrl::AUTHORITY));
-
-            //Add index.php
-            $base = $request->getBasePath();
-            $path = trim($url->getPath(), '/');
-
-            if(strpos($request->getUrl()->getPath(), 'index.php') !== false) {
-                $url->setPath($base . '/index.php/' . $path);
-            } else {
-                $url->setPath($base.'/'.$path);
-            }
-        }
-
-        return $url;
-    }
-
-    /**
-     * Resolve the request
-     *
-     * Iterate through the router resolvers. If a resolver returns not FALSE the chain will be stopped.
-     *
-     * @return false|KHttpUrl Returns the matched route or false if no match was found
-     */
-    public function resolve()
-    {
-        if(!isset($this->_resolved_route))
-        {
-            $this->_resolved_route = false;
-
-            foreach($this->__queue as $resolver)
-            {
-                if($resolver instanceof ComPagesDispatcherRouterResolverInterface)
-                {
-                    if(false !== $result = $resolver->resolve($this))
-                    {
-                        $this->_resolved_route = $result;
-                        break;
-                    }
-                }
-            }
-        }
-
-        return $this->_resolved_route;
+        return $resolver->resolve($route);
     }
 
     /**
      * Generate a route
      *
-     * Iterate through the router resolvers. If a resolver returns not FALSE the chain will be stopped.
-     *
-     * @param string $path The path to generate a route for
-     * @param array @params Associative array of parameters to replace placeholders with.
-     * @return false|KHttpUrl Returns the generated route
+     * @param string|ComPagesDispatcherRouterRouteInterface|KObjectInterface $route The route to resolve
+     * @param array $parameters Route parameters
+     * @return false|KHttpUrlInterface Returns the generated route
      */
-    public function generate($path, array $query = array())
+    public function generate($route, array $parameters = array())
     {
-        $route = false;
-        foreach($this->__queue as $resolver)
-        {
-            if($resolver instanceof ComPagesDispatcherRouterResolverInterface)
-            {
-                if(false !== $route = $resolver->generate($path, $query, $this))
-                {
-                    $route = $this->qualifyUrl($route, true);
-                    break;
-                }
-            }
+        $route = $this->compile($route, $parameters);
+
+        if(!$resolver = $this->getResolver($route)) {
+            throw new RuntimeException('Cannot generate route');
         }
 
-        return $route;
+        return $resolver->generate($route, $parameters);
     }
 
     /**
-     * Get a resolver handler by identifier
+     * Generate a url from a route
      *
-     * @param   mixed $resolver An object that implements ObjectInterface, ObjectIdentifier object
-     *                                 or valid identifier string
-     * @param   array $config An optional associative array of configuration settings
-     * @throws UnexpectedValueException
+     * Replace the route authority with the authority of the request url
+     *
+     * @param bool $replace If the url is already qualified replace the authority
+     * @param   boolean      $fqr    If TRUE create a fully qualified url. Defaults to TRUE.
+     * @param   boolean      $escape If TRUE escapes the url for xml compliance. Defaults to FALSE.
+     * @return  string
+     */
+    public function qualify(ComPagesDispatcherRouterRouteInterface $route, $fqr = true, $escape = false)
+    {
+        $url = clone $route;
+        $request = $this->getRequest();
+
+        //Qualify the url
+        $url->setUrl($request->getUrl()->toString(KHttpUrl::AUTHORITY));
+
+        //Add index.php
+        $base = $request->getBasePath();
+        $path = trim($url->getPath(), '/');
+
+        if(strpos($request->getUrl()->getPath(), 'index.php') !== false) {
+            $url->setPath($base . '/index.php/' . $path);
+        } else {
+            $url->setPath($base.'/'.$path);
+        }
+
+        return $url->toString($fqr ? KHttpUrl::FULL : KHttpUrl::PATH + KHttpUrl::QUERY +  KHttpUrl::FRAGMENT);
+    }
+
+    /**
+     * Set the request object
+     *
+     * @param KControllerRequestInterface $request A request object
      * @return ComPagesDispatcherRouterInterface
      */
-    public function getResolver($resolver, $config = array())
+    public function setRequest(KControllerRequestInterface $request)
     {
-        //Create the complete identifier if a partial identifier was passed
-        if (is_string($resolver) && strpos($resolver, '.') === false)
+        $this->__request = $request;
+        return $this;
+    }
+
+    /**
+     * Get the request object
+     *
+     * @return KControllerRequestInterface
+     */
+    public function getRequest()
+    {
+        return $this->__request;
+    }
+
+    /**
+     * Get a resolver based on the route
+     *
+     * @param ComPagesDispatcherRouterRouteInterface $route The route to resolve
+     * @throws UnexpectedValueException
+     * @return false|ComPagesDispatcherRouterInterface
+     */
+    public function getResolver($route)
+    {
+        $resolver = false;
+
+        if($route instanceof ComPagesDispatcherRouterRouteInterface)
         {
-            $identifier = $this->getIdentifier()->toArray();
+            $identifier = $route->getIdentifier()->toArray();
 
             if($identifier['package'] != 'dispatcher') {
                 $identifier['path'] = array('dispatcher', 'router', 'resolver');
@@ -263,47 +185,28 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
                 $identifier['path'] = array('router', 'resolver');
             }
 
-            $identifier['name'] = $resolver;
+            $identifier['package'] = $route->getScheme();
+            $identifier['name']    = $route->getHost();
+
             $identifier = $this->getIdentifier($identifier);
-        }
-        else $identifier = $this->getIdentifier($resolver);
 
-        if (!isset($this->__resolvers[$identifier->name]))
-        {
-            $resolver = $this->getObject($identifier, array_merge($config, array('response' => $this)));
-
-            if (!($resolver instanceof ComPagesDispatcherRouterResolverInterface))
+            if (!isset($this->__resolvers[$identifier->name]))
             {
-                throw new UnexpectedValueException(
-                    "Resolver $identifier does not implement DispatcherRouterResolverInterface"
-                );
-            }
+                $resolver = $this->getObject($identifier);
 
-            $this->__resolvers[$resolver->getIdentifier()->name] = $resolver;
+                if (!($resolver instanceof ComPagesDispatcherRouterResolverInterface))
+                {
+                    throw new UnexpectedValueException(
+                        "Resolver $identifier does not implement DispatcherRouterResolverInterface"
+                    );
+                }
+
+                $this->__resolvers[$resolver->getIdentifier()->name] = $resolver;
+            }
+            else $resolver = $this->__resolvers[$identifier->name];
         }
-        else $resolver = $this->__resolvers[$identifier->name];
 
         return $resolver;
-    }
-
-    /**
-     * Attach a router resolver
-     *
-     * @param   mixed  $resolver An object that implements ObjectInterface, ObjectIdentifier object
-     *                            or valid identifier string
-     * @param   array $config  An optional associative array of configuration settings
-     * @return ComPagesDispatcherRouterInterface
-     */
-    public function attachResolver($resolver, $config = array())
-    {
-        if (!($resolver instanceof ComPagesDispatcherRouterResolverInterface)) {
-            $resolver = $this->getResolver($resolver, $config);
-        }
-
-        //Enqueue the resolver
-        $this->__queue->enqueue($resolver, $resolver->getPriority());
-
-        return $this;
     }
 
     /**
@@ -315,8 +218,6 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
     {
         parent::__clone();
 
-        $this->__queue    = clone $this->__queue;
-        $this->__response = clone $this->__response;
+        $this->__request = clone $this->__request;
     }
-
 }

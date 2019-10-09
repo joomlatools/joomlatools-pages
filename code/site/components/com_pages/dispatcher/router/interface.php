@@ -18,82 +18,60 @@
 interface ComPagesDispatcherRouterInterface
 {
     /**
-     * Resolve the request
+     * Compile a route
      *
-     * @return false|KHttpUrl Returns the matched route or false if no match was found
+     * @param string|ComPagesDispatcherRouterRouteInterface $route The route to resolve
+     * @param array $parameters Route parameters
+     * @return ComPagesDispatcherRouterRouteInterface
      */
-    public function resolve();
+    public function compile($route, array $parameters = array());
+
+    /**
+     * Resolve a route
+     *
+     * @param string|ComPagesDispatcherRouterRouteInterface|KObjectInterface $route The route to resolve
+     * @return false| ComPagesDispatcherRouterInterface Returns the matched route or false if no match was found
+     */
+    public function resolve($route);
 
     /**
      * Generate a route
      *
-     * @param string $path The path to generate a route for
-     * @param array @params Associative array of parameters to replace placeholders with.
-     * @return KHttpUrl Returns the generated route
+     * @param string|ComPagesDispatcherRouterRouteInterface|KObjectInterface $route The route to resolve
+     * @param array $parameters Route parameters
+     * @return false|KHttpUrlInterface Returns the generated route
      */
-    public function generate($path, array $query = array());
+    public function generate($route, array $parameters = array());
 
     /**
-     * Qualify a url
+     * Qualify a route
      *
      * Replace the url authority with the authority of the request url
-     *
-     * @param KHttpUrl $url The url to qualify
-     * @param bool $replace If the url is already qualified replace the authority
-     * @return KHttpUrl
+     * @param ComPagesDispatcherRouterRouteInterface $route The route to qualify
+     * @return string
      */
-    public function qualifyUrl(KHttpUrl $url);
+    public function qualify(ComPagesDispatcherRouterRouteInterface $route);
 
     /**
-     * Set the response object
+     * Get a resolver based on the route
      *
-     * @param KControllerResponseInterface $response A response object
+     * @param string|ComPagesDispatcherRouterRouteInterface|KObjectInterface $route The route to resolve
+     * @return false|ComPagesDispatcherRouterInterface
+     */
+    public function getResolver($route);
+
+    /**
+     * Set the request object
+     *
+     * @param KControllerRequestInterface $request A request object
      * @return ComPagesDispatcherRouterInterface
      */
-    public function setResponse(KControllerResponseInterface $response);
+    public function setRequest(KControllerRequestInterface $request);
 
     /**
-     * Get the response object
+     * Get the request object
      *
-     * @return KControllerResponseInterface
+     * @return KControllerRequestInterface
      */
-    public function getResponse();
-
-    /**
-     * Get the canonical url
-     *
-     * If no canonical url is set return the request url
-     *
-     * @return  KHttpUrl|null  A HttpUrl object or NULL if no canonical url could be found
-     */
-    public function getCanonicalUrl();
-
-    /**
-     * Sets the canonical url
-     *
-     * @param  string|KHttpUrlInterface $canonical
-     * @return ComPagesDispatcherRouterInterface
-     */
-    public function setCanonicalUrl($canonical);
-
-    /**
-     * Get a resolver handler by identifier
-     *
-     * @param   mixed $resolver An object that implements ObjectInterface, ObjectIdentifier object
-     *                                 or valid identifier string
-     * @param   array $config An optional associative array of configuration settings
-     * @throws UnexpectedValueException
-     * @return ComPagesDispatcherRouterInterface
-     */
-    public function getResolver($resolver, $config = array());
-
-    /**
-     * Attach a router resolver
-     *
-     * @param   mixed  $resolver An object that implements ObjectInterface, ObjectIdentifier object
-     *                            or valid identifier string
-     * @param   array $config  An optional associative array of configuration settings
-     * @return ComPagesDispatcherRouterInterface
-     */
-    public function attachResolver($resolver, $config = array());
+    public function getRequest();
 }
