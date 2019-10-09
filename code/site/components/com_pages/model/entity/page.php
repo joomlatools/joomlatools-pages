@@ -39,7 +39,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                     'og:description' => null,
                 ],
                 'process'     => [
-                    'filters' => array('meta'),
+                    'filters' => [],
                 ],
                 'layout'      => array(),
                 'colllection' => false,

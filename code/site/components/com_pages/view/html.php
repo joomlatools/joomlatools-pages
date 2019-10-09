@@ -14,7 +14,7 @@ class ComPagesViewHtml extends ComKoowaViewHtml
         $config->append([
             'behaviors'   => ['routable', 'pageable', 'layoutable'],
             'auto_fetch'  => false,
-            'template_filters' => ['asset'],
+            'template_filters' => ['asset', 'meta'],
         ]);
 
         parent::_initialize($config);
