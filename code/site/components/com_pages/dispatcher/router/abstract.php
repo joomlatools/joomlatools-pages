@@ -30,6 +30,13 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
     private $__resolvers;
 
     /**
+     * The route identifier
+     *
+     * @var array
+     */
+    protected $_route;
+
+    /**
      * Constructor
      *
      * @param   KObjectConfig $config Configuration options
@@ -39,6 +46,9 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
         parent::__construct($config);
 
         $this->setRequest($config->request);
+
+        //Set the route identifier
+        $this->_route = $config->route;
     }
 
     /**
@@ -53,6 +63,7 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
     {
         $config->append(array(
             'request' => null,
+            'route'   => 'com://site/pages.dispatcher.router.route',
         ));
 
         parent::_initialize($config);
@@ -134,11 +145,18 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
      */
     public function getRoute($route, array $parameters = array())
     {
-        if(!$route instanceof ComPagesDispatcherRouterRouteInterface) {
-            $route = $this->getObject('com://site/pages.dispatcher.router.route', ['url' => $route]);
-        } else {
-            $route = clone $route;
+        if(!$route instanceof ComPagesDispatcherRouterRouteInterface)
+        {
+            $route = $this->getObject($this->_route, ['url' => $route]);
+
+            if(!$route instanceof ComPagesDispatcherRouterRouteInterface)
+            {
+                throw new UnexpectedValueException(
+                    'Route: '.get_class($route).' does not implement ComPagesDispatcherRouterRouteInterface'
+                );
+            }
         }
+        else $route = clone $route;
 
         return $route->setQuery($parameters, true);
     }
