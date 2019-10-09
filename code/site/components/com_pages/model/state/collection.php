@@ -21,11 +21,11 @@ class ComPagesModelStateCollection extends KModelState
                 //Unique values cannot be null or an empty string
                 if($state->unique)
                 {
-                    $data[] = $state->name;
-
                     foreach($state->required as $required) {
                         $data[] = $this->_data[$required]->name;
                     }
+
+                    $data[] = $state->name;
                 }
             }
             else $data[] = $state->name;

@@ -13,8 +13,8 @@ class ComPagesModelPages extends ComPagesModelCollection
     {
         parent::__construct($config);
         $this->getState()
-            ->insert('path', 'url')
-            ->insert('slug', 'cmd', '', true, array('path'))
+            ->insert('folder', 'url')
+            ->insert('slug', 'cmd', '', true, array('folder'))
             //Internal states
             ->insert('recurse', 'boolean', true, false, array(), true)
             ->insert('level', 'int', 0, false, array(), true)
@@ -38,20 +38,19 @@ class ComPagesModelPages extends ComPagesModelCollection
         parent::_initialize($config);
     }
 
-
     public function getData($count = false)
     {
         $pages = array();
         $state = $this->getState();
 
-        //Make sure we have a valid path
-        if($path = $state->path)
+        //Make sure we have a valid folder
+        if($folder = $state->folder)
         {
             $registry = $this->getObject('page.registry');
 
             if ($state->isUnique())
             {
-                if($page = $registry->getPage($path.'/'.$this->getState()->slug)) {
+                if($page = $registry->getPage($folder.'/'.$this->getState()->slug)) {
                     $pages = array($page->toArray());
                 }
             }
@@ -63,8 +62,7 @@ class ComPagesModelPages extends ComPagesModelCollection
                     $mode = ComPagesPageRegistry::PAGES_TREE;
                 }
 
-
-                $pages = array_values($registry->getPages($path, $mode, $state->level - 1));
+                $pages = array_values($registry->getPages($folder, $mode, $state->level - 1));
 
                 //Filter the pages
                 $pages = $this->filterData($pages);

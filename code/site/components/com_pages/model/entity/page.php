@@ -12,13 +12,12 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'identity_key'   => 'path',
             'data' => [
                 'path'        => '',
+                'slug'        => '',
                 'name'        => '',
                 'title'       => '',
                 'summary'     => '',
-                'slug'        => '',
                 'content'     => '',
                 'excerpt'     => '',
                 'text'        => '',
@@ -49,7 +48,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                 'language'    => 'en-GB',
                 'canonical'   => null,
             ],
-            'internal_properties' => ['process', 'layout', 'format', 'collection', 'form'],
+            'internal_properties' => ['process', 'layout', 'format', 'collection', 'form', 'route', 'slug', 'path', 'folder'],
         ]);
 
         parent::_initialize($config);
@@ -64,6 +63,11 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         }
 
         return $result;
+    }
+
+    public function getPropertyFolder()
+    {
+        return dirname($this->path);
     }
 
     public function getPropertyDay()
