@@ -33,16 +33,35 @@ class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract implemen
     }
 
     /**
-     * Compile a route
+     * Resolve a route
      *
-     * @param string|ComPagesDispatcherRouterRouteInterface $route The route to compile
+     * @param string|ComPagesDispatcherRouterRouteInterface|KObjectInterface $route The route to resolve
      * @param array $parameters Route parameters
-     * @return ComPagesDispatcherRouterRouteInterface
+     * @return false| ComPagesDispatcherRouterInterface Returns the matched route or false if no match was found
      */
-    public function compile($route, array $parameters = array())
+    public function resolve($route, array $parameters = array())
     {
-        //Do not try to compile the route
-        return $route;
+        if(is_string($route)) {
+            $route = $this->getRoute($route, $parameters);
+        }
+
+        return parent::resolve($route);
+    }
+
+    /**
+     * Generate a route
+     *
+     * @param string|ComPagesDispatcherRouterRouteInterface|KObjectInterface $route The route to resolve
+     * @param array $parameters Route parameters
+     * @return false|KHttpUrlInterface Returns the generated route
+     */
+    public function generate($route, array $parameters = array())
+    {
+        if(is_string($route)) {
+            $route = $this->getRoute($route, $parameters);
+        }
+
+        return parent::generate($route, $parameters);
     }
 
     /**
@@ -58,19 +77,19 @@ class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract implemen
         if($route instanceof KObjectInterface)
         {
             if($route instanceof ComPagesDispatcherRouterRouteInterface) {
-                $component = $route->getScheme();
+                $package = $route->getScheme();
             } else {
-                $component = $route->getIdentifier()->getPackage();
+                $package = $route->getIdentifier()->getPackage();
             }
         }
-        else $component = parse_url($route, PHP_URL_SCHEME);
+        else $package = parse_url($route, PHP_URL_SCHEME);
 
-        if($component)
+        if($package)
         {
-            if (!isset($this->__resolvers[$component]))
+            if (!isset($this->__resolvers[$package]))
             {
                 $config     = ['request' => $this->getRequest()];
-                $identifier = 'com://site/'.$component.'.dispatcher.router.'.$component;
+                $identifier = 'com://site/'.$package.'.dispatcher.router.'.$package;
 
                 $resolver = $this->getObject($identifier, $config);
 
@@ -81,9 +100,9 @@ class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract implemen
                     );
                 }
 
-                $this->__resolvers[$component] = $resolver;
+                $this->__resolvers[$package] = $resolver;
             }
-            else $resolver = $this->__resolvers[$component];
+            else $resolver = $this->__resolvers[$package];
         }
 
         return $resolver;

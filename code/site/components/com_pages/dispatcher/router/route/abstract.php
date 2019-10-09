@@ -15,5 +15,30 @@
  */
 abstract class ComPagesDispatcherRouterRouteAbstract extends KHttpUrl implements ComPagesDispatcherRouterRouteInterface
 {
+    /**
+     * Get the resolver identifier
+     *
+     * @return KObjectIdentifierInterface
+     */
+    public function getResolver()
+    {
+        $identifier = $this->getIdentifier()->toArray();
 
+        if($identifier['package'] != 'dispatcher') {
+            $identifier['path'] = array('dispatcher', 'router');
+        } else {
+            $identifier['path'] = array('router');
+        }
+
+        $identifier['package'] = $this->getScheme();
+
+        if($host = $this->getHost())
+        {
+            $identifier['path'][] = 'resolver';
+            $identifier['name']   = $this->getHost();
+        }
+        else $identifier['name'] = 'resolver';
+
+        return $this->getIdentifier($identifier);
+    }
 }

@@ -9,22 +9,24 @@
 
 class ComPagesDispatcherRouterPages extends ComPagesDispatcherRouterAbstract
 {
-    public function compile($route, array $parameters = array())
+    public function resolve($route, array $parameters = array())
+    {
+        $route = $this->getRoute($route, $parameters);
+        return parent::resolve($route, $parameters);
+    }
+
+    public function generate($route, array $parameters = array())
+    {
+        $route = $this->getRoute($route, $parameters);
+        return parent::generate($route, $parameters);
+    }
+
+    public function getRoute($route, array $parameters = array())
     {
         if($route instanceof ComPagesModelEntityPage) {
             $route = 'pages:'.$route->path;
         }
 
-        return parent::compile($route, $parameters);
-    }
-
-    public function getResolver($route)
-    {
-        //Set page as default resolver
-        if(!$route->getHost()) {
-            $route->setHost('page');
-        }
-
-        return parent::getResolver($route);
+        return parent::getRoute($route, $parameters);
     }
 }

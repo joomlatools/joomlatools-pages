@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResolverRegex
+class ComPagesDispatcherRouterResolver extends ComPagesDispatcherRouterResolverRegex
 {
     protected function _initialize(KObjectConfig $config)
     {
@@ -64,7 +64,7 @@ class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResol
 
     protected function _resolvePagination(ComPagesDispatcherRouterRouteInterface $route, $state)
     {
-        if( isset($state['limit']))
+        if(isset($state['limit']))
         {
             if(isset($route->query['page']))
             {

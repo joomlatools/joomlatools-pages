@@ -18,21 +18,13 @@
 interface ComPagesDispatcherRouterInterface
 {
     /**
-     * Compile a route
-     *
-     * @param string|ComPagesDispatcherRouterRouteInterface $route The route to resolve
-     * @param array $parameters Route parameters
-     * @return ComPagesDispatcherRouterRouteInterface
-     */
-    public function compile($route, array $parameters = array());
-
-    /**
      * Resolve a route
      *
      * @param string|ComPagesDispatcherRouterRouteInterface|KObjectInterface $route The route to resolve
+     * @param array $parameters Route parameters
      * @return false| ComPagesDispatcherRouterInterface Returns the matched route or false if no match was found
      */
-    public function resolve($route);
+    public function resolve($route, array $parameters = array());
 
     /**
      * Generate a route
@@ -59,6 +51,15 @@ interface ComPagesDispatcherRouterInterface
      * @return false|ComPagesDispatcherRouterInterface
      */
     public function getResolver($route);
+
+    /**
+     * Get a route
+     *
+     * @param string|ComPagesDispatcherRouterRouteInterface $route The route to resolve
+     * @param array $parameters Route parameters
+     * @return ComPagesDispatcherRouterRouteInterface
+     */
+    public function getRoute($route, array $parameters = array());
 
     /**
      * Set the request object

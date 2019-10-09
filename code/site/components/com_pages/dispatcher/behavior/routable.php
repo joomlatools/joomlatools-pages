@@ -49,7 +49,7 @@ class ComPagesDispatcherBehaviorRoutable extends KControllerBehaviorAbstract
             $path .= '.'.$format;
         }
 
-        if(false === $route = $context->router->resolve('pages://page/'.$path)) {
+        if(false === $route = $context->router->resolve('pages:'.$path, $context->request->query->toArray())) {
             throw new KHttpExceptionNotFound('Page Not Found');
         }
 
