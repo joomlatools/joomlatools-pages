@@ -33,38 +33,6 @@ class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract implemen
     }
 
     /**
-     * Resolve a route
-     *
-     * @param string|ComPagesDispatcherRouterRouteInterface|KObjectInterface $route The route to resolve
-     * @param array $parameters Route parameters
-     * @return false| ComPagesDispatcherRouterInterface Returns the matched route or false if no match was found
-     */
-    public function resolve($route, array $parameters = array())
-    {
-        if(is_string($route)) {
-            $route = $this->getRoute($route, $parameters);
-        }
-
-        return parent::resolve($route);
-    }
-
-    /**
-     * Generate a route
-     *
-     * @param string|ComPagesDispatcherRouterRouteInterface|KObjectInterface $route The route to resolve
-     * @param array $parameters Route parameters
-     * @return false|KHttpUrlInterface Returns the generated route
-     */
-    public function generate($route, array $parameters = array())
-    {
-        if(is_string($route)) {
-            $route = $this->getRoute($route, $parameters);
-        }
-
-        return parent::generate($route, $parameters);
-    }
-
-    /**
      * Get the resolver
      *
      * @param string|ComPagesDispatcherRouterRouteInterface|KObjectInterface $route The route to resolve
