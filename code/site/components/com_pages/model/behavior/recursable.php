@@ -38,7 +38,7 @@ class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
 
         if($this->hasChildren())
         {
-            $parent = $parent = $this->getMixer()->getHandle();
+            $parent = $this->getMixer()->getHandle();
             $result = $this->__children[$parent];
         }
 
@@ -62,23 +62,26 @@ class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
         if (!$state->isUnique() && $state->recurse && ($state->level == 0 || $state->level > 1))
         {
             $entities = clone $context->entity;
-            $key      = $context->getIdentityKey();
+            $key      = $state->recurse;
 
             //Filter children
-            foreach ($entities as $index => $entity)
+            foreach ($entities as $entity)
             {
                 //Mixin the behavior
                 $entity->mixin($this);
 
-                if($entities->find($entity->$key))
+                //Get the handle for the parent
+                $parent = $entity->getHandle();
+
+                if($children = $entities->find([$key => $parent]))
                 {
-                    //Get the parent
-                    $parent = $entity->$key;
+                    foreach($children as $child)
+                    {
+                        //Store the nodes by parent
+                        $this->__children[$parent][] = $child;
 
-                    //Store the nodes by parent
-                    $this->__children[$parent][$index] = $entity;
-
-                    $context->entity->remove($entity);
+                        $context->entity->remove($child);
+                    }
                 }
             }
 

@@ -16,7 +16,7 @@ class ComPagesModelPages extends ComPagesModelCollection
             ->insert('folder', 'url')
             ->insert('slug', 'cmd', '', true, array('folder'))
             //Internal states
-            ->insert('recurse', 'boolean', true, false, array(), true)
+            ->insert('recurse', 'cmd', null, false, array(), true)
             ->insert('level', 'int', 0, false, array(), true)
             ->insert('collection', 'boolean', null, false, array(), true)
             ->insert('format', 'word', null, false, array(), true)
@@ -56,7 +56,7 @@ class ComPagesModelPages extends ComPagesModelCollection
             }
             else
             {
-                if($state->recurse) {
+                if(!$state->recurse) {
                     $mode = ComPagesPageRegistry::PAGES_ONLY;
                 } else {
                     $mode = ComPagesPageRegistry::PAGES_TREE;

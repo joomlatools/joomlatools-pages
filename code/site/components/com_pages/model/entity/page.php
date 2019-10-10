@@ -243,6 +243,11 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         return 'text/html';
     }
 
+    public function getHandle()
+    {
+        return $this->path;
+    }
+
     public function __toString()
     {
         return $this->getContent();
