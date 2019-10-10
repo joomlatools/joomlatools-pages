@@ -81,10 +81,10 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
         $result = false;
 
         if($resolver = $this->getResolver($route)) {
-            $route = $resolver->resolve($route, $parameters);
+            $result = $resolver->resolve($route, $parameters);
         }
 
-        return $route;
+        return $result;
     }
 
     /**
