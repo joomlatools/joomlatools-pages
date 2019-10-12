@@ -15,6 +15,7 @@ class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
     {
         $config->append([
             'priority' => self::PRIORITY_HIGH,
+            'key'      => null,
         ]);
 
         parent::_initialize($config);
@@ -62,7 +63,7 @@ class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
         if (!$state->isUnique() && $state->recurse && ($state->level == 0 || $state->level > 1))
         {
             $entities = clone $context->entity;
-            $key      = $state->recurse;
+            $key      = $this->getConfig()->key ?? $entities->getIdentityKey();
 
             //Filter children
             foreach ($entities as $entity)
