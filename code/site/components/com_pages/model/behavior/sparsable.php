@@ -30,7 +30,7 @@ class ComPagesModelBehaviorSparsable extends ComPagesModelBehaviorQueryable
     /**
      * Insert the model states
      *
-     * @param ObjectMixable $mixer
+     * @param KObjectMixable $mixer
      */
     public function onMixin(KObjectMixable $mixer)
     {
@@ -43,7 +43,7 @@ class ComPagesModelBehaviorSparsable extends ComPagesModelBehaviorQueryable
     /**
      * Parse the fields state
      *
-     * @param   ModelContextInterface $context A model context object
+     * @param   KModelContextInterface $context A model context object
      * @return  void
      */
     protected function _afterReset(KModelContextInterface $context)
@@ -66,7 +66,7 @@ class ComPagesModelBehaviorSparsable extends ComPagesModelBehaviorQueryable
     /**
      * Filter data fields
      *
-     * @param   ModelContextInterface $context A model context object
+     * @param   KModelContextInterface $context A model context object
      * @return  void
      */
     protected function _queryArray(array $data, KModelStateInterface $state)
@@ -90,7 +90,7 @@ class ComPagesModelBehaviorSparsable extends ComPagesModelBehaviorQueryable
     /**
      * Add query colums based on fields
      *
-     * @param   ModelContextInterface $context A model context object
+     * @param   KModelContextInterface $context A model context object
      * @return  void
      */
     protected function _queryDatabase(KDatabaseQuerySelect $query, KModelStateInterface $state)
@@ -117,7 +117,7 @@ class ComPagesModelBehaviorSparsable extends ComPagesModelBehaviorQueryable
 
             if(!empty($result))
             {
-                $context->query->columns = array();
+                $query->columns = array();
 
                 //Always include the identity column
                 $result[] = 'tbl.'.$table->getIdentityColumn();

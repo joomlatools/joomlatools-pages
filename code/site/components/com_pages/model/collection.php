@@ -36,7 +36,8 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
             'behaviors'   => [
                 'com://site/pages.model.behavior.paginatable',
                 'com://site/pages.model.behavior.sortable',
-                'com://site/pages.model.behavior.searchable'
+                'com://site/pages.model.behavior.searchable',
+                'com://site/pages.model.behavior.sparsable'
             ],
             'state' => 'com://site/pages.model.state.collection',
         ]);
