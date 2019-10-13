@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesDispatcherRouterResolver extends ComPagesDispatcherRouterResolverRegex
+class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResolverRegex
 {
     protected function _initialize(KObjectConfig $config)
     {

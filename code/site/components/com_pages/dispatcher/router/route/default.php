@@ -7,16 +7,10 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-
 /**
- * Abstract Dispatcher Route Resolver
- *
- * Inspired by Altorouter: https://github.com/dannyvankooten/AltoRouter
+ * Default Router Route
  *
  * @author  Johan Janssens <https://github.com/johanjanssens>
- * @package Koowa\Library\Dispatcher\Router\Resolver
+ * @package Koowa\Library\Dispatcher\Router\Route
  */
-abstract class ComPagesDispatcherRouterResolverAbstract extends KObject implements ComPagesDispatcherRouterResolverInterface, KObjectMultiton
-{
-
-}
+final class ComPagesDispatcherRouterRouteDefault extends ComPagesDispatcherRouterRouteAbstract { }

@@ -7,14 +7,10 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-/**
- * Dispatcher Redirect Route Resolver
- *
- * @author  Johan Janssens <https://github.com/johanjanssens>
- * @package Koowa\Library\Dispatcher\Router\Resolver
- */
-class ComPagesDispatcherRouterResolverRedirect  extends ComPagesDispatcherRouterResolverRegex
+class ComPagesDispatcherRouterRedirect extends ComPagesDispatcherRouterAbstract
 {
+    private $__resolver;
+
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
@@ -22,5 +18,14 @@ class ComPagesDispatcherRouterResolverRedirect  extends ComPagesDispatcherRouter
         ));
 
         parent::_initialize($config);
+    }
+
+    public function getResolver($route)
+    {
+        if(!$this->__resolver) {
+            $this->__resolver =  $this->getObject('com://site/pages.dispatcher.router.resolver.regex', ['routes' => $this->getConfig()->routes]);
+        }
+
+        return $this->__resolver;
     }
 }

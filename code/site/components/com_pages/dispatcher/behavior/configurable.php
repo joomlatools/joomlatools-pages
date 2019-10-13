@@ -21,9 +21,9 @@ class ComPagesDispatcherBehaviorConfigurable extends KControllerBehaviorAbstract
 
     protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
-        $path = trim($context->request->getUrl()->toString(KHttpUrl::HOST + KHttpUrl::PATH), '/');
+        $path   = trim($context->request->getUrl()->toString(KHttpUrl::HOST + KHttpUrl::PATH), '/');
 
-        if(false === $route = $context->router->resolve('pages://site/'.$path)) {
+        if(false === $route = $context->router->getResolver('site')->resolve($path)) {
             throw new KHttpExceptionNotFound('Site Not Found');
         }
 

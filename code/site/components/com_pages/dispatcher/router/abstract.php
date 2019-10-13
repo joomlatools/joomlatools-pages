@@ -23,20 +23,6 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
     private $__request;
 
     /**
-     * List of router resolvers
-     *
-     * @var array
-     */
-    private $__resolvers;
-
-    /**
-     * The route identifier
-     *
-     * @var array
-     */
-    protected $_route;
-
-    /**
      * Constructor
      *
      * @param   KObjectConfig $config Configuration options
@@ -46,9 +32,6 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
         parent::__construct($config);
 
         $this->setRequest($config->request);
-
-        //Set the route identifier
-        $this->_route = $config->route;
     }
 
     /**
@@ -63,7 +46,8 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
     {
         $config->append(array(
             'request' => null,
-            'route'   => 'com://site/pages.dispatcher.router.route',
+            'route'    => 'default',
+            'resolver' => 'default',
         ));
 
         parent::_initialize($config);
@@ -80,7 +64,9 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
     {
         $result = false;
 
-        if($resolver = $this->getResolver($route)) {
+        if($resolver = $this->getResolver($this->getConfig()->resolver))
+        {
+            $route  = $this->getRoute($route, $parameters);
             $result = $resolver->resolve($route, $parameters);
         }
 
@@ -98,7 +84,9 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
     {
         $result = false;
 
-        if($resolver = $this->getResolver($route)) {
+        if($resolver = $this->getResolver($this->getConfig()->resolver))
+        {
+            $route  = $this->getRoute($route, $parameters);
             $result = $resolver->generate($route, $parameters);
         }
 
@@ -147,7 +135,19 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
     {
         if(!$route instanceof ComPagesDispatcherRouterRouteInterface)
         {
-            $route = $this->getObject($this->_route, ['url' => $route]);
+            $name = $this->getConfig()->route;
+
+            if(is_string($name) && strpos($name, '.') === false )
+            {
+                $identifier         = $this->getIdentifier()->toArray();
+                $identifier['path'] = ['dispatcher', 'router', 'route'];
+                $identifier['name'] = $name;
+
+                $identifier = $this->getIdentifier($identifier);
+            }
+            else $identifier = $this->getIdentifier($name);
+
+            $route = $this->getObject($identifier, ['url' => $route]);
 
             if(!$route instanceof ComPagesDispatcherRouterRouteInterface)
             {
@@ -164,34 +164,29 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
     /**
      * Get a resolver based on the route
      *
-     * The resolver is based on the route host information.
-     *
-     * @param ComPagesDispatcherRouterRouteInterface $route The route to resolve
+     * @param   mixed   $resolver  KObjectIdentifier object or valid identifier string
      * @throws UnexpectedValueException
-     * @return false|ComPagesDispatcherRouterInterface
+     * @return ComPagesDispatcherRouterResolverInterface
      */
-    public function getResolver($route)
+    public function getResolver($resolver)
     {
-        $resolver = false;
-
-        if($route instanceof ComPagesDispatcherRouterRouteInterface)
+        if(is_string($resolver) && strpos($resolver, '.') === false )
         {
-            $identifier = $route->getResolver();
+            $identifier         = $this->getIdentifier()->toArray();
+            $identifier['path'] = ['dispatcher', 'router', 'resolver'];
+            $identifier['name'] = $resolver;
 
-            if (!isset($this->__resolvers[$identifier->name]))
-            {
-                $resolver = $this->getObject($identifier);
+            $identifier = $this->getIdentifier($identifier);
+        }
+        else $identifier = $this->getIdentifier($resolver);
 
-                if (!($resolver instanceof ComPagesDispatcherRouterResolverInterface))
-                {
-                    throw new UnexpectedValueException(
-                        "Resolver $identifier does not implement DispatcherRouterResolverInterface"
-                    );
-                }
+        $resolver = $this->getObject($identifier);
 
-                $this->__resolvers[$resolver->getIdentifier()->name] = $resolver;
-            }
-            else $resolver = $this->__resolvers[$identifier->name];
+        if (!($resolver instanceof ComPagesDispatcherRouterResolverInterface))
+        {
+            throw new UnexpectedValueException(
+                "Resolver $identifier does not implement KDispatcherRouterResolverInterface"
+            );
         }
 
         return $resolver;

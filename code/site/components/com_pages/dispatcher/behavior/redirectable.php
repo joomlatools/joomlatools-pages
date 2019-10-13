@@ -24,7 +24,7 @@ class ComPagesDispatcherBehaviorRedirectable extends KControllerBehaviorAbstract
         $url   = urldecode( $context->request->getUrl()->getPath());
         $path = trim(str_replace(array($base, '/index.php'), '', $url), '/');
 
-        if(false !== $route = $context->router->resolve('pages://redirect/'.$path))
+        if(false !== $route = $context->router->getResolver('redirect')->resolve($path))
         {
             if($route->toString(KHttpUrl::AUTHORITY))
             {

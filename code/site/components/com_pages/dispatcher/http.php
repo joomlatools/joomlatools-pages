@@ -76,7 +76,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         }
 
         //Get the page from the router
-        $page = $this->getPage();
+        $page = $this->getRoute()->getPage();
 
         //Set the controller
         $this->setController($page->getType(), ['model' => $page]);
@@ -90,7 +90,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     protected function _actionGet(KDispatcherContextInterface $context)
     {
         //Use hardcoded limit if page has one
-        $page = $this->getPage();
+        $page = $this->getRoute()->getPage();
 
         if($collection = $page->isCollection())
         {
@@ -106,7 +106,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     protected function _actionPost(KDispatcherContextInterface $context)
     {
-        if($this->getPage()->isForm()) {
+        if($this->getRoute()->getPage()->isForm()) {
             $result = $this->getController()->execute('submit', $context);
         } else {
             $result = parent::_actionPost($context);
@@ -164,7 +164,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     public function getHttpMethods()
     {
-        $page = $this->getPage(true);
+        $page = $this->getRoute()->getPage(true);
 
         if($page->isForm())
         {

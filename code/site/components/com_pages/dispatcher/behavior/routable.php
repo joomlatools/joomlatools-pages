@@ -25,17 +25,6 @@ class ComPagesDispatcherBehaviorRoutable extends KControllerBehaviorAbstract
         return clone $this->__route;
     }
 
-    public function getPage($content = false)
-    {
-        $page = false;
-
-        if($this->__route) {
-            $page = $this->getObject('page.registry')->getPage($this->__route->getPath(), $content);
-        }
-
-        return $page;
-    }
-
     protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
         $base   = $context->request->getBasePath();
@@ -62,15 +51,6 @@ class ComPagesDispatcherBehaviorRoutable extends KControllerBehaviorAbstract
 
     protected function _beforeSend(KDispatcherContextInterface $context)
     {
-        //Add a (self-referential) canonical URL
-        $page = $this->getPage();
 
-        if(!$page->canonical)
-        {
-            $route = $context->router->generate($this->getRoute());
-            $page->canonical = $context->router->qualify($route);
-        }
-
-        $this->getResponse()->getHeaders()->set('Link', array($page->canonical => array('rel' => 'canonical')));
     }
 }

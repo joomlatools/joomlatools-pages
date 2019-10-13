@@ -65,7 +65,7 @@ return [
                 return (new \Highlight\Highlighter())->highlight($language, $source, false)->value;
             }
         ],
-        'com://site/pages.dispatcher.router.resolver.site' => [
+        'com://site/pages.dispatcher.router.site' => [
             'routes'  => isset($config['sites']) ? array_flip($config['sites']) : array(JPATH_ROOT.'/joomlatools-pages' => '[*]'),
         ],
     ]

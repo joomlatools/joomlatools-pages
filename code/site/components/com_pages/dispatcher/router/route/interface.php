@@ -15,10 +15,5 @@
  */
 interface ComPagesDispatcherRouterRouteInterface extends KHttpUrlInterface
 {
-    /**
-     * Get the resolver
-     *
-     * @return string
-     */
-    public function getResolver();
+
 }

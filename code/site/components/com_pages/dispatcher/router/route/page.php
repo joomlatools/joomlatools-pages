@@ -8,12 +8,21 @@
  */
 
 /**
- * Router Route
+ * Router Page Route
  *
  * @author  Johan Janssens <https://github.com/johanjanssens>
  * @package Koowa\Library\Dispatcher\Router\Route
  */
-class ComPagesDispatcherRouterRoute extends ComPagesDispatcherRouterRouteAbstract
+class ComPagesDispatcherRouterRoutePage extends ComPagesDispatcherRouterRouteAbstract
 {
+    public function getPage($content = false)
+    {
+        $page = false;
 
+        if($path = $this->getPath()) {
+            $page = $this->getObject('page.registry')->getPage($path, $content);
+        }
+
+        return $page;
+    }
 }
