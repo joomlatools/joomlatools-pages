@@ -51,6 +51,18 @@ class ComPagesDispatcherBehaviorRoutable extends KControllerBehaviorAbstract
 
     protected function _beforeSend(KDispatcherContextInterface $context)
     {
+        //Add a (self-referential) canonical URL
+        if($route = $this->getRoute())
+        {
+            $page = $route->getPage();
 
+            if(!$page->canonical)
+            {
+                $route = $context->router->generate($this->getRoute());
+                $page->canonical = $context->router->qualify($route);
+            }
+
+            $this->getResponse()->getHeaders()->set('Link', array($page->canonical => array('rel' => 'canonical')));
+        }
     }
 }
