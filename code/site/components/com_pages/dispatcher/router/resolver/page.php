@@ -20,46 +20,26 @@ class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResol
 
     public function resolve(ComPagesDispatcherRouterRouteInterface $route)
     {
-        if($route = parent::resolve($route))
+        if($result = parent::resolve($route))
         {
-            $page = $route->getPath();
-
-            if($page = $this->getObject('page.registry')->getPage($page))
-            {
-                if($collection = $page->isCollection())
-                {
-                    if(isset($collection['state'])) {
-                        $this->_resolvePagination($route, $collection['state']);
-                    }
-                }
+            if($state = $route->getState()) {
+                $this->_resolvePagination($route, $state);
             }
         }
 
-        return $route;
+        return $result;
     }
 
     public function generate(ComPagesDispatcherRouterRouteInterface $route)
     {
-        $page = $route->getPath();
-
-        if($route = parent::generate($route))
+        if($result = parent::generate($route))
         {
-            //Remove hardcoded collection states
-            if($page = $this->getObject('page.registry')->getPage($page))
-            {
-                if(($collection = $page->isCollection()) && isset($collection['state']))
-                {
-                    //Remove any hardcoded states from the generated route
-                    $route->query = array_diff_key($route->query, $collection['state']);
-
-                    if(isset($collection['state'])) {
-                        $this->_generatePagination($route, $collection['state']);
-                    }
-                }
+            if($state = $route->getState()) {
+                $this->_generatePagination($route, $state);
             }
         }
 
-        return $route;
+        return $result;
     }
 
     protected function _resolvePagination(ComPagesDispatcherRouterRouteInterface $route, $state)

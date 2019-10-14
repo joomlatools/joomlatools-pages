@@ -19,10 +19,42 @@ class ComPagesDispatcherRouterRoutePage extends ComPagesDispatcherRouterRouteAbs
     {
         $page = false;
 
-        if($path = $this->getPath()) {
+        if($this->getStatus() == self::STATUS_RESOLVED) {
+            $path = $this->getPath();
+        } else {
+            $path = $this->_initial_route->getPath();
+        }
+
+        if($path) {
             $page = $this->getObject('page.registry')->getPage($path, $content);
         }
 
         return $page;
+    }
+
+    public function getState()
+    {
+        $state = array();
+
+        if($page = $this->getPage())
+        {
+            if(($collection = $page->isCollection()) && isset($collection['state'])) {
+                $state = $collection['state'];
+            }
+        }
+
+        return $state;
+    }
+
+    public function setStatus($status)
+    {
+        parent::setStatus($status);
+
+        //Remove any hardcoded states from the generated route
+        if($status == self::STATUS_GENERATED) {
+            $this->query = array_diff_key($this->query, $this->getState());
+        }
+
+        return $this;
     }
 }

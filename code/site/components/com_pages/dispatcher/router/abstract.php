@@ -67,10 +67,14 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
         if($resolver = $this->getResolver($this->getConfig()->resolver))
         {
             $route  = $this->getRoute($route, $parameters);
-            $result = $resolver->resolve($route, $parameters);
+
+            if(!$route->isResolved()) {
+                $result = $resolver->resolve($route, $parameters);
+            }
+
         }
 
-        return $result;
+        return $result !== false ? $route : false;
     }
 
     /**
@@ -87,10 +91,14 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
         if($resolver = $this->getResolver($this->getConfig()->resolver))
         {
             $route  = $this->getRoute($route, $parameters);
-            $result = $resolver->generate($route, $parameters);
+
+            if(!$route->isGenerated()) {
+                $result = $resolver->generate($route, $parameters);
+            }
+
         }
 
-        return $result;
+        return $result !== false ? $route : false;
     }
 
     /**
@@ -147,7 +155,7 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
             }
             else $identifier = $this->getIdentifier($name);
 
-            $route = $this->getObject($identifier, ['url' => $route]);
+            $route = $this->getObject($identifier, ['url' => $route, 'query' => $parameters]);
 
             if(!$route instanceof ComPagesDispatcherRouterRouteInterface)
             {
@@ -156,9 +164,13 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
                 );
             }
         }
-        else $route = clone $route;
+        else
+        {
+            $route = clone $route;
+            $route->setQuery($parameters, true);
+        }
 
-        return $route->setQuery($parameters, true);
+        return $route;
     }
 
     /**

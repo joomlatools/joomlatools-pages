@@ -18,5 +18,27 @@
  */
 abstract class ComPagesDispatcherRouterResolverAbstract extends KObject implements ComPagesDispatcherRouterResolverInterface, KObjectMultiton
 {
+    /**
+     *  Resolve the route
+     *
+     * @param ComPagesDispatcherRouterInterface $route The route to resolve
+     * @return bool
+     */
+    public function resolve(ComPagesDispatcherRouterRouteInterface $route)
+    {
+        $route->setStatus(ComPagesDispatcherRouterRouteInterface::STATUS_RESOLVED);
+        return true;
+    }
 
+    /**
+     * Reversed routing
+     *
+     * @param ComPagesDispatcherRouterInterface $route The route to generate
+     * @return bool
+     */
+    public function generate(ComPagesDispatcherRouterRouteInterface $route)
+    {
+        $route->setStatus(ComPagesDispatcherRouterRouteInterface::STATUS_GENERATED);
+        return true;
+    }
 }

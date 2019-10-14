@@ -128,7 +128,7 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
      *  Resolve the route
      *
      * @param ComPagesDispatcherRouterInterface $route The route to resolve
-     * @return false|ComPagesDispatcherRouterInterface Returns the matched route or false if no match was found
+     * @return bool
      */
     public function resolve(ComPagesDispatcherRouterRouteInterface $route)
     {
@@ -169,7 +169,11 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
             $this->__static_routes = array($path => $result) + $this->__static_routes;
         }
 
-        return $result !== false ? $this->_buildRoute($result, $route) : false;
+        if($result !== false) {
+            $this->_buildRoute($result, $route);
+        }
+
+        return $result !== false ? parent::resolve($route) : false;
     }
 
     /**
@@ -178,7 +182,7 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
      * Generate the URL for a route. Replace regexes with supplied parameters
      *
      * @param ComPagesDispatcherRouterInterface $route The route to generate
-     * @return false|ComPagesDispatcherRouterRouteInterface Returns the generated route or false if no route could be generated
+     * @return bool
      */
     public function generate(ComPagesDispatcherRouterRouteInterface $route)
     {
@@ -199,7 +203,11 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
         }
         else $result = $routes[$path];
 
-        return $result !== false ? $this->_buildRoute($result, $route) : false;
+        if($result !== false) {
+            $this->_buildRoute($result, $route);
+        }
+
+        return $result !== false ? parent::generate($route) : false;
     }
 
     /**

@@ -15,5 +15,34 @@
  */
 interface ComPagesDispatcherRouterRouteInterface extends KHttpUrlInterface
 {
+    const STATUS_RESOLVED  = 1;
+    const STATUS_GENERATED = 2;
 
+    /**
+     * Set the status.
+     *
+     * @param integer $status The status value.
+     */
+    public function setStatus($status);
+
+    /**
+     * Set the status.
+     *
+     * @return string The status value.
+     */
+    public function getStatus();
+
+    /**
+     * Test if the route has been resolved
+     *
+     * @return	bool
+     */
+    public function isResolved();
+
+    /**
+     * Test if the route has been generated
+     *
+     * @return	bool
+     */
+    public function isGenerated();
 }

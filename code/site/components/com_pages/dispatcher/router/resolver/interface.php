@@ -21,7 +21,7 @@ interface ComPagesDispatcherRouterResolverInterface
      *  Resolve the route
      *
      * @param ComPagesDispatcherRouterInterface $route The route to resolve
-     * @return false| ComPagesDispatcherRouterInterface Returns the matched route or false if no match was found
+     * @return bool
      */
     public function resolve(ComPagesDispatcherRouterRouteInterface $route);
 
@@ -29,7 +29,7 @@ interface ComPagesDispatcherRouterResolverInterface
      * Reversed routing
      *
      * @param ComPagesDispatcherRouterInterface $route The route to generate
-     * @return false|KHttpUrl Returns the generated route
+     * @return bool
      */
     public function generate(ComPagesDispatcherRouterRouteInterface $route);
 }
