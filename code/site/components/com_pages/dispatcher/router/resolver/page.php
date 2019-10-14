@@ -22,8 +22,29 @@ class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResol
     {
         if($result = parent::resolve($route))
         {
-            if($state = $route->getState()) {
-                $this->_resolvePagination($route, $state);
+            $state = $route->getState();
+
+            if(isset($route->query['page']))
+            {
+                $page  = $route->query['page'];
+
+                if(isset($page['number']) && $state['limit']) {
+                    $route->query['offset'] = ($page['number'] - 1) * $state['limit'];
+                }
+
+                if(isset($page['limit'])) {
+                    $route->query['limit'] = $page['limit'];
+                }
+
+                if(isset($page['offset'])) {
+                    $route->query['offset'] = $page['offset'];
+                }
+
+                if(isset($page['total'])) {
+                    $route->query['total'] = $page['total'];
+                }
+
+                unset($route->query['page']);
             }
         }
 
@@ -34,44 +55,36 @@ class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResol
     {
         if($result = parent::generate($route))
         {
-            if($state = $route->getState()) {
-                $this->_generatePagination($route, $state);
+            $state = $route->getState();
+            $page = array();
+
+            if(isset($route->query['offset']))
+            {
+                $page['offset'] = $route->query['offset'];
+                unset($route->query['offset']);
             }
+
+            if(isset($route->query['limit']))
+            {
+                $page['limit'] = $route->query['limit'];
+                unset($route->query['offset']);
+            }
+
+            if(isset($route->query['total']))
+            {
+                $page['total'] = $route->query['total'];
+                unset($route->query['total']);
+            }
+
+            if(isset($state['limit']) && isset($page['offset']))
+            {
+                $page['number'] = ceil($page['offset']/$state['limit']) + 1;
+                unset($page['offset']);
+            }
+
+            $route->query['page'] = $page;
         }
 
         return $result;
-    }
-
-    protected function _resolvePagination(ComPagesDispatcherRouterRouteInterface $route, $state)
-    {
-        if(isset($state['limit']))
-        {
-            if(isset($route->query['page']))
-            {
-                $limit = $state['limit'];
-                $page  = $route->query['page'] - 1;
-
-                $route->query['offset'] = $page * $limit;
-
-                unset($route->query['page']);
-            }
-        }
-    }
-
-    protected function _generatePagination(ComPagesDispatcherRouterRouteInterface $route, $state)
-    {
-        if(isset($state['limit']))
-        {
-            if(isset($route->query['offset']))
-            {
-                $limit = $state['limit'];
-
-                if($offset = $route->query['offset']) {
-                    $route->query['page'] = $offset/$limit + 1;
-                }
-
-                unset($route->query['offset']);
-            }
-        }
     }
 }

@@ -20,7 +20,7 @@ abstract class ComPagesDispatcherRouterRouteAbstract extends KHttpUrl implements
      *
      * Available entity status values are defined as STATUS_ constants
      *
-     * @var string
+     * @var integer
      */
     protected $_status = null;
 
@@ -65,9 +65,10 @@ abstract class ComPagesDispatcherRouterRouteAbstract extends KHttpUrl implements
     }
 
     /**
-     * Set the status.
+     * Set the route status.
      *
-     * @param integer $status The status value.
+     * @param integer $status The route status value.
+     * @return ComPagesDispatcherRouterRouteInterface
      */
     public function setStatus($status)
     {
@@ -76,9 +77,9 @@ abstract class ComPagesDispatcherRouterRouteAbstract extends KHttpUrl implements
     }
 
     /**
-     * Get the status.
+     * Set the route status.
      *
-     * @return integer The status value.
+     * @return integer The route status value.
      */
     public function getStatus()
     {
@@ -103,5 +104,23 @@ abstract class ComPagesDispatcherRouterRouteAbstract extends KHttpUrl implements
     public function isGenerated()
     {
         return (bool) $this->_status === self::STATUS_GENERATED;
+    }
+
+    /**
+     * Returns the query portion as a string or array
+     *
+     * @param   boolean      $toArray If TRUE return an array. Default FALSE
+     * @param   boolean|null $escape  If TRUE escapes '&' to '&amp;' for xml compliance. If NULL use the default.
+     * @return  string|array The query string; e.g., `foo=bar&baz=dib`.
+     */
+    public function getQuery($toArray = false, $escape = null)
+    {
+        $result =  parent::getQuery($toArray, $escape);
+
+        if(!$toArray) {
+            $result = str_replace(['%5B', '%5D'], ['[', ']'], $result);
+        }
+
+        return $result;
     }
 }
