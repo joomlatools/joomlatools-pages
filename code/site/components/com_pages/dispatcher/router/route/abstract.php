@@ -65,25 +65,35 @@ abstract class ComPagesDispatcherRouterRouteAbstract extends KHttpUrl implements
     }
 
     /**
-     * Set the route status.
+     * Get the route state
      *
-     * @param integer $status The route status value.
+     * @return array
+     */
+    public function getState()
+    {
+        return array();
+    }
+
+    /**
+     * Mark the route as resolved
+     *
      * @return ComPagesDispatcherRouterRouteInterface
      */
-    public function setStatus($status)
+    public function setResolved()
     {
-        $this->_status = $status;
+        $this->_status = self::STATUS_RESOLVED;
         return $this;
     }
 
     /**
-     * Set the route status.
+     * Mark the route as generated
      *
-     * @return integer The route status value.
+     * @return ComPagesDispatcherRouterRouteInterface
      */
-    public function getStatus()
+    public function setGenerated()
     {
-        return $this->_status;
+        $this->_status = self::STATUS_GENERATED;
+        return $this;
     }
 
     /**
@@ -93,7 +103,7 @@ abstract class ComPagesDispatcherRouterRouteAbstract extends KHttpUrl implements
      */
     public function isResolved()
     {
-        return (bool) $this->_status === self::STATUS_RESOLVED;
+        return (bool) ($this->_status == self::STATUS_RESOLVED);
     }
 
     /**
@@ -103,7 +113,7 @@ abstract class ComPagesDispatcherRouterRouteAbstract extends KHttpUrl implements
      */
     public function isGenerated()
     {
-        return (bool) $this->_status === self::STATUS_GENERATED;
+        return (bool) ($this->_status == self::STATUS_GENERATED);
     }
 
     /**

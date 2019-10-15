@@ -26,7 +26,7 @@ abstract class ComPagesDispatcherRouterResolverAbstract extends KObject implemen
      */
     public function resolve(ComPagesDispatcherRouterRouteInterface $route)
     {
-        $route->setStatus(ComPagesDispatcherRouterRouteInterface::STATUS_RESOLVED);
+        $route->setResolved();
         return true;
     }
 
@@ -38,7 +38,7 @@ abstract class ComPagesDispatcherRouterResolverAbstract extends KObject implemen
      */
     public function generate(ComPagesDispatcherRouterRouteInterface $route)
     {
-        $route->setStatus(ComPagesDispatcherRouterRouteInterface::STATUS_GENERATED);
+        $route->setGenerated();
         return true;
     }
 }

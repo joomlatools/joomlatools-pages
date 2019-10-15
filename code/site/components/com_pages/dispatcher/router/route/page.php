@@ -19,7 +19,7 @@ class ComPagesDispatcherRouterRoutePage extends ComPagesDispatcherRouterRouteAbs
     {
         $page = false;
 
-        if($this->getStatus() == self::STATUS_RESOLVED) {
+        if($this->isResolved()) {
             $path = $this->getPath();
         } else {
             $path = $this->_initial_route->getPath();
@@ -46,14 +46,12 @@ class ComPagesDispatcherRouterRoutePage extends ComPagesDispatcherRouterRouteAbs
         return $state;
     }
 
-    public function setStatus($status)
+    public function setGenerated()
     {
-        parent::setStatus($status);
+        parent::setGenerated();
 
         //Remove any hardcoded states from the generated route
-        if($status == self::STATUS_GENERATED) {
-            $this->query = array_diff_key($this->query, $this->getState());
-        }
+        $this->query = array_diff_key($this->query, $this->getState());
 
         return $this;
     }
