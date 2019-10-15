@@ -69,9 +69,8 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
             $route  = $this->getRoute($route, $parameters);
 
             if(!$route->isResolved()) {
-                $result = $resolver->resolve($route, $parameters);
+                $result = $resolver->resolve($route);
             }
-
         }
 
         return $result !== false ? $route : false;
@@ -93,7 +92,7 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
             $route  = $this->getRoute($route, $parameters);
 
             if(!$route->isGenerated()) {
-                $result = $resolver->generate($route, $parameters);
+                $result = $resolver->generate($route);
             }
 
         }
