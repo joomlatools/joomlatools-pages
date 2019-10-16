@@ -68,6 +68,8 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
         $config->append(array(
             'routes'   => array(),
             'types' =>  [
+                'month' => '(0?[1-9]|1[012])',
+                'year'  => '(19|20)\d{2}',
                 'digit' => '[0-9]++',
                 'alnum' => '[0-9A-Za-z]++',
                 'alpha' => '[A-Za-z]++',
