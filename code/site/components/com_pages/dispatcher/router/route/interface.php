@@ -26,6 +26,13 @@ interface ComPagesDispatcherRouterRouteInterface extends KHttpUrlInterface
     public function getState();
 
     /**
+     * Get the format
+     *
+     * @return string
+     */
+    public function getFormat();
+
+    /**
      * Mark the route as resolved
      *
      * @return ComPagesDispatcherRouterRouteInterface

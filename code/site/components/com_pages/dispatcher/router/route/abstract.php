@@ -75,6 +75,16 @@ abstract class ComPagesDispatcherRouterRouteAbstract extends KHttpUrl implements
     }
 
     /**
+     * Get the format
+     *
+     * @return string
+     */
+    public function getFormat()
+    {
+        return pathinfo($this->getPath(), PATHINFO_EXTENSION);
+    }
+
+    /**
      * Mark the route as resolved
      *
      * @return ComPagesDispatcherRouterRouteInterface
