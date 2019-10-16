@@ -45,13 +45,14 @@ interface ComPagesDispatcherRouterInterface
     public function qualify(ComPagesDispatcherRouterRouteInterface $route);
 
     /**
-     * Get a resolver based
+     * Get a route resolver
      *
      * @param   mixed   $resolver  KObjectIdentifier object or valid identifier string
+     * @param   array $config  An optional associative array of configuration settings
      * @throws UnexpectedValueException
-     * @return ComPagesDispatcherRouterResolverInterface
+     * @return  ComPagesDispatcherRouterAbstract
      */
-    public function getResolver($resolver);
+    public function getResolver($resolver, $config = array());
 
     /**
      * Get a route

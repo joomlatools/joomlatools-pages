@@ -90,12 +90,14 @@ class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract implemen
     }
 
     /**
-     * Get the resolver
+     * Get a route resolver
      *
      * @param   mixed   $resolver  KObjectIdentifier object or valid identifier string
-     * @return ComPagesDispatcherRouterInterface
+     * @param   array $config  An optional associative array of configuration settings
+     * @throws UnexpectedValueException
+     * @return  ComPagesDispatcherRouter
      */
-    public function getResolver($resolver)
+    public function getResolver($resolver, $config = array())
     {
         if(is_string($resolver) && strpos($resolver, '.') === false )
         {
