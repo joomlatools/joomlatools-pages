@@ -30,7 +30,7 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
      *
      * @var	SplDoublyLinkedList
      */
-    private $__queue;
+    private $__resolvers;
 
     /**
      * Constructor
@@ -44,7 +44,7 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
         $this->setRequest($config->request);
 
         //Create the resolver queue
-        $this->__queue = new SplDoublyLinkedList();
+        $this->__resolvers = new SplDoublyLinkedList();
 
         //Attach the router resolvers
         $resolvers = (array) KObjectConfig::unbox($config->resolvers);
@@ -93,9 +93,9 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
 
         if(!$route->isResolved())
         {
-            $this->__queue->setIteratorMode(SplDoublyLinkedList::IT_MODE_FIFO | SplDoublyLinkedList::IT_MODE_KEEP);
+            $this->__resolvers->setIteratorMode(SplDoublyLinkedList::IT_MODE_FIFO | SplDoublyLinkedList::IT_MODE_KEEP);
 
-            foreach($this->__queue as $resolver)
+            foreach($this->__resolvers as $resolver)
             {
                 if(false === $result = $resolver->resolve($route, $parameters)) {
                     break;
@@ -121,9 +121,9 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
 
         if(!$route->isGenerated())
         {
-            $this->__queue->setIteratorMode(SplDoublyLinkedList::IT_MODE_LIFO | SplDoublyLinkedList::IT_MODE_KEEP);
+            $this->__resolvers->setIteratorMode(SplDoublyLinkedList::IT_MODE_LIFO | SplDoublyLinkedList::IT_MODE_KEEP);
 
-            foreach($this->__queue as $resolver)
+            foreach($this->__resolvers as $resolver)
             {
                 if(false === $result = $resolver->generate($route, $parameters)) {
                     break;
@@ -253,7 +253,7 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
         }
 
         //Enqueue the router resolver
-        $this->__queue->push($resolver);
+        $this->__resolvers->push($resolver);
 
         return $this;
     }
@@ -290,6 +290,6 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
         parent::__clone();
 
         $this->__request = clone $this->__request;
-        $this->__queue   = clone $this->__queue;
+        $this->__resolvers = clone $this->__resolvers;
     }
 }
