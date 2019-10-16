@@ -125,7 +125,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $result;
     }
 
-    public function getPage($path, $content = false)
+    public function getPage($path)
     {
         $page = false;
 
@@ -140,11 +140,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 $file    = trim(str_replace($basedir, '', $file), '/');
 
                 //Load the page
-                if($content) {
-                    $page = (new ComPagesPageObject())->fromFile($file);
-                } else {
-                    $page = new ComPagesPageObject($this->__data['pages'][$file]);
-                }
+                $page = new ComPagesPageObject($this->__data['pages'][$file]);
 
                 //Get the parent
                 $parent_path = trim(dirname($page->path), '.');
@@ -178,6 +174,23 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         }
 
         return $page;
+    }
+
+    public function getPageContent($path)
+    {
+        if($path instanceof ComPagesPageObject) {
+            $path = $path->path;
+        }
+
+        $content  = false;
+        $template = $this->getObject('com://site/pages.template.default');
+
+        //Load and render the page
+        if($template->loadFile('page://pages/'.$path)) {
+            $content = $template->render(KObjectConfig::unbox($template->getData()));
+        }
+
+        return $content;
     }
 
     public function getRoutes($path = null)

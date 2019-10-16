@@ -164,11 +164,11 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     public function getHttpMethods()
     {
-        $page = $this->getRoute()->getPage(true);
+        $page = $this->getRoute()->getPage();
 
         if($page->isForm())
         {
-            if($page->layout || !empty($page->getContent())) {
+            if($page->layout || !empty($this->getObject('page.registry')->getPageContent($page))) {
                 $methods =  array('get', 'head', 'options', 'post');
             } else {
                 $methods =  array('post');

@@ -229,13 +229,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
 
     public function getContent()
     {
-        $template = $this->getObject('com://site/pages.template.default');
-
-        //Load the page
-        $template->loadFile('page://pages/'.$this->path);
-
-        //Render page
-        return $template->render(KObjectConfig::unbox($template->getData()));
+        return $this->getObject('page.registry')->getPageContent($this->path);
     }
 
     public function getContentType()
