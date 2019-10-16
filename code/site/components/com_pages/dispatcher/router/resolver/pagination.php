@@ -7,23 +7,14 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResolverRegex
+class ComPagesDispatcherRouterResolverPagination extends ComPagesDispatcherRouterResolverAbstract
 {
-    protected function _initialize(KObjectConfig $config)
-    {
-        $config->append(array(
-            'routes' => $this->getObject('page.registry')->getRoutes(),
-        ));
-
-        parent::_initialize($config);
-    }
-
     public function resolve(ComPagesDispatcherRouterRouteInterface $route)
     {
-        if($result = parent::resolve($route))
-        {
-            $state = $route->getState();
+        $state = $route->getState();
 
+        if($route->getFormat() == 'json')
+        {
             if(isset($route->query['page']))
             {
                 $page  = $route->query['page'];
@@ -47,44 +38,63 @@ class ComPagesDispatcherRouterResolverPage extends ComPagesDispatcherRouterResol
                 unset($route->query['page']);
             }
         }
+        else
+        {
+            if(isset($route->query['page']))
+            {
+                $page = $route->query['page'];
 
-        return $result;
+                if($page && $state['limit']) {
+                    $route->query['offset'] = ($page - 1) * $state['limit'];
+                }
+
+                unset($route->query['page']);
+            }
+        }
     }
 
     public function generate(ComPagesDispatcherRouterRouteInterface $route)
     {
-        if($result = parent::generate($route))
-        {
-            $state = $route->getState();
-            $page = array();
+        $state = $route->getState();
+        $page = array();
 
-            if(isset($route->query['offset']))
-            {
+        if($route->getFormat() == 'json')
+        {
+            if (isset($route->query['offset'])) {
                 $page['offset'] = $route->query['offset'];
                 unset($route->query['offset']);
             }
 
-            if(isset($route->query['limit']))
-            {
+            if (isset($route->query['limit'])) {
                 $page['limit'] = $route->query['limit'];
                 unset($route->query['offset']);
             }
 
-            if(isset($route->query['total']))
-            {
+            if (isset($route->query['total'])) {
                 $page['total'] = $route->query['total'];
                 unset($route->query['total']);
             }
 
-            if(isset($state['limit']) && isset($page['offset']))
+            if (isset($state['limit']) && isset($page['offset']))
             {
-                $page['number'] = ceil($page['offset']/$state['limit']) + 1;
+                $page['number'] = ceil($page['offset'] / $state['limit']) + 1;
                 unset($page['offset']);
             }
 
             $route->query['page'] = $page;
         }
+        else
+        {
+            if (isset($state['limit']) && isset($route->query['offset']))
+            {
+                $page = ceil($route->query['offset'] / $state['limit']) + 1;
 
-        return $result;
+                if($page > 1) {
+                    $route->query['page'] = $page;
+                }
+
+                unset($route->query['offset']);
+            }
+        }
     }
 }
