@@ -15,21 +15,15 @@
  */
 class ComPagesDispatcherRouterRoutePage extends ComPagesDispatcherRouterRouteAbstract
 {
-    public function getPage($content = false)
+    public function getPage()
     {
-        $page = false;
-
-        if($this->isResolved()) {
-            $path = $this->getPath();
-        } else {
+        if($this->isGenerated()) {
             $path = $this->_initial_route->getPath();
+        } else {
+            $path = $this->getPath();
         }
 
-        if($path) {
-            $page = $this->getObject('page.registry')->getPage($path, $content);
-        }
-
-        return $page;
+        return $this->getObject('page.registry')->getPage(trim($path, '/'));
     }
 
     public function getState()
