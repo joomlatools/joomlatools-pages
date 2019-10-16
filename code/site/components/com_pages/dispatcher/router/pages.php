@@ -11,10 +11,15 @@ class ComPagesDispatcherRouterPages extends ComPagesDispatcherRouterAbstract
 {
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append(array(
-            'route'    => 'page',
-            'resolver' => 'page',
-        ));
+        $config->append([
+            'route'  => 'page',
+            'routes' => $this->getObject('page.registry')->getRoutes(),
+        ])->append(([
+            'resolvers' => [
+                'regex' => ['routes' => $config->routes],
+                'pagination'
+            ]
+        ]));
 
         parent::_initialize($config);
     }

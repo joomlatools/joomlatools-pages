@@ -9,23 +9,16 @@
 
 class ComPagesDispatcherRouterRedirect extends ComPagesDispatcherRouterAbstract
 {
-    private $__resolver;
-
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append(array(
+        $config->append([
             'routes' => $this->getObject('page.registry')->getRedirects(),
-        ));
+        ])->append([
+            'resolvers' => [
+                'regex' => ['routes' => $config->routes]
+            ]
+        ]);
 
         parent::_initialize($config);
-    }
-
-    public function getResolver($route)
-    {
-        if(!$this->__resolver) {
-            $this->__resolver =  $this->getObject('com://site/pages.dispatcher.router.resolver.regex', ['routes' => $this->getConfig()->routes]);
-        }
-
-        return $this->__resolver;
     }
 }
