@@ -93,7 +93,7 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
 
         if(!$route->isResolved())
         {
-            $this->__resolvers->setIteratorMode(SplDoublyLinkedList::IT_MODE_FIFO | SplDoublyLinkedList::IT_MODE_KEEP);
+            $this->__resolvers->setIteratorMode(SplDoublyLinkedList::IT_MODE_LIFO | SplDoublyLinkedList::IT_MODE_KEEP);
 
             foreach($this->__resolvers as $resolver)
             {
@@ -121,7 +121,7 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
 
         if(!$route->isGenerated())
         {
-            $this->__resolvers->setIteratorMode(SplDoublyLinkedList::IT_MODE_LIFO | SplDoublyLinkedList::IT_MODE_KEEP);
+            $this->__resolvers->setIteratorMode(SplDoublyLinkedList::IT_MODE_FIFO | SplDoublyLinkedList::IT_MODE_KEEP);
 
             foreach($this->__resolvers as $resolver)
             {
@@ -212,7 +212,7 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
      * @param   mixed   $resolver  KObjectIdentifier object or valid identifier string
      * @param   array $config  An optional associative array of configuration settings
      * @throws UnexpectedValueException
-     * @return  ComPagesDispatcherRouterAbstract
+     * @return  ComPagesDispatcherRouterResolverInterface
      */
     public function getResolver($resolver, $config = array())
     {
@@ -231,11 +231,21 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
         if (!($resolver instanceof ComPagesDispatcherRouterResolverInterface))
         {
             throw new UnexpectedValueException(
-                "Resolver $identifier does not implement KDispatcherRouterResolverInterface"
+                "Resolver $identifier does not implement ComPagesDispatcherRouterResolverInterface"
             );
         }
 
         return $resolver;
+    }
+
+    /**
+     * Get the list of attached resolvers
+     *
+     * @return array
+     */
+    public function getResolvers()
+    {
+        return iterator_to_array($this->__resolvers);
     }
 
     /**
@@ -244,16 +254,21 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
      * @param   mixed  $resolver An object that implements ObjectInterface, ObjectIdentifier object
      *                            or valid identifier string
      * @param   array $config  An optional associative array of configuration settings
+     * @param  bool $prepend If true, the resolver will be prepended instead of appended.
      * @return  ComPagesDispatcherRouterAbstract
      */
-    public function attachResolver($resolver, $config = array())
+    public function attachResolver($resolver, $config = array(), $prepend = false)
     {
         if (!($resolver instanceof ComPagesDispatcherRouterResolverInterface)) {
             $resolver = $this->getResolver($resolver, $config);
         }
 
         //Enqueue the router resolver
-        $this->__resolvers->push($resolver);
+        if($prepend) {
+            $this->__resolvers->unshift($resolver);
+        } else {
+            $this->__resolvers->push($resolver);
+        }
 
         return $this;
     }
@@ -289,7 +304,7 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
     {
         parent::__clone();
 
-        $this->__request = clone $this->__request;
+        $this->__request   = clone $this->__request;
         $this->__resolvers = clone $this->__resolvers;
     }
 }

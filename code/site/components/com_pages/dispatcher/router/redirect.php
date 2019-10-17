@@ -21,4 +21,17 @@ class ComPagesDispatcherRouterRedirect extends ComPagesDispatcherRouterAbstract
 
         parent::_initialize($config);
     }
+
+    public function resolve($route = null, array $parameters = array())
+    {
+        if(!$route)
+        {
+            $base   = $this->getRequest()->getBasePath();
+            $url    = urldecode( $this->getRequest()->getUrl()->getPath());
+
+            $route  = trim(str_replace(array($base, '/index.php'), '', $url), '/');
+        }
+
+        return parent::resolve($route, $parameters);
+    }
 }

@@ -16,8 +16,8 @@ class ComPagesDispatcherRouterPages extends ComPagesDispatcherRouterAbstract
             'routes' => $this->getObject('page.registry')->getRoutes(),
         ])->append(([
             'resolvers' => [
+                'pagination',
                 'regex' => ['routes' => $config->routes],
-                'pagination'
             ]
         ]));
 

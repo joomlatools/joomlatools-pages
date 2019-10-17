@@ -125,22 +125,4 @@ abstract class ComPagesDispatcherRouterRouteAbstract extends KHttpUrl implements
     {
         return (bool) ($this->_status == self::STATUS_GENERATED);
     }
-
-    /**
-     * Returns the query portion as a string or array
-     *
-     * @param   boolean      $toArray If TRUE return an array. Default FALSE
-     * @param   boolean|null $escape  If TRUE escapes '&' to '&amp;' for xml compliance. If NULL use the default.
-     * @return  string|array The query string; e.g., `foo=bar&baz=dib`.
-     */
-    public function getQuery($toArray = false, $escape = null)
-    {
-        $result =  parent::getQuery($toArray, $escape);
-
-        if(!$toArray) {
-            $result = str_replace(['%5B', '%5D'], ['[', ']'], $result);
-        }
-
-        return $result;
-    }
 }

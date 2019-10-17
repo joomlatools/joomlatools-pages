@@ -20,11 +20,9 @@ class ComPagesDispatcherBehaviorRedirectable extends KControllerBehaviorAbstract
 
     protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
-        $base  = $context->request->getBasePath();
-        $url   = urldecode( $context->request->getUrl()->getPath());
-        $path = trim(str_replace(array($base, '/index.php'), '', $url), '/');
+        $router = $this->getObject('com://site/pages.dispatcher.router.redirect', ['request' => $context->request]);
 
-        if(false !== $route = $context->router->getResolver('redirect')->resolve($path))
+        if(false !== $route =  $router->resolve())
         {
             if($route->toString(KHttpUrl::AUTHORITY))
             {
@@ -38,7 +36,7 @@ class ComPagesDispatcherBehaviorRedirectable extends KControllerBehaviorAbstract
             }
 
             //Qualify the route
-            $url = $context->router->qualify($route);
+            $url = $router->qualify($route);
 
             //Set the location header
             $context->getResponse()->getHeaders()->set('Location',  $url);

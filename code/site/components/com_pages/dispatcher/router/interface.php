@@ -55,6 +55,24 @@ interface ComPagesDispatcherRouterInterface
     public function getResolver($resolver, $config = array());
 
     /**
+     * Get the list of attached resolvers
+     *
+     * @return array
+     */
+    public function getResolvers();
+
+    /**
+     * Attach a route resolver
+     *
+     * @param   mixed  $resolver An object that implements ObjectInterface, ObjectIdentifier object
+     *                            or valid identifier string
+     * @param   array $config  An optional associative array of configuration settings
+     * @param  bool $prepend If true, the resolver will be prepended instead of appended.
+     * @return  ComPagesDispatcherRouterAbstract
+     */
+    public function attachResolver($resolver, $config = array(), $prepend = false);
+
+    /**
      * Get a route
      *
      * @param string|ComPagesDispatcherRouterRouteInterface $route The route to resolve

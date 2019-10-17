@@ -21,4 +21,13 @@ class ComPagesDispatcherRouterSite extends ComPagesDispatcherRouterAbstract
 
         parent::_initialize($config);
     }
+
+    public function resolve($route = null, array $parameters = array())
+    {
+        if(!$route) {
+            $route = trim($this->getRequest()->getUrl()->toString(KHttpUrl::HOST + KHttpUrl::PATH), '/');
+        }
+
+        return parent::resolve($route, $parameters);
+    }
 }
