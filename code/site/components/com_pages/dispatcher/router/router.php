@@ -67,6 +67,8 @@ class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract implemen
             ];
 
             $router =  $this->getObject($identifier, $config);
+
+            $this->__routers[$package] = $router;
         }
         else $router = $this->__routers[$package];
 
@@ -108,6 +110,8 @@ class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract implemen
             ];
 
             $router =  $this->getObject($identifier, $config);
+
+            $this->__routers[$package] = $router;
         }
         else $router = $this->__routers[$package];
 
