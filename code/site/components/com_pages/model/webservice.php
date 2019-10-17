@@ -47,13 +47,12 @@ class ComPagesModelWebservice extends ComPagesModelCollection
 
     public function getData($count = false)
     {
-       if(!isset($this->_data))
-       {
-           if($url = $this->getUrl($this->getState()->getValues())) {
-               $this->_data = $this->getObject('com:pages.data.client')->fromUrl($url, false);
-           }
-       }
+        $data = array();
 
-       return (array) $this->_data;
+        if($url = $this->getUrl($this->getState()->getValues())) {
+            $data = $this->getObject('com://site/pages.data.client')->fromUrl($url, false);
+        }
+
+        return $data;
     }
 }

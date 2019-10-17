@@ -27,6 +27,38 @@ class ComPagesModelBehaviorSortable extends ComPagesModelBehaviorQueryable
             ->insert('order', 'word', 'asc');
     }
 
+    /**
+     * Split the sort state if format is [property,ASC|DESC]
+     *
+     * @param   KModelContextInterface $context A model context object
+     * @return  void
+     */
+    protected function _afterReset(KModelContextInterface $context)
+    {
+        if($context->modified->contains('sort'))
+        {
+            if(strpos($context->state->sort, ',') !== false)
+            {
+                $context->state->sort = explode(',', $context->state->sort);
+                foreach($context->state->sort as $key => $value)
+                {
+                    if(strtoupper($value) == 'DESC' || strtoupper($value) == 'ASC')
+                    {
+                        unset($context->state->sort[$key]);
+                        $context->state->order = strtolower($value);
+                    }
+                }
+            }
+
+            //Support for JSOAPI spec: https://jsonapi.org/format/#fetching-sorting
+            if($context->state->sort[0] == '-')
+            {
+                $context->state->sort = ltrim($context->state->sort, '-');
+                $context->state->order = 'desc';
+            }
+        }
+    }
+
     protected function _queryArray(array $data, KModelStateInterface $state)
     {
         if($state->sort && $state->sort != 'order')

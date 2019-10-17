@@ -38,7 +38,7 @@ class ComPagesControllerProcessorDatabase extends ComPagesControllerProcessorAbs
                 if(is_string($this->_table) && strpos($this->_table, '.') !== false ) {
                     $this->_table = $this->getObject($this->_table);
                 } else {
-                    $this->_table = $this->getObject('com:pages.database.table.default', array('name' => $this->_table));
+                    $this->_table = $this->getObject('com://site/pages.database.table.default', array('name' => $this->_table));
                 }
             }
 

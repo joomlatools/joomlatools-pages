@@ -51,19 +51,18 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
 
     public function getData($count = false)
     {
-        if(!isset($this->_data))
+        $data = array();
+
+        if($path = (string) $this->getPath($this->getState()->getValues()))
         {
-           if($path = (string) $this->getPath($this->getState()->getValues()))
-           {
-               if(strpos($path, 'data://') === false)
-               {
-                   $path = $path[0] != '/' ?  $this->_base_path.'/'.$path : $path;
-                   $this->_data = $this->getObject('object.config.factory')->fromFile($path, false);
-               }
-               else $this->_data = $this->getObject('data.registry')->getData(str_replace('data://', '', (string)$path), false);
-           }
+            if(strpos($path, 'data://') === false)
+            {
+                $path = $path[0] != '/' ?  $this->_base_path.'/'.$path : $path;
+                $data = $this->getObject('object.config.factory')->fromFile($path, false);
+            }
+            else $tdata = $this->getObject('data.registry')->getData(str_replace('data://', '', (string)$path), false);
        }
 
-       return (array) $this->_data;
+       return $data;
     }
 }

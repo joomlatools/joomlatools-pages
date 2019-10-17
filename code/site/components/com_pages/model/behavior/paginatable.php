@@ -24,7 +24,9 @@ class ComPagesModelBehaviorPaginatable extends ComPagesModelBehaviorQueryable
 
         $mixer->getState()
             ->insert('limit', 'int')
-            ->insert('offset', 'int');
+            ->insert('offset', 'int')
+            ->insert('total', 'int');
+
     }
 
     public function getPaginator()
@@ -32,7 +34,7 @@ class ComPagesModelBehaviorPaginatable extends ComPagesModelBehaviorQueryable
         $paginator = new KModelPaginator(array(
             'offset' => (int)$this->getState()->offset,
             'limit'  => (int)$this->getState()->limit,
-            'total'  => (int)$this->count(),
+            'total'  => (int)$this->getState()->total,
         ));
 
         return $paginator;
@@ -42,10 +44,15 @@ class ComPagesModelBehaviorPaginatable extends ComPagesModelBehaviorQueryable
     {
         $state = $context->state;
 
-        if ($limit = $state->limit)
+        if(is_null($state->total) || $state->total > $this->count()) {
+            $state->total = $this->count();
+        }
+
+        if ($state->limit)
         {
+            $limit  = $state->limit;
             $offset = $state->offset;
-            $total  = $this->count();
+            $total  = $state->total;
 
             if ($offset !== 0 && $total !== 0)
             {

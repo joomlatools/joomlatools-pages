@@ -13,14 +13,15 @@ class ComPagesModelPages extends ComPagesModelCollection
     {
         parent::__construct($config);
         $this->getState()
-            ->insert('path', 'url', '.')
-            ->insert('slug', 'cmd', '', true, array('path'))
+            ->insert('folder', 'url')
+            ->insert('slug', 'cmd', '', true, array('folder'))
             //Internal states
-            ->insert('recurse', 'boolean', true, false, array(), true)
+            ->insert('recurse', 'cmd', null, false, array(), true)
             ->insert('level', 'int', 0, false, array(), true)
+            ->insert('collection', 'boolean', null, false, array(), true)
+            ->insert('format', 'word', null, false, array(), true)
             //Filter states
             ->insert('visible', 'boolean')
-            ->insert('collection', 'boolean')
             ->insert('category', 'cmd')
             ->insert('year', 'int')
             ->insert('month', 'int')
@@ -31,61 +32,62 @@ class ComPagesModelPages extends ComPagesModelCollection
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'identity_key' => 'path',
-            'behaviors'    => [
-                'recursable',
-            ]
+            'behaviors' => ['com://site/pages.model.behavior.recursable' => ['key' => 'folder']]
         ]);
 
         parent::_initialize($config);
     }
 
-    public function getData($query = null)
+    public function getData($count = false)
     {
-        if(!isset($this->_data))
+        $pages = array();
+        $state = $this->getState();
+
+        //Make sure we have a valid folder
+        if($folder = $state->folder)
         {
-            $state    = $this->getState();
             $registry = $this->getObject('page.registry');
 
-            //Make sure we have a valid path
-            $pages = array();
-            if($path = $state->path)
+            if ($state->isUnique())
             {
-                if ($this->getState()->isUnique())
-                {
-                    if($page = $registry->getPage($path.'/'.$this->getState()->slug)) {
-                        $pages = $page->toArray();
-                    }
-                }
-                else
-                {
-                    if($state->recurse) {
-                        $mode = ComPagesPageRegistry::PAGES_ONLY;
-                    } else {
-                        $mode = ComPagesPageRegistry::PAGES_TREE;
-                    }
-
-                    $pages = array_values($registry->getPages($path, $mode, $state->level - 1));
-
-                    //Filter the pages
-                    $pages = array_filter($pages, function($page) use ($state) {
-                        return $this->filterData($page, $state);
-                    });
+                if($page = $registry->getPage($folder.'/'.$this->getState()->slug)) {
+                    $pages = array($page->toArray());
                 }
             }
+            else
+            {
+                if(!$state->recurse) {
+                    $mode = ComPagesPageRegistry::PAGES_ONLY;
+                } else {
+                    $mode = ComPagesPageRegistry::PAGES_TREE;
+                }
 
-            $this->_data = $pages;
+                $pages = array_values($registry->getPages($folder, $mode, $state->level - 1));
+
+                //Filter the pages
+                $pages = $this->filterData($pages);
+            }
         }
 
-        return $this->_data;
+        return $pages;
     }
 
-    public function filterData($page, KModelStateInterface $state)
+    public function filterItem($page, KModelStateInterface $state)
     {
         $result = true;
 
+        //Un-routable
+        if($page['route'] === false) {
+            $result = false;
+        }
+
+        //Format
+        if($result && !is_null($state->format)) {
+            $result = isset($page['format']) && $page['format'] == $state->format;
+        }
+
         //Visible
-        if(!is_null($state->visible))
+        if($result && !is_null($state->visible))
         {
             if($state->visible === true) {
                 $result = !isset($page['visible']) || $page['visible'] !== false;
@@ -157,7 +159,7 @@ class ComPagesModelPages extends ComPagesModelCollection
             //Goups
             if(isset($page['access']['groups']))
             {
-                $groups = $this->getObject('com:pages.database.table.groups')
+                $groups = $this->getObject('com://site/pages.database.table.groups')
                     ->select($this->getObject('user')->getGroups(), KDatabase::FETCH_ARRAY_LIST);
 
                 $groups = array_map('strtolower', array_column($groups, 'title'));
@@ -170,7 +172,7 @@ class ComPagesModelPages extends ComPagesModelCollection
             //Roles
             if($result && isset($page['access']['roles']))
             {
-                $roles = $this->getObject('com:pages.database.table.roles')
+                $roles = $this->getObject('com://site/pages.database.table.roles')
                     ->select($this->getObject('user')->getRoles(), KDatabase::FETCH_ARRAY_LIST);
 
                 $roles = array_map('strtolower', array_column($roles, 'title'));

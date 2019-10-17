@@ -12,12 +12,12 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'identity_key'   => 'path',
             'data' => [
+                'path'        => '',
+                'slug'        => '',
                 'name'        => '',
                 'title'       => '',
                 'summary'     => '',
-                'slug'        => '',
                 'content'     => '',
                 'excerpt'     => '',
                 'text'        => '',
@@ -39,14 +39,16 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                     'og:description' => null,
                 ],
                 'process'     => [
-                    'filters' => array(),
+                    'filters' => [],
                 ],
                 'layout'      => array(),
                 'colllection' => false,
                 'form'        => false,
                 'direction'   => 'auto',
+                'language'    => 'en-GB',
                 'canonical'   => null,
             ],
+            'internal_properties' => ['process', 'layout', 'format', 'collection', 'form', 'route', 'slug', 'path', 'folder'],
         ]);
 
         parent::_initialize($config);
@@ -61,6 +63,11 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         }
 
         return $result;
+    }
+
+    public function getPropertyFolder()
+    {
+        return dirname($this->path);
     }
 
     public function getPropertyDay()
@@ -102,18 +109,6 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         }
 
         return $text;
-    }
-
-    public function getPropertyRoute()
-    {
-        $handle = $this->path ? $this->path.'/'.$this->slug : $this->slug;
-
-        //Add the extension
-        if($this->format !== 'html') {
-            $handle .= '.'.$this->format;
-        }
-
-        return $handle;
     }
 
     public function getPropertyMetadata()
@@ -164,7 +159,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
     public function setPropertyCategory($category)
     {
         if(empty($category)) {
-            $category = basename($this->path);
+            $category = trim(basename(dirname($this->path)), './');
         }
 
         return $category;
@@ -202,47 +197,24 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         return $date;
     }
 
+    public function setPropertyImage($value)
+    {
+        if(!empty($value))
+        {
+            if(is_string($value) && strpos($value, '://') === false) {
+                $value = '/'.ltrim($value, '/');
+            }
+
+            $image = $this->getObject('lib:http.url')->setUrl($value);
+        }
+        else $image = null;
+
+        return $image;
+    }
+
     public function setPropertyLayout($value)
     {
         return new KObjectConfig($value);
-    }
-
-    public function toArray()
-    {
-        $data = parent::toArray();
-
-        foreach($data as $key => $value)
-        {
-            if(empty($value)) {
-                unset($data[$key]);
-            }
-
-            if($value instanceof KObjectConfigInterface) {
-                $data[$key] = KObjectConfig::unbox($value);
-            }
-
-            if($value instanceof KDate) {
-                $data[$key] = $value->format(DateTime::ATOM);
-            }
-        }
-
-        return $data;
-    }
-
-    public function getHandle()
-    {
-        return $this->route;
-    }
-
-    public function jsonSerialize()
-    {
-        $data = parent::jsonSerialize();
-
-        unset($data['process']);
-        unset($data['layout']);
-        unset($data['path']);
-
-        return $data;
     }
 
     public function isCollection()
@@ -253,5 +225,25 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
     public function isForm()
     {
         return isset($this->form) && $this->form !== false ? $this->form : false;
+    }
+
+    public function getContent()
+    {
+        return $this->getObject('page.registry')->getPageContent($this->path);
+    }
+
+    public function getContentType()
+    {
+        return 'text/html';
+    }
+
+    public function getHandle()
+    {
+        return $this->path;
+    }
+
+    public function __toString()
+    {
+        return $this->getContent();
     }
 }

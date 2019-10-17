@@ -15,7 +15,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     {
         parent::__construct($config);
 
-        $this->__router  = $config->router;
+        $this->__router = $config->router;
 
         //Re-register the exception event listener to run through pages scope
         $this->addEventListener('onException', array($this, 'fail'));
@@ -25,7 +25,12 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     {
         $config->append([
 
-            //'behaviors' => ['cacheable'],  Injected by ComPagesDispatcherRouterResolverSite
+            'behaviors' => [
+                'configurable',
+                'redirectable',
+                'routable',
+                //'cacheable',  Injected by ComPagesDispatcherRouterResolverSite
+            ],
             'router'  => 'com://site/pages.dispatcher.router',
         ]);
 
@@ -43,7 +48,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         if(!$this->__router instanceof ComPagesDispatcherRouterInterface)
         {
             $this->__router = $this->getObject($this->__router, array(
-                'response' => $this->getResponse(),
+                'request' => $this->getRequest(),
             ));
 
             if(!$this->__router instanceof ComPagesDispatcherRouterInterface)
@@ -59,24 +64,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
-        //Throw 404 if the page cannot be found
-        if(!$route = $context->router->resolve()) {
-            throw new KHttpExceptionNotFound('Page Not Found');
-        }
-
-        //Send redirect 
-        if($context->response->isRedirect()) {
-            $this->send($route);
-        }
-
-        //Get the page from the router
-        $page = $context->router->getPage();
-
-        //Set the controller
-        $this->setController($page->getType());
-
-        //Set page in model
-        $this->getController()->getModel()->setPage($page, $context->request->query->toArray());
+        //Do not call parent
     }
 
     protected function _actionDispatch(KDispatcherContextInterface $context)
@@ -87,6 +75,12 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             throw new KDispatcherExceptionMethodNotAllowed('Method not allowed');
         }
 
+        //Get the page from the router
+        $page = $this->getRoute()->getPage();
+
+        //Set the controller
+        $this->setController($page->getType(), ['model' => $page]);
+
         //Execute the component method
         $this->execute($method, $context);
 
@@ -96,7 +90,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     protected function _actionGet(KDispatcherContextInterface $context)
     {
         //Use hardcoded limit if page has one
-        $page = $context->router->getPage();
+        $page = $this->getRoute()->getPage();
 
         if($collection = $page->isCollection())
         {
@@ -112,7 +106,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     protected function _actionPost(KDispatcherContextInterface $context)
     {
-        if($context->router->getPage()->isForm()) {
+        if($this->getRoute()->getPage()->isForm()) {
             $result = $this->getController()->execute('submit', $context);
         } else {
             $result = parent::_actionPost($context);
@@ -137,10 +131,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
                 if($page = $this->getObject('page.registry')->getPage($code))
                 {
                     //Set the controller
-                    $this->setController($page->getType());
-
-                    //Set page in model
-                    $this->getController()->getModel()->setPage($page, $context->request->query->toArray());
+                    $this->setController($page->getType(), ['model' => $page]);
 
                     //Render the error
                     $content = $this->getController()->render($exception);
@@ -173,11 +164,11 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     public function getHttpMethods()
     {
-        $page = $this->getRouter()->getPage(true);
+        $page = $this->getRoute()->getPage();
 
         if($page->isForm())
         {
-            if($page->layout || !empty($page->getContent())) {
+            if($page->layout || !empty($this->getObject('page.registry')->getPageContent($page))) {
                 $methods =  array('get', 'head', 'options', 'post');
             } else {
                 $methods =  array('post');

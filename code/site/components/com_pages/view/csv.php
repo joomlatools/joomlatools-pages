@@ -11,14 +11,26 @@ class ComPagesViewCsv extends KViewCsv
 {
     public function getRoute($page, $query = array(), $escape = false)
     {
-        if(!is_array($query)) {
-            $query = array();
-        }
+        return $this->getBehavior('routable')->getRoute($page, $query, $escape);
+    }
 
-        if($route = $this->getObject('dispatcher')->getRouter()->generate($page, $query)) {
-            $route = $route->setEscape($escape)->toString(KHttpUrl::FULL);
+    public function getUrl($url = null)
+    {
+        if(!empty($url))
+        {
+            if($url instanceof KHttpUrlInterface)
+            {
+                $result = clone $url;
+                $result->setUrl(parent::getUrl()->toString(KHttpUrl::AUTHORITY));
+            }
+            else
+            {
+                $result = clone parent::getUrl();;
+                $result->setUrl($url);
+            }
         }
+        else $result = parent::getUrl();
 
-        return $route;
+        return $result;
     }
 }

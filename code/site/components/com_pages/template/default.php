@@ -279,7 +279,7 @@ class ComPagesTemplateDefault extends KTemplate
             }
             else
             {
-                $class = $this->getObject('manager')->getClass('com:pages.data.object');
+                $class = $this->getObject('manager')->getClass('com://site/pages.data.object');
                 $result = new $class($path);
             }
 

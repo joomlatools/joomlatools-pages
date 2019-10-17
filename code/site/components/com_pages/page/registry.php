@@ -24,7 +24,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         parent::__construct($config);
 
         //Create the locator
-        $this->__locator = $this->getObject('com:pages.page.locator');
+        $this->__locator = $this->getObject('com://site/pages.page.locator');
 
         //Load the cache and do not refresh it
         $basedir = $this->getLocator()->getBasePath().'/pages';
@@ -41,7 +41,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     {
         $config->append([
             'cache'       => JDEBUG ? false : true,
-            'cache_path'  => $this->getObject('com:pages.config')->getSitePath('cache'),
+            'cache_path'  => $this->getObject('com://site/pages.config')->getSitePath('cache'),
             'cache_time'  => 60*60*24, //1 day
             'collections' => array(),
             'redirects'   => array(),
@@ -64,7 +64,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             $result = new KObjectConfig($this->__collections[$name]);
 
             if(!isset($result->model)) {
-                $result->model = 'com:pages.model.pages';
+                $result->model = 'com://site/pages.model.pages';
             }
         }
 
@@ -125,7 +125,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $result;
     }
 
-    public function getPage($path, $content = false)
+    public function getPage($path)
     {
         $page = false;
 
@@ -140,16 +140,15 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 $file    = trim(str_replace($basedir, '', $file), '/');
 
                 //Load the page
-                if($content) {
-                    $page = (new ComPagesPageObject())->fromFile($file);
-                } else {
-                    $page = new ComPagesPageObject($this->__data['pages'][$file]);
-                }
+                $page = new ComPagesPageObject($this->__data['pages'][$file]);
+
+                //Get the parent
+                $parent_path = trim(dirname($page->path), '.');
 
                 //Set page default properties from parent collection
-                if(!$page->isCollection() && $page->path && $parent = $this->getPage($page->path))
+                if(!$page->isCollection() && $parent_path && $parent_page = $this->getPage($parent_path))
                 {
-                    if(($collection = $parent->isCollection()) && isset($collection['page']))
+                    if(($collection = $parent_page->isCollection()) && isset($collection['page']))
                     {
                         foreach($collection['page'] as $property => $value)
                         {
@@ -175,6 +174,23 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         }
 
         return $page;
+    }
+
+    public function getPageContent($path)
+    {
+        if($path instanceof ComPagesPageObject) {
+            $path = $path->path;
+        }
+
+        $content  = false;
+        $template = $this->getObject('com://site/pages.template.default');
+
+        //Load and render the page
+        if($template->loadFile('page://pages/'.$path)) {
+            $content = $template->render(KObjectConfig::unbox($template->getData()));
+        }
+
+        return $content;
     }
 
     public function getRoutes($path = null)
@@ -269,19 +285,16 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                      */
                                     $format = pathinfo($path, PATHINFO_EXTENSION) ?: $info['extension'];
                                     $slug   = pathinfo($path, PATHINFO_FILENAME);
-                                    $path   = trim(dirname($path), '.');
+
+                                    //Handle format
+                                    $path = str_replace('.'.$format, '', $path);
+                                    $path = $format != 'html' ? $path.'.'.$format : $path;
 
                                     //Handle index pages
                                     if($slug == 'index')
                                     {
+                                        $path = str_replace(array('/index', 'index'), '', $path);
                                         $slug = pathinfo($path, PATHINFO_FILENAME);
-                                        $path = trim(dirname($path), '.');
-                                    }
-
-                                    //Setup the route
-                                    $route = $path ? $path . '/' . $slug : $slug;
-                                    if($format !== 'html') {
-                                        $route .= '.'.$format;
                                     }
 
                                     /**
@@ -307,7 +320,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
                                     //Set the route
                                     if (!$page->route && $page->route !== false) {
-                                        $page->route = $route;
+                                        $page->route = $path;
                                     }
 
                                     //Set the published state (if not set yet)
@@ -351,25 +364,26 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     //Page
                                     $pages[$file] = $page->toArray();
 
-
                                     //Route
-                                    if($page->route !== false) {
-                                        $routes[$route] = (array) KObjectConfig::unbox($page->route);
+                                    if($page->route !== false)
+                                    {
+                                        $routes[$path] = (array) KObjectConfig::unbox($page->route);
+                                        unset($page->route);
                                     }
 
                                     //File (do not include index pages)
                                     if(strpos($file, '/index') === false) {
-                                        $files[$route] = $file;
+                                        $files[$path] = $file;
                                     }
 
                                     //Collection
                                     if($collection = $page->isCollection()) {
-                                        $collections[$route] = KObjectConfig::unbox($collection);
+                                        $collections[$path] = KObjectConfig::unbox($collection);
                                     }
 
                                     //Redirects
                                     if($page->redirect) {
-                                        $redirects[$route] = $page->redirect;
+                                        $redirects[$path] = $page->redirect;
                                     }
                                 }
                                 else

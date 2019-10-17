@@ -20,8 +20,8 @@ defined('KOOWA') or die; ?>
         <link><?= route(page()->path.'/'.page()->slug) ?></link>
         <? if (!empty($page->image)): ?>
             <image>
-                <url>baseurl://image://<?= $page->image ?></url>
-                <title><<?= page()->title ?></title>
+                <url<?= url($page->image) ?></url>
+                <title><?= page()->title ?></title>
                 <link><?= route(page()->path.'/'.page()->slug) ?></link>
             </image>
         <? endif; ?>
@@ -37,7 +37,7 @@ defined('KOOWA') or die; ?>
                 <link><?= route($page); ?></link>
                 <guid isPermaLink="true"><?= route($page); ?></guid>
                 <? if($page->image): ?>
-                    <media:content medium="image" url="baseurl://<?= $page->image ?>" />
+                    <media:content medium="image" url="<?= url($page->image) ?>" />
                 <? endif ?>
                 <description><?=  escape($page->summary) ?></description>
                 <? if($page->category): ?>

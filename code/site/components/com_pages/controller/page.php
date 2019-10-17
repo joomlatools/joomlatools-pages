@@ -12,7 +12,6 @@ class ComPagesControllerPage extends ComPagesControllerAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'model'	=> 'com://site/pages.model.page',
             'behaviors' => ['breadcrumbable'],
         ));
 

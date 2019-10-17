@@ -10,12 +10,11 @@
 class ComPagesPageLocator extends KTemplateLocatorFile
 {
     protected static $_name = 'page';
-    protected $_formats;
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'base_path' => $this->getObject('com:pages.config')->getSitePath(),
+            'base_path' => $this->getObject('com://site/pages.config')->getSitePath(),
         ]);
 
         parent::_initialize($config);

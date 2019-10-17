@@ -21,7 +21,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     {
         $config->append(array(
             'cache'      => false,
-            'cache_path' =>  $this->getObject('com:pages.config')->getSitePath('cache'),
+            'cache_path' =>  $this->getObject('com://site/pages.config')->getSitePath('cache'),
             'cache_time'        => 60*15,   //15min
             'cache_time_shared' => 60*60*2, //2h
         ));
@@ -142,7 +142,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
     public function cacheKey()
     {
-        $url     = $this->getRouter()->getCanonicalUrl()->toString(KHttpUrl::HOST + KHttpUrl::PATH + KHttpUrl::QUERY);
+        $url     = $this->getRequest()->getUrl()->toString(KHttpUrl::HOST + KHttpUrl::PATH + KHttpUrl::QUERY);
         $format  = $this->getRequest()->getFormat();
         $user    = $this->getUser()->getId();
 
