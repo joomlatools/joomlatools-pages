@@ -22,7 +22,7 @@ abstract class ComPagesDispatcherRouterRouteAbstract extends KHttpUrl implements
      *
      * @var integer
      */
-    protected $_status = null;
+    protected $__status = null;
 
     /**
      * The initial route
@@ -91,7 +91,7 @@ abstract class ComPagesDispatcherRouterRouteAbstract extends KHttpUrl implements
      */
     public function setResolved()
     {
-        $this->_status = self::STATUS_RESOLVED;
+        $this->__status = self::STATUS_RESOLVED;
         return $this;
     }
 
@@ -102,7 +102,7 @@ abstract class ComPagesDispatcherRouterRouteAbstract extends KHttpUrl implements
      */
     public function setGenerated()
     {
-        $this->_status = self::STATUS_GENERATED;
+        $this->__status = self::STATUS_GENERATED;
         return $this;
     }
 
@@ -113,7 +113,7 @@ abstract class ComPagesDispatcherRouterRouteAbstract extends KHttpUrl implements
      */
     public function isResolved()
     {
-        return (bool) ($this->_status == self::STATUS_RESOLVED);
+        return (bool) ($this->__status == self::STATUS_RESOLVED);
     }
 
     /**
@@ -123,6 +123,6 @@ abstract class ComPagesDispatcherRouterRouteAbstract extends KHttpUrl implements
      */
     public function isGenerated()
     {
-        return (bool) ($this->_status == self::STATUS_GENERATED);
+        return (bool) ($this->__status == self::STATUS_GENERATED);
     }
 }

@@ -7,4 +7,10 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
+/**
+ * Default Dispatcher Route Resolver
+ *
+ * @author  Johan Janssens <https://github.com/johanjanssens>
+ * @package Koowa\Library\Dispatcher\Router\Resolver
+ */
 final class ComPagesDispatcherRouterResolverDefault extends ComPagesDispatcherRouterResolverRegex { }

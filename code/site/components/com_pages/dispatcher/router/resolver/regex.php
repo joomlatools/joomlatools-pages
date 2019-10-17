@@ -9,7 +9,7 @@
 
 
 /**
- * Dispatcher Regex Route Resolver
+ * Regex Dispatcher Route Resolver
  *
  * Inspired by Altorouter: https://github.com/dannyvankooten/AltoRouter
  *

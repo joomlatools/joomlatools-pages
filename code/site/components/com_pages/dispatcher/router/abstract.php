@@ -11,7 +11,7 @@
  * Abstract Dispatcher Router
  *
  * The router add resolvers to a double linked list to allow. The order in which resolvers are called depends on the
- * process, when resolving resolvers are called in FIFO order, when generating the resolvers are called in LIFO order.
+ * process, when resolving resolvers are called in LIFO order, when generating the resolvers are called in FIFO order.
  *
  * @author  Johan Janssens <https://github.com/johanjanssens>
  * @package Koowa\Library\Dispatcher\Router

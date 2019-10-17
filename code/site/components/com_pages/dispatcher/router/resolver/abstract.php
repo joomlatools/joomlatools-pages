@@ -11,8 +11,6 @@
 /**
  * Abstract Dispatcher Route Resolver
  *
- * Inspired by Altorouter: https://github.com/dannyvankooten/AltoRouter
- *
  * @author  Johan Janssens <https://github.com/johanjanssens>
  * @package Koowa\Library\Dispatcher\Router\Resolver
  */

@@ -7,6 +7,12 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
+/**
+ * Pagination Dispatcher Route Resolver
+ *
+ * @author  Johan Janssens <https://github.com/johanjanssens>
+ * @package Koowa\Library\Dispatcher\Router\Resolver
+ */
 class ComPagesDispatcherRouterResolverPagination extends ComPagesDispatcherRouterResolverAbstract
 {
     public function resolve(ComPagesDispatcherRouterRouteInterface $route)
