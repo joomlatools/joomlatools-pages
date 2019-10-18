@@ -18,11 +18,12 @@ class ComPagesEventSubscriberErrorhandler extends ComPagesEventSubscriberAbstrac
         parent::_initialize($config);
     }
 
-
     public function onException(KEventException $event)
     {
         if(!$this->isDebug() && $this->getObject('request')->getFormat() == 'html')
         {
+            //Let pages handle errors even if pages is not the active component. This allows for a site wide
+            //implementation of error pages through pages.
             if($this->getObject('com://site/pages.dispatcher.http')->fail($event)) {
                 return true;
             }
