@@ -14,15 +14,10 @@ class ComPagesEventSubscriberErrorhandler extends ComPagesEventSubscriberAbstrac
         $config->append(array(
             'debug' => JDEBUG,
         ));
+
+        parent::_initialize($config);
     }
 
-    public function __construct( KObjectConfig $config)
-    {
-        parent::__construct($config);
-
-        //Exception Handling
-        $this->getObject('event.publisher')->addListener('onException', array($this, 'onException'));
-    }
 
     public function onException(KEventException $event)
     {
@@ -41,4 +36,3 @@ class ComPagesEventSubscriberErrorhandler extends ComPagesEventSubscriberAbstrac
         return $this->getConfig()->debug;
     }
 }
-
