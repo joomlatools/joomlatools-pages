@@ -25,7 +25,7 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
     {
         $config->append([
             'path'      => '',
-            'base_path' =>  Koowa::getInstance()->getRootPath().'/joomlatools-pages',
+            'base_path' =>  $this->getObject('com:pages.config')->getSitePath(),
         ]);
 
         parent::_initialize($config);
