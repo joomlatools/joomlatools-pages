@@ -22,7 +22,13 @@ class ComPagesDispatcherBehaviorRoutable extends KControllerBehaviorAbstract
 
     public function getRoute()
     {
-        return clone $this->__route;
+        $result = null;
+
+        if(is_object($this->__route)) {
+            $result = clone $this->__route;
+        }
+
+        return $result;
     }
 
     protected function _beforeDispatch(KDispatcherContextInterface $context)
