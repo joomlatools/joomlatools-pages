@@ -14,20 +14,16 @@ class ComPagesEventSubscriberErrorhandler extends ComPagesEventSubscriberAbstrac
         $config->append(array(
             'debug' => JDEBUG,
         ));
-    }
 
-    public function __construct( KObjectConfig $config)
-    {
-        parent::__construct($config);
-
-        //Exception Handling
-        $this->getObject('event.publisher')->addListener('onException', array($this, 'onException'));
+        parent::_initialize($config);
     }
 
     public function onException(KEventException $event)
     {
         if(!$this->isDebug() && $this->getObject('request')->getFormat() == 'html')
         {
+            //Let pages handle errors even if pages is not the active component. This allows for a site wide
+            //implementation of error pages through pages.
             if($this->getObject('com://site/pages.dispatcher.http')->fail($event)) {
                 return true;
             }
@@ -41,4 +37,3 @@ class ComPagesEventSubscriberErrorhandler extends ComPagesEventSubscriberAbstrac
         return $this->getConfig()->debug;
     }
 }
-

@@ -35,6 +35,6 @@ class ComPagesControllerBehaviorBreadcrumbable extends KControllerBehaviorAbstra
 
     public function isSupported()
     {
-        return $this->getMixer()->isDispatched();
+        return $this->getMixer()->isDispatched() &&  $this->getObject('dispatcher')->getRoute();
     }
 }
