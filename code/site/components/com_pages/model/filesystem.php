@@ -25,7 +25,7 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
     {
         $config->append([
             'path'      => '',
-            'base_path' =>  Koowa::getInstance()->getRootPath().'/joomlatools-pages',
+            'base_path' =>  $this->getObject('com:pages.config')->getSitePath(),
         ]);
 
         parent::_initialize($config);
@@ -53,9 +53,9 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
     {
         if(!isset($this->_data))
         {
-           if($path = (string) $this->getPath($this->getState()->getValues()))
-           {
-               if(strpos($path, 'data://') === false)
+            if($path = (string) $this->getPath($this->getState()->getValues()))
+            {
+                if(strpos($path, 'data://') === false)
                {
                    $path = $path[0] != '/' ?  $this->_base_path.'/'.$path : $path;
                    $this->_data = $this->getObject('object.config.factory')->fromFile($path, false);
