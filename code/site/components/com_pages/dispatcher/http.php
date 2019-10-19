@@ -18,7 +18,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         $this->__router  = $config->router;
 
         //Re-register the exception event listener to run through pages scope
-        $this->addEventListener('onException', array($this, 'fail'));
+        $this->addEventListener('onException', array($this, 'fail'),  KEvent::PRIORITY_NORMAL);
     }
 
     protected function _initialize(KObjectConfig $config)
