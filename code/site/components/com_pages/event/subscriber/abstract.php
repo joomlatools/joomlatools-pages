@@ -9,6 +9,36 @@
 
 abstract class ComPagesEventSubscriberAbstract extends KEventSubscriberAbstract
 {
+    protected function _initialize(KObjectConfig $config)
+    {
+        $config->append(array(
+            'enable'  => true,
+        ));
 
+        parent::_initialize($config);
+    }
+
+    public function subscribe(KEventPublisherInterface $publisher)
+    {
+        $result = [];
+
+        if($this->isEnabled()) {
+            $result = parent::subscribe($publisher);
+        }
+
+        return $result;
+    }
+
+    public function unsubscribe(KEventPublisherInterface $publisher)
+    {
+        if($this->isEnabled()) {
+            parent::unsubscribe($publisher);
+        }
+    }
+
+    public function isEnabled()
+    {
+        return $this->getConfig()->enable;
+    }
 }
 
