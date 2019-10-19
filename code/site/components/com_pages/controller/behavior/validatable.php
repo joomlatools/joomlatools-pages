@@ -54,7 +54,7 @@ class ComPagesControllerBehaviorValidatable extends KControllerBehaviorAbstract
             if($honeypot = $this->getHoneyPot())
             {
                 if($data->get($honeypot, 'raw')) {
-                    throw new ComPagesControllerExceptionRequestBlocked('Spam attempt blcoked');
+                    throw new ComPagesControllerExceptionRequestBlocked('Spam attempt blocked');
                 }
             }
 
