@@ -126,7 +126,13 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
                 $exception = $context->param;
             }
 
-            foreach([(int) $exception->getCode(), '500'] as $code)
+            //If the error code does not correspond to a status message, use 500
+            $code = $exception->getCode();
+            if(!isset(KHttpResponse::$status_messages[$code])) {
+                $code = '500';
+            }
+
+            foreach([(int) $code, '500'] as $code)
             {
                 if($page = $this->getObject('page.registry')->getPage($code))
                 {
@@ -140,7 +146,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
                     $context->response->setContent($content);
 
                     //Set status code
-                    $context->response->setStatus($exception->getCode());
+                    $context->response->setStatus($code);
 
                     return true;
                 }
