@@ -47,6 +47,16 @@ class ComPagesViewJson extends KViewAbstract
     }
 
     /**
+     * Check if we are rendering an entity collection
+     *
+     * @return bool
+     */
+    public function isCollection()
+    {
+        return (bool) !$this->getModel()->getState()->isUnique();
+    }
+
+    /**
      * Render and return the views output
      *
      * If the view 'content'  is empty the output will be generated based on the model data, if it set it will
@@ -90,6 +100,8 @@ class ComPagesViewJson extends KViewAbstract
 
         if ($this->isCollection())
         {
+            $context->parameters->total = $this->getModel()->count();
+
             $page = $this->getModel()->getPage();
 
             foreach ($this->getModel()->fetch() as $entity) {
@@ -179,14 +191,12 @@ class ComPagesViewJson extends KViewAbstract
      */
     protected function _getEntityId(KModelEntityInterface $entity)
     {
-        $state = $this->getModel()->getState();
-
-        $states = array();
-        foreach($state->getNames(true) as $state){
-            $states[] = $entity->{$state};
+        $values = array();
+        foreach($this->getModel()->getPrimaryKey() as $key){
+            $values[] = $entity->{$key};
         }
 
-        return implode('/', $states);
+        return implode('/', $values);
     }
 
     /**
@@ -254,13 +264,12 @@ class ComPagesViewJson extends KViewAbstract
     protected function _getEntityLinks(KModelEntityInterface $entity)
     {
         $links = array();
-        $state = $this->getModel()->getState();
 
         if($this->isCollection())
         {
             $query = array();
-            foreach($state->getNames(true) as $state){
-                $query[$state] = $entity->{$state};
+            foreach($this->getModel()->getPrimaryKey() as $key){
+                $query[$key] = $entity->{$key};
             }
 
             $url = $this->getRoute($this->getModel()->getPage(), $query);
