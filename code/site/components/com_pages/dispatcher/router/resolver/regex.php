@@ -268,6 +268,8 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
                 {
                     if (is_numeric($key)) {
                         unset($query[$key]);
+                    } else {
+                        $query[$key] = explode(',', $value);
                     }
                 }
 
@@ -303,14 +305,25 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
                         $block = substr($block, 1);
                     }
 
-                    if (isset($route->query[$param])) {
+                    if (isset($route->query[$param]))
+                    {
+                        if(is_array($route->query[$param])) {
+                            $value= implode(',', $route->query[$param]);
+                        } else {
+                            $value = $route->query[$param];
+                        }
+
                         //Part is found, replace for param value
-                        $regex = str_replace($block, $route->query[$param], $regex);
+                        $regex = str_replace($block, $value, $regex);
                         unset($route->query[$param]);
-                    } elseif ($optional) {
+                    }
+                    elseif ($optional)
+                    {
                         //Only strip preceeding slash if it's not at the base
                         $regex = str_replace($pre . $block, '', $regex);
-                    } else {
+                    }
+                    else
+                    {
                         //Strip match block
                         $regex = str_replace($block, '', $regex);
                     }
