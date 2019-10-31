@@ -9,11 +9,11 @@
 
 interface ComPagesModelInterface extends KModelInterface
 {
-    public function getData($count = false);
+    public function persist();
+
+    public function fetchData($count = false);
+    public function filterData($data);
+    public function filterItem($item, KModelStateInterface $state);
 
     public function getType();
-
-    public function filterData($data);
-
-    public function filterItem($item, KModelStateInterface $state);
 }

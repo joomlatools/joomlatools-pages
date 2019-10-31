@@ -73,7 +73,7 @@ class ComPagesControllerForm extends ComPagesControllerPage
             $entities->save();
 
             //Persist the entity
-            $result = $this->getModel()->store();
+            $result = $this->getModel()->persist();
 
             //Only throw an error if the action explicitly failed.
             if($result === false)
@@ -104,7 +104,7 @@ class ComPagesControllerForm extends ComPagesControllerPage
         $entity->save();
 
         //Persist the entity
-        $result = $this->getModel()->store();
+        $result = $this->getModel()->persist();
 
         //Only throw an error if the action explicitly failed.
         if($result === false)
@@ -140,7 +140,7 @@ class ComPagesControllerForm extends ComPagesControllerPage
             $entities->delete();
 
             //Persist the entity
-            $result = $this->getModel()->store();
+            $result = $this->getModel()->persist();
 
             //Only throw an error if the action explicitly failed.
             if($result === false)

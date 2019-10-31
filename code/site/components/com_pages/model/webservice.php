@@ -9,11 +9,15 @@
 
 class ComPagesModelWebservice extends ComPagesModelCollection
 {
+    private $__client;
+
     protected $_url;
 
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
+
+        $this->__client = $config->client;
 
         $this->_url = $config->url;
     }
@@ -21,7 +25,10 @@ class ComPagesModelWebservice extends ComPagesModelCollection
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'url'  => '',
+            'client'       => 'http.client',
+            'identity_key' => 'id',
+            'entity'       => 'resource',
+            'url'          => '',
         ]);
 
         parent::_initialize($config);
@@ -45,14 +52,68 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         return parent::setState($values);
     }
 
-    public function getData($count = false)
+    public function fetchData($count = false)
     {
         $data = array();
 
         if($url = $this->getUrl($this->getState()->getValues())) {
-            $data = $this->getObject('com://site/pages.data.client')->fromUrl($url, false);
+            $data  = $this->getObject('http.client')->get($url);
         }
 
         return $data;
+    }
+
+    protected function _actionPersist(KModelContext $context)
+    {
+        $result = true;
+        $entity = $context->entity;
+
+        $url     = $this->getUrl($this->getState()->getValues());
+        $headers = ['Origin' => $url->toString(KHttpUrl::AUTHORITY)];
+
+        $data   = array();
+        if(!$context->state->isUnique())
+        {
+            foreach($context->entity as $entity) {
+                $data = array_merge($entity->getProperties(true), $data);
+            }
+        }
+        else $data = $entity->getProperties(true);
+
+        if($entity->getStatus() == $entity::STATUS_CREATED) {
+            $result = $this->getClient()->post($url, $data, $headers);
+        }
+
+        if($entity->getStatus() == $entity::STATUS_UPDATED) {
+            $result = $this->getClient()->post($url, $data, $headers);
+        }
+
+        if($entity->getStatus() == $entity::STATUS_DELETED) {
+            $result = $this->getClient()->delete($url, $data, $headers);
+        }
+
+        //Reset the entity modified state
+        if($result == true) {
+            $entity->resetModified();
+        }
+
+        return $result;
+    }
+
+    public function getClient()
+    {
+        if(!($this->__client instanceof KHttpClientInterface))
+        {
+            $this->__client = $this->getObject($this->__client);
+
+            if(!$this->__client instanceof KHttpClientInterface)
+            {
+                throw new UnexpectedValueException(
+                    'Http cient: '.get_class($this->__client).' does not implement  KHttpClientInterface'
+                );
+            }
+        }
+
+        return $this->__client;
     }
 }

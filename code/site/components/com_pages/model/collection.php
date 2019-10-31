@@ -18,12 +18,13 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
 
         //Insert the identity_key
         if($config->identity_key) {
-            $this->getState()->insert($config->identity_key, 'cmd', null, true);
+            $this->getState()->insert($config->identity_key, 'url', null, true);
         }
 
         //Setup callbacks
         $this->addCommandCallback('before.fetch', '_prepareContext');
         $this->addCommandCallback('before.count', '_prepareContext');
+        $this->addCommandCallback('before.store', '_prepareContext');
 
         //Set the type
         $this->__type = $config->type;
@@ -32,7 +33,8 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'type' =>  KStringInflector::pluralize($this->getIdentifier()->getName()),
+            'entity' => $this->getIdentifier()->getName(),
+            'type'   =>  KStringInflector::pluralize($this->getIdentifier()->getName()),
             'behaviors'   => [
                 'com://site/pages.model.behavior.paginatable',
                 'com://site/pages.model.behavior.sortable',
@@ -45,12 +47,43 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         parent::_initialize($config);
     }
 
+    final public function persist()
+    {
+        if(isset($this->_entity))
+        {
+            $context = $this->getContext();
+            $context->entity  = $this->_entity;
+
+            if ($this->invokeCommand('before.persist', $context) !== false)
+            {
+                $context->result = $this->_actionPersist($context);
+                $this->invokeCommand('after.persist', $context);
+            }
+        }
+
+        return $context->result;
+    }
+
     public function getType()
     {
         return $this->__type;
     }
 
-    public function getData($count = false)
+    public function getIdentityKey()
+    {
+        return $this->_identity_key;
+    }
+
+    public function getPrimaryKey()
+    {
+        if(!$keys = (array) $this->getIdentityKey()) {
+            $keys = $this->getState()->getNames(true);
+        }
+
+        return (array) $keys;
+    }
+
+    public function fetchData($count = false)
     {
         return array();
     }
@@ -96,7 +129,7 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
     protected function _prepareContext(KModelContext $context)
     {
         if(!$this->__data) {
-            $this->__data = $this->getData($context->getName() == 'before.count');
+            $this->__data = $this->fetchData($context->getName() == 'before.count');
         }
 
         $context->data = $this->__data;
@@ -104,11 +137,43 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
 
     protected function _actionFetch(KModelContext $context)
     {
-        $data = $this->filterData($context->data);
+        $data     = $this->filterData($context->data);
         $entities = $this->create($data);
 
+        //Mark the entities as fetched
+        foreach($entities as $key => $entity)
+        {
+           $entity->setStatus(ComPagesModelEntityItem::STATUS_FETCHED);
+           $entity->resetModified();
+        }
 
         return $entities;
+    }
+
+    protected function _actionCreate(KModelContext $context)
+    {
+        $data = KModelContext::unbox($context->entity);
+
+        $identifier = $this->getIdentifier()->toArray();
+        $identifier['path'] = ['model', 'entity'];
+        $identifier['name'] = KStringInflector::pluralize($this->getConfig()->entity);
+
+        //Fallback to default
+        if(!$this->getObject('manager')->getClass($identifier, false)) {
+            $identifier = 'com://site/pages.model.entity.items';
+        }
+
+        if(!empty($data) && !is_numeric(key($data))) {
+            $data = array($data);
+        }
+
+        $options = array('data' => $data);
+
+        if($identity_key = $context->getIdentityKey()) {
+            $options['identity_key'] = $identity_key;
+        }
+
+        return $this->getObject($identifier, $options);
     }
 
     protected function _actionCount(KModelContext $context)
@@ -129,26 +194,9 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         parent::_actionReset($context);
     }
 
-    protected function _actionCreate(KModelContext $context)
+    protected function _actionPersist(KModelContext $context)
     {
-        $data = KModelContext::unbox($context->entity);
-
-        $identifier = $this->getIdentifier()->toArray();
-        $identifier['path'] = ['model', 'entity'];
-        $identifier['name'] = KStringInflector::pluralize($identifier['name']);
-
-        //Fallback to default
-        if(!$this->getObject('manager')->getClass($identifier, false)) {
-            $identifier = 'com://site/pages.model.entity.items';
-        }
-
-        $options = array('data' => $data);
-
-        if($identity_key = $context->getIdentityKey()) {
-            $options['identity_key'] = $identity_key;
-        }
-
-        return $this->getObject($identifier, $options);
+        return false;
     }
 
     public function getContext()

@@ -38,7 +38,7 @@ class ComPagesModelPages extends ComPagesModelCollection
         parent::_initialize($config);
     }
 
-    public function getData($count = false)
+    public function fetchData($count = false)
     {
         $pages = array();
         $state = $this->getState();
