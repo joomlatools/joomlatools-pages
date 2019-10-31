@@ -9,5 +9,12 @@
 
 class ComPagesControllerCollection extends ComPagesControllerPage
 {
+    public function setModel($model)
+    {
+        //Create the collection model
+        $model = $this->getObject('com://site/pages.model.factory')
+            ->createCollection($this->getPage()->path, $this->getRequest()->query->toArray());
 
+        return parent::setModel($model);
+    }
 }

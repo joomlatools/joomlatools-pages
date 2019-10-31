@@ -44,12 +44,14 @@ class ComPagesDispatcherBehaviorRoutable extends KControllerBehaviorAbstract
             $path .= '.'.$format;
         }
 
-        if(false === $route = $context->router->resolve('pages:'.$path, $context->request->query->toArray())) {
-            throw new KHttpExceptionNotFound('Page Not Found');
-        }
+        if(false !== $route = $context->router->resolve('pages:'.$path, $context->request->query->toArray()))
+        {
+            //Set the query in the request
+            $context->request->setQuery($route->query);
 
-        //Set the query in the request
-        $context->request->setQuery($route->query);
+            //Set the page in the context
+            $context->page = $route->getPage();
+        }
 
         //Store the route
         $this->__route = $route;
@@ -58,10 +60,8 @@ class ComPagesDispatcherBehaviorRoutable extends KControllerBehaviorAbstract
     protected function _beforeSend(KDispatcherContextInterface $context)
     {
         //Add a (self-referential) canonical URL
-        if($route = $this->getRoute())
+        if($page = $context->page)
         {
-            $page = $route->getPage();
-
             if(!$page->canonical)
             {
                 $route = $context->router->generate($this->getRoute());

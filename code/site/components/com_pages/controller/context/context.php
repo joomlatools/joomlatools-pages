@@ -7,18 +7,8 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesDispatcherContext extends KDispatcherContext implements ComPagesDispatcherContextInterface
+class ComPagesControllerContext extends KControllerContext implements ComPagesControllerContextInterface
 {
-    public function getRouter()
-    {
-        return KObjectConfig::get('router');
-    }
-
-    public function setRouter(ComPagesDispatcherRouterInterface $router)
-    {
-        return KObjectConfig::set('router', $router);
-    }
-
     public function getPage()
     {
         return KObjectConfig::get('page');

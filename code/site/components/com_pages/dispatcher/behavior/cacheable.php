@@ -59,11 +59,9 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         if($this->isCacheable())
         {
             //Disable caching
-            if ($page = $context->getRequest()->query->get('page', 'url', false))
+            if ($page = $context->page)
             {
-                $cache = $this->getObject('page.registry')
-                    ->getPage($page)
-                    ->process->get('cache', true);
+                $cache = $page->process->get('cache', true);
 
                 if ($cache !== false)
                 {

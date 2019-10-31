@@ -24,12 +24,11 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-
             'behaviors' => [
                 'configurable',
                 'redirectable',
                 'routable',
-                //'cacheable',  Injected by ComPagesDispatcherRouterResolverSite
+                'cacheable',
             ],
             'router'  => 'com://site/pages.dispatcher.router',
         ]);
@@ -69,17 +68,19 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     protected function _actionDispatch(KDispatcherContextInterface $context)
     {
+        //Throw 404 if the page cannot be found
+        if(!$context->page) {
+            throw new KHttpExceptionNotFound('Page Not Found');
+        }
+
         //Throw 405 if the method is not allowed
         $method = strtolower($context->request->getMethod());
         if (!in_array($method, $this->getHttpMethods())) {
             throw new KDispatcherExceptionMethodNotAllowed('Method not allowed');
         }
 
-        //Get the page from the router
-        $page = $this->getRoute()->getPage();
-
         //Set the controller
-        $this->setController($page->getType(), ['model' => $page]);
+        $this->setController( $context->page->getType(), ['page' =>  $context->page]);
 
         //Execute the component method
         $this->execute($method, $context);
@@ -89,10 +90,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     protected function _actionGet(KDispatcherContextInterface $context)
     {
-        //Use hardcoded limit if page has one
-        $page = $this->getRoute()->getPage();
-
-        if($collection = $page->isCollection())
+        if($collection =  $context->page->isCollection())
         {
             if(isset($collection['state']) && isset($collection['state']['limit']))
             {
@@ -106,19 +104,24 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     protected function _actionPost(KDispatcherContextInterface $context)
     {
-        if($this->getRoute()->getPage()->isForm()) {
-            $result = $this->getController()->execute('submit', $context);
-        } else {
+        if($context->page->form->model)
+        {
+            if(!$context->request->data->has('_action'))
+            {
+                $action = $this->getController()->getModel()->getState()->isIdentity() ? 'edit' : 'add';
+                $context->request->data->set('_action', $action);
+            }
+
             $result = parent::_actionPost($context);
+
         }
+        else $result = $this->getController()->execute('submit', $context);
 
         return $result;
     }
 
     protected function _renderError(KDispatcherContextInterface $context)
     {
-        if(!JDEBUG && $this->getObject('request')->getFormat() == 'html')
-        {
             //Get the exception object
             if($context->param instanceof KEventException) {
                 $exception = $context->param->getException();
@@ -126,6 +129,8 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
                 $exception = $context->param;
             }
 
+        if(!JDEBUG && $this->getObject('request')->getFormat() == 'html')
+        {
             //If the error code does not correspond to a status message, use 500
             $code = $exception->getCode();
             if(!isset(KHttpResponse::$status_messages[$code])) {
@@ -152,6 +157,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
                 }
             }
         }
+        else $context->response->setStatus($exception->getCode(), $exception->getMessage());
 
         return parent::_renderError($context);
     }
