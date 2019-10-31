@@ -87,23 +87,18 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
      */
     public function resolve($route, array $parameters = array())
     {
-        $result = false;
-
         $route = $this->getRoute($route, $parameters);
 
         if(!$route->isResolved())
         {
             $this->__resolvers->setIteratorMode(SplDoublyLinkedList::IT_MODE_LIFO | SplDoublyLinkedList::IT_MODE_KEEP);
 
-            foreach($this->__resolvers as $resolver)
-            {
-                if(false === $result = $resolver->resolve($route, $parameters)) {
-                    break;
-                }
+            foreach($this->__resolvers as $resolver) {
+                $resolver->resolve($route, $parameters);
             }
         }
 
-        return $result !== false ? $route : false;
+        return $route->isResolved() ? $route : false;
     }
 
     /**
@@ -115,23 +110,18 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
      */
     public function generate($route, array $parameters = array())
     {
-        $result = false;
-
         $route = $this->getRoute($route, $parameters);
 
         if(!$route->isGenerated())
         {
             $this->__resolvers->setIteratorMode(SplDoublyLinkedList::IT_MODE_FIFO | SplDoublyLinkedList::IT_MODE_KEEP);
 
-            foreach($this->__resolvers as $resolver)
-            {
-                if(false === $result = $resolver->generate($route, $parameters)) {
-                    break;
-                }
+            foreach($this->__resolvers as $resolver) {
+                $resolver->generate($route, $parameters);
             }
         }
 
-        return $result !== false ? $route : false;
+        return $route->isGenerated() ? $route : false;
     }
 
     /**
