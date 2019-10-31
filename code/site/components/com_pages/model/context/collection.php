@@ -9,13 +9,15 @@
 
 class ComPagesModelContextCollection extends KModelContext
 {
+    private $__data;
+
     public function setData($data)
     {
-        return KObjectConfig::set('data', $data);
+        return $this->__data = $data;
     }
 
     public function getData()
     {
-        return KObjectConfig::unbox(KObjectConfig::get('data'));
+        return $this->__data;
     }
 }
