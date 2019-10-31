@@ -73,15 +73,22 @@ class ComPagesControllerBehaviorValidatable extends KControllerBehaviorAbstract
                     }
                 }
 
-                //Check if field is valid
-                $value = $data->get($key, 'raw');
-                $chain = $this->getObject('filter.factory')->createChain($filters);
-                if(!$chain->validate($value)) {
-                    throw new ComPagesControllerExceptionRequestInvalid(sprintf('%s is not valid', ucfirst($key)));
+                //Remove unique filter
+                if(in_array('unique', $filters)) {
+                    $filters = array_diff($filters, ['unique']);
                 }
 
-                //Santize data just in case
-                $this->__valid_data[$key] = $chain->sanitize($value);
+                //Check if field is valid
+                if($value = $data->get($key, 'raw'))
+                {
+                    $chain = $this->getObject('filter.factory')->createChain($filters);
+                    if(!$chain->validate($value)) {
+                        throw new ComPagesControllerExceptionRequestInvalid(sprintf('%s is not valid', ucfirst($key)));
+                    }
+
+                    //Santize data just in case
+                    $this->__valid_data[$key] = $chain->sanitize($value);
+                }
             }
         }
 
