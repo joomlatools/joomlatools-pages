@@ -11,10 +11,62 @@ class ComPagesControllerPermissionForm extends ComPagesControllerPermissionPage
 {
     public function canSubmit()
     {
-        if($this->getModel()->getPage()->isForm()) {
-            return true;
+        if(!$this->getModel()->getPage()->isForm()) {
+            return false;
         }
 
-        return false;
+        $path = $this->getModel()->fetch()->path;
+
+        if(!$this->canAccess($path)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function canAdd()
+    {
+        if(!$this->getModel()->getPage()->isForm()) {
+            return false;
+        }
+
+        $path = $this->getModel()->fetch()->path;
+
+        if(!$this->canAccess($path)) {
+            return false;
+        }
+
+        return true;
+    }
+
+
+    public function canEdit()
+    {
+        if(!$this->getModel()->getPage()->isForm()) {
+            return false;
+        }
+
+        $path = $this->getModel()->fetch()->path;
+
+        if(!$this->canAccess($path)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function canDelete()
+    {
+        if(!$this->getModel()->getPage()->isForm()) {
+            return false;
+        }
+
+        $path = $this->getModel()->fetch()->path;
+
+        if(!$this->canAccess($path)) {
+            return false;
+        }
+
+        return true;
     }
 }
