@@ -29,9 +29,4 @@ class ComPagesViewCollectionRss extends ComPagesViewCollectionXml
 
         parent::_fetchData($context);
     }
-
-    public function isCollection()
-    {
-        return (bool) !$this->getModel()->getState()->isUnique();
-    }
 }

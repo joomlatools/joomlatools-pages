@@ -9,6 +9,11 @@
 
 class ComPagesViewCsv extends KViewCsv
 {
+    public function isCollection()
+    {
+        return (bool) !$this->getModel()->getState()->isUnique();
+    }
+
     public function getRoute($page, $query = array(), $escape = false)
     {
         return $this->getBehavior('routable')->getRoute($page, $query, $escape);
@@ -32,5 +37,14 @@ class ComPagesViewCsv extends KViewCsv
         else $result = parent::getUrl();
 
         return $result;
+    }
+
+    protected function _fetchData(KViewContext $context)
+    {
+        parent::_fetchData($context);
+
+        if($this->isCollection()) {
+            $context->parameters->total = $this->getModel()->count();
+        }
     }
 }

@@ -27,6 +27,11 @@ class ComPagesViewHtml extends ComKoowaViewHtml
         return trim($content);
     }
 
+    public function isCollection()
+    {
+        return (bool) !$this->getModel()->getState()->isUnique();
+    }
+
     public function getTitle()
     {
         $result = '';
@@ -60,5 +65,14 @@ class ComPagesViewHtml extends ComKoowaViewHtml
         else $result = parent::getUrl();
 
         return $result;
+    }
+
+    protected function _fetchData(KViewContext $context)
+    {
+        parent::_fetchData($context);
+
+        if($this->isCollection()) {
+            $context->parameters->total = $this->getModel()->count();
+        }
     }
 }
