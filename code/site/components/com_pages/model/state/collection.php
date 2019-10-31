@@ -33,4 +33,18 @@ class ComPagesModelStateCollection extends KModelState
 
         return $data;
     }
+
+    public function isIdentity()
+    {
+        $unique = false;
+
+        //Get the unique states
+        $states = $this->getValues(true);
+
+        if(!empty($states)) {
+            $unique = true;
+        }
+
+        return $unique;
+    }
 }
