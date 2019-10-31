@@ -22,7 +22,7 @@ class ComPagesDispatcherBehaviorRedirectable extends KControllerBehaviorAbstract
     {
         $router = $this->getObject('com://site/pages.dispatcher.router.redirect', ['request' => $context->request]);
 
-        if(false !== $route =  $router->resolve())
+        if(false !== $route = $router->resolve())
         {
             if($route->toString(KHttpUrl::AUTHORITY))
             {
@@ -43,6 +43,17 @@ class ComPagesDispatcherBehaviorRedirectable extends KControllerBehaviorAbstract
             $context->getResponse()->setStatus($status);
 
             $context->getSubject()->send();
+        }
+    }
+
+    protected function _beforeSend(KDispatcherContextInterface $context)
+    {
+        $response = $context->response;
+        $request  = $context->request;
+
+        //If we are submitting a form and there is no redirect defined use the url of the page.
+        if($request->isFormSubmit() && $request->getReferrer() && $response->isSuccess()) {
+            $response->setRedirect($request->getUrl());
         }
     }
 }
