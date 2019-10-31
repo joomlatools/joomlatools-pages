@@ -9,7 +9,11 @@
 
 interface ComPagesControllerProcessorInterface
 {
+    public function processData(array $data);
+
     public function setChannel($name);
     public function getChannel();
-    public function processData(array $data);
+
+    public function setRequest(KControllerRequestInterface $request);
+    public function getRequest();
 }

@@ -36,6 +36,8 @@ class ComPagesControllerBehaviorProcessable extends KControllerBehaviorAbstract
         }
         else $identifier = $this->getIdentifier($processor);
 
+        $config['request'] = $this->getRequest();
+
         $processor = $this->getObject($identifier, $config);
 
         if (!($processor instanceof ComPagesControllerProcessorInterface))
