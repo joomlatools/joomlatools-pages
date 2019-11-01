@@ -9,5 +9,49 @@
 
 class ComPagesControllerPermissionCollection extends ComPagesControllerPermissionPage
 {
+    public function canAdd()
+    {
+        if(!$this->getPage()->isEditable()) {
+            return false;
+        }
 
+        $path = $this->getPage()->path;
+
+        if(!$this->canAccess($path)) {
+            return false;
+        }
+
+        return true;
+    }
+
+
+    public function canEdit()
+    {
+        if(!$this->getPage()->isEditable()) {
+            return false;
+        }
+
+        $path = $this->getPage()->path;
+
+        if(!$this->canAccess($path)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function canDelete()
+    {
+        if(!$this->getPage()->isEditable()) {
+            return false;
+        }
+
+        $path = $this->getPage()->path;
+
+        if(!$this->canAccess($path)) {
+            return false;
+        }
+
+        return true;
+    }
 }
