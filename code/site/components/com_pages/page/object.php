@@ -39,7 +39,7 @@ class ComPagesPageObject extends ComPagesObjectConfigFrontmatter
         return ($this->layout || $this->getContent());
     }
 
-    public function isWritable()
+    public function isEditable()
     {
         return $this->isForm() || ($this->isCollection() && isset($this->collection->fields));
     }
