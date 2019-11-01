@@ -103,7 +103,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     protected function _actionPost(KDispatcherContextInterface $context)
     {
-        if($context->page->form->model)
+        if(!$context->page->isForm())
         {
             if(!$context->request->data->has('_action'))
             {
@@ -177,9 +177,9 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     {
         $page = $this->getRoute()->getPage();
 
-        if($page->isForm())
+        if($page->isWritable())
         {
-            if($page->layout || !empty($this->getObject('page.registry')->getPageContent($page))) {
+            if($page->isReadable()) {
                 $methods =  array('get', 'head', 'options', 'post');
             } else {
                 $methods =  array('post');
