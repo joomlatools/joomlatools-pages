@@ -268,7 +268,9 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
                 {
                     if (is_numeric($key)) {
                         unset($query[$key]);
-                    } else {
+                    }
+
+                    if(strpos($value, ',') !== false) {
                         $query[$key] = explode(',', $value);
                     }
                 }
