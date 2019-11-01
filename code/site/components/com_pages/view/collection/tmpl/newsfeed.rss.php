@@ -18,9 +18,9 @@ defined('KOOWA') or die; ?>
         <title><?= page()->title ?></title>
         <description><?= page()->summary ?></description>
         <link><?= route(page()->path.'/'.page()->slug) ?></link>
-        <? if (!empty($page->image)): ?>
+        <? if (page()->metadata->has('og:image')): ?>
             <image>
-                <url<?= url($page->image) ?></url>
+                <url><?= url(page()->metadata->get('og:image')) ?></url>
                 <title><?= page()->title ?></title>
                 <link><?= route(page()->path.'/'.page()->slug) ?></link>
             </image>
