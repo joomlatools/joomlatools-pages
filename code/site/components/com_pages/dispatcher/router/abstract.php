@@ -87,23 +87,18 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
      */
     public function resolve($route, array $parameters = array())
     {
-        $result = false;
-
         $route = $this->getRoute($route, $parameters);
 
         if(!$route->isResolved())
         {
             $this->__resolvers->setIteratorMode(SplDoublyLinkedList::IT_MODE_LIFO | SplDoublyLinkedList::IT_MODE_KEEP);
 
-            foreach($this->__resolvers as $resolver)
-            {
-                if(false === $result = $resolver->resolve($route, $parameters)) {
-                    break;
-                }
+            foreach($this->__resolvers as $resolver) {
+                $resolver->resolve($route, $parameters);
             }
         }
 
-        return $result !== false ? $route : false;
+        return $route->isResolved() ? $route : false;
     }
 
     /**
@@ -115,54 +110,51 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
      */
     public function generate($route, array $parameters = array())
     {
-        $result = false;
-
         $route = $this->getRoute($route, $parameters);
 
         if(!$route->isGenerated())
         {
             $this->__resolvers->setIteratorMode(SplDoublyLinkedList::IT_MODE_FIFO | SplDoublyLinkedList::IT_MODE_KEEP);
 
-            foreach($this->__resolvers as $resolver)
-            {
-                if(false === $result = $resolver->generate($route, $parameters)) {
-                    break;
-                }
+            foreach($this->__resolvers as $resolver) {
+                $resolver->generate($route, $parameters);
             }
         }
 
-        return $result !== false ? $route : false;
+        return $route->isGenerated() ? $route : false;
     }
 
     /**
-     * Generate a url from a route
+     * Qualify a route
      *
-     * Replace the route authority with the authority of the request url
-     *
-     * @param bool $replace If the url is already qualified replace the authority
-     * @param   boolean      $fqr    If TRUE create a fully qualified url. Defaults to TRUE.
-     * @param   boolean      $escape If TRUE escapes the url for xml compliance. Defaults to FALSE.
-     * @return  string
+     * Replace the url authority with the authority of the request url
+     * @param ComPagesDispatcherRouterRouteInterface $route The route to qualify
+     * @param   bool  $replace If the url is already qualified replace the authority
+     * @return string
      */
-    public function qualify(ComPagesDispatcherRouterRouteInterface $route, $fqr = true, $escape = false)
+    public function qualify(ComPagesDispatcherRouterRouteInterface $route,  $replace = false)
     {
         $url = clone $route;
-        $request = $this->getRequest();
 
-        //Qualify the url
-        $url->setUrl($request->getUrl()->toString(KHttpUrl::AUTHORITY));
+        if($replace || !$route->isAbsolute())
+        {
+            $request = $this->getRequest();
 
-        //Add index.php
-        $base = $request->getBasePath();
-        $path = trim($url->getPath(), '/');
+            //Qualify the url
+            $url->setUrl($request->getUrl()->toString(KHttpUrl::AUTHORITY));
 
-        if(strpos($request->getUrl()->getPath(), 'index.php') !== false) {
-            $url->setPath($base . '/index.php/' . $path);
-        } else {
-            $url->setPath($base.'/'.$path);
+            //Add index.php
+            $base = $request->getBasePath();
+            $path = trim($url->getPath(), '/');
+
+            if(strpos($request->getUrl()->getPath(), 'index.php') !== false) {
+                $url->setPath($base . '/index.php/' . $path);
+            } else {
+                $url->setPath($base.'/'.$path);
+            }
         }
 
-        return $url->toString($fqr ? KHttpUrl::FULL : KHttpUrl::PATH + KHttpUrl::QUERY +  KHttpUrl::FRAGMENT);
+        return $url;
     }
 
     /**

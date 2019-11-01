@@ -125,4 +125,14 @@ abstract class ComPagesDispatcherRouterRouteAbstract extends KHttpUrl implements
     {
         return (bool) ($this->__status == self::STATUS_GENERATED);
     }
+
+    /**
+     * Test if the route is absolute
+     *
+     * @return	bool
+     */
+    public function isAbsolute()
+    {
+        return (bool) ($this->scheme && $this->host);
+    }
 }

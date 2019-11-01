@@ -51,6 +51,7 @@ return [
             'subscribers' => [
                 'com://site/pages.event.subscriber.pagedecorator',
                 'com://site/pages.event.subscriber.errorhandler',
+                'com://site/pages.event.subscriber.bootstrapper',
             ]
         ],
         'lib:template.engine.markdown' => [

@@ -286,7 +286,7 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
      *
      * @param string $route The route regex You can use multiple pre-set regex filters, like [digit:id]
      * @param ComPagesDispatcherRouterInterface $route The route to build
-     * @return bool
+     * @return void
      */
     protected function _buildRoute($regex, ComPagesDispatcherRouterRouteInterface $route)
     {
@@ -331,6 +331,10 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
             }
         }
 
-        return $route->setPath('/'.ltrim($regex, '/'));
+        if(strpos($regex, '://') === false) {
+            $route->setPath('/'.ltrim($regex, '/'));
+        } else {
+            $route->setUrl($regex);
+        }
     }
 }

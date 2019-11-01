@@ -40,9 +40,10 @@ interface ComPagesDispatcherRouterInterface
      *
      * Replace the url authority with the authority of the request url
      * @param ComPagesDispatcherRouterRouteInterface $route The route to qualify
+     * @param   bool  $replace If the url is already qualified replace the authority
      * @return string
      */
-    public function qualify(ComPagesDispatcherRouterRouteInterface $route);
+    public function qualify(ComPagesDispatcherRouterRouteInterface $route,  $replace = false);
 
     /**
      * Get a route resolver

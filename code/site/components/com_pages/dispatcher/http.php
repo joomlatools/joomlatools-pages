@@ -25,7 +25,6 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     {
         $config->append([
             'behaviors' => [
-                'configurable',
                 'redirectable',
                 'routable',
                 'cacheable',
