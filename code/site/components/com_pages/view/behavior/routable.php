@@ -44,6 +44,8 @@ class ComPagesViewBehaviorRoutable extends KViewBehaviorAbstract
      */
     public function getRoute($route = null, $query = array(), $escape = false)
     {
+        $result = null;
+
         if($route)
         {
             //Prepend the route with the package
@@ -54,12 +56,14 @@ class ComPagesViewBehaviorRoutable extends KViewBehaviorAbstract
             //Generate the route
             $router = $this->getObject('dispatcher')->getRouter();
 
-            if($route = $router->generate($route, $query)) {
-                $route = $router->qualify($route, $this->getFormat() !== 'html', $escape);
+            if($route = $router->generate($route, $query))
+            {
+                $route  = $router->qualify($route)->setEscape($escape);
+                $result = $route->toString($this->getFormat() !== 'html' ? KHttpUrl::FULL : KHttpUrl::PATH + KHttpUrl::QUERY + KHttpUrl::FRAGMENT);
             }
         }
-        else $route = $this->getObject('dispatcher')->getRoute();
+        else $result = $this->getObject('dispatcher')->getRoute();
 
-        return $route;
+        return $result;
     }
 }
