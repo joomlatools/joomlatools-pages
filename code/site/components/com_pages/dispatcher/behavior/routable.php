@@ -65,7 +65,7 @@ class ComPagesDispatcherBehaviorRoutable extends KControllerBehaviorAbstract
             if(!$page->canonical)
             {
                 $route = $context->router->generate($this->getRoute());
-                $page->canonical = $context->router->qualify($route);
+                $page->canonical = (string) $context->router->qualify($route);
             }
 
             $this->getResponse()->getHeaders()->set('Link', array($page->canonical => array('rel' => 'canonical')));
