@@ -59,4 +59,11 @@ interface ComPagesDispatcherRouterRouteInterface extends KHttpUrlInterface
      * @return	bool
      */
     public function isGenerated();
+
+    /**
+     * Test if the route is absolute
+     *
+     * @return	bool
+     */
+    public function isAbsolute();
 }
