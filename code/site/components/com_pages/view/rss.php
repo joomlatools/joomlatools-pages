@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesViewCollectionRss extends ComPagesViewCollectionXml
+class ComPagesViewRss extends ComPagesViewXml
 {
     protected function _initialize(KObjectConfig $config)
     {
@@ -19,14 +19,5 @@ class ComPagesViewCollectionRss extends ComPagesViewCollectionXml
         ));
 
         parent::_initialize($config);
-    }
-
-    protected function _fetchData(KViewContext $context)
-    {
-        $context->data->append(array(
-            'language' => JFactory::getLanguage()->getTag(),
-        ));
-
-        parent::_fetchData($context);
     }
 }

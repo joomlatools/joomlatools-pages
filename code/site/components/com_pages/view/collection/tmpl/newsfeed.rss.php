@@ -27,7 +27,7 @@ defined('KOOWA') or die; ?>
         <? endif; ?>
         <lastBuildDate><?= count(collection()) ? collection()->top()->date->format(DateTime::RSS) : '' ?></lastBuildDate>
         <atom:link href="<?=  url() ?>" rel="self" type="application/rss+xml"/>
-        <language><?= $language ?></language>
+        <language><?= language() ?></language>
         <sy:updatePeriod><?= $update_period ?></sy:updatePeriod>
         <sy:updateFrequency><?= $update_frequency ?></sy:updateFrequency>
 
