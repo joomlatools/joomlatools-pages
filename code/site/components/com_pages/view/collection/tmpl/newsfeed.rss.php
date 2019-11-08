@@ -16,7 +16,7 @@ defined('KOOWA') or die; ?>
 
     <channel>
         <title><?= page()->title ?></title>
-        <description><?= page()->summary ?></description>
+        <description><?= page()->metadata->get('description'); ?></description>
         <link><?= route(page()->path.'/'.page()->slug) ?></link>
         <? if (page()->metadata->has('og:image')): ?>
             <image>
