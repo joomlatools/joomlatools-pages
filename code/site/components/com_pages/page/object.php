@@ -37,7 +37,7 @@ class ComPagesPageObject extends ComPagesObjectConfigFrontmatter
     public function isReadable()
     {
         $result = true;
-        if($this->format == 'html' ) {
+        if($this->format == 'html' && !$this->isPage()) {
             $result = $this->layout || $this->getContent();
         }
 
