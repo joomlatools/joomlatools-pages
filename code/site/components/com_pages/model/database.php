@@ -17,17 +17,18 @@ class ComPagesModelDatabase extends ComPagesModelCollection
 
         $this->__table = $config->table;
 
-        // Set the states based on the table columns
-        foreach ($this->getTable()->getColumns() as $key => $column)
+        // Set the dynamic states based on the unique table keys
+        foreach ($this->getTable()->getUniqueColumns() as $key => $column)
         {
             $required = $this->getTable()->mapColumns($column->related, true);
-            $this->getState()->insert($key, $column->filter, null, $column->unique, $required);
+            $this->getState()->insert($key, $column->filter, null, true, $required);
         }
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
+            'identity_key' => 'id',
             'entity'       => 'row',
             'table'        => '',
         ));
@@ -62,11 +63,6 @@ class ComPagesModelDatabase extends ComPagesModelCollection
         }
 
         return $query;
-    }
-
-    public function getIdentityKey()
-    {
-        return $this->getTable()->getIdentityColumn();
     }
 
     public function getTable()
@@ -131,24 +127,41 @@ class ComPagesModelDatabase extends ComPagesModelCollection
 
         foreach($context->entity as $entity)
         {
-            if($entity->getStatus() == $entity::STATUS_CREATED) {
-                $result = $this->getTable()->insert($entity);
+            try
+            {
+                if($entity->getStatus() == $entity::STATUS_CREATED) {
+                    $result = $this->getTable()->insert($entity);
+                }
+
+                if($entity->getStatus() == $entity::STATUS_UPDATED) {
+                    $result = $this->getTable()->update($entity);
+                }
+
+                if($entity->getStatus() == $entity::STATUS_DELETED) {
+                    $result = $this->getTable()->delete($entity);
+                }
+            }
+            catch(RuntimeException $exception)
+            {
+                if($exception->getCode() == 1062) {
+                    throw new ComPagesModelExceptionConflict($exception->getMessage());
+                } else {
+                    throw new ComPagesModelExceptionError();
+                }
             }
 
-            if($entity->getStatus() == $entity::STATUS_UPDATED) {
-                $result = $this->getTable()->update($entity);
+            if($result !== false)
+            {
+                if($result > 0)
+                {
+                    $result = self::PERSIST_SUCCESS;
+                    $entity->resetModified();
+                }
+                else $result = self::PERSIST_NOCHANGE;
             }
-
-            if($entity->getStatus() == $entity::STATUS_DELETED) {
-                $result = $this->getTable()->delete($entity);
-            }
-
-            //Reset the modified array
-            if (((integer) $result) > 0) {
-                $entity->resetModified();
-            }
-
-            if($result === false) {
+            else
+            {
+                $result = self::PERSIST_FAILURE;
                 break;
             }
         }
