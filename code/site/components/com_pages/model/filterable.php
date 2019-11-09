@@ -7,15 +7,9 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-interface ComPagesModelInterface extends KModelInterface
+interface ComPagesModelFilterable extends KModelInterface
 {
-    const PERSIST_SUCCESS  = 1;
-    const PERSIST_NOCHANGE = 2;
-    const PERSIST_FAILURE  = 3;
-
-    public function persist();
-
-    public function getType();
-    public function getIdentityKey();
-    public function getPrimaryKey();
+    public function fetchData($count = false);
+    public function filterData($data);
+    public function filterItem($item, KModelStateInterface $state);
 }
