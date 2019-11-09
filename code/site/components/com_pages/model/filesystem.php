@@ -10,8 +10,8 @@
 class ComPagesModelFilesystem extends ComPagesModelCollection
 {
     protected $_path;
-
     protected $_base_path;
+    protected $_identity_key_length;
 
     public function __construct(KObjectConfig $config)
     {
@@ -19,12 +19,15 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
 
         $this->_path      = $config->path;
         $this->_base_path = $config->base_path;
+
+        $this->_identity_key_length = $config->identity_key_length;
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'identity_key' => 'id',
+            'identity_key'        => 'id',
+            'identity_key_length' =>  4,
             'path'         => '',
             'base_path'    =>  $this->getObject('com:pages.config')->getSitePath(),
         ]);
@@ -38,6 +41,11 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
         $path = $path[0] != '/' ?  $this->_base_path.'/'.$path : $path;
 
         return $path;
+    }
+
+    public function createIdentity()
+    {
+        return bin2hex(random_bytes($this->_identity_key_length));
     }
 
     public function setState(array $values)
@@ -66,40 +74,20 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
        return $data;
     }
 
-    public function filterData($data)
-    {
-        $identity_key = $this->getIdentityKey();
-
-        $result = array();
-        foreach($data as $key => $value)
-        {
-            if(isset($value[$identity_key])) {
-                throw new RuntimeException('Identity key: "'.$identity_key.'" already exists in item with offset '.($key + 1));
-            }
-
-            //Add identity key to value for lookups
-            $value[$identity_key] = $key + 1;
-
-            //Store filtered value
-            $result[] = $value;
-        }
-
-        return parent::filterData($result);
-    }
-
     protected function _actionPersist(KModelContext $context)
     {
         $result       = true;
         $identity_key = $this->getIdentityKey();
 
+        $data = $context->data;
+
+        $keys = array_column($data, $identity_key);
+        $data = array_combine($keys, $data);
+
         foreach($context->entity as $entity)
         {
-            $key    = $entity->getProperty($identity_key) - 1;
-            $data   = $context->data;
+            $key    = $entity->getProperty($identity_key);
             $values = $entity->toArray();
-
-            //Remove the identity key, we don't want to store it.
-            unset($values[$identity_key]);
 
             if($entity->getStatus() == $entity::STATUS_CREATED)
             {
@@ -109,16 +97,23 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
                     //Prevent duplicate unique values
                     foreach($context->state->getNames(true) as $name)
                     {
-                        if(array_search($entity->$name, array_column($data, $name)) !== false) {
-                           $result = false; break;
+                        if(array_search($entity->$name, array_column($data, $name)) !== false)
+                        {
+                            throw new ComPagesModelExceptionConflict(
+                                sprintf("Duplicate entry '%s' for key '%s'", $entity->$name, $name)
+                            );
                         }
                     }
 
-                    if($result) {
-                        $data[] = $values;
-                    }
+                    $identity = $this->createIdentity();
+                    $data[$identity] = [$identity_key => $identity] + $values;
+
+                    //Set the identity in the entity
+                    $entity->setProperty($identity_key, $identity, false);
+
+                    $result = self::PERSIST_SUCCESS;
                 }
-                else $result = false;
+                else $result = self::PERSIST_FAILURE;
             }
 
             if($entity->getStatus() == $entity::STATUS_UPDATED)
@@ -126,43 +121,56 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
                 //Only update existing entities
                 if(isset($data[$key]))
                 {
-                    unset($data[$key]);
-
-                    //Prevent duplicate unique values
-                    foreach($context->state->getNames(true) as $name)
+                    //Do not update is no data has changed
+                    if(array_diff_assoc($values, $data[$key]))
                     {
-                        if(array_search($entity->$name, array_column($data, $name)) !== false) {
-                            $result = false; break;
-                        }
-                    }
+                        unset($data[$key]);
 
-                    if($result) {
+                        //Prevent duplicate unique values
+                        foreach($context->state->getNames(true) as $name)
+                        {
+                            if(array_search($entity->$name, array_column($data, $name)) !== false)
+                            {
+                                throw new ComPagesModelExceptionConflict(
+                                    sprintf("Duplicate entry '%s' for key '%s'", $entity->$name, $name)
+                                );
+                            }
+                        }
+
                         $data[$key] = $values;
+                        $result = self::PERSIST_SUCCESS;
                     }
+                    else $result = self::PERSIST_NOCHANGE;
+
                 }
-                else $result = false;
+                else $result = self::PERSIST_FAILURE;
             }
 
             if($entity->getStatus() == $entity::STATUS_DELETED)
             {
                 //Only delete existing entities
-                if(isset($data[$key])) {
+                if(isset($data[$key]))
+                {
                     unset($data[$key]);
-                } else {
-                    $result = false;
+                    $result = self::PERSIST_SUCCESS;
                 }
+                else $result = self::PERSIST_FAILURE;
             }
 
             //Reset the entity modified state
-            if($result == true) {
+            if($result === self::PERSIST_SUCCESS) {
                 $entity->resetModified();
-            } else {
+            }
+
+            if($result === self::PERSIST_FAILURE) {
                 break;
             }
         }
 
-        if($result === true)
+        if($result === self::PERSIST_SUCCESS)
         {
+            $data = array_values($data);
+
             $path = $this->getPath($this->getState()->getValues());
             $this->getObject('object.config.factory')->toFile($path, $data);
         }
