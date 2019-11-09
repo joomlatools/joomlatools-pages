@@ -12,8 +12,9 @@ class ComPagesDispatcherBehaviorDecoratable extends ComKoowaDispatcherBehaviorDe
     protected function _beforeSend(KDispatcherContextInterface $context)
     {
         $response = $context->getResponse();
+        $request  = $context->getRequest();
 
-        if(!$response->isDownloadable() && !$response->isRedirect())
+        if(!$response->isDownloadable() && !$response->isRedirect() && $request->getFormat() == 'html')
         {
             $decorator = $this->getDecorator();
 
@@ -64,13 +65,16 @@ class ComPagesDispatcherBehaviorDecoratable extends ComKoowaDispatcherBehaviorDe
     {
         $result = false;
 
-        if($content = $this->getResponse()->getContent())
+        if($this->getRequest()->getFormat() == 'html')
         {
-            //Do not decorate if we are outputting a html document
-            if(!preg_match('#<html(.*)>#siU', $content)) {
-                $result = 'joomla';
-            } else {
-                $result = 'koowa';
+            if($content = $this->getResponse()->getContent())
+            {
+                //Do not decorate if we are outputting a html document
+                if(!preg_match('#<html(.*)>#siU', $content)) {
+                    $result = 'joomla';
+                } else {
+                    $result = 'koowa';
+                }
             }
         }
 
