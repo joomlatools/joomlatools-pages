@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-abstract class ComPagesModelCollection extends KModelAbstract implements ComPagesModelInterface
+abstract class ComPagesModelCollection extends KModelAbstract implements ComPagesModelInterface, ComPagesModelFilterable
 {
     private $__data;
     private $__type;
@@ -22,9 +22,9 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         }
 
         //Setup callbacks
-        $this->addCommandCallback('before.fetch', '_prepareContext');
-        $this->addCommandCallback('before.count', '_prepareContext');
-        $this->addCommandCallback('before.store', '_prepareContext');
+        $this->addCommandCallback('before.fetch'  , '_prepareContext');
+        $this->addCommandCallback('before.count'  , '_prepareContext');
+        $this->addCommandCallback('before.persist', '_prepareContext');
 
         //Set the type
         $this->__type = $config->type;
@@ -34,14 +34,13 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
     {
         $config->append([
             'entity' => $this->getIdentifier()->getName(),
-            'type'   =>  KStringInflector::pluralize($this->getIdentifier()->getName()),
+            'type'   =>  '',
             'behaviors'   => [
                 'com://site/pages.model.behavior.paginatable',
                 'com://site/pages.model.behavior.sortable',
                 'com://site/pages.model.behavior.searchable',
                 'com://site/pages.model.behavior.sparsable'
             ],
-            'state' => 'com://site/pages.model.state.collection',
         ]);
 
         parent::_initialize($config);
@@ -113,11 +112,11 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
 
     public function filterItem($item, KModelStateInterface $state)
     {
-        if($state->isUnique())
+        if($state->isUnique(false))
         {
             foreach($state->getValues(true) as $key => $value)
             {
-                if(!in_array($item[$key], (array) $value)) {
+                if(isset($item[$key]) && !in_array($item[$key], (array) $value)) {
                     return false;
                 }
             }
@@ -204,7 +203,7 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         $context = new ComPagesModelContextCollection();
         $context->setSubject($this);
         $context->setState($this->getState());
-        $context->setIdentityKey($this->_identity_key);
+        $context->setIdentityKey($this->getIdentityKey());
 
         return $context;
     }
