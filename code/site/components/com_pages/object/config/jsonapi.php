@@ -10,4 +10,26 @@
 class ComPagesObjectConfigJsonapi extends KObjectConfigJson
 {
     protected static $_media_type = 'application/vnd.api+json';
+
+    public function fromString($string, $object = true)
+    {
+        $data = parent::fromString($string, false);
+        $result = array();
+        if(isset($data['data']))
+        {
+            $data = $data['data'];
+
+            //Collection
+            if(is_numeric(key($data)))
+            {
+                foreach($data as $key => $item) {
+                    $result[$key] = ['id' => $item['id']] +  $item['attributes'];
+                }
+            }
+            //Resource
+            else $result = ['id' => $data['id']] +  $data['attributes'];
+        }
+
+        return $object ? $this->merge($result) : $result;
+    }
 }

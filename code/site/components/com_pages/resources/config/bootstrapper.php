@@ -31,8 +31,9 @@ return [
         ],
         'object.config.factory' => [
             'formats' => [
-                'md'  => 'ComPagesObjectConfigMarkdown',
-                'csv' => 'ComPagesObjectConfigCsv'
+                'md'      => 'ComPagesObjectConfigMarkdown',
+                'csv'     => 'ComPagesObjectConfigCsv',
+                'jsonapi' => 'ComPagesObjectConfigJsonapi',
             ],
         ],
         'template.locator.factory' => [
