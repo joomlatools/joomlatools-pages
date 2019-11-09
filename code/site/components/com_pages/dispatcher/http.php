@@ -86,7 +86,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             if(empty($accept) || array_key_exists('*/*', $accept)) {
                 $context->request->setFormat($context->page->format);
             } else {
-                throw new KControllerExceptionFormatNotSupported('Format not supported');
+                throw new KHttpExceptionNotAcceptable('Format not supported');
             }
         }
 
