@@ -56,8 +56,13 @@ class ComPagesModelWebservice extends ComPagesModelCollection
     {
         $data = array();
 
-        if($url = $this->getUrl($this->getState()->getValues())) {
-            $data  = $this->getObject('http.client')->get($url);
+        if($url = $this->getUrl($this->getState()->getValues()))
+        {
+            try {
+                $data = $this->getObject('http.client')->get($url);
+            } catch(KHttpExceptionNotFound $e) {
+                $data = array();
+            }
         }
 
         return $data;
@@ -65,7 +70,9 @@ class ComPagesModelWebservice extends ComPagesModelCollection
 
     protected function _actionPersist(KModelContext $context)
     {
-        $result = true;
+        $result      = true;
+        $identity_key = $this->getIdentityKey();
+
         $entity = $context->entity;
 
         $url     = $this->getUrl($this->getState()->getValues());
@@ -80,21 +87,53 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         }
         else $data = $entity->getProperties(true);
 
-        if($entity->getStatus() == $entity::STATUS_CREATED) {
-            $result = $this->getClient()->post($url, $data, $headers);
+        if($entity->getStatus() == $entity::STATUS_CREATED)
+        {
+            if($context->state->isUnique()) {
+                $result = $this->getClient()->put($url, $data, $headers);
+            } else {
+                $result = $this->getClient()->post($url, $data, $headers);
+            }
+
+            if($result !== false)
+            {
+                foreach($result as $name => $value) {
+                    $entity->setProperty($name, $value, false);
+                }
+
+                $result = self::PERSIST_SUCCESS;
+            }
+            else $result = self::PERSIST_FAILURE;
         }
 
-        if($entity->getStatus() == $entity::STATUS_UPDATED) {
-            $result = $this->getClient()->post($url, $data, $headers);
+        if($entity->getStatus() == $entity::STATUS_UPDATED)
+        {
+            $result = $this->getClient()->patch($url, $data, $headers);
+
+            if($result !== false)
+            {
+                if(!empty($result))
+                {
+                    foreach($result as $name => $value) {
+                        $entity->setProperty($name, $value, false);
+                    }
+
+                    $result = self::PERSIST_SUCCESS;
+                }
+                else  $result = self::PERSIST_NOCHANGE;
+            }
+            else $result = self::PERSIST_FAILURE;
         }
 
-        if($entity->getStatus() == $entity::STATUS_DELETED) {
+        if($entity->getStatus() == $entity::STATUS_DELETED)
+        {
             $result = $this->getClient()->delete($url, $data, $headers);
-        }
 
-        //Reset the entity modified state
-        if($result == true) {
-            $entity->resetModified();
+            if($result !== false) {
+                $result = self::PERSIST_SUCCESS;
+            } else {
+                $result = self::PERSIST_FAILURE;
+            }
         }
 
         return $result;
