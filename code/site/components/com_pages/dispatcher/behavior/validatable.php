@@ -47,6 +47,12 @@ class ComPagesDispatcherBehaviorValidatable extends KControllerBehaviorAbstract
     {
         if(!$context->request->isSafe())
         {
+            $content_types = array('application/json', 'application/x-www-form-urlencoded');
+
+            if(in_array($context->request->getContentType(), $content_types)) {
+                throw new KHttpExceptionUnsupportedMediaType();
+            }
+
             if($page = $context->page)
             {
                 if($page->isForm())
