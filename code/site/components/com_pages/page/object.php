@@ -23,24 +23,34 @@ class ComPagesPageObject extends ComPagesObjectConfigFrontmatter
 
         return $type;
     }
-    
-    public function isCollection()
-    {
-        return isset($this->collection) && $this->collection !== false ? KObjectConfig::unbox($this->collection) : false;
-    }
 
     public function isForm()
     {
         return isset($this->form) && $this->form !== false ? KObjectConfig::unbox($this->form) : false;
     }
 
+    public function isCollection()
+    {
+        return isset($this->collection) && $this->collection !== false ? KObjectConfig::unbox($this->collection) : false;
+    }
+
     public function isReadable()
     {
-        return ($this->layout || $this->getContent());
+        $result = true;
+        if($this->format == 'html' ) {
+            $result = $this->layout || $this->getContent();
+        }
+
+        return $result;
+    }
+
+    public function isSubmittable()
+    {
+        return $this->isForm() && isset($this->form->fields);
     }
 
     public function isEditable()
     {
-        return $this->isForm() || ($this->isCollection() && isset($this->collection->fields));
+        return $this->isCollection() && isset($this->collection->fields);
     }
 }
