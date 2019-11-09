@@ -33,16 +33,9 @@ class ComPagesDispatcherBehaviorRoutable extends KControllerBehaviorAbstract
 
     protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
-        $base   = $context->request->getBasePath();
-        $format = $context->request->getFormat();
-
+        $base = $context->request->getBasePath();
         $url  = urldecode($context->request->getUrl()->getPath());
         $path = trim(str_replace(array($base, '/index.php'), '', $url), '/');
-
-        //Append the format
-        if($format !== 'html' && strpos($path,  '.'.$format) == false ) {
-            $path .= '.'.$format;
-        }
 
         if(false !== $route = $context->router->resolve('pages:'.$path, $context->request->query->toArray()))
         {
@@ -52,6 +45,7 @@ class ComPagesDispatcherBehaviorRoutable extends KControllerBehaviorAbstract
             //Set the page in the context
             $context->page = $route->getPage();
         }
+        else $context->page = false;
 
         //Store the route
         $this->__route = $route;
@@ -59,16 +53,16 @@ class ComPagesDispatcherBehaviorRoutable extends KControllerBehaviorAbstract
 
     protected function _beforeSend(KDispatcherContextInterface $context)
     {
-        //Add a (self-referential) canonical URL
-        if($page = $context->page)
+        //Add a (self-referential) canonical URL (only to GET and HEAD requests)
+        if($context->page && $context->request->isCacheable())
         {
-            if(!$page->canonical)
+            if(!$context->page->canonical)
             {
                 $route = $context->router->generate($this->getRoute());
-                $page->canonical = (string) $context->router->qualify($route);
+                $context->page->canonical = (string) $context->router->qualify($route);
             }
 
-            $this->getResponse()->getHeaders()->set('Link', array($page->canonical => array('rel' => 'canonical')));
+            $this->getResponse()->getHeaders()->set('Link', array($context->page->canonical => array('rel' => 'canonical')));
         }
     }
 }
