@@ -9,6 +9,8 @@
 
 class ComPagesModelFactory extends KObject implements KObjectSingleton
 {
+    private $__collections;
+
     public function createPage($path)
     {
         $entity = false;
@@ -42,6 +44,11 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
             }
             else $identifier = $name;
 
+            //Set the type
+            if($collection->has('type')) {
+                $config['type'] = $collection->type;
+            }
+
             $model = $this->getObject($identifier, $config);
 
             if(!$model instanceof KModelInterface && !$model instanceof KControllerModellable)
@@ -55,14 +62,41 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
                 $model = $this->getObject('com://site/pages.model.controller', ['controller' => $model]);
             }
 
+            //Add model filters for unique fields
+            if($collection->has('fields'))
+            {
+                $fields = (array) KObjectConfig::unbox($collection->fields);
+
+                foreach($fields as $field => $filters)
+                {
+                    if(in_array('unique', $filters))
+                    {
+                        $filters = array_diff($filters, ['unique', 'required']);
+
+                        //Do not add a filter if it already exists
+                        if(!$model->getState()->has($field)) {
+                            $model->getState()->insert($field, $filters, null, true);
+                        }
+                    }
+                }
+            }
+
             //Set the model state
             if(isset($collection->state)) {
                 $state = KObjectConfig::unbox($collection->state->merge($state));
             }
 
             $model->setState($state);
+
+            //Store the collection
+            $this->__collections[] = $model;
         }
 
         return $model;
+    }
+
+    public function getCollections()
+    {
+        return $this->__collections;
     }
 }
