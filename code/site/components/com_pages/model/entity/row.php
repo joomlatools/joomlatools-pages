@@ -11,15 +11,6 @@ class ComPagesModelEntityRow extends ComPagesModelEntityItem implements KDatabas
 {
     private $__table;
 
-    protected function _initialize(KObjectConfig $config)
-    {
-        $config->append([
-            //'internal_properties' => ['id'],
-        ]);
-
-        parent::_initialize($config);
-    }
-
     public function setTable($table)
     {
         $this->__table = $table;
@@ -33,5 +24,16 @@ class ComPagesModelEntityRow extends ComPagesModelEntityItem implements KDatabas
     public function getIdentityColumn()
     {
        return $this->getIdentityKey();
+    }
+
+    public function reset()
+    {
+        parent::reset();
+
+        if($table = $this->getTable()) {
+            $this->_data = $table->getDefaults();
+        }
+
+        return $this;
     }
 }
