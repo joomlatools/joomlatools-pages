@@ -71,7 +71,7 @@ class ComPagesViewJson extends KViewAbstract
         $content = $context->content;
 
         if (is_array($content) || $content instanceof \Traversable) {
-            $content = new ComPagesObjectConfigJsonapi($content);
+            $content = new ComPagesObjectConfigJson($content);
         }
 
         $this->setContent($content);

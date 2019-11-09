@@ -7,13 +7,15 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesObjectConfigJsonapi extends KObjectConfigJson
+class ComPagesObjectConfigJson extends KObjectConfigJson
 {
     protected static $_media_type = 'application/vnd.api+json';
 
     public function fromString($string, $object = true)
     {
         $data = parent::fromString($string, false);
+
+        //Transparently handle json api
         $result = array();
         if(isset($data['data']))
         {
@@ -22,12 +24,20 @@ class ComPagesObjectConfigJsonapi extends KObjectConfigJson
             //Collection
             if(is_numeric(key($data)))
             {
-                foreach($data as $key => $item) {
-                    $result[$key] = ['id' => $item['id']] +  $item['attributes'];
+                foreach($data as $key => $item)
+                {
+                    if($item['id']) {
+                        $result[$key] = ['id' => $item['id']] +  $item['attributes'];
+                    }
                 }
             }
             //Resource
-            else $result = ['id' => $data['id']] +  $data['attributes'];
+            else
+            {
+                if($data['id']) {
+                    $result = ['id' => $data['id']] +  $data['attributes'];
+                }
+            }
         }
 
         return $object ? $this->merge($result) : $result;
