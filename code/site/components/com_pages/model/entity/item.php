@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelEntityItem extends KModelEntityAbstract
+class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesModelEntityInterface
 {
     private $__internal_properties;
 
