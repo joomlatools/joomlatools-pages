@@ -58,13 +58,13 @@ class ComPagesDispatcherBehaviorValidatable extends KControllerBehaviorAbstract
                 if($page->isForm())
                 {
                     $this->setHoneypot($page->form->honeypot);
-                    $this->setValidationRules((array) KObjectConfig::unbox($page->form->fields));
+                    $this->setValidationRules((array) KObjectConfig::unbox($page->form->schema));
                 }
 
                 if($page->isCollection())
                 {
                     $this->setHoneypot($page->collection->honeypot);
-                    $this->setValidationRules((array) KObjectConfig::unbox($page->collection->fields));
+                    $this->setValidationRules((array) KObjectConfig::unbox($page->collection->schema));
                 }
             }
 
@@ -102,7 +102,7 @@ class ComPagesDispatcherBehaviorValidatable extends KControllerBehaviorAbstract
         $this->validateRequest($context->request);
 
         //Check constraints
-        $fields = array_keys($this->getValidationRules());
+        $fields = array_keys($this->getValidationSchema());
 
         foreach($fields as $field)
         {

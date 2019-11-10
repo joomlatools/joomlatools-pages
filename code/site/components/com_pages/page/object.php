@@ -46,11 +46,11 @@ class ComPagesPageObject extends ComPagesObjectConfigFrontmatter
 
     public function isSubmittable()
     {
-        return $this->isForm() && isset($this->form->fields);
+        return $this->isForm() && isset($this->form->schema);
     }
 
     public function isEditable()
     {
-        return $this->isCollection() && isset($this->collection->fields);
+        return $this->isCollection() && isset($this->collection->schema);
     }
 }
