@@ -39,6 +39,7 @@ class ComPagesObjectConfigJson extends KObjectConfigJson
                 }
             }
         }
+        else $result = $data;
 
         return $object ? $this->merge($result) : $result;
     }
