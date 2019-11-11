@@ -67,13 +67,12 @@ class ComPagesDispatcherBehaviorValidatable extends KControllerBehaviorAbstract
                     $this->setCollectionSchema((array) KObjectConfig::unbox($page->collection->schema));
                 }
             }
-
-            $this->sanitizeRequest($context->request);
         }
     }
 
     protected function _beforePost(KDispatcherContextInterface $context)
     {
+        $this->sanitizeRequest($context->request);
         $this->validateRequest($context->request);
 
         //Check constraints
@@ -99,6 +98,7 @@ class ComPagesDispatcherBehaviorValidatable extends KControllerBehaviorAbstract
 
     protected function _beforePut(KDispatcherContextInterface $context)
     {
+        $this->sanitizeRequest($context->request);
         $this->validateRequest($context->request);
 
         //Check constraints
@@ -114,6 +114,7 @@ class ComPagesDispatcherBehaviorValidatable extends KControllerBehaviorAbstract
 
     protected function _beforePatch(KDispatcherContextInterface $context)
     {
+        $this->sanitizeRequest($context->request);
         $this->validateRequest($context->request);
     }
 
