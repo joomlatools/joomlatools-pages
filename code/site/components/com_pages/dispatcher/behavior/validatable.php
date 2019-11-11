@@ -9,13 +9,13 @@
 
 class ComPagesDispatcherBehaviorValidatable extends KControllerBehaviorAbstract
 {
-    private $__rules;
+    private $__schema;
     private $__honeypot;
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'whitelist' => ['_method', '_action', '_format']
+            'whitelist' => ['_method', '_action', 'format']
         ));
 
         parent::_initialize($config);
@@ -32,15 +32,15 @@ class ComPagesDispatcherBehaviorValidatable extends KControllerBehaviorAbstract
         return $this->__honeypot;
     }
 
-    public function setValidationRules(array $rules)
+    public function setCollectionSchema(array $rules)
     {
-        $this->__rules = $rules;
+        $this->__schema = $rules;
         return $this;
     }
 
-    public function getValidationRules()
+    public function getCollectionSchema()
     {
-        return (array) $this->__rules;
+        return (array) $this->__schema;
     }
 
     protected function _beforeDispatch(KDispatcherContextInterface $context)
@@ -49,7 +49,7 @@ class ComPagesDispatcherBehaviorValidatable extends KControllerBehaviorAbstract
         {
             $content_types = array('application/json', 'application/x-www-form-urlencoded');
 
-            if(in_array($context->request->getContentType(), $content_types)) {
+            if(!in_array($context->request->getContentType(), $content_types)) {
                 throw new KHttpExceptionUnsupportedMediaType();
             }
 
@@ -58,13 +58,13 @@ class ComPagesDispatcherBehaviorValidatable extends KControllerBehaviorAbstract
                 if($page->isForm())
                 {
                     $this->setHoneypot($page->form->honeypot);
-                    $this->setValidationRules((array) KObjectConfig::unbox($page->form->schema));
+                    $this->setCollectionSchema((array) KObjectConfig::unbox($page->form->schema));
                 }
 
                 if($page->isCollection())
                 {
                     $this->setHoneypot($page->collection->honeypot);
-                    $this->setValidationRules((array) KObjectConfig::unbox($page->collection->schema));
+                    $this->setCollectionSchema((array) KObjectConfig::unbox($page->collection->schema));
                 }
             }
 
@@ -79,18 +79,18 @@ class ComPagesDispatcherBehaviorValidatable extends KControllerBehaviorAbstract
         //Check constraints
         if(!$this->getController()->getModel()->getState()->isUnique(false))
         {
-            $rules = $this->getValidationRules();
-            $data  = $context->request->data;
+            $schema = $this->getCollectionSchema();
+            $data   = $context->request->data;
 
-            foreach($rules as $key => $filters)
+            foreach($schema as $field => $constraints)
             {
-                $filters = (array) $filters;
+                $constraints = (array) $constraints;
 
                 //Check if field is required
-                if (in_array('required', $filters))
+                if (in_array('required', $constraints))
                 {
-                    if (!$data->has($key) || empty($data->get($key, 'raw'))) {
-                        throw new ComPagesControllerExceptionRequestInvalid(sprintf('%s is required', ucfirst($key)));
+                    if (!$data->has($field) || empty($data->get($field, 'raw'))) {
+                        throw new ComPagesControllerExceptionRequestInvalid(sprintf('%s is required', ucfirst($field)));
                     }
                 }
             }
@@ -102,9 +102,9 @@ class ComPagesDispatcherBehaviorValidatable extends KControllerBehaviorAbstract
         $this->validateRequest($context->request);
 
         //Check constraints
-        $fields = array_keys($this->getValidationSchema());
+        $schema = array_keys($this->getCollectionSchema());
 
-        foreach($fields as $field)
+        foreach($schema as $field)
         {
             if(!$context->request->data->has($field)) {
                 throw new ComPagesControllerExceptionRequestInvalid(sprintf('%s is required', ucfirst($field)));
@@ -124,15 +124,15 @@ class ComPagesDispatcherBehaviorValidatable extends KControllerBehaviorAbstract
 
     public function sanitizeRequest(KDispatcherRequestInterface $request)
     {
-        $rules = $this->getValidationRules();
+        $schema = $this->getCollectionSchema();
 
         //Add request query parameters that are defined in the schema (overriding existing values)
-        foreach(array_diff_key($request->query->toArray(), $rules) as $key => $value) {
+        foreach(array_diff_key($request->query->toArray(), $schema) as $key => $value) {
             $request->data->set($key, $value, true);
         }
 
         //Remove request data that is not defined in schema
-        foreach(array_diff_key($request->data->toArray(), $rules) as $key => $value)
+        foreach(array_diff_key($request->data->toArray(), $schema) as $key => $value)
         {
             if(!$this->getConfig()->whitelist->has($key)) {
                 $request->data->remove($key);
@@ -153,23 +153,23 @@ class ComPagesDispatcherBehaviorValidatable extends KControllerBehaviorAbstract
         }
 
         //Validate data
-        $rules = $this->getValidationRules();
-        foreach($rules as $key => $filters)
+        $schema = $this->getCollectionSchema();
+        foreach($schema as $field => $constraints)
         {
-            $filters = array_diff((array) $filters, ['required', 'unique']);
+            $filters = array_diff((array) $constraints, ['required', 'unique']);
 
             //Check if field is valid
-            if($data->has($key))
+            if($data->has($field))
             {
-                $value = $data->get($key, 'raw');
+                $value = $data->get($field, 'raw');
 
                 $chain = $this->getObject('filter.factory')->createChain($filters);
                 if(!$chain->validate($value)) {
-                    throw new ComPagesControllerExceptionRequestInvalid(sprintf('%s is not valid', ucfirst($key)));
+                    throw new ComPagesControllerExceptionRequestInvalid(sprintf('%s is not valid', ucfirst($field)));
                 }
 
                 //Santize data just in case
-                $data->set($key, $chain->sanitize($value));
+                $data->set($field, $chain->sanitize($value));
             }
         }
     }

@@ -65,13 +65,13 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
             //Add model filters for unique fields
             if($collection->has('schema'))
             {
-                $fields = (array) KObjectConfig::unbox($collection->schema);
+                $schema = (array) KObjectConfig::unbox($collection->schema);
 
-                foreach($fields as $field => $filters)
+                foreach($schema as $field => $constraints)
                 {
-                    if(in_array('unique', $filters))
+                    if(in_array('unique', $constraints))
                     {
-                        $filters = array_diff($filters, ['unique', 'required']);
+                        $filters = array_diff($constraints, ['unique', 'required']);
 
                         //Do not add a filter if it already exists
                         if(!$model->getState()->has($field)) {
