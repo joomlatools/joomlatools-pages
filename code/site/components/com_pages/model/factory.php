@@ -49,6 +49,11 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
                 $config['type'] = $collection->type;
             }
 
+            //Add additional config
+            if($collection->has('config')) {
+                $config = array_merge($config, KObjectConfig::unbox($collection->config));
+            }
+
             $model = $this->getObject($identifier, $config);
 
             if(!$model instanceof KModelInterface && !$model instanceof KControllerModellable)
