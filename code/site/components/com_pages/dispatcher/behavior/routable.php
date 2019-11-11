@@ -45,7 +45,6 @@ class ComPagesDispatcherBehaviorRoutable extends KControllerBehaviorAbstract
             //Set the page in the context
             $context->page = $route->getPage();
         }
-        else $context->page = false;
 
         //Store the route
         $this->__route = $route;
