@@ -120,7 +120,10 @@ class ComPagesModelBehaviorSparsable extends ComPagesModelBehaviorQueryable
                 $query->columns = array();
 
                 //Always include the identity column
-                $result[] = 'tbl.'.$table->getIdentityColumn();
+                if($table->getIdentityColumn()) {
+                    $result[] = 'tbl.'.$table->getIdentityColumn();
+                }
+
                 $query->columns($result);
             }
         }
