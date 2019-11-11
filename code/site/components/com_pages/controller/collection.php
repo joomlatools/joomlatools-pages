@@ -39,16 +39,21 @@ class ComPagesControllerCollection extends ComPagesControllerPage
             throw new KControllerExceptionActionFailed($error ? $error : 'Add Action Failed');
         }
 
-        $identity_key = $entity->getIdentityKey();
-        $identity     = $entity->getProperty($identity_key);
-
         //Set entity new identity in the state (to make it unique)
-        if(!$this->getModel()->getState()->isUnique()) {
-            $this->getModel()->getState()->set($identity_key, $identity);
+        if(!$this->getModel()->getState()->isUnique())
+        {
+            foreach($this->getModel()->getPrimaryKey() as $key){
+                $this->getModel()->getState()->set($key, $entity->getProperty($key));
+            }
         }
 
         //Generate the location for the resource
-        $route    = $context->router->generate($this->getModel()->getPage(), [$identity_key => $identity]);
+        $query = array();
+        foreach($this->getModel()->getPrimaryKey() as $key){
+            $query[$key] = $entity->getProperty($key);
+        }
+
+        $route    = $context->router->generate($this->getModel()->getPage(), $query);
         $location = $context->router->qualify($route);
 
         //See: https://tools.ietf.org/html/rfc7231#page-52
