@@ -187,7 +187,7 @@ class ComPagesViewJson extends KViewAbstract
      * Get the entity id
      *
      * @param KModelEntityInterface  $entity
-     * @return int
+     * @return string
      */
     protected function _getEntityId(KModelEntityInterface $entity)
     {
@@ -273,7 +273,6 @@ class ComPagesViewJson extends KViewAbstract
             }
 
             $url = $this->getRoute($this->getModel()->getPage(), $query);
-
             $links = ['self' => (string) $url];
         }
 
