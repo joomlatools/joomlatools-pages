@@ -26,7 +26,7 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'identity_key'        => '',
+            'identity_key'        => null,
             'identity_key_length' =>  4,
             'path'         => '',
             'base_path'    =>  $this->getObject('com:pages.config')->getSitePath(),
