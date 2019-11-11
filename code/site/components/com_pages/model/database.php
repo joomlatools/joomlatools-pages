@@ -28,7 +28,6 @@ class ComPagesModelDatabase extends ComPagesModelCollection
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'identity_key' => 'id',
             'entity'       => 'row',
             'table'        => '',
         ));
@@ -90,6 +89,17 @@ class ComPagesModelDatabase extends ComPagesModelCollection
         return $this->__table;
     }
 
+    public function getIdentityKey()
+    {
+        if(!$this->getTable()->getIdentityColumn()) {
+            $key = parent::getIdentityKey();
+        } else {
+            $key = 'id';
+        }
+
+        return $key;
+    }
+
     protected function _actionFetch(KModelContext $context)
     {
         $data = array();
@@ -97,7 +107,9 @@ class ComPagesModelDatabase extends ComPagesModelCollection
         if($context->data instanceof KDatabaseQueryInterface)
         {
             $data = $this->getTable()
-                ->select($context->data, KDatabase::FETCH_ARRAY_LIST, ['identity_column' => $this->getIdentityKey()]);
+                ->select($context->data, KDatabase::FETCH_ARRAY_LIST);
+
+            $data = array_values($data);
         }
 
         $entities = $this->create($data);
