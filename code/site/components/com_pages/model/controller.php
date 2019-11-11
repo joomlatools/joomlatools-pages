@@ -85,16 +85,28 @@ class ComPagesModelController extends KModelAbstract implements ComPagesModelInt
 
     public function getIdentityKey()
     {
-        return $this->getController()->getModel()->fetch()->getIdentityKey();
+        $model = $this->getController()->getModel();
+
+        if(!$model instanceof ComPagesModelInterface) {
+            $key = $model->fetch()->getIdentityKey();
+        } else {
+            $key = $model->getIdentityKey();
+        }
+
+        return $key;
     }
 
     public function getPrimaryKey()
     {
-        if(!$keys = (array) $this->getIdentityKey()) {
-            $keys = $this->getState()->getNames(true);
+        $model = $this->getController()->getModel();
+
+        if(!$model instanceof ComPagesModelInterface) {
+            $key = $model->fetch()->getIdentityKey();
+        } else {
+            $key = $model->getPrimaryKey();
         }
 
-        return (array) $keys;
+        return (array) $key;
     }
 
     final public function persist()
