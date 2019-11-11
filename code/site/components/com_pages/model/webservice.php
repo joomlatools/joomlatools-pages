@@ -25,8 +25,8 @@ class ComPagesModelWebservice extends ComPagesModelCollection
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'client'       => 'http.client',
             'identity_key' => 'id',
+            'client'       => 'http.client',
             'entity'       => 'resource',
             'url'          => '',
         ]);
@@ -70,9 +70,7 @@ class ComPagesModelWebservice extends ComPagesModelCollection
 
     protected function _actionPersist(KModelContext $context)
     {
-        $result      = true;
-        $identity_key = $this->getIdentityKey();
-
+        $result = true;
         $entity = $context->entity;
 
         $url     = $this->getUrl($this->getState()->getValues());
