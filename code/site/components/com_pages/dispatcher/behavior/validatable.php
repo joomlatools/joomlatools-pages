@@ -126,6 +126,14 @@ class ComPagesDispatcherBehaviorValidatable extends KControllerBehaviorAbstract
     {
         $schema = $this->getCollectionSchema();
 
+        //Remove internal model states from query
+        foreach($this->getController()->getModel()->getState() as $state)
+        {
+            if($state->internal) {
+                $request->query->remove($state->name);
+            }
+        }
+
         //Add request query parameters that are defined in the schema (overriding existing values)
         foreach(array_diff_key($request->query->toArray(), $schema) as $key => $value) {
             $request->data->set($key, $value, true);
