@@ -34,7 +34,8 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
     {
         $config->append([
             'entity' => $this->getIdentifier()->getName(),
-            'type'   =>  '',
+            'type'             =>  '',
+            'identity_key'     => null,
             'behaviors'   => [
                 'com://site/pages.model.behavior.paginatable',
                 'com://site/pages.model.behavior.sortable',
@@ -75,9 +76,23 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
 
     public function getPrimaryKey()
     {
-        if(!$keys = (array) $this->getIdentityKey()) {
-            $keys = $this->getState()->getNames(true);
+        if(!$this->getIdentityKey())
+        {
+            $keys = array();
+            foreach ($this->getState() as $name => $state)
+            {
+                //Unique values cannot be null or an empty string
+                if($state->unique)
+                {
+                    foreach($state->required as $required) {
+                        $keys[] = $required;
+                    }
+
+                    $keys[] = $state->name;
+                }
+            }
         }
+        else $keys = (array) $this->getIdentityKey();
 
         return (array) $keys;
     }
