@@ -74,7 +74,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         }
 
         //Set the controller
-        $this->setController( $context->page->getType(), ['page' =>  $context->page]);
+        $this->setController($context->page->getType(), ['page' =>  $context->page]);
 
         //Throw 415 if the media type is not allowed
         $format = strtolower($context->request->getFormat());
