@@ -26,7 +26,7 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'identity_key'        => 'id',
+            'identity_key'        => '',
             'identity_key_length' =>  4,
             'path'         => '',
             'base_path'    =>  $this->getObject('com:pages.config')->getSitePath(),
@@ -105,11 +105,14 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
                         }
                     }
 
-                    $identity = $this->createIdentity();
-                    $data[$identity] = [$identity_key => $identity] + $values;
+                    if($identity_key)
+                    {
+                        $identity = $this->createIdentity();
+                        $data[$identity] = [$identity_key => $identity] + $values;
 
-                    //Set the identity in the entity
-                    $entity->setProperty($identity_key, $identity, false);
+                        //Set the identity in the entity
+                        $entity->setProperty($identity_key, $identity, false);
+                    }
 
                     $result = self::PERSIST_SUCCESS;
                 }
