@@ -12,7 +12,7 @@ class ComPagesControllerForm extends ComPagesControllerPage
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'behaviors' => ['processable'],
+            'behaviors' => ['processable', 'validatable'],
         ));
 
         parent::_initialize($config);

@@ -9,6 +9,15 @@
 
 class ComPagesControllerCollection extends ComPagesControllerPage
 {
+    protected function _initialize(KObjectConfig $config)
+    {
+        $config->append(array(
+            'behaviors' => ['validatable'],
+        ));
+
+        parent::_initialize($config);
+    }
+
     public function setModel($model)
     {
         //Create the collection model
