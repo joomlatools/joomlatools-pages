@@ -18,6 +18,30 @@ class ComPagesControllerCollection extends ComPagesControllerPage
         return parent::setModel($model);
     }
 
+    protected function _actionRender(KControllerContextInterface $context)
+    {
+        $result = false;
+
+        $path = $context->request->getUrl()->getPath(true);
+
+        //Check if we are rendering an empty form
+        if(end($path) == 'new') {
+            $action = 'read';
+        }  else {
+            $action = $this->getView()->isCollection() ? 'browse' : 'read';
+        }
+
+        //Execute the action
+        if($result = $this->execute($action, $context) !== false)
+        {
+            if(!is_string($result) && !(is_object($result) && method_exists($result, '__toString'))) {
+                $result = parent::_actionRender($context);
+            }
+        }
+
+        return $result;
+    }
+
     protected function _actionAdd(KControllerContextInterface $context)
     {
         if(!$context->result instanceof KModelEntityInterface) {
