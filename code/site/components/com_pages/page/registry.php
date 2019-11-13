@@ -186,8 +186,12 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         $template = $this->getObject('com://site/pages.template.default');
 
         //Load and render the page
-        if($template->loadFile('page://pages/'.$path)) {
+        if($template->loadFile('page://pages/'.$path))
+        {
             $content = $template->render(KObjectConfig::unbox($template->getData()));
+
+            //Remove <ktml:*> filter tags
+            $content = preg_replace('#<ktml:*\s*([^>]*)>#siU', '', $content);
         }
 
         return $content;
