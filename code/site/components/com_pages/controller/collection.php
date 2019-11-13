@@ -113,7 +113,7 @@ class ComPagesControllerCollection extends ComPagesControllerPage
             $entities = $context->result;
         }
 
-        if(count($entities))
+        if(count($entities) && $this->getModel()->isAtomic())
         {
             foreach($entities as $entity) {
                 $entity->setProperties($context->request->data->toArray());
@@ -150,7 +150,7 @@ class ComPagesControllerCollection extends ComPagesControllerPage
         }
 
         //Do not allow deleting a whole collection
-        if(count($entities) && $this->getModel()->getState()->isUnique(false))
+        if(count($entities) && $this->getModel()->isAtomic())
         {
             foreach($entities as $entity) {
                 $entity->setProperties($context->request->data->toArray());

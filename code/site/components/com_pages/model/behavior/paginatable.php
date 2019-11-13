@@ -31,7 +31,7 @@ class ComPagesModelBehaviorPaginatable extends ComPagesModelBehaviorQueryable
 
     public function isPaginatable()
     {
-        return !$this->getState()->isUnique(false);
+        return !$this->isAtomic();
     }
 
     public function getPaginator()

@@ -122,7 +122,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         {
             if(!$context->request->data->has('_action'))
             {
-                $action = $this->getController()->getModel()->getState()->isUnique(false) ? 'edit' : 'add';
+                $action = $this->getController()->getModel()->isAtomic() ? 'edit' : 'add';
                 $context->request->data->set('_action', $action);
             }
 
@@ -204,15 +204,9 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             if($page->isEditable())
             {
                 $methods[] = 'post';
-
-                if($this->getController()->getModel()->getState()->isUnique()) {
-                    $methods[] = 'put';
-                }
-
-                if($this->getController()->getModel()->getState()->isUnique(false)) {
-                    $methods[] = 'patch';
-                    $methods[] = 'delete';
-                }
+                $methods[] = 'put';
+                $methods[] = 'patch';
+                $methods[] = 'delete';
             }
         }
 
@@ -237,5 +231,4 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
         return array_unique($formats);
     }
-
 }

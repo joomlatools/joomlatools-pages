@@ -97,6 +97,25 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         return (array) $keys;
     }
 
+    public function isAtomic()
+    {
+        $atomic = true;
+
+        if(!$this->getState()->isUnique())
+        {
+            foreach($this->getPrimaryKey() as $key)
+            {
+                if(!$this->getState()->get($key))
+                {
+                    $atomic = false;
+                    break;
+                }
+            }
+        }
+
+        return $atomic;
+    }
+
     public function fetchData($count = false)
     {
         return array();
@@ -127,7 +146,7 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
 
     public function filterItem($item, KModelStateInterface $state)
     {
-        if($state->isUnique(false))
+        if($this->isAtomic())
         {
             foreach($state->getValues(true) as $key => $value)
             {
