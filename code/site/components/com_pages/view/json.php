@@ -114,7 +114,7 @@ class ComPagesViewJson extends KViewAbstract
                     $document['meta']['title'] = $title;
                 }
 
-                if($description = $page->description) {
+                if($description = $page->metadata->get('description')) {
                     $document['meta']['description'] = $description;
                 }
 
