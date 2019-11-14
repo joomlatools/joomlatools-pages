@@ -45,7 +45,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
     public function onBeforeDispatcherDispatch(KEventInterface $event)
     {
         //Configure the Joomla template
-        if(isset($config['template']) || isset($config['template_config']))
+        if(isset($this->_config['template']) || isset($this->_config['template_config']))
         {
             if(isset($config['template'])) {
                 $template = $this->_config['template'];
