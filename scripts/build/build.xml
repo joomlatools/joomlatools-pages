@@ -10,7 +10,7 @@
 			<fileset dir="../../code" />
 		</copy>
 
-		<copy file="../../code/LICENSE.txt"
+		<copy file="../../LICENSE.txt"
 			  tofile="tmp/LICENSE" overwrite="true" />
 
 		<move file="tmp/administrator/components/com_pages/pages.xml"
