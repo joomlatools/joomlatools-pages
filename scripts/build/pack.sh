@@ -4,7 +4,7 @@ build_dir=$(pwd)
 payload_dir=$build_dir/installer/payload
 
 framework_location=remote
-framework_branch=feature/151-template
+framework_branch=v3.3.6
 
 # Clean up
 rm -rf installer
@@ -22,7 +22,6 @@ cd $build_dir
 
 # clone installer
 git clone --depth 1 --branch master git@github.com:joomlatools/joomlatools-extension-installer.git $build_dir/installer
-#cp -R ../../../joomlatools-extension-installer $build_dir/installer
 rm -rf $build_dir/installer/.git
 rm -f $build_dir/installer/.gitignore
 rm -f $build_dir/installer/README.md
