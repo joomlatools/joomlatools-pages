@@ -24,32 +24,35 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
 
         if($menu->component !== 'com_pages')
         {
-            $page_route = $this->getObject('dispatcher')->getRoute()->getPath(false);
-
-            $base  = trim(dirname($menu->route), '.');
-            $route = trim(str_replace($base, '', $page_route), '/');
-
-            $page = $base ? $base.'/'.$route : $route;
-
-            $level = 0;
-            while($page && !$this->getObject('page.registry')->isPage($page))
+            if($route = $this->getObject('com://site/pages.dispatcher.http')->getRoute())
             {
-                if($route = trim(dirname($route), '.'))
+                $page_route = $route->getPath(false);
+
+                $base  = trim(dirname($menu->route), '.');
+                $route = trim(str_replace($base, '', $page_route), '/');
+
+                $page = $base ? $base.'/'.$route : $route;
+
+                $level = 0;
+                while($page && !$this->getObject('page.registry')->isPage($page))
                 {
-                    $page = $base ? $base.'/'.$route : $route;
-                    $level++;
+                    if($route = trim(dirname($route), '.'))
+                    {
+                        $page = $base ? $base.'/'.$route : $route;
+                        $level++;
+                    }
+                    else $page = false;
                 }
-                else $page = false;
-            }
 
-            if($page)
-            {
-                $decorate = $this->getObject('page.registry')
-                    ->getPage($page)
-                    ->process->get('decorate', true);
+                if($page)
+                {
+                    $decorate = $this->getObject('page.registry')
+                        ->getPage($page)
+                        ->process->get('decorate', true);
 
-                if($decorate === true || (is_int($decorate) && ($decorate >= $level))) {
-                    $this->_decoratePage($page, $event->getTarget());
+                    if($decorate === true || (is_int($decorate) && ($decorate >= $level))) {
+                        $this->_decoratePage($page, $event->getTarget());
+                    }
                 }
             }
         }
