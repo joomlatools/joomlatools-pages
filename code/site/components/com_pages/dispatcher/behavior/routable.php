@@ -22,37 +22,43 @@ class ComPagesDispatcherBehaviorRoutable extends KControllerBehaviorAbstract
 
     public function getRoute()
     {
-        $result = null;
+        if(!isset($this->__route))
+        {
+            $request = $this->getRequest();
 
-        if(is_object($this->__route)) {
-            $result = clone $this->__route;
+            $base   = $request->getBasePath();
+            $format = $request->getFormat();
+
+            $url  = urldecode($request->getUrl()->getPath());
+            $path = trim(str_replace(array($base, '/index.php'), '', $url), '/');
+
+            //Append the format
+            if($format !== 'html' && strpos($path,  '.'.$format) == false ) {
+                $path .= '.'.$format;
+            }
+
+            //Resolve the path
+            $route = $this->getRouter()->resolve('pages:'.$path, $request->query->toArray());
+
+            //Clone the route
+            if(is_object($route)) {
+                $this->__route = clone $route;
+            } else {
+                $this->__route = $route;
+            }
         }
 
-        return $result;
+        return $this->__route;
     }
 
     protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
-        $base   = $context->request->getBasePath();
-        $format = $context->request->getFormat();
-
-        $url  = urldecode($context->request->getUrl()->getPath());
-        $path = trim(str_replace(array($base, '/index.php'), '', $url), '/');
-
-        //Append the format
-        if($format !== 'html' && strpos($path,  '.'.$format) == false ) {
-            $path .= '.'.$format;
-        }
-
-        if(false === $route = $context->router->resolve('pages:'.$path, $context->request->query->toArray())) {
+        if(false === $route = $this->getRoute()) {
             throw new KHttpExceptionNotFound('Page Not Found');
         }
 
         //Set the query in the request
         $context->request->setQuery($route->query);
-
-        //Store the route
-        $this->__route = $route;
     }
 
     protected function _beforeSend(KDispatcherContextInterface $context)
