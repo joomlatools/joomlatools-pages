@@ -14,6 +14,9 @@ if(file_exists(JPATH_CONFIGURATION.'/configuration-pages.php')) {
     $config   = array();
 }
 
+//Require the markdown library
+require_once dirname(dirname(__FILE__)).'/vendor/markdown/MarkdownExtra.inc.php';
+
 //Load config options
 return [
 
