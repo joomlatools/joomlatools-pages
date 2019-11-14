@@ -13,7 +13,6 @@
 
     <files folder="site/components/com_pages">
         <filename>pages.php</filename>
-        <filename>router.php</filename>
         <filename>config.php</filename>
 
         <folder>class</folder>
