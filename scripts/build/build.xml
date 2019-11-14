@@ -10,7 +10,11 @@
 			<fileset dir="../../code" />
 		</copy>
 
-		<move file="tmp/administrator/components/com_pages/pages.xml" tofile="tmp/pages.xml" overwrite="true" />
+		<copy file="../../code/LICENSE.txt"
+			  tofile="tmp/LICENSE" overwrite="true" />
+
+		<move file="tmp/administrator/components/com_pages/pages.xml"
+			  tofile="tmp/pages.xml" overwrite="true" />
 
 		<delete file="com_pages.zip" quiet="true" />
 		<zip destfile="com_pages.zip" basedir="tmp" />
