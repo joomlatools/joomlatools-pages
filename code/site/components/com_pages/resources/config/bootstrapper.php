@@ -14,8 +14,15 @@ if(file_exists(JPATH_CONFIGURATION.'/configuration-pages.php')) {
     $config   = array();
 }
 
-//Require the markdown library
-require_once dirname(dirname(__FILE__)).'/vendor/markdown/MarkdownExtra.inc.php';
+//Require markdown library
+if(!class_exists('\Michelf\MarkdownExtra')) {
+    require_once dirname(dirname(__FILE__)).'/vendor/markdown/MarkdownExtra.inc.php';
+}
+
+//Require highlight library
+if(!class_exists('\Highlight\Highlighter')) {
+    require_once dirname(dirname(__FILE__)).'/vendor/highlight/Autoloader.php';
+}
 
 //Load config options
 return [
@@ -66,6 +73,7 @@ return [
         'com://site/pages.template.filter.highlight' => [
             'highlighter' => function($source, $language) {
                 //See: https://github.com/scrivo/highlight.php
+                spl_autoload_register('\Highlight\Autoloader::load');
                 return (new \Highlight\Highlighter())->highlight($language, $source, false)->value;
             }
         ],
