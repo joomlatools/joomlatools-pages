@@ -87,7 +87,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             {
                 $data = array(
                     'headers' => $response->getHeaders()->toArray(),
-                    'content' => $content,
+                    'content' => (string) $content,
                 );
 
                 $this->storeCache($this->cacheKey(), $data);
@@ -113,7 +113,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
                 $data = array(
                     'headers' => $headers,
-                    'content' => $content
+                    'content' => (string) $content
                 );
 
                 $this->storeCache($this->cacheKey(), $data);
