@@ -63,8 +63,8 @@ class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesMo
 
         foreach($data as $key => $value)
         {
-            //Remove empty values
-            if(empty($value)) {
+            //Remove NULL values
+            if(is_null($value)) {
                 unset($data[$key]);
             }
 
