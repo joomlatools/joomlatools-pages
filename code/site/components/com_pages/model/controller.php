@@ -109,6 +109,25 @@ class ComPagesModelController extends KModelAbstract implements ComPagesModelInt
         return (array) $key;
     }
 
+    public function isAtomic()
+    {
+        $atomic = true;
+
+        if(!$this->getState()->isUnique())
+        {
+            foreach($this->getPrimaryKey() as $key)
+            {
+                if(!$this->getState()->get($key))
+                {
+                    $atomic = false;
+                    break;
+                }
+            }
+        }
+
+        return $atomic;
+    }
+
     final public function persist()
     {
         if(isset($this->_entity))
