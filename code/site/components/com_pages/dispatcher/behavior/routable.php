@@ -55,6 +55,9 @@ class ComPagesDispatcherBehaviorRoutable extends KControllerBehaviorAbstract
 
         //Set the query in the request
         $context->request->setQuery($route->query);
+
+        //Set the page in the context
+        $context->page = $route->getPage();
     }
 
     protected function _beforeSend(KDispatcherContextInterface $context)
