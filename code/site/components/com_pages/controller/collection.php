@@ -22,7 +22,7 @@ class ComPagesControllerCollection extends ComPagesControllerPage
     {
         //Create the collection model
         $model = $this->getObject('com://site/pages.model.factory')
-            ->createCollection($this->getPage()->path, $this->getRequest()->query->toArray());
+            ->createCollection($this->getPage()->path, $this->getRequest()->query->toArray(), false);
 
         return parent::setModel($model);
     }
