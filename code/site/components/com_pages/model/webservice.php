@@ -39,6 +39,22 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         return KHttpUrl::fromTemplate($this->_url, $variables);
     }
 
+    public function getLastModified()
+    {
+        $date = null;
+
+        if($url = $this->getUrl($this->getState()->getValues()))
+        {
+            try {
+                $date = $this->getObject('http.client')->head($url)->getLastModified();
+            } catch(KHttpExceptionNotFound $e) {
+                $date = null;
+            }
+        }
+
+        return $date;
+    }
+
     public function setState(array $values)
     {
         //Automatically create states that don't exist yet

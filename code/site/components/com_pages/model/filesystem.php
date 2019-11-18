@@ -61,6 +61,18 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
         return parent::setState($values);
     }
 
+    public function getLastModified()
+    {
+        $date = null;
+        $path = $this->getPath($this->getState()->getValues());
+
+        if(file_exists($path)) {
+            $date = new DateTime(date(DATE_RFC2822, filemtime($path)));
+        }
+
+        return $date;
+    }
+
     public function fetchData($count = false)
     {
         $data = array();
