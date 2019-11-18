@@ -197,7 +197,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         {
             if(!$context->request->data->has('_action'))
             {
-                $action = $this->getController()->getModel()->getState()->isUnique(false) ? 'edit' : 'add';
+                $action = $this->getController()->getModel()->isAtomic() ? 'edit' : 'add';
                 $context->request->data->set('_action', $action);
             }
 
@@ -275,5 +275,50 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         $context->setRouter($this->getRouter());
 
         return $context;
+    }
+
+    public function getHttpMethods()
+    {
+        $methods =  array('head', 'options');
+
+        if(  $page = $this->getRoute()->getPage())
+        {
+            if($page->isReadable()) {
+                $methods[] = 'get';
+            }
+
+            if($page->isSubmittable()) {
+                $methods[] = 'post';
+            }
+
+            if($page->isEditable())
+            {
+                $methods[] = 'post';
+                $methods[] = 'put';
+                $methods[] = 'patch';
+                $methods[] = 'delete';
+            }
+        }
+
+        return $methods;
+    }
+
+    public function getHttpFormats()
+    {
+        $formats = array();
+
+        if($page = $this->getRoute()->getPage())
+        {
+            $formats = (array) $page->format;
+
+            if($collection = $page->isCollection())
+            {
+                if(isset($collection['format'])) {
+                    $formats = array_merge($formats, (array) $collection['format']);
+                }
+            }
+        }
+
+        return array_unique($formats);
     }
 }

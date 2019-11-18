@@ -25,7 +25,7 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
         return $entity;
     }
 
-    public function createCollection($name, $state = array())
+    public function createCollection($name, $state = array(), $replace = true)
     {
         $model = null;
 
@@ -87,8 +87,24 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
             }
 
             //Set the model state
-            if(isset($collection->state)) {
-                $state = KObjectConfig::unbox($collection->state->merge($state));
+            if(isset($collection->state))
+            {
+                //Remove states with 'null' values
+                $default_state = KObjectConfig::unbox($collection->state);
+                foreach($default_state as $k => $v)
+                {
+                    if(is_null($v)) {
+                        unset($default_state[$k]);
+                    }
+                }
+
+
+
+                if($replace) {
+                    $state = array_replace_recursive($default_state, $state);
+                } else {
+                    $state = array_replace_recursive($state, $default_state);
+                }
             }
 
             $model->setState($state);

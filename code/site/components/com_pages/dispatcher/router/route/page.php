@@ -15,15 +15,11 @@
  */
 class ComPagesDispatcherRouterRoutePage extends ComPagesDispatcherRouterRouteAbstract
 {
+    protected $_page_path = null;
+
     public function getPage()
     {
-        if($this->isGenerated()) {
-            $path = $this->_initial_route->getPath();
-        } else {
-            $path = $this->getPath();
-        }
-
-        return $this->getObject('page.registry')->getPage(trim($path, '/'));
+        return $this->getObject('page.registry')->getPage(trim($this->_page_path, '/'));
     }
 
     public function getState()
@@ -38,6 +34,16 @@ class ComPagesDispatcherRouterRoutePage extends ComPagesDispatcherRouterRouteAbs
         }
 
         return $state;
+    }
+
+    public function setPath($path)
+    {
+        parent::setPath($path);
+
+        //A resolved route can only receive a path to be resolved, do not change it
+        if(!$this->isResolved()) {
+            $this->_page_path = $this->getPath();
+        }
     }
 
     public function setGenerated()

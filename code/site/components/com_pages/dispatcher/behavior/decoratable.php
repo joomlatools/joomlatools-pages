@@ -63,10 +63,12 @@ class ComPagesDispatcherBehaviorDecoratable extends ComKoowaDispatcherBehaviorDe
 
     public function getDecorator()
     {
-        $result = false;
+        $result = null;
 
         if($this->getRequest()->getFormat() == 'html')
         {
+            $result = 'joomla';
+
             if($content = $this->getResponse()->getContent())
             {
                 //Do not decorate if we are outputting a html document
