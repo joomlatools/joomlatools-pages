@@ -25,13 +25,6 @@ abstract class ComPagesDispatcherRouterRouteAbstract extends KHttpUrl implements
     protected $__status = null;
 
     /**
-     * The initial route
-     *
-     * @var ComPagesDispatcherRouterRouteInterface
-     */
-    protected $_initial_route = null;
-
-    /**
      * Constructor
      *
      * @param KObjectConfig $config  An optional KObjectConfig object with configuration options
@@ -42,9 +35,6 @@ abstract class ComPagesDispatcherRouterRouteAbstract extends KHttpUrl implements
 
         //Set the url
         $this->setQuery(KObjectConfig::unbox($config->query), true);
-
-        //Store the initial state
-        $this->_initial_route = clone $this;
     }
 
     /**

@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelEntityItem extends KModelEntityAbstract
+class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesModelEntityInterface
 {
     private $__internal_properties;
 
@@ -32,6 +32,29 @@ class ComPagesModelEntityItem extends KModelEntityAbstract
         return $this->__internal_properties;
     }
 
+    public function save()
+    {
+        if (!$this->isNew()) {
+            $this->setStatus(self::STATUS_UPDATED);
+        } else {
+            $this->setStatus(self::STATUS_CREATED);
+        }
+
+        return true;
+    }
+
+    public function delete()
+    {
+        $this->setStatus(self::STATUS_DELETED);
+        return true;
+    }
+
+    public function resetModified()
+    {
+        $this->_modified = array();
+        return $this;
+    }
+
     public function toArray()
     {
         $data = parent::toArray();
@@ -40,8 +63,8 @@ class ComPagesModelEntityItem extends KModelEntityAbstract
 
         foreach($data as $key => $value)
         {
-            //Remove empty values
-            if(empty($value)) {
+            //Remove NULL values
+            if(is_null($value)) {
                 unset($data[$key]);
             }
 

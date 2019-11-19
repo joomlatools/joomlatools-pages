@@ -41,70 +41,24 @@ class ComPagesDataClient extends KObject implements KObjectSingleton
         parent::_initialize($config);
     }
 
-    public function fromUrl($url, $object = true, KHttpRequest $request = null)
+    public function fromUrl($url)
     {
-        $config = null;
+        $data = array();
 
         if(!$cache = $this->isCached($url))
         {
-            if(!ini_get('allow_url_fopen')) {
-                throw new \RuntimeException('Cannot use a stream transport when "allow_url_fopen" is disabled.');
-            }
+            $data = $this->getObject('lib:http.client')->get($url);
 
-            if(!$request) {
-                $request = $this->getObject('http.request');
-            }
-
-            $version = $this->getObject('com://site/pages.version');
-            $context = stream_context_create(array('http' => array(
-                'user_agent' => 'Joomlatools/Pages/'.$version,
-                'protocol_version' => 1.1,
-                'header'           => (string) $request->getHeaders()->set('Connection', 'close')
-            )));
-
-            if($headers = get_headers($url, true, $context))
-            {
-                $status = explode(' ', $headers[0], 3);
-                $response = $this->getObject('http.response', [
-                    'status_code'    => $status[1],
-                    'status_message' => $status[2],
-                    'headers'        => $headers
-                ]);
-
-                $factory = $this->getObject('object.config.factory');
-                $format  = $response->getFormat();
-
-                //Request failed
-                if(!$response->isSuccess())
-                {
-                    throw new RuntimeException(
-                        sprintf('Cannot get data from url, error: "%s %s"', $response->getStatusCode(), $response->getStatusMessage()
-                    ));
-                }
-
-                if($content = file_get_contents($url, false, $context)) {
-                    $config = $factory->createFormat($format)->fromString($content, $object);
-                }
-            }
-            else
-            {
-                if($error = error_get_last()) {
-                    throw new RuntimeException(sprintf('Cannot get data from url, error: "%s"', trim($error['message'])));
-                } else {
-                    throw new RuntimeException(sprintf('Cannot get data from url: "%s"', $url));
-                }
-            }
-
-            $this->storeCache($url, KObjectConfig::unbox($config));
+            $this->storeCache($url, $data);
         }
         else
         {
-            if (!$config = require($cache)) {
+            if (!$data = require($cache)) {
                 throw new RuntimeException(sprintf('The data "%s" cannot be loaded from cache.', $cache));
             }
         }
 
-        return $config;
+        return $data;
     }
 
     public function storeCache($url, $data)
@@ -167,5 +121,4 @@ class ComPagesDataClient extends KObject implements KObjectSingleton
 
         return $result;
     }
-
 }

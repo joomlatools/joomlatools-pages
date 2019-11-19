@@ -29,6 +29,11 @@ class ComPagesModelBehaviorPaginatable extends ComPagesModelBehaviorQueryable
 
     }
 
+    public function isPaginatable()
+    {
+        return !$this->isAtomic();
+    }
+
     public function getPaginator()
     {
         $paginator = new KModelPaginator(array(

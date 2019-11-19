@@ -7,9 +7,9 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-interface ComPagesDispatcherContextInterface extends KDispatcherContextInterface
+interface ComPagesModelFilterable extends KModelInterface
 {
-    public function getRouter();
-
-    public function getPage();
+    public function fetchData($count = false);
+    public function filterData($data);
+    public function filterItem($item, KModelStateInterface $state);
 }

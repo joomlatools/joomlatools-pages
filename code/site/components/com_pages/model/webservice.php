@@ -9,11 +9,15 @@
 
 class ComPagesModelWebservice extends ComPagesModelCollection
 {
+    private $__client;
+
     protected $_url;
 
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
+
+        $this->__client = $config->client;
 
         $this->_url = $config->url;
     }
@@ -21,7 +25,10 @@ class ComPagesModelWebservice extends ComPagesModelCollection
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'url'  => '',
+            'identity_key' => 'id',
+            'client'       => 'http.client',
+            'entity'       => 'resource',
+            'url'          => '',
         ]);
 
         parent::_initialize($config);
@@ -45,14 +52,105 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         return parent::setState($values);
     }
 
-    public function getData($count = false)
+    public function fetchData($count = false)
     {
         $data = array();
 
-        if($url = $this->getUrl($this->getState()->getValues())) {
-            $data = $this->getObject('com://site/pages.data.client')->fromUrl($url, false);
+        if($url = $this->getUrl($this->getState()->getValues()))
+        {
+            try {
+                $data = $this->getObject('http.client')->get($url);
+            } catch(KHttpExceptionNotFound $e) {
+                $data = array();
+            }
         }
 
         return $data;
+    }
+
+    protected function _actionPersist(KModelContext $context)
+    {
+        $result = true;
+        $entity = $context->entity;
+
+        $url     = $this->getUrl($this->getState()->getValues());
+        $headers = ['Origin' => $url->toString(KHttpUrl::AUTHORITY)];
+
+        $data   = array();
+        if(!$context->state->isUnique())
+        {
+            foreach($context->entity as $entity) {
+                $data = array_merge($entity->getProperties(true), $data);
+            }
+        }
+        else $data = $entity->getProperties(true);
+
+        if($entity->getStatus() == $entity::STATUS_CREATED)
+        {
+            if($context->state->isUnique()) {
+                $result = $this->getClient()->put($url, $data, $headers);
+            } else {
+                $result = $this->getClient()->post($url, $data, $headers);
+            }
+
+            if($result !== false)
+            {
+                foreach($result as $name => $value) {
+                    $entity->setProperty($name, $value, false);
+                }
+
+                $result = self::PERSIST_SUCCESS;
+            }
+            else $result = self::PERSIST_FAILURE;
+        }
+
+        if($entity->getStatus() == $entity::STATUS_UPDATED)
+        {
+            $result = $this->getClient()->patch($url, $data, $headers);
+
+            if($result !== false)
+            {
+                if(!empty($result))
+                {
+                    foreach($result as $name => $value) {
+                        $entity->setProperty($name, $value, false);
+                    }
+
+                    $result = self::PERSIST_SUCCESS;
+                }
+                else  $result = self::PERSIST_NOCHANGE;
+            }
+            else $result = self::PERSIST_FAILURE;
+        }
+
+        if($entity->getStatus() == $entity::STATUS_DELETED)
+        {
+            $result = $this->getClient()->delete($url, $data, $headers);
+
+            if($result !== false) {
+                $result = self::PERSIST_SUCCESS;
+            } else {
+                $result = self::PERSIST_FAILURE;
+            }
+        }
+
+        return $result;
+    }
+
+    public function getClient()
+    {
+        if(!($this->__client instanceof KHttpClientInterface))
+        {
+            $this->__client = $this->getObject($this->__client);
+
+            if(!$this->__client instanceof KHttpClientInterface)
+            {
+                throw new UnexpectedValueException(
+                    'Http cient: '.get_class($this->__client).' does not implement  KHttpClientInterface'
+                );
+            }
+        }
+
+        return $this->__client;
     }
 }

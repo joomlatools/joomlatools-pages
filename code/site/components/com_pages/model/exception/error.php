@@ -7,17 +7,10 @@
  * @link        https://github.com/joomlatools/joomlatools-framework for the canonical source repository
  */
 
-class ComPagesModelContextCollection extends KModelContext
-{
-    private $__data;
-
-    public function setData($data)
-    {
-        return $this->__data = $data;
-    }
-
-    public function getData()
-    {
-        return $this->__data;
-    }
-}
+/**
+ * Failed Model Exception
+ *
+ * @author  Johan Janssens <https://github.com/johanjanssens>
+ * @package Koowa\Library\Controller\Exception
+ */
+class ComPagesModelExceptionError extends Exception implements ComPagesModelException {}

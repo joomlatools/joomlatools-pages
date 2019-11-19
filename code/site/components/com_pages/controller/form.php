@@ -12,38 +12,37 @@ class ComPagesControllerForm extends ComPagesControllerPage
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'behaviors' => ['validatable', 'processable'],
+            'behaviors' => ['processable', 'validatable'],
         ));
 
         parent::_initialize($config);
     }
 
-    protected function _actionSubmit(KControllerContextInterface $context)
+    public function __construct(KObjectConfig $config)
     {
-        $page = $this->getModel()->getPage();
+        parent::__construct($config);
 
-        //Validate the request
-        $this->setHoneypot($page->form->honeypot);
-        $this->setValidationRules((array) KObjectConfig::unbox($page->form->fields));
-
-        if($data = $this->validateRequest())
-        {
-            $channel    = $page->form->name ?? $page->slug;
-            $processors = (array) KObjectConfig::unbox($page->form->processors);
-
-            $this->processData($data, $processors, $channel);
-        }
+        //Setup callbacks
+        $this->addCommandCallback('after.submit' , '_processData');
     }
 
-    protected function _afterSubmit(KControllerContextInterface $context)
+    protected function _processData(KControllerContextInterface $context)
     {
-        //Set the redirect if defined
-        $form = $this->getModel()->getPage()->form;
+        $page = $this->getPage();
 
-        if($redirect = $form->redirect)
+        $channel    = $page->form->name ?? $page->slug;
+        $processors = (array) KObjectConfig::unbox($page->form->processors);
+
+        $this->processData($context->request->data->toArray(), $processors, $channel);
+    }
+
+    protected function _actionSubmit(KControllerContextInterface $context)
+    {
+        if($redirect = $this->getPage()->form->redirect)
         {
             $url = $this->getView()->getRoute($redirect);
             $this->getResponse()->setRedirect($url);
         }
+        else $context->response->setStatus(KHttpResponse::RESET_CONTENT);
     }
 }

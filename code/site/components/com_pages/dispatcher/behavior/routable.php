@@ -32,11 +32,6 @@ class ComPagesDispatcherBehaviorRoutable extends KControllerBehaviorAbstract
             $url  = urldecode($request->getUrl()->getPath());
             $path = trim(str_replace(array($base, '/index.php'), '', $url), '/');
 
-            //Append the format
-            if($format !== 'html' && strpos($path,  '.'.$format) == false ) {
-                $path .= '.'.$format;
-            }
-
             //Resolve the path
             $route = $this->getRouter()->resolve('pages:'.$path, $request->query->toArray());
 
@@ -51,6 +46,7 @@ class ComPagesDispatcherBehaviorRoutable extends KControllerBehaviorAbstract
         return $this->__route;
     }
 
+
     protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
         if(false === $route = $this->getRoute()) {
@@ -59,22 +55,23 @@ class ComPagesDispatcherBehaviorRoutable extends KControllerBehaviorAbstract
 
         //Set the query in the request
         $context->request->setQuery($route->query);
+
+        //Set the page in the context
+        $context->page = $route->getPage();
     }
 
     protected function _beforeSend(KDispatcherContextInterface $context)
     {
-        //Add a (self-referential) canonical URL
-        if($route = $this->getRoute())
+        //Add a (self-referential) canonical URL (only to GET and HEAD requests)
+        if($context->page && $context->request->isCacheable())
         {
-            $page = $route->getPage();
-
-            if(!$page->canonical)
+            if(!$context->page->canonical)
             {
                 $route = $context->router->generate($this->getRoute());
-                $page->canonical = (string) $context->router->qualify($route);
+                $context->page->canonical = (string) $context->router->qualify($route);
             }
 
-            $this->getResponse()->getHeaders()->set('Link', array($page->canonical => array('rel' => 'canonical')));
+            $this->getResponse()->getHeaders()->set('Link', array($context->page->canonical => array('rel' => 'canonical')));
         }
     }
 }

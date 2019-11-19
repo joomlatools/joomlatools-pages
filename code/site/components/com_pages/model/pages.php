@@ -32,13 +32,14 @@ class ComPagesModelPages extends ComPagesModelCollection
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
+            'type'      => 'pages',
             'behaviors' => ['com://site/pages.model.behavior.recursable' => ['key' => 'folder']]
         ]);
 
         parent::_initialize($config);
     }
 
-    public function getData($count = false)
+    public function fetchData($count = false)
     {
         $pages = array();
         $state = $this->getState();

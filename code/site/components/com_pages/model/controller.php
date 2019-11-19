@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelController extends KModelAbstract
+class ComPagesModelController extends KModelAbstract implements ComPagesModelInterface
 {
     protected $_controller;
 
@@ -75,6 +75,76 @@ class ComPagesModelController extends KModelAbstract
         return $this->getController()->getModel()->getState();
     }
 
+    public function getType()
+    {
+        $name    = $this->getController()->getIdentifier()->getName();
+        $package = $this->getController()->getIdentifier()->getPackage();
+
+        return sprintf('%s-%s', $package, $name);
+    }
+
+    public function getIdentityKey()
+    {
+        $model = $this->getController()->getModel();
+
+        if(!$model instanceof ComPagesModelInterface) {
+            $key = $model->fetch()->getIdentityKey();
+        } else {
+            $key = $model->getIdentityKey();
+        }
+
+        return $key;
+    }
+
+    public function getPrimaryKey()
+    {
+        $model = $this->getController()->getModel();
+
+        if(!$model instanceof ComPagesModelInterface) {
+            $key = $model->fetch()->getIdentityKey();
+        } else {
+            $key = $model->getPrimaryKey();
+        }
+
+        return (array) $key;
+    }
+
+    public function isAtomic()
+    {
+        $atomic = true;
+
+        if(!$this->getState()->isUnique())
+        {
+            foreach($this->getPrimaryKey() as $key)
+            {
+                if(!$this->getState()->get($key))
+                {
+                    $atomic = false;
+                    break;
+                }
+            }
+        }
+
+        return $atomic;
+    }
+
+    final public function persist()
+    {
+        if(isset($this->_entity))
+        {
+            $context = $this->getContext();
+            $context->entity  = $this->_entity;
+
+            if ($this->invokeCommand('before.persist', $context) !== false)
+            {
+                $context->result = $this->_actionPersist($context);
+                $this->invokeCommand('after.persist', $context);
+            }
+        }
+
+        return $context->result;
+    }
+
     protected function _actionFetch(KModelContext $context)
     {
         if ($this->getState()->isUnique()) {
@@ -94,5 +164,16 @@ class ComPagesModelController extends KModelAbstract
     protected function _actionReset(KModelContext $context)
     {
         $this->getController()->getModel()->reset();
+    }
+
+    protected function _actionPersist(KModelContext $context)
+    {
+        $result = self::PERSIST_SUCCESS;
+        
+        if($this->getController()->getModel() instanceof ComPagesModelInterface) {
+            $result = $this->getController()->getModel()->persist();
+        }
+
+        return $result;
     }
 }

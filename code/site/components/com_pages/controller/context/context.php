@@ -7,17 +7,15 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesViewCollectionJson extends ComPagesViewJson
+class ComPagesControllerContext extends KControllerContext implements ComPagesControllerContextInterface
 {
-    protected function _fetchData(KViewContext $context)
+    public function getPage()
     {
-        parent::_fetchData($context);
-
-        $context->parameters->total = $this->getModel()->count();
+        return KObjectConfig::get('page');
     }
 
-    public function isCollection()
+    public function setPage(ComPagesPageObject $page)
     {
-        return (bool) !$this->getModel()->getState()->isUnique();
+        return KObjectConfig::set('page', $page);
     }
 }

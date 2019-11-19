@@ -9,47 +9,40 @@
 
 class ComPagesControllerAbstract extends KControllerModel
 {
+    private $__page;
+
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
 
+        $this->setPage($config->page);
         $this->setModel($config->model);
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
+            'page'  => null,
             'model' => 'com://site/pages.model.pages',
         ]);
 
         parent::_initialize($config);
     }
 
+    public function setPage(ComPagesPageObject $page)
+    {
+        $this->__page = $page;
+        return $this;
+    }
+
+    public function getPage()
+    {
+        return $this->__page;
+    }
+
     public function getFormats()
     {
         return  array($this->getRequest()->getFormat());
-    }
-
-    protected function _afterRender(KControllerContextInterface $context)
-    {
-        //Set metadata
-        if($context->request->getFormat() == 'html')
-        {
-            //Set the title
-            if($title = $this->getView()->getTitle()) {
-                JFactory::getDocument()->setTitle($title);
-            }
-
-            //Set the direction
-            if($direction = $this->getView()->getDirection()) {
-                JFactory::getDocument()->setDirection($direction);
-            }
-
-            //Set the language
-            if($language = $this->getView()->getLanguage()) {
-                JFactory::getDocument()->setLanguage($language);
-            }
-        }
     }
 
     public function getView()
@@ -68,21 +61,49 @@ class ComPagesControllerAbstract extends KControllerModel
 
     public function setModel($model)
     {
-        if($model instanceof ComPagesPageObject)
-        {
-            if($model->isCollection())
-            {
-                //Create the collection model
-                $this->_model = $this->getObject('com://site/pages.model.factory')
-                    ->createCollection($model->path, $this->getRequest()->query->toArray());
-            }
-            else $this->_model = $this->getObject('com://site/pages.model.pages');
-
-            //Add the pageable behavior to the model
-            $this->_model->addBehavior('com://site/pages.model.behavior.pageable', ['page' => $model]);
+        if(!$model instanceof KModelInterface) {
+            $model = $this->getObject('com://site/pages.model.pages');
         }
-        else $this->_model = parent::setModel($model);
 
-        return $this->_model;
+        $model->addBehavior('com://site/pages.model.behavior.pageable', ['page' => $this->getPage()]);
+
+        return parent::setModel($model);
+    }
+
+    public function getContext()
+    {
+        $context = new ComPagesControllerContext();
+        $context->setSubject($this);
+        $context->setRequest($this->getRequest());
+        $context->setResponse($this->getResponse());
+        $context->setUser($this->getUser());
+        $context->setPage($this->getPage());
+
+        return $context;
+    }
+
+    protected function _actionBrowse(KControllerContextInterface $context)
+    {
+        $entity = $this->getModel()->fetch();
+        return $entity;
+    }
+
+    protected function _actionRead(KControllerContextInterface $context)
+    {
+        if(!$context->result instanceof KModelEntityInterface)
+        {
+            if($this->getModel()->getState()->isUnique())
+            {
+                $entity = $this->getModel()->fetch();
+
+                if(!count($entity)) {
+                    throw new KControllerExceptionResourceNotFound('Resource Not Found');
+                }
+            }
+            else $entity = $this->getModel()->create();
+        }
+        else $entity = $context->result;
+
+        return $entity;
     }
 }

@@ -24,11 +24,11 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-
             'behaviors' => [
                 'redirectable',
                 'routable',
                 'cacheable',
+                'validatable'
             ],
             'router'  => 'com://site/pages.dispatcher.router',
         ]);
@@ -68,17 +68,33 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     protected function _actionDispatch(KDispatcherContextInterface $context)
     {
+        //Throw 404 if the page was not found
+        if(!$context->page instanceof ComPagesPageObject) {
+            throw new KHttpExceptionNotFound('Page Not Found');
+        }
+
+        //Set the controller
+        $this->setController($context->page->getType(), ['page' =>  $context->page]);
+
+        //Throw 415 if the media type is not allowed
+        $format = strtolower($context->request->getFormat());
+        if (!in_array($format, $this->getHttpFormats()))
+        {
+            $accept = $context->request->getAccept();
+
+            //Use default if no accept header or accept includes */*
+            if(empty($accept) || array_key_exists('*/*', $accept)) {
+                $context->request->setFormat($context->page->format);
+            } else {
+                throw new KHttpExceptionNotAcceptable('Format not supported');
+            }
+        }
+
         //Throw 405 if the method is not allowed
         $method = strtolower($context->request->getMethod());
         if (!in_array($method, $this->getHttpMethods())) {
             throw new KDispatcherExceptionMethodNotAllowed('Method not allowed');
         }
-
-        //Get the page from the router
-        $page = $this->getRoute()->getPage();
-
-        //Set the controller
-        $this->setController($page->getType(), ['model' => $page]);
 
         //Execute the component method
         $this->execute($method, $context);
@@ -88,10 +104,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     protected function _actionGet(KDispatcherContextInterface $context)
     {
-        //Use hardcoded limit if page has one
-        $page = $this->getRoute()->getPage();
-
-        if($collection = $page->isCollection())
+        if($collection =  $context->page->isCollection())
         {
             if(isset($collection['state']) && isset($collection['state']['limit']))
             {
@@ -105,26 +118,33 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     protected function _actionPost(KDispatcherContextInterface $context)
     {
-        if($this->getRoute()->getPage()->isForm()) {
-            $result = $this->getController()->execute('submit', $context);
-        } else {
+        if(!$context->page->isForm())
+        {
+            if(!$context->request->data->has('_action'))
+            {
+                $action = $this->getController()->getModel()->isAtomic() ? 'edit' : 'add';
+                $context->request->data->set('_action', $action);
+            }
+
             $result = parent::_actionPost($context);
+
         }
+        else $result = $this->getController()->execute('submit', $context);
 
         return $result;
     }
 
     protected function _renderError(KDispatcherContextInterface $context)
     {
+        //Get the exception object
+        if($context->param instanceof KEventException) {
+            $exception = $context->param->getException();
+        } else {
+            $exception = $context->param;
+        }
+
         if(!JDEBUG && $this->getObject('request')->getFormat() == 'html')
         {
-            //Get the exception object
-            if($context->param instanceof KEventException) {
-                $exception = $context->param->getException();
-            } else {
-                $exception = $context->param;
-            }
-
             //If the error code does not correspond to a status message, use 500
             $code = $exception->getCode();
             if(!isset(KHttpResponse::$status_messages[$code])) {
@@ -169,18 +189,46 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     public function getHttpMethods()
     {
-        $page = $this->getRoute()->getPage();
+        $methods =  array('head', 'options');
 
-        if($page->isForm())
+        if(  $page = $this->getRoute()->getPage())
         {
-            if($page->layout || !empty($this->getObject('page.registry')->getPageContent($page))) {
-                $methods =  array('get', 'head', 'options', 'post');
-            } else {
-                $methods =  array('post');
+            if($page->isReadable()) {
+                $methods[] = 'get';
+            }
+
+            if($page->isSubmittable()) {
+                $methods[] = 'post';
+            }
+
+            if($page->isEditable())
+            {
+                $methods[] = 'post';
+                $methods[] = 'put';
+                $methods[] = 'patch';
+                $methods[] = 'delete';
             }
         }
-        else $methods =  array('get', 'head', 'options');
 
         return $methods;
+    }
+
+    public function getHttpFormats()
+    {
+        $formats = array();
+
+        if($page = $this->getRoute()->getPage())
+        {
+            $formats = (array) $page->format;
+
+            if($collection = $page->isCollection())
+            {
+                if(isset($collection['format'])) {
+                    $formats = array_merge($formats, (array) $collection['format']);
+                }
+            }
+        }
+
+        return array_unique($formats);
     }
 }

@@ -9,11 +9,14 @@
 
 interface ComPagesModelInterface extends KModelInterface
 {
-    public function getData($count = false);
+    const PERSIST_SUCCESS  = 1;
+    const PERSIST_NOCHANGE = 2;
+    const PERSIST_FAILURE  = 3;
+
+    public function persist();
 
     public function getType();
-
-    public function filterData($data);
-
-    public function filterItem($item, KModelStateInterface $state);
+    public function getIdentityKey();
+    public function getPrimaryKey();
+    public function isAtomic();
 }

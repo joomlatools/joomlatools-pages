@@ -12,13 +12,35 @@ class ComPagesDispatcherBehaviorDecoratable extends ComKoowaDispatcherBehaviorDe
     protected function _beforeSend(KDispatcherContextInterface $context)
     {
         $response = $context->getResponse();
+        $request  = $context->getRequest();
 
-        if(!$response->isDownloadable() && !$response->isRedirect())
+        if(!$response->isDownloadable() && !$response->isRedirect() && $request->getFormat() == 'html')
         {
+            $decorator = $this->getDecorator();
+
+            //Set metadata in Joomla document
+            if($decorator == 'joomla')
+            {
+                //Set the title
+                if($title = $this->getController()->getView()->getTitle()) {
+                    JFactory::getDocument()->setTitle($title);
+                }
+
+                //Set the direction
+                if($direction = $this->getController()->getView()->getDirection()) {
+                    JFactory::getDocument()->setDirection($direction);
+                }
+
+                //Set the language
+                if($language = $this->getController()->getView()->getLanguage()) {
+                    JFactory::getDocument()->setLanguage($language);
+                }
+            }
+
             $controller = $this->getObject('com:koowa.controller.page',  array('response' => $response));
 
             $controller->getView()
-                ->setDecorator($this->getDecorator())
+                ->setDecorator($decorator)
                 ->setLayout($this->getLayout());
 
             $content = $controller->render();
@@ -41,15 +63,20 @@ class ComPagesDispatcherBehaviorDecoratable extends ComKoowaDispatcherBehaviorDe
 
     public function getDecorator()
     {
-        $result = 'joomla';
+        $result = null;
 
-        if($content = $this->getResponse()->getContent())
+        if($this->getRequest()->getFormat() == 'html')
         {
-            //Do not decorate if we are outputting a html document
-            if(!preg_match('#<html(.*)>#siU', $content)) {
-                $result = 'joomla';
-            } else {
-                $result = 'koowa';
+            $result = 'joomla';
+
+            if($content = $this->getResponse()->getContent())
+            {
+                //Do not decorate if we are outputting a html document
+                if(!preg_match('#<html(.*)>#siU', $content)) {
+                    $result = 'joomla';
+                } else {
+                    $result = 'koowa';
+                }
             }
         }
 

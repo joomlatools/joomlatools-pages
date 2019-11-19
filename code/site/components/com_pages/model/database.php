@@ -9,32 +9,33 @@
 
 class ComPagesModelDatabase extends ComPagesModelCollection
 {
-    protected $_table;
+    private $__table;
 
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
 
-        $this->_table = $config->table;
+        $this->__table = $config->table;
 
-        // Set the states based on the table columns
-        foreach ($this->getTable()->getColumns() as $key => $column)
+        // Set the dynamic states based on the unique table keys
+        foreach ($this->getTable()->getUniqueColumns() as $key => $column)
         {
             $required = $this->getTable()->mapColumns($column->related, true);
-            $this->getState()->insert($key, $column->filter, null, $column->unique, $required);
+            $this->getState()->insert($key, $column->filter, null, true, $required);
         }
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'table'  => '',
+            'entity'       => 'row',
+            'table'        => '',
         ));
 
         parent::_initialize($config);
     }
 
-    public function getData($count = false)
+    public function fetchData($count = false)
     {
         $query = $this->getObject('lib:database.query.select')
             ->table(array('tbl' => $this->getTable()->getName()));
@@ -65,27 +66,38 @@ class ComPagesModelDatabase extends ComPagesModelCollection
 
     public function getTable()
     {
-        if(!($this->_table instanceof KDatabaseTableInterface))
+        if(!($this->__table instanceof KDatabaseTableInterface))
         {
             //Make sure we have a table identifier
-            if(!($this->_table instanceof KObjectIdentifier))
+            if(!($this->__table instanceof KObjectIdentifier))
             {
-                if(is_string($this->_table) && strpos($this->_table, '.') !== false ) {
-                    $this->_table = $this->getObject($this->_table);
+                if(is_string($this->__table) && strpos($this->__table, '.') !== false ) {
+                    $this->__table = $this->getObject($this->__table);
                 } else {
-                    $this->_table = $this->getObject('com://site/pages.database.table.default', array('name' => $this->_table));
+                    $this->__table = $this->getObject('com://site/pages.database.table.default', array('name' => $this->__table));
                 }
             }
 
-            if(!$this->_table instanceof KDatabaseTableInterface)
+            if(!$this->__table instanceof KDatabaseTableInterface)
             {
                 throw new UnexpectedValueException(
-                    'Table: '.get_class($this->_table).' does not implement KDatabaseTableInterface'
+                    'Table: '.get_class($this->__table).' does not implement KDatabaseTableInterface'
                 );
             }
         }
 
-        return $this->_table;
+        return $this->__table;
+    }
+
+    public function getIdentityKey()
+    {
+        if(!$this->getTable()->getIdentityColumn()) {
+            $key = parent::getIdentityKey();
+        } else {
+            $key = 'id';
+        }
+
+        return $key;
     }
 
     protected function _actionFetch(KModelContext $context)
@@ -95,10 +107,19 @@ class ComPagesModelDatabase extends ComPagesModelCollection
         if($context->data instanceof KDatabaseQueryInterface)
         {
             $data = $this->getTable()
-                ->select($context->data, KDatabase::FETCH_ARRAY_LIST, ['identity_column' => $this->_identity_key]);
+                ->select($context->data, KDatabase::FETCH_ARRAY_LIST);
+
+            $data = array_values($data);
         }
 
-        return $this->create($data);
+        $entities = $this->create($data);
+
+        //Mark the entities as fetched
+        foreach($entities as $key => $entity) {
+            $entity->setStatus(ComPagesModelEntityItem::STATUS_FETCHED);
+        }
+
+        return $entities;
     }
 
     protected function _actionCount(KModelContext $context)
@@ -107,6 +128,54 @@ class ComPagesModelDatabase extends ComPagesModelCollection
 
         if($context->data instanceof KDatabaseQueryInterface) {
             $result = $this->getTable()->count($context->data);
+        }
+
+        return $result;
+    }
+
+    protected function _actionPersist(KModelContext $context)
+    {
+        $result = true;
+
+        foreach($context->entity as $entity)
+        {
+            try
+            {
+                if($entity->getStatus() == $entity::STATUS_CREATED) {
+                    $result = $this->getTable()->insert($entity);
+                }
+
+                if($entity->getStatus() == $entity::STATUS_UPDATED) {
+                    $result = $this->getTable()->update($entity);
+                }
+
+                if($entity->getStatus() == $entity::STATUS_DELETED) {
+                    $result = $this->getTable()->delete($entity);
+                }
+            }
+            catch(RuntimeException $exception)
+            {
+                if($exception->getCode() == 1062) {
+                    throw new ComPagesModelExceptionConflict($exception->getMessage());
+                } else {
+                    throw new ComPagesModelExceptionError();
+                }
+            }
+
+            if($result !== false)
+            {
+                if($result > 0)
+                {
+                    $result = self::PERSIST_SUCCESS;
+                    $entity->resetModified();
+                }
+                else $result = self::PERSIST_NOCHANGE;
+            }
+            else
+            {
+                $result = self::PERSIST_FAILURE;
+                break;
+            }
         }
 
         return $result;

@@ -16,18 +16,18 @@ defined('KOOWA') or die; ?>
 
     <channel>
         <title><?= page()->title ?></title>
-        <description><?= page()->summary ?></description>
+        <description><?= page()->metadata->get('description'); ?></description>
         <link><?= route(page()->path.'/'.page()->slug) ?></link>
-        <? if (!empty($page->image)): ?>
+        <? if (page()->metadata->has('og:image')): ?>
             <image>
-                <url<?= url($page->image) ?></url>
+                <url><?= url(page()->metadata->get('og:image')) ?></url>
                 <title><?= page()->title ?></title>
                 <link><?= route(page()->path.'/'.page()->slug) ?></link>
             </image>
         <? endif; ?>
         <lastBuildDate><?= count(collection()) ? collection()->top()->date->format(DateTime::RSS) : '' ?></lastBuildDate>
         <atom:link href="<?=  url() ?>" rel="self" type="application/rss+xml"/>
-        <language><?= $language ?></language>
+        <language><?= language() ?></language>
         <sy:updatePeriod><?= $update_period ?></sy:updatePeriod>
         <sy:updateFrequency><?= $update_frequency ?></sy:updateFrequency>
 

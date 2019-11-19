@@ -9,6 +9,8 @@
 
 class ComPagesModelFactory extends KObject implements KObjectSingleton
 {
+    private $__collections;
+
     public function createPage($path)
     {
         $entity = false;
@@ -23,7 +25,7 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
         return $entity;
     }
 
-    public function createCollection($name, $state = array())
+    public function createCollection($name, $state = array(), $replace = true)
     {
         $model = null;
 
@@ -42,6 +44,16 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
             }
             else $identifier = $name;
 
+            //Set the type
+            if($collection->has('type')) {
+                $config['type'] = $collection->type;
+            }
+
+            //Add additional config
+            if($collection->has('config')) {
+                $config = array_merge($config, KObjectConfig::unbox($collection->config));
+            }
+
             $model = $this->getObject($identifier, $config);
 
             if(!$model instanceof KModelInterface && !$model instanceof KControllerModellable)
@@ -55,14 +67,57 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
                 $model = $this->getObject('com://site/pages.model.controller', ['controller' => $model]);
             }
 
+            //Add model filters for unique fields
+            if($collection->has('schema'))
+            {
+                $schema = (array) KObjectConfig::unbox($collection->schema);
+
+                foreach($schema as $field => $constraints)
+                {
+                    if(in_array('unique', $constraints))
+                    {
+                        $filters = array_diff($constraints, ['unique', 'required']);
+
+                        //Do not add a filter if it already exists
+                        if(!$model->getState()->has($field)) {
+                            $model->getState()->insert($field, $filters, null, true);
+                        }
+                    }
+                }
+            }
+
             //Set the model state
-            if(isset($collection->state)) {
-                $state = KObjectConfig::unbox($collection->state->merge($state));
+            if(isset($collection->state))
+            {
+                //Remove states with 'null' values
+                $default_state = KObjectConfig::unbox($collection->state);
+                foreach($default_state as $k => $v)
+                {
+                    if(is_null($v)) {
+                        unset($default_state[$k]);
+                    }
+                }
+
+
+
+                if($replace) {
+                    $state = array_replace_recursive($default_state, $state);
+                } else {
+                    $state = array_replace_recursive($state, $default_state);
+                }
             }
 
             $model->setState($state);
+
+            //Store the collection
+            $this->__collections[] = $model;
         }
 
         return $model;
+    }
+
+    public function getCollections()
+    {
+        return $this->__collections;
     }
 }

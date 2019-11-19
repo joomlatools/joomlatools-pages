@@ -68,11 +68,15 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
         $config->append(array(
             'routes'   => array(),
             'types' =>  [
+                'email' => '\S+@\S+',
                 'month' => '(0?[1-9]|1[012])',
                 'year'  => '(19|20)\d{2}',
                 'digit' => '[0-9]++',
+                '*digit' => '[0-9]+(,[0-9]+)*',
                 'alnum' => '[0-9A-Za-z]++',
+                '*alnum' => '[0-9A-Za-z]+(,[0-9A-Za-z]+)*',
                 'alpha' => '[A-Za-z]++',
+                '*alpha' => '[A-Za-z]+(,[A-Za-z]+)*',
                 '*'     => '.+?',
                 '**'    => '.++',
                 ''      => '[^/\.]++',
@@ -146,19 +150,20 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
             //Match against the dynamic routes
             foreach($this->__dynamic_routes as $regex => $target)
             {
-                //Compare longest non-param string with path, if not match continue
-                //$pos = strpos($route, '/[') ?? strpos($route, '.[');
-                //if (substr($route, 0, $pos) != substr($path, 0, $pos)) {
-                //    continue;
-                //}
+                //If regex doesn't start at offset 0 compare longest non-param string with path
+                if($regex[0] !== '[')
+                {
+                    $pos = strpos($regex, '/[') ?? strpos($regex, '.[');
+
+                    if (substr_compare($path, $regex, 0, $pos) !== 0) {
+                        continue;
+                    }
+                }
 
                 //Try to parse the route
                 if (false !== $this->_parseRoute($regex, $route))
                 {
                     $result = $this->__dynamic_routes[$regex];
-
-                    //Move matched route to the top of the stack for reverse lookups
-                    $this->__dynamic_routes = array($regex => $result) + $this->__dynamic_routes;
                     break;
                 }
             }
@@ -188,28 +193,35 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
      */
     public function generate(ComPagesDispatcherRouterRouteInterface $route)
     {
-        $result = false;
-        $path   = ltrim($route->getPath(), '/');
+        $generated = false;
+        $path      = ltrim($route->getPath(), '/');
 
-        $routes = array_flip(array_reverse($this->__dynamic_routes));
+        //Dynamic routes
+        if($routes = array_keys($this->__dynamic_routes, $path))
+        {
+            foreach($routes as $regex)
+            {
+                //Generate the dynamic route
+                if($this->_buildRoute($regex, $route)) {
+                    $generated = true; break;
+                }
+            }
+        }
 
-        //Check if we have a static route
-        if(!isset($routes[$path]))
+        //Static routes
+        if(!$generated)
         {
             $routes = array_flip(array_reverse($this->__static_routes, true));
 
-            //Generate the dynamic route
-            if(isset($routes[$path])) {
-                $result = $routes[$path];
+            if(isset($routes[$path]))
+            {
+                if($this->_buildRoute($routes[$path], $route)) {
+                    $generated = true;
+                }
             }
         }
-        else $result = $routes[$path];
 
-        if($result !== false) {
-            $this->_buildRoute($result, $route);
-        }
-
-        return $result !== false ? parent::generate($route) : false;
+        return $generated ? parent::generate($route) : false;
     }
 
     /**
@@ -266,9 +278,13 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
             {
                 foreach ((array)$query as $key => $value)
                 {
-                    if (is_numeric($key)) {
-                        unset($query[$key]);
+                    if (!is_numeric($key))
+                    {
+                        if(strpos($value, ',') !== false) {
+                            $query[$key] = explode(',', $value);
+                        }
                     }
+                    else unset($query[$key]);
                 }
 
                 $route->setQuery($query, true);
@@ -284,11 +300,13 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
      *
      * @param string $route The route regex You can use multiple pre-set regex filters, like [digit:id]
      * @param ComPagesDispatcherRouterInterface $route The route to build
-     * @return void
+     * @return false
      */
     protected function _buildRoute($regex, ComPagesDispatcherRouterRouteInterface $route)
     {
-        $regex = ltrim($regex, '/');
+        $result   = true;
+        $replaced = array();
+        $regex    = ltrim($regex, '/');
 
         if(strpos($regex, '[') !== false)
         {
@@ -303,25 +321,47 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
                         $block = substr($block, 1);
                     }
 
-                    if (isset($route->query[$param])) {
+                    if(isset($route->query[$param]))
+                    {
+                        if(is_array($route->query[$param])) {
+                            $value= implode(',', $route->query[$param]);
+                        } else {
+                            $value = $route->query[$param];
+                        }
+
                         //Part is found, replace for param value
-                        $regex = str_replace($block, $route->query[$param], $regex);
-                        unset($route->query[$param]);
-                    } elseif ($optional) {
+                        $regex = str_replace($block, $value, $regex);
+
+                        //Store replaced param
+                        $replaced[] = $param;
+                    }
+                    else
+                    {
                         //Only strip preceeding slash if it's not at the base
-                        $regex = str_replace($pre . $block, '', $regex);
-                    } else {
-                        //Strip match block
-                        $regex = str_replace($block, '', $regex);
+                        if($optional) {
+                            $regex = str_replace($pre . $block, '', $regex);
+                        } else {
+                           $result = false; break;
+                        }
                     }
                 }
             }
         }
 
-        if(strpos($regex, '://') === false) {
-            $route->setPath('/'.ltrim($regex, '/'));
-        } else {
-            $route->setUrl($regex);
+        //Only update the route if it was build successfully
+        if($result !== false)
+        {
+            foreach($replaced as $param) {
+                unset($route->query[$param]);
+            }
+
+            if(strpos($regex, '://') === false) {
+                $route->setPath('/'.ltrim($regex, '/'));
+            } else {
+                $route->setUrl($regex);
+            }
         }
+
+        return $result;
     }
 }

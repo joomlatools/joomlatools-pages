@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesObjectConfigJsonapi extends KObjectConfigJson
+interface ComPagesDispatcherContextInterface extends KDispatcherContextInterface
 {
-    protected static $_media_type = 'application/vnd.api+json';
+    public function getPage();
 }
