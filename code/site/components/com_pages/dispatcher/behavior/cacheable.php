@@ -49,6 +49,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             'cache_path' =>  $this->getObject('com://site/pages.config')->getSitePath('cache'),
             'cache_time'        => 60*15,   //15min
             'cache_time_shared' => 60*60*2, //2h
+            'cache_invalidation' => true,
         ));
 
         parent::_initialize($config);
@@ -231,7 +232,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             }
         }
 
-        return $this->__collections;
+        return (array) $this->__collections;
     }
 
 
@@ -312,15 +313,19 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     public function isValid($collections)
     {
         $valid = true;
-        foreach($collections as $collection)
-        {
-            //If the collection has a modified time validate it
-            if($collection['modified'])
-            {
-                $model = $this->getObject('com://site/pages.model.factory')->createCollection($collection['name']);
 
-                if(strtotime($collection['modified']) < $model->getLastModified()->getTimestamp()) {
-                    $valid = false; break;
+        if($this->getConfig()->cache_invalidation)
+        {
+            foreach($collections as $collection)
+            {
+                //If the collection has a modified time validate it
+                if($collection['modified'])
+                {
+                    $model = $this->getObject('com://site/pages.model.factory')->createCollection($collection['name']);
+
+                    if(strtotime($collection['modified']) < $model->getLastModified()->getTimestamp()) {
+                        $valid = false; break;
+                    }
                 }
             }
         }
