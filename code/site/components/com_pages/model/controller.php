@@ -115,8 +115,13 @@ class ComPagesModelController extends KModelAbstract implements ComPagesModelInt
 
         if($model instanceof ComPagesModelInterface) {
             $date = $model->getLastModified();
-        } else {
-            $date = null;
+        }
+
+        if($model instanceof KModelDatabase)
+        {
+            if($date = $model->getTable()->getSchema()->modified) {
+                $date = new DateTime(date(DATE_RFC2822, $date));
+            }
         }
     }
 
