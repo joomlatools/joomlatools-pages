@@ -82,9 +82,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                 {
                     if($response->isStale()) {
                         $context->response->getHeaders()->set('Cache-Status', self::CACHE_EXPIRED);
-                    }
-
-                    if(!$this->isValid($collections)) {
+                    } else {
                         $context->response->getHeaders()->set('Cache-Status', self::CACHE_INVALID);
                     }
                 }
