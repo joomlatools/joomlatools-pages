@@ -34,15 +34,16 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
             //Create the model
             $model = KHttpUrl::fromString($collection->model);
 
-            $name   = $model->toString(KHttpUrl::BASE);
-            $config = $model->query;
+            $identifier = $model->toString(KHttpUrl::BASE);
+            $config     = $model->query;
 
-            if(is_string($name) && strpos($name, '.') === false )
+            if(is_string($identifier) && strpos($identifier, '.') === false )
             {
-                $identifier = $this->getIdentifier()->toArray();
-                $identifier['name'] = $name;
+                $temp = $this->getIdentifier()->toArray();
+                $temp['name'] = $identifier;
+
+                $identifier = $temp;
             }
-            else $identifier = $name;
 
             //Set the type
             if($collection->has('type')) {
@@ -110,7 +111,7 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
             $model->setState($state);
 
             //Store the collection
-            $this->__collections[] = $model;
+            $this->__collections[$name] = $model;
         }
 
         return $model;
@@ -118,6 +119,6 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
 
     public function getCollections()
     {
-        return $this->__collections;
+        return (array) $this->__collections;
     }
 }
