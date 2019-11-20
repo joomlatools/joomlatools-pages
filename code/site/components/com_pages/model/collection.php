@@ -97,6 +97,11 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         return (array) $keys;
     }
 
+    public function getLastModified()
+    {
+        return null;
+    }
+
     public function isAtomic()
     {
         $atomic = true;

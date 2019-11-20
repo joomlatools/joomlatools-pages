@@ -100,6 +100,15 @@ class ComPagesModelDatabase extends ComPagesModelCollection
         return $key;
     }
 
+    public function getLastModified()
+    {
+        if($date = $this->getTable()->getSchema()->modified) {
+            $date = new DateTime(date(DATE_RFC2822, $date));
+        }
+
+        return $date;
+    }
+
     protected function _actionFetch(KModelContext $context)
     {
         $data = array();

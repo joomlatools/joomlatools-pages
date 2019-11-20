@@ -10,6 +10,7 @@
 class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 {
     private $__router;
+    private $__route;
 
     public function __construct( KObjectConfig $config)
     {
@@ -26,7 +27,6 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         $config->append([
             'behaviors' => [
                 'redirectable',
-                'routable',
                 'cacheable',
                 'validatable'
             ],
@@ -61,20 +61,82 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         return $this->__router;
     }
 
-    protected function _beforeDispatch(KDispatcherContextInterface $context)
-    {
-        //Do not call parent
-    }
 
-    protected function _actionDispatch(KDispatcherContextInterface $context)
+    public function getRoute()
     {
-        //Throw 404 if the page was not found
-        if(!$context->page instanceof ComPagesPageObject) {
-            throw new KHttpExceptionNotFound('Page Not Found');
+        $result = null;
+
+        if(is_object($this->__route)) {
+            $result = clone $this->__route;
         }
 
-        //Set the controller
-        $this->setController($context->page->getType(), ['page' =>  $context->page]);
+        return $result;
+    }
+
+    public function getHttpMethods()
+    {
+        $methods =  array('head', 'options');
+
+        if(  $page = $this->getRoute()->getPage())
+        {
+            if($page->isReadable()) {
+                $methods[] = 'get';
+            }
+
+            if($page->isSubmittable()) {
+                $methods[] = 'post';
+            }
+
+            if($page->isEditable())
+            {
+                $methods[] = 'post';
+                $methods[] = 'put';
+                $methods[] = 'patch';
+                $methods[] = 'delete';
+            }
+        }
+
+        return $methods;
+    }
+
+    public function getHttpFormats()
+    {
+        $formats = array();
+
+        if($page = $this->getRoute()->getPage())
+        {
+            $formats = (array) $page->format;
+
+            if($collection = $page->isCollection())
+            {
+                if(isset($collection['format'])) {
+                    $formats = array_merge($formats, (array) $collection['format']);
+                }
+            }
+        }
+
+        return array_unique($formats);
+    }
+
+    protected function _beforeDispatch(KDispatcherContextInterface $context)
+    {
+        $base = $context->request->getBasePath();
+        $url  = urldecode($context->request->getUrl()->getPath());
+        $path = trim(str_replace(array($base, '/index.php'), '', $url), '/');
+
+        //Throw 404 if the page was not found
+        if(false !== $route = $context->router->resolve('pages:'.$path, $context->request->query->toArray()))
+        {
+            //Store the route
+            $this->__route = $route;
+
+            //Set the query in the request
+            $context->request->setQuery($route->query);
+
+            //Set the page in the context
+            $context->page = $route->getPage();
+
+        } else  throw new KHttpExceptionNotFound('Page Not Found');
 
         //Throw 415 if the media type is not allowed
         $format = strtolower($context->request->getFormat());
@@ -89,6 +151,12 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
                 throw new KHttpExceptionNotAcceptable('Format not supported');
             }
         }
+    }
+
+    protected function _actionDispatch(KDispatcherContextInterface $context)
+    {
+        //Set the controller
+        $this->setController($context->page->getType(), ['page' =>  $context->page]);
 
         //Throw 405 if the method is not allowed
         $method = strtolower($context->request->getMethod());
@@ -132,6 +200,21 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         else $result = $this->getController()->execute('submit', $context);
 
         return $result;
+    }
+
+    protected function _beforeSend(KDispatcherContextInterface $context)
+    {
+        //Add a (self-referential) canonical URL (only to GET and HEAD requests)
+        if($context->page && $context->request->isCacheable())
+        {
+            if(!$context->page->canonical)
+            {
+                $route = $context->router->generate($this->getRoute());
+                $context->page->canonical = (string) $context->router->qualify($route);
+            }
+
+            $this->getResponse()->getHeaders()->set('Link', array($context->page->canonical => array('rel' => 'canonical')));
+        }
     }
 
     protected function _renderError(KDispatcherContextInterface $context)
@@ -185,50 +268,5 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         $context->setRouter($this->getRouter());
 
         return $context;
-    }
-
-    public function getHttpMethods()
-    {
-        $methods =  array('head', 'options');
-
-        if(  $page = $this->getRoute()->getPage())
-        {
-            if($page->isReadable()) {
-                $methods[] = 'get';
-            }
-
-            if($page->isSubmittable()) {
-                $methods[] = 'post';
-            }
-
-            if($page->isEditable())
-            {
-                $methods[] = 'post';
-                $methods[] = 'put';
-                $methods[] = 'patch';
-                $methods[] = 'delete';
-            }
-        }
-
-        return $methods;
-    }
-
-    public function getHttpFormats()
-    {
-        $formats = array();
-
-        if($page = $this->getRoute()->getPage())
-        {
-            $formats = (array) $page->format;
-
-            if($collection = $page->isCollection())
-            {
-                if(isset($collection['format'])) {
-                    $formats = array_merge($formats, (array) $collection['format']);
-                }
-            }
-        }
-
-        return array_unique($formats);
     }
 }

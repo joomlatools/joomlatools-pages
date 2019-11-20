@@ -109,6 +109,22 @@ class ComPagesModelController extends KModelAbstract implements ComPagesModelInt
         return (array) $key;
     }
 
+    public function getLastModified()
+    {
+        $model = $this->getController()->getModel();
+
+        if($model instanceof ComPagesModelInterface) {
+            $date = $model->getLastModified();
+        }
+
+        if($model instanceof KModelDatabase)
+        {
+            if($date = $model->getTable()->getSchema()->modified) {
+                $date = new DateTime(date(DATE_RFC2822, $date));
+            }
+        }
+    }
+
     public function isAtomic()
     {
         $atomic = true;

@@ -61,6 +61,18 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
         return parent::setState($values);
     }
 
+    public function getLastModified()
+    {
+        $date = null;
+        $path = $this->getPath($this->getState()->getValues());
+
+        if(file_exists($path)) {
+            $date = new DateTime(date(DATE_RFC2822, filemtime($path)));
+        }
+
+        return $date;
+    }
+
     public function fetchData($count = false)
     {
         $data = array();
@@ -81,8 +93,11 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
 
         $data = $context->data;
 
-        $keys = array_column($data, $identity_key);
-        $data = array_combine($keys, $data);
+        if($identity_key)
+        {
+            $keys = array_column($data, $identity_key);
+            $data = array_combine($keys, $data);
+        }
 
         foreach($context->entity as $entity)
         {
@@ -95,9 +110,11 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
                 if(!isset($data[$key]))
                 {
                     //Prevent duplicate unique values
-                    foreach($context->state->getNames(true) as $name)
+                    foreach($context->state  as $state)
                     {
-                        if(array_search($entity->$name, array_column($data, $name)) !== false)
+                        $name = $state->name;
+
+                        if($state->unique && array_search($entity->$name, array_column($data, $name)) !== false)
                         {
                             throw new ComPagesModelExceptionConflict(
                                 sprintf("Duplicate entry '%s' for key '%s'", $entity->$name, $name)
@@ -130,12 +147,14 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
                         unset($data[$key]);
 
                         //Prevent duplicate unique values
-                        foreach($context->state->getNames(true) as $name)
+                        foreach($context->state  as $state)
                         {
-                            if(array_search($entity->$name, array_column($data, $name)) !== false)
+                            $name = $state->name;
+
+                            if($state->unique && array_search($entity->$name, array_column($data, $name)) !== false)
                             {
                                 throw new ComPagesModelExceptionConflict(
-                                    sprintf("Duplicate entry '%s' for key '%s'", $entity->$name, $name)
+                                    sprintf("Duplicate entry '%s' for key '%s'", $entity->$name, $state->name)
                                 );
                             }
                         }
