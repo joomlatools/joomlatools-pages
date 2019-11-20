@@ -45,9 +45,19 @@ class ComPagesModelWebservice extends ComPagesModelCollection
 
         if($url = $this->getUrl($this->getState()->getValues()))
         {
-            try {
-                $date = $this->getObject('http.client')->head($url)->getLastModified();
-            } catch(KHttpExceptionNotFound $e) {
+            try
+            {
+                if($headers = $this->getObject('http.client')->head($url))
+                {
+                    if(isset($headers['Last-Modified']))
+                    {
+                        $value = $headers['Last-Modified'];
+                        $date  = new DateTime(date(DATE_RFC2822, strtotime($value)));
+                    }
+                }
+
+            }
+            catch(KHttpExceptionNotFound $e) {
                 $date = null;
             }
         }
