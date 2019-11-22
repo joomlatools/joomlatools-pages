@@ -123,15 +123,17 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
             {
                 $combination = 'AND';
 
-                foreach((array) $filter['values'] as $value)
+                foreach((array) $filter['values'] as $key => $value)
                 {
+                    $parameter = $column.$key;
+
                     //Equal
                     if ($filter['operation'] == 'eq')
                     {
                         if (strtolower($value) == "null" || is_null($value)) {
                             $expression = 'tbl.' . $column . ' IS NULL';
                         } else {
-                            $expression = 'tbl.' . $column . ' = :' . $column;
+                            $expression = 'tbl.' . $column . ' = :' . $parameter;
                         }
                     }
                     //Not Equal
@@ -140,27 +142,27 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                         if (strtolower($value) == "null" || is_null($value)) {
                             $expression = 'tbl.' . $column . ' IS NOT NULL';
                         } else {
-                            $expression = 'tbl.' . $column . ' != :' . $column;
+                            $expression = 'tbl.' . $column . ' != :' . $parameter;
                         }
                     }
                     //Greater Than
                     elseif ($filter['operation'] == 'gt') {
-                        $expression = 'tbl.' . $column . ' > :' . $column;
+                        $expression = 'tbl.' . $column . ' > :' . $parameter;
                     }
                     //Greater Or Equal To
                     elseif ($filter['operation'] == 'gte') {
-                        $expression = 'tbl.' . $column . ' >= :' . $column;
+                        $expression = 'tbl.' . $column . ' >= :' . $parameter;
                     }
                     //Less Then
                     elseif ($filter['operation'] == 'lt') {
-                        $expression = 'tbl.' . $column . ' < :' . $column;
+                        $expression = 'tbl.' . $column . ' < :' . $parameter;
                     }
                     //Less Or Equal To
                     elseif ($filter['operation'] == 'lte') {
-                        $expression = 'tbl.' . $column . ' <= :' . $column;
+                        $expression = 'tbl.' . $column . ' <= :' . $parameter;
                     }
 
-                    $query->where($expression, $combination)->bind(array($column => $value));
+                    $query->where($expression, $combination)->bind(array($parameter => $value));
 
                     //Multiple values for the same filter are OR
                     $combination = 'OR';
