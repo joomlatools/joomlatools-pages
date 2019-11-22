@@ -40,7 +40,8 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
                 'com://site/pages.model.behavior.paginatable',
                 'com://site/pages.model.behavior.sortable',
                 'com://site/pages.model.behavior.searchable',
-                'com://site/pages.model.behavior.sparsable'
+                'com://site/pages.model.behavior.sparsable',
+                'com://site/pages.model.behavior.filterable',
             ],
         ]);
 
