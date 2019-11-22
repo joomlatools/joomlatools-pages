@@ -242,6 +242,21 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         return $this->path;
     }
 
+    public function toArray()
+    {
+        $data = parent::toArray();
+
+        foreach($data as $key => $value)
+        {
+            //Remove NULL values
+            if(is_null($value)) {
+                unset($data[$key]);
+            }
+        }
+
+        return $data;
+    }
+
     public function __toString()
     {
         return $this->getContent();
