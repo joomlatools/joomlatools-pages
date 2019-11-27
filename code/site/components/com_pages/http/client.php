@@ -7,6 +7,33 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
+/**
+ * Http Client Cache
+ *
+ * This class implement a http cache following the https://tools.ietf.org/html/rfc7234 specification.
+ *
+ * Features:
+ *   - Cache Validation using ETag and Last-Mofified headers
+ *   - Cache Invalidation of none-safe request
+ *   - Freshening Stored Responses upon Validation
+ *   - Freshening Responses via HEAD
+ *
+ * Limitations:
+ *   - Expires header (deprecated in HTTP/1.1)
+ *   - Vary header
+ *   - Warning header
+ *   - Cache-Control directives
+ *       - response: must-revalidate and proxy-revalidate
+ *       - request: max-stale
+ *
+ * The cache isn't able to send stale responses. If the cache encounters an error trying to validate or refresh
+ * itself the cache will throw an KHttpException
+ *
+ * The cache has a `cache_force`setting that when enable will disregard response Cache-Control directives and
+ * ETag and Last-Mofified headers. Instead the cache will fallback to the `cache_time` to establish freshness
+ *
+ * @author  Johan Janssens <https://github.com/johanjanssens>
+ */
 class ComPagesHttpClient extends KHttpClient
 {
     protected function _initialize(KObjectConfig $config)
@@ -144,14 +171,14 @@ class ComPagesHttpClient extends KHttpClient
                 if($cache->getHeaders()->has('ETag'))
                 {
                     if ($cache->getHeaders()->get('ETag') != $response->getHeaders()->get('ETag')) {
-                        $cache['content'] = '';
+                        $cache->setContent(null);
                     }
                 }
 
                 if($cache->getHeaders()->has('Last-Modified'))
                 {
                     if ($cache->getHeaders()->get('Last-Modified') != $response->getHeaders()->get('Last-Modified')) {
-                        $cache['content'] = '';
+                        $cache->setContent(null);
                     }
                 }
             }
