@@ -9,34 +9,13 @@
 
 class ComPagesHttpClient extends KHttpClient
 {
-    protected $_cache;
-    protected $_cache_path;
-    protected $_cache_time;
-
-    public function __construct(KObjectConfig $config)
-    {
-        parent::__construct($config);
-
-        //Set the cache
-        $this->_cache = $config->cache;
-
-        //Set the cache time
-        //See: https://tools.ietf.org/html/rfc7234#section-4.2.2
-        $this->_cache_time = $config->cache_time;
-
-        if(empty($config->cache_path)) {
-            $this->_cache_path = $this->getObject('com://site/pages.config')->getSitePath('cache');
-        } else {
-            $this->_cache_path = $config->cache_path;
-        }
-    }
-
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'cache'      => JDEBUG ? false : true,
-            'cache_path' => '',
-            'cache_time' => 60*60*24 //1 day
+            'cache'       => JDEBUG ? false : true,
+            'cache_path'  => $this->getObject('com://site/pages.config')->getSitePath('cache'),
+            'cache_time'  => 60*60*24, //1 day https://tools.ietf.org/html/rfc7234#section-4.2.2
+            'cache_force' => false,
         ]);
 
         parent::_initialize($config);
@@ -67,7 +46,7 @@ class ComPagesHttpClient extends KHttpClient
 
                 //Storing response in cache
                 //See: https://tools.ietf.org/html/rfc7234#section-3
-                if(!$response->isError())
+                if($response->isCacheable() || ($this->getConfig()->cache_force && !$response->isError()))
                 {
                     $this->storeCache($url, [
                         'headers' => $response->getHeaders()->toArray(),
@@ -193,9 +172,9 @@ class ComPagesHttpClient extends KHttpClient
 
     public function storeCache($url, $data)
     {
-        if($this->_cache)
+        if($this->getConfig()->cache)
         {
-            $path = $this->_cache_path;
+            $path = $this->getConfig()->cache_path;
 
             if(!is_dir($path) && (false === @mkdir($path, 0755, true) && !is_dir($path))) {
                 throw new RuntimeException(sprintf('The url cache path "%s" does not exist', $path));
@@ -215,7 +194,7 @@ class ComPagesHttpClient extends KHttpClient
             }
 
             $hash = crc32($url.PHP_VERSION);
-            $file  = $this->_cache_path.'/resource_'.$hash.'.php';
+            $file  = $path.'/resource_'.$hash.'.php';
 
             if(@file_put_contents($file, $result) === false) {
                 throw new RuntimeException(sprintf('The url cannot be cached in "%s"', $file));
@@ -234,16 +213,18 @@ class ComPagesHttpClient extends KHttpClient
     {
         $result = false;
 
-        if($this->_cache)
+        if($this->getConfig()->cache)
         {
             $hash = crc32($url.PHP_VERSION);
-            $cache  = $this->_cache_path.'/resource_'.$hash.'.php';
+            $path = $this->getConfig()->cache_path;
+
+            $cache  = $path.'/resource_'.$hash.'.php';
             $result = is_file($cache) ? $cache : false;
 
             if($result && $fresh)
             {
                 //Refresh cache if it expired
-                if((time() - filemtime($result)) > $this->_cache_time) {
+                if((time() - filemtime($result)) > $this->getConfig()->cache_time) {
                     $result = false;
                 }
             }

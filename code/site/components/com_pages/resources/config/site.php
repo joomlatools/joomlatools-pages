@@ -37,9 +37,10 @@ return [
             'cache_invalidation' => $config['http_cache_invalidation'] ?? true,
         ],
         'com://site/pages.http.client' => [
-            'cache'      => $config['http_resource_cache'] ?? (JDEBUG ? false : true),
-            'cache_time' => $config['http_resource_cache_time'] ?? 60*60*24, //1d
-            'cache_path' => $config['http_resource_cache_path'] ??  $base_path.'/cache/resources',
+            'cache'       => $config['http_resource_cache'] ?? (JDEBUG ? false : true),
+            'cache_time'  => $config['http_resource_cache_time'] ?? 60*60*24, //1d
+            'cache_path'  => $config['http_resource_cache_path'] ??  $base_path.'/cache/resources',
+            'cache_force' => $config['http_resource_cache_force'] ?? false,
         ],
         'com://site/pages.model.entity.page' => [
             'data' => [
