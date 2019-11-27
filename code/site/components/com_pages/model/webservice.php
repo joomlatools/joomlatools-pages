@@ -47,7 +47,8 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         {
             try
             {
-                if($headers = $this->getObject('http.client')->head($url))
+                //Do not return cached results
+                if($headers = $this->getObject('com://site/pages.http.client')->head($url))
                 {
                     if(isset($headers['Last-Modified']))
                     {
@@ -85,7 +86,7 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         if($url = $this->getUrl($this->getState()->getValues()))
         {
             try {
-                $data = $this->getObject('http.client')->get($url);
+                $data = $this->getObject('com://site/pages.http.client')->get($url);
             } catch(KHttpExceptionNotFound $e) {
                 $data = array();
             }
