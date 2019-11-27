@@ -29,7 +29,7 @@
  * The cache isn't able to send stale responses. If the cache encounters an error trying to validate or refresh
  * itself the cache will throw an KHttpException
  *
- * The cache has a `cache_force`setting that when enable will disregard response Cache-Control directives and
+ * The cache has a `cache_force`setting that when enabled will disregard response Cache-Control directives and
  * ETag and Last-Mofified headers. Instead the cache will fallback to the `cache_time` to establish freshness
  *
  * @author  Johan Janssens <https://github.com/johanjanssens>
