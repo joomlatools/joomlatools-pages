@@ -13,8 +13,8 @@
  * This class implement a http cache following the https://tools.ietf.org/html/rfc7234 specification.
  *
  * Features:
- *   - Cache Validation using ETag and Last-Modified headers
- *   - Cache Invalidation of none-safe requests
+ *   - Cache Validation using ETag and Last-Mofified headers
+ *   - Cache Invalidation of none-safe request
  *   - Freshening Stored Responses upon Validation
  *   - Freshening Responses via HEAD
  *
