@@ -127,12 +127,15 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             {
                 $cache = $page->process->get('cache', true);
 
-
                 if ($cache !== false)
                 {
                     //Set the max age if defined
-                    if(is_int($cache)) {
-                        $context->getResponse()->setMaxAge($this->getConfig()->cache_time, $cache);
+                    if(is_int($cache))
+                    {
+                        $max        = $this->getConfig()->cache_time < $cache ? $this->getConfig()->cache_time : $cache;
+                        $max_shared = $cache;
+
+                        $context->getResponse()->setMaxAge($max, $max_shared);
                     }
 
                     //Set the cache tags
