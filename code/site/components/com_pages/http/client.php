@@ -36,6 +36,28 @@
  */
 class ComPagesHttpClient extends KHttpClient
 {
+    //The resource was found in cache
+    const CACHE_HIT     = 'HIT';
+
+    //The resource was not found in cache and has been fetched
+    const CACHE_MISS    = 'MISS';
+
+    //The resource was found in cache but has since expired and
+    //was fetched
+    const CACHE_EXPIRED = 'EXPIRED';
+
+    //The resource was found in cache
+    //but has since been invalidated and was fetched
+    const CACHE_INVALID  = 'INVALID';
+
+    //The origin server instructed to bypass cache
+    //via a Cache-Control header set to no-cache
+    const CACHE_BYPASS  = 'BYPASS';
+
+    //The request caching configuration doesn't allow to cache
+    //the resource.  Instead, the resource was generated
+    const CACHE_DYNAMIC  = 'DYNAMIC';
+
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
@@ -79,11 +101,14 @@ class ComPagesHttpClient extends KHttpClient
                 //See: https://tools.ietf.org/html/rfc7234#section-3
                 if($response->isCacheable() || ($this->getConfig()->cache_force && !$response->isError()))
                 {
+                    $response->getHeaders()->set('Cache-Status', self::CACHE_MISS);
+
                     $this->storeCache($url, [
                         'headers' => $response->getHeaders()->toArray(),
                         'content' => $response->getContent()
                     ]);
                 }
+                else $response->getHeaders()->set('Cache-Status', self::CACHE_BYPASS);
             }
         }
         else
@@ -99,6 +124,8 @@ class ComPagesHttpClient extends KHttpClient
                     unlink($cache);
                 }
             }
+
+            $response->getHeaders()->set('Cache-Status', self::CACHE_DYNAMIC);
         }
 
         return $response;
@@ -133,10 +160,16 @@ class ComPagesHttpClient extends KHttpClient
                     //See: https://tools.ietf.org/html/rfc7234#section-4.3.4
                     $response->setHeaders(array_merge($cache->getHeaders()->toArray(), $response->getHeaders()->toArray()));
                     $response->setContent($cache->getContent());
+                    $response->getHeaders()->set('Cache-Status', self::CACHE_HIT);
                 }
+                else  $response->getHeaders()->set('Cache-Status', self::CACHE_INVALID);
             }
             //Unconditional GET request
-            else $response = parent::send($request);
+            else
+            {
+                $response = parent::send($request);
+                $response->getHeaders()->set('Cache-Status', self::CACHE_EXPIRED);
+            }
 
             //Update the cache
             $this->storeCache($url, [
@@ -150,6 +183,8 @@ class ComPagesHttpClient extends KHttpClient
             $response = $this->getObject('http.response')
                 ->setHeaders($cache->getHeaders()->toArray())
                 ->setContent($cache->getContent());
+
+            $response->getHeaders()->set('Cache-Status', self::CACHE_HIT);
         }
 
         return $response;
@@ -170,18 +205,23 @@ class ComPagesHttpClient extends KHttpClient
             {
                 if($cache->getHeaders()->has('ETag'))
                 {
-                    if ($cache->getHeaders()->get('ETag') != $response->getHeaders()->get('ETag')) {
+                    if ($cache->getHeaders()->get('ETag') != $response->getHeaders()->get('ETag'))
+                    {
                         $cache->setContent(null);
+                        $response->getHeaders()->set('Cache-Status', self::CACHE_INVALID);
                     }
                 }
 
                 if($cache->getHeaders()->has('Last-Modified'))
                 {
-                    if ($cache->getHeaders()->get('Last-Modified') != $response->getHeaders()->get('Last-Modified')) {
+                    if ($cache->getHeaders()->get('Last-Modified') != $response->getHeaders()->get('Last-Modified'))
+                    {
                         $cache->setContent(null);
+                        $response->getHeaders()->set('Cache-Status', self::CACHE_INVALID);
                     }
                 }
             }
+            else $response->getHeaders()->set('Cache-Status', self::CACHE_EXPIRED);
 
             $response->setHeaders(array_merge($cache->getHeaders()->toArray(), $response->getHeaders()->toArray()));
 
@@ -196,6 +236,8 @@ class ComPagesHttpClient extends KHttpClient
         {
             $response = $this->getObject('http.response')
                 ->setHeaders($cache->getHeaders()->toArray());
+
+            $response->getHeaders()->set('Cache-Status', self::CACHE_HIT);
         }
 
         return $response;
