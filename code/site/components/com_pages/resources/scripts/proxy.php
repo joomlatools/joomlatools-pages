@@ -8,7 +8,7 @@
  */
 
 /**
- * Http Cache Proxy
+ * Http Transparent Reverse Cache Proxy
  *
  * This anonymous function implements a http cache proxy following the https://tools.ietf.org/html/rfc7234
  * specification. It support an array based php file cache with 'headers' and 'content' properties.
