@@ -54,8 +54,8 @@ class ComPagesHttpClient extends KHttpClient
     //via a Cache-Control header set to no-cache
     const CACHE_BYPASS  = 'BYPASS';
 
-    //The request caching configuration doesn't allow to cache
-    //the resource.  Instead, the resource was generated
+    //The request doesn't allow to cache the resource.
+    //Instead, the resource was fetched
     const CACHE_DYNAMIC  = 'DYNAMIC';
 
     protected function _initialize(KObjectConfig $config)
