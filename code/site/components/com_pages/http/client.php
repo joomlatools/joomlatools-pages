@@ -17,13 +17,12 @@
  *   - Cache Invalidation of none-safe requests
  *   - Freshening Stored Responses upon Validation
  *   - Freshening Responses via HEAD
+ *   - Serving Stale Responses
  *
  * Limitations:
  *   - Expires header (deprecated in HTTP/1.1)
  *   - Vary header
- *   - Warning header
  *   - Cache-Control directives
- *       - response: must-revalidate and proxy-revalidate
  *       - request: max-stale
  *
  * The cache isn't able to send stale responses. If the cache encounters an error trying to validate or refresh
