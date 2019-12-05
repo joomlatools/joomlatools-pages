@@ -11,27 +11,25 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 {
     private $__collections;
 
-    //The resource was found in cache
+    //The page was served from cache
     const CACHE_HIT     = 'HIT';
 
-    //The resource was not found in cache and has been generated
+    //The page was not found in cache and has been generated
     const CACHE_MISS    = 'MISS';
 
-    //The resource was found in cache but has since expired and
-    //was generated
-    const CACHE_EXPIRED = 'EXPIRED';
-
-    //The resource was found in cache
-    //but has since been invalidated and was generated
-    const CACHE_INVALID  = 'INVALID';
-
-    //The origin server instructed to bypass cache
-    //via a Cache-Control header set to no-cache
+    //The origin server instructed to bypass cache via a `Cache-Control` header set to `no-cache`
     const CACHE_BYPASS  = 'BYPASS';
 
-    //The resource content type was not cached by default and the
-    //current page caching configuration doesn't instruct to cache
-    //the resource.  Instead, the resource was generated
+    //The page was found in cache but has since expired. It has been generated
+    const CACHE_EXPIRED = 'EXPIRED';
+
+    //The page was found in cache and couldn't be validated
+    const CACHE_MODIFIED = 'MODIFIED';
+
+    //The resource was found in cache and was validated. It has been served from the cache
+    const CACHE_REFRESHED = 'REFRESHED';
+
+    //The page settings don't allow the resource to be cached.  Instead, the page was generated
     const CACHE_DYNAMIC  = 'DYNAMIC';
 
     public function __construct(KObjectConfig $config)
@@ -86,7 +84,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                     } elseif($this->isBypass()) {
                         $context->response->getHeaders()->set('Cache-Status', self::CACHE_BYPASS);
                     } else {
-                        $context->response->getHeaders()->set('Cache-Status', self::CACHE_INVALID);
+                        $context->response->getHeaders()->set('Cache-Status', self::CACHE_MODIFIED);
                     }
                 }
                 else
@@ -96,17 +94,16 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                         $response->getHeaders()->set('Age', $age);
                     }
 
-                    //Set Cache-Status
                     $response->getHeaders()->set('Cache-Status', self::CACHE_HIT);
-
-                    //Send the response and terminate the request
                     $response->send(false);
 
-                    //Update the cache
+                    //Refresh the cache
                     if($response->isNotModified() && !$response->isError())
                     {
                         $data['headers']['Date'] = (string) $response->getHeaders()->get('Date');
                         $this->storeCache($this->getCacheKey(), $data);
+
+                        $response->getHeaders()->set('Cache-Status', self::CACHE_REFRESHED);
                     }
 
                     //Terminate the request
