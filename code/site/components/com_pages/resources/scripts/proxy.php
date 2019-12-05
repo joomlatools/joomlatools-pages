@@ -26,7 +26,7 @@
  *    - Contain and Authorization header
  *    - Contain Cache-Control directives
  *
- * The proxy offers Cache Validation using ETag and Last-Mofified and Cache Expiration using the `max_age`function
+ * The proxy offers Cache Validation using ETag and Last-Modified and Cache Expiration using the `max_age`function
  * parameter. Default is FALSE.
  *
  * If the resource was served from cache the proxy will set the Age header with the calculated the response was
