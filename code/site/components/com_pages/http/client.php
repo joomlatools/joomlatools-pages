@@ -50,11 +50,11 @@ class ComPagesHttpClient extends KHttpClient
     //but has since been invalidated and was fetched
     const CACHE_INVALID  = 'INVALID';
 
-    //The origin server instructed to bypass cache
-    //via a Cache-Control header set to no-cache
+    //The request doesn't allow to cache the response
+    //via a Cache-Control header set to no-store, or a none cacheable request method
     const CACHE_BYPASS  = 'BYPASS';
 
-    //The request doesn't allow to cache the resource.
+    //The response doesn't allow to cache the resource.
     //Instead, the resource was fetched
     const CACHE_DYNAMIC  = 'DYNAMIC';
 
@@ -138,7 +138,7 @@ class ComPagesHttpClient extends KHttpClient
                         'content' => $response->getContent()
                     ]);
                 }
-                else $response->getHeaders()->set('Cache-Status', self::CACHE_BYPASS);
+                else $response->getHeaders()->set('Cache-Status', self::CACHE_DYNAMIC);
             }
         }
         else
@@ -155,7 +155,7 @@ class ComPagesHttpClient extends KHttpClient
                 }
             }
 
-            $response->getHeaders()->set('Cache-Status', self::CACHE_DYNAMIC);
+            $response->getHeaders()->set('Cache-Status', self::CACHE_BYPASS);
         }
 
         return $response;
