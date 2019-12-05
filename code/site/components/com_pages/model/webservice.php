@@ -58,8 +58,14 @@ class ComPagesModelWebservice extends ComPagesModelCollection
                 }
 
             }
-            catch(KHttpExceptionNotFound $e) {
-                $date = null;
+            catch(KHttpException $e)
+            {
+                //Re-throw exception if in debug mode
+                if($this->getObject('com://site/pages.http.client')->isDebug()) {
+                    throw $e;
+                } else {
+                    $date = null;
+                }
             }
         }
 
@@ -87,8 +93,15 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         {
             try {
                 $data = $this->getObject('com://site/pages.http.client')->get($url);
-            } catch(KHttpExceptionNotFound $e) {
-                $data = array();
+            }
+            catch(KHttpException $e)
+            {
+                //Re-throw exception if in debug mode
+                if($this->getObject('com://site/pages.http.client')->isDebug()) {
+                    throw $e;
+                } else {
+                    $data = array();
+                }
             }
         }
 
