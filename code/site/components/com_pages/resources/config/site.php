@@ -41,6 +41,7 @@ return [
             'cache_time'  => $config['http_resource_cache_time'] ?? 60*60*24, //1d
             'cache_path'  => $config['http_resource_cache_path'] ??  $base_path.'/cache/resources',
             'cache_force' => $config['http_resource_cache_force'] ?? false,
+            'debug'       => $config['http_resource_cache_debug'] ?? (JDEBUG ? true : false),
         ],
         'com://site/pages.model.entity.page' => [
             'data' => [
