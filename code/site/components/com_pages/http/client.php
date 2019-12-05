@@ -58,6 +58,10 @@ class ComPagesHttpClient extends KHttpClient
     //Instead, the resource was fetched
     const CACHE_DYNAMIC  = 'DYNAMIC';
 
+    //The origin server couldn't be reached to revalidate the cache.
+    //Instead, a stale resource was served from cache
+    const CACHE_STALE  = 'STALE';
+
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
@@ -65,6 +69,7 @@ class ComPagesHttpClient extends KHttpClient
             'cache_path'  => $this->getObject('com://site/pages.config')->getSitePath('cache'),
             'cache_time'  => 60*60*24, //1 day https://tools.ietf.org/html/rfc7234#section-4.2.2
             'cache_force' => false,
+            'debug'       => JDEBUG ? true : false,
         ]);
 
         parent::_initialize($config);
@@ -87,10 +92,35 @@ class ComPagesHttpClient extends KHttpClient
                     ->setHeaders($cache['headers'])
                     ->setContent($cache['content']);
 
-                if($request->isGet()) {
-                    $response = $this->_validateGet($request, $cache);
-                } else {
-                    $response = $this->_validateHead($request, $cache);
+                //Validate the cache
+                try
+                {
+                    if($request->isGet()) {
+                        $response = $this->_validateGet($request, $cache);
+                    } else {
+                        $response = $this->_validateHead($request, $cache);
+                    }
+                }
+                //Validation failed
+                catch(KHttpException $e)
+                {
+                    //Serve stale response from cache
+                    //See: https://tools.ietf.org/html/rfc7234#section-4.2.4
+                    $must_revalidate = in_array(['no-cache', 'must-revalidate', 'proxy-revalidate'], $cache->getCacheControl());
+                    if(!$this->isDebug() && ($this->getConfig()->cache_force || !$must_revalidate))
+                    {
+                        $response = $this->getObject('http.response')
+                            ->setHeaders($cache->getHeaders()->toArray())
+                            ->setContent($cache->getContent());
+
+                        $response->getHeaders()->set('Cache-Status', self::CACHE_STALE);
+
+                        //Revalidation Failed
+                        //See: https://tools.ietf.org/html/rfc7234#section-5.5.2
+                        $response->getHeaders()->set('Warning', '111 - "Revalidation Failed "'.$response->getHeaders()->get('Date'));
+                    }
+                    //Re-throw exception if in debug mode or cache must be revalidated
+                    else throw $e;
                 }
             }
             else
@@ -129,6 +159,17 @@ class ComPagesHttpClient extends KHttpClient
         }
 
         return $response;
+    }
+
+    public function setDebug($debug)
+    {
+        $this->getConfig()->debug = (bool) $debug;
+        return $this;
+    }
+
+    public function isDebug()
+    {
+        return (bool) $this->getConfig()->debug;
     }
 
     public function _validateGet(KHttpRequestInterface $request, KHttpResponseInterface $cache)
