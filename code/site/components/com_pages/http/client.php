@@ -80,8 +80,12 @@ class ComPagesHttpClient extends KHttpClient
             //Cache exists
             if($file = $this->isCached($url, false))
             {
-                if (!$cache = require($file)) {
+                if (!$cache = require($file))
+                {
                     throw new RuntimeException(sprintf('The response "%s" cannot be loaded from cache.', $file));
+
+                    //Invalidate the cache if we cannot read it
+                    unlink($cache);
                 }
 
                 $cache = $this->getObject('http.response')
