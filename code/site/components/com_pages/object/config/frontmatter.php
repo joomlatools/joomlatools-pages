@@ -9,8 +9,9 @@
 
 class ComPagesObjectConfigFrontmatter extends KObjectConfigYaml
 {
-    private $__content = '';
+    private $__content  = '';
     private $__filename = '';
+    private $__hash     = '';
 
     public function fromFile($filename, $object = true)
     {
@@ -22,6 +23,9 @@ class ComPagesObjectConfigFrontmatter extends KObjectConfigYaml
 
     public function fromString($string, $object = true)
     {
+        // Calculate the hash
+        $this->__hash = hash("crc32b", $string);
+
         // Normalize line endings to Unix style.
         $string = preg_replace("/(\r\n|\r)/", "\n", $string);
 
@@ -72,5 +76,10 @@ class ComPagesObjectConfigFrontmatter extends KObjectConfigYaml
     public function getFiletype()
     {
         return pathinfo($this->getFilename(), PATHINFO_EXTENSION);
+    }
+
+    public function getHash()
+    {
+        return $this->__hash;
     }
 }
