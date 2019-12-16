@@ -9,6 +9,7 @@
 
 class ComPagesModelFilesystem extends ComPagesModelCollection
 {
+    protected $_data;
     protected $_path;
     protected $_base_path;
     protected $_identity_key_length;
@@ -61,29 +62,39 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
         return parent::setState($values);
     }
 
-    public function getLastModified()
+    public function getValidator()
     {
-        $date = null;
-        $path = $this->getPath($this->getState()->getValues());
+        $validator = null;
+        $path      = $this->getPath($this->getState()->getValues());
 
         if(file_exists($path)) {
-            $date = new DateTime(date(DATE_RFC2822, filemtime($path)));
+            $validator = hash('crc32b', filemtime($path));
         }
 
-        return $date;
+        return $validator;
     }
 
     public function fetchData($count = false)
     {
-        $data = array();
-        $path = $this->getPath($this->getState()->getValues());
+        if(!isset($this->_data))
+        {
+            $this->_data = array();
+            $path        = $this->getPath($this->getState()->getValues());
 
-        //Only fetch data if the file exists
-        if(file_exists($path)) {
-            $data = $this->getObject('object.config.factory')->fromFile($path, false);
+            //Only fetch data if the file exists
+            if(file_exists($path)) {
+                $this->_data = $this->getObject('object.config.factory')->fromFile($path, false);
+            }
         }
 
-       return $data;
+       return $this->_data;
+    }
+
+    protected function _actionReset(KModelContext $context)
+    {
+        $this->_data = null;
+
+        parent::_actionReset($context);
     }
 
     protected function _actionPersist(KModelContext $context)

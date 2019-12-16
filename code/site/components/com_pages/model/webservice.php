@@ -10,6 +10,7 @@
 class ComPagesModelWebservice extends ComPagesModelCollection
 {
     private $__client;
+    private $__data;
 
     protected $_url;
 
@@ -39,30 +40,42 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         return KHttpUrl::fromTemplate($this->_url, $variables);
     }
 
-    public function getLastModified()
+    public function getValidator()
     {
-        $date = null;
+        $validator = null;
 
         if($url = $this->getUrl($this->getState()->getValues()))
         {
             try
             {
-                if($headers = $this->getObject('http.client')->head($url))
+                //Do not return cached results
+                if($headers = $this->getObject('com://site/pages.http.client')->head($url))
                 {
-                    if(isset($headers['Last-Modified']))
+                    if(isset($headers['Last-Modified']) || isset($headers['Etag']))
                     {
-                        $value = $headers['Last-Modified'];
-                        $date  = new DateTime(date(DATE_RFC2822, strtotime($value)));
+                        if(isset($headers['Last-Modified'])) {
+                            $validator = hash('crc32b', $headers['Last-Modified']);
+                        }
+
+                        if(isset($headers['Etag'])) {
+                            $validator = hash('crc32b', $headers['Etag']);
+                        }
                     }
                 }
 
             }
-            catch(KHttpExceptionNotFound $e) {
-                $date = null;
+            catch(KHttpException $e)
+            {
+                //Re-throw exception if in debug mode
+                if($this->getObject('com://site/pages.http.client')->isDebug()) {
+                    throw $e;
+                } else {
+                    $validator = null;
+                }
             }
         }
 
-        return $date;
+        return $validator;
     }
 
     public function setState(array $values)
@@ -80,18 +93,35 @@ class ComPagesModelWebservice extends ComPagesModelCollection
 
     public function fetchData($count = false)
     {
-        $data = array();
-
-        if($url = $this->getUrl($this->getState()->getValues()))
+        if(!isset($this->__data))
         {
-            try {
-                $data = $this->getObject('http.client')->get($url);
-            } catch(KHttpExceptionNotFound $e) {
-                $data = array();
+            $this->__data = array();
+
+            if($url = $this->getUrl($this->getState()->getValues()))
+            {
+                try {
+                    $this->__data = $this->getObject('com://site/pages.http.client')->get($url);
+                }
+                catch(KHttpException $e)
+                {
+                    //Re-throw exception if in debug mode
+                    if($this->getObject('com://site/pages.http.client')->isDebug()) {
+                        throw $e;
+                    } else {
+                        $this->__data = array();
+                    }
+                }
             }
         }
 
-        return $data;
+        return $this->__data;
+    }
+
+    protected function _actionReset(KModelContext $context)
+    {
+        $this->__data = null;
+
+        parent::_actionReset($context);
     }
 
     protected function _actionPersist(KModelContext $context)

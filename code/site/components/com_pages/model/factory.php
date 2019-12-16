@@ -99,8 +99,6 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
                     }
                 }
 
-
-
                 if($replace) {
                     $state = array_replace_recursive($default_state, $state);
                 } else {
