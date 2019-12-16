@@ -109,23 +109,23 @@ class ComPagesModelController extends KModelAbstract implements ComPagesModelInt
         return (array) $key;
     }
 
-    public function getValidator()
+    public function getHash()
     {
-        $validator = null;
+        $hash = null;
         $model = $this->getController()->getModel();
 
         if($model instanceof KModelDatabase)
         {
             if($modified = $model->getTable()->getSchema()->modified) {
-                $validator = hash('crc32b', $modified);
+                $hash = hash('crc32b', $modified);
             }
         }
 
         if($model instanceof ComPagesModelInterface) {
-            $validator = $model->getValidator();
+            $hash = $model->getHash();
         }
 
-        return $validator;
+        return $hash;
     }
 
     public function isAtomic()

@@ -166,8 +166,8 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
                 //Get the page data
                 $page = [
-                    'path'      => $this->getRoute()->getPage()->path,
-                    'validator' => $this->getRoute()->getPage()->hash
+                    'path' => $this->getRoute()->getPage()->path,
+                    'hash' => $this->getRoute()->getPage()->hash
                 ];
 
                 $data = array(
@@ -203,8 +203,8 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
                 //Get the page data
                 $page = [
-                    'path'      => $this->getRoute()->getPage()->path,
-                    'validator' => $this->getRoute()->getPage()->hash
+                    'path' => $this->getRoute()->getPage()->path,
+                    'hash' => $this->getRoute()->getPage()->hash
                 ];
 
                 $data = array(
@@ -252,9 +252,9 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             foreach($this->getObject('com://site/pages.model.factory')->getCollections() as $name => $collection)
             {
                 $this->__collections[] = [
-                    'name'      => $name,
-                    'type'      => $collection->getType(),
-                    'validator' => $collection->getValidator()
+                    'name' => $name,
+                    'type' => $collection->getType(),
+                    'hash' => $collection->getHash()
                 ];
             }
         }
@@ -326,16 +326,16 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         if($this->getConfig()->cache_validation)
         {
             //Validate the page
-            if($page['validator'] == $this->getObject('page.registry')->getPage($page['path'])->hash)
+            if($page['hash'] == $this->getObject('page.registry')->getPage($page['path'])->hash)
             {
                 foreach($collections as $collection)
                 {
-                    //If the collection has a validator validate it
-                    if($collection['validator'])
+                    //If the collection has a hash validate it
+                    if($collection['hash'])
                     {
                         $model = $this->getObject('com://site/pages.model.factory')->createCollection($collection['name']);
 
-                        if($collection['validator'] != $model->getValidator()) {
+                        if($collection['hash'] != $model->getHash()) {
                             $valid = false; break;
                         }
                     }

@@ -99,15 +99,15 @@ class ComPagesModelDatabase extends ComPagesModelCollection
         return $key;
     }
 
-    public function getValidator()
+    public function getHash()
     {
-        $validator = null;
+        $hash = null;
 
         if($modified = $this->getTable()->getSchema()->modified) {
-            $validator = hash('crc32b', $modified);
+            $hash = hash('crc32b', $modified);
         }
 
-        return $validator;
+        return $hash;
     }
 
     protected function _actionFetch(KModelContext $context)

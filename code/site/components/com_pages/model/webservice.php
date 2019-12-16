@@ -40,9 +40,9 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         return KHttpUrl::fromTemplate($this->_url, $variables);
     }
 
-    public function getValidator()
+    public function getHash()
     {
-        $validator = null;
+        $hash = null;
 
         if($url = $this->getUrl($this->getState()->getValues()))
         {
@@ -54,11 +54,11 @@ class ComPagesModelWebservice extends ComPagesModelCollection
                     if(isset($headers['Last-Modified']) || isset($headers['Etag']))
                     {
                         if(isset($headers['Last-Modified'])) {
-                            $validator = hash('crc32b', $headers['Last-Modified']);
+                            $hash = hash('crc32b', $headers['Last-Modified']);
                         }
 
                         if(isset($headers['Etag'])) {
-                            $validator = hash('crc32b', $headers['Etag']);
+                            $hash = hash('crc32b', $headers['Etag']);
                         }
                     }
                 }
@@ -70,12 +70,12 @@ class ComPagesModelWebservice extends ComPagesModelCollection
                 if($this->getObject('com://site/pages.http.client')->isDebug()) {
                     throw $e;
                 } else {
-                    $validator = null;
+                    $hash = null;
                 }
             }
         }
 
-        return $validator;
+        return $hash;
     }
 
     public function setState(array $values)

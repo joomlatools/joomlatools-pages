@@ -62,16 +62,16 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
         return parent::setState($values);
     }
 
-    public function getValidator()
+    public function getHash()
     {
-        $validator = null;
-        $path      = $this->getPath($this->getState()->getValues());
+        $hahs = null;
+        $path = $this->getPath($this->getState()->getValues());
 
         if(file_exists($path)) {
-            $validator = hash('crc32b', filemtime($path));
+            $hash = hash('crc32b', filemtime($path));
         }
 
-        return $validator;
+        return $hash;
     }
 
     public function fetchData($count = false)
