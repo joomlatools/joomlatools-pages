@@ -27,15 +27,25 @@
  *    - Contain Cache-Control directives
  *
  * The proxy offers Cache Validation using ETag and Last-Modified and Cache Expiration using the `max_age`function
- * parameter. Default is FALSE.
+ * parameter. The `max_age' function parameter can have following values:
  *
- * If the resource was served from cache the proxy will set the Age header with the calculated the response was
- * generated or validated by the origin server. After succesfull validation the proxy will return a 304 Not Modified
- * together with the current date in a Date header to allow clients to freshen their own stored response.
+ * - true: The proxy cache will rely on resource max-age or s-maxage Cache-Control directives to determine if it's fresh
+ * - false: If the resource exists in the proxy cache it will always be considered fresh
+ * - integer: Time in seconds the proxy cache is considered fresh
+ *
+ * The proxy cache will return the following Cache-Status headers
+ *
+ * - PROXY-HIT: The resource was was served from the proxy cache
+ * - PROXY-REFRESHED: The resource was found in cache and was validated. It has been served from the cache
+ *
+ * If the resource was served from cache and the cache has not been refreshed the proxy will set the Age header with
+ * the calculated the response was generated or validated by the origin server. After succesfull validation the proxy
+ * will return a 304 Not Modified together with the current date in a Date header to allow clients to freshen their
+ * own stored response.
  *
  * @author  Johan Janssens <https://github.com/johanjanssens>
  */
-return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', $max_age = false)
+return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', $max_age = true)
 {
     //Do not process cache for authorization requests
     if(@$_SERVER['REDIRECT_HTTP_AUTHORIZATION'] || @$_SERVER['HTTP_AUTHORIZATION'] || isset($_SERVER['PHP_AUTH_USER'])) {
@@ -77,9 +87,36 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', $
             $headers = $data['headers'];
             $content = $data['content'];
 
-            //Cache expiration
+            //Cache expiration using max-age or s-maxage headers
             if($max_age !== false)
             {
+                if(!is_int($max_age) && isset($headers['Cache-Control']))
+                {
+                    $cache_control = explode(',', $headers['Cache-Control']);
+
+                    foreach ($cache_control as $key => $value)
+                    {
+                        if(is_string($value))
+                        {
+                            $parts = explode('=', $value);
+
+                            if (count($parts) > 1)
+                            {
+                                unset( $cache_control[$key]);
+                                $cache_control[trim($parts[0])] = trim($parts[1]);
+                            }
+                        }
+                    }
+
+                    if (isset($cache_control['max-age'])) {
+                        $max_age = $cache_control['max-age'];
+                    }
+
+                    if (isset($cache_control['s-maxage'])) {
+                        $max_age = $cache_control['s-maxage'];
+                    }
+                }
+
                 $age = max(time() - strtotime($headers['Date']), 0);
 
                 if($age > $max_age) {
@@ -100,8 +137,8 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', $
                     if(in_array($headers['Etag'], $etags) || in_array('*', $etags))
                     {
                         header('HTTP/1.1 304 Not Modified');
-                        header('Cache-Status: PROXY');
-                        header('Date: '.date_create('now', new DateTimeZone('UTC')));
+                        header('Cache-Status: PROXY-REFRESHED');
+                        header('Date: '.date_format(date_create('now', new DateTimeZone('UTC')), 'D, d M Y H:i:s').' GMT');
                         exit();
                     }
                 }
@@ -111,14 +148,15 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', $
                     if (!(strtotime($headers['Last-Modified']) > strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE'])))
                     {
                         header('HTTP/1.1 304 Not Modified');
-                        header('Cache-Status: PROXY');
-                        header('Date: '.date_create('now', new DateTimeZone('UTC')));
+                        header('Cache-Status: PROXY-REFRESHED');
+                        header('Date: '.date_format(date_create('now', new DateTimeZone('UTC')), 'D, d M Y H:i:s').' GMT');
                         exit();
                     }
                 }
             }
             else
             {
+
                 //Send the headers
                 foreach ($headers as $name => $value) {
                     header($name . ': ' . $value);
@@ -128,10 +166,16 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', $
                 header('HTTP/1.1 200 OK');
 
                 //Set Age
-                header('Age: '.max(time() - strtotime($headers['Date']), 0));
-
-                //Set Cache-Status
-                header('Cache-Status: PROXY');
+                if($max_age === false)
+                {
+                    header('Cache-Status: PROXY-REFRESHED');
+                    header('Date: '.date_format(date_create('now', new DateTimeZone('UTC')), 'D, d M Y H:i:s').' GMT');
+                }
+                else
+                {
+                    header('Cache-Status: PROXY-HIT');
+                    header('Age: '.max(time() - strtotime($headers['Date']), 0));
+                }
 
                 //Send the content
                 if($_SERVER['REQUEST_METHOD'] == 'GET') {
