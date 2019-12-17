@@ -25,13 +25,12 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     //but has since been invalidated and was generated
     const CACHE_INVALID  = 'INVALID';
 
-    //The origin server instructed to bypass cache
-    //via a Cache-Control header set to no-cache, or max-age=0.
+    //The request doesn't allow to cache the response
+    //via a Cache-Control header set to no-store, or a none cacheble request method
     const CACHE_BYPASS  = 'BYPASS';
 
-    //The resource content type was not cached by default and the
-    // current page caching configuration doesn't instruct to cache
-    // the resource.  Instead, the resource was generated
+    //The response doesn't allow to cache the resource.
+    //Instead, the resource was fetched
     const CACHE_DYNAMIC  = 'DYNAMIC';
 
     public function __construct(KObjectConfig $config)

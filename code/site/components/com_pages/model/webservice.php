@@ -47,7 +47,8 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         {
             try
             {
-                if($headers = $this->getObject('http.client')->head($url))
+                //Do not return cached results
+                if($headers = $this->getObject('com://site/pages.http.client')->head($url))
                 {
                     if(isset($headers['Last-Modified']))
                     {
@@ -57,8 +58,14 @@ class ComPagesModelWebservice extends ComPagesModelCollection
                 }
 
             }
-            catch(KHttpExceptionNotFound $e) {
-                $date = null;
+            catch(KHttpException $e)
+            {
+                //Re-throw exception if in debug mode
+                if($this->getObject('com://site/pages.http.client')->isDebug()) {
+                    throw $e;
+                } else {
+                    $date = null;
+                }
             }
         }
 
@@ -85,9 +92,16 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         if($url = $this->getUrl($this->getState()->getValues()))
         {
             try {
-                $data = $this->getObject('http.client')->get($url);
-            } catch(KHttpExceptionNotFound $e) {
-                $data = array();
+                $data = $this->getObject('com://site/pages.http.client')->get($url);
+            }
+            catch(KHttpException $e)
+            {
+                //Re-throw exception if in debug mode
+                if($this->getObject('com://site/pages.http.client')->isDebug()) {
+                    throw $e;
+                } else {
+                    $data = array();
+                }
             }
         }
 
