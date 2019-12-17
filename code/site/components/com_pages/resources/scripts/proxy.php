@@ -23,7 +23,6 @@
  *
  * The proxy will forward any requests that are:
  *    - Not GET or HEAD
- *    - Contain and Authorization header
  *    - Contain Cache-Control directives
  *
  * The proxy offers Cache Validation using ETag and Last-Modified and Cache Expiration using the `max_age`function
@@ -47,11 +46,6 @@
  */
 return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', $max_age = true)
 {
-    //Do not process cache for authorization requests
-    if(@$_SERVER['REDIRECT_HTTP_AUTHORIZATION'] || @$_SERVER['HTTP_AUTHORIZATION'] || isset($_SERVER['PHP_AUTH_USER'])) {
-        return false;
-    }
-
     //Do not process cache for none GET or HEAD requests
     if(!in_array($_SERVER['REQUEST_METHOD'], ['GET', 'HEAD'])) {
         return false;
