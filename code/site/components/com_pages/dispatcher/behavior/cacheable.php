@@ -283,7 +283,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             }
 
             $hash = crc32($key.PHP_VERSION);
-            $file  = $path.'/document_'.$hash.'.php';
+            $file  = $path.'/response_'.$hash.'.php';
 
             if(@file_put_contents($file, $result) === false) {
                 throw new RuntimeException(sprintf('The document cannot be cached in "%s"', $file));
