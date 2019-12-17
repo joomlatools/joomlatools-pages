@@ -109,20 +109,23 @@ class ComPagesModelController extends KModelAbstract implements ComPagesModelInt
         return (array) $key;
     }
 
-    public function getLastModified()
+    public function getHash()
     {
+        $hash = null;
         $model = $this->getController()->getModel();
-
-        if($model instanceof ComPagesModelInterface) {
-            $date = $model->getLastModified();
-        }
 
         if($model instanceof KModelDatabase)
         {
-            if($date = $model->getTable()->getSchema()->modified) {
-                $date = new DateTime(date(DATE_RFC2822, $date));
+            if($modified = $model->getTable()->getSchema()->modified) {
+                $hash = hash('crc32b', $modified);
             }
         }
+
+        if($model instanceof ComPagesModelInterface) {
+            $hash = $model->getHash();
+        }
+
+        return $hash;
     }
 
     public function isAtomic()

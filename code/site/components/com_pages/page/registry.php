@@ -12,7 +12,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     const PAGES_TREE = \RecursiveIteratorIterator::SELF_FIRST;
     const PAGES_ONLY = \RecursiveIteratorIterator::CHILD_FIRST;
 
-    private  $__locator = null;
+    private $__locator = null;
 
     private $__pages  = array();
     private $__data   = null;
@@ -48,6 +48,11 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         ]);
 
         parent::_initialize($config);
+    }
+
+    public function getHash()
+    {
+        return $this->__data['hash'];
     }
 
     public function getLocator()
@@ -317,6 +322,9 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     //Set the format
                                     $page->format = $format;
 
+                                    //Set the hash
+                                    $page->hash = $page->getHash();
+
                                     //Set the process
                                     if (!$page->process) {
                                         $page->process = array();
@@ -413,6 +421,9 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             $result['routes']      = $routes;
             $result['collections'] = $collections;
             $result['redirects']   = array_flip($redirects);
+
+            //Generate a checksum
+            $result['hash']  = hash('crc32b', serialize($result));
 
             $this->storeCache($basedir, $result);
 

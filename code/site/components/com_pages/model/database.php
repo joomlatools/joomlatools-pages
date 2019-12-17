@@ -37,8 +37,7 @@ class ComPagesModelDatabase extends ComPagesModelCollection
 
     public function fetchData($count = false)
     {
-        $query = $this->getObject('lib:database.query.select')
-            ->table(array('tbl' => $this->getTable()->getName()));
+        $query = $this->getObject('lib:database.query.select')->table(array('tbl' => $this->getTable()->getName()));
 
         if($count) {
             $query->columns('COUNT(*)');
@@ -100,13 +99,15 @@ class ComPagesModelDatabase extends ComPagesModelCollection
         return $key;
     }
 
-    public function getLastModified()
+    public function getHash()
     {
-        if($date = $this->getTable()->getSchema()->modified) {
-            $date = new DateTime(date(DATE_RFC2822, $date));
+        $hash = null;
+
+        if($modified = $this->getTable()->getSchema()->modified) {
+            $hash = hash('crc32b', $modified);
         }
 
-        return $date;
+        return $hash;
     }
 
     protected function _actionFetch(KModelContext $context)
