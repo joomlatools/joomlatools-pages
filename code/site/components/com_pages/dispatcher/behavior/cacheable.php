@@ -298,7 +298,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         return false;
     }
 
-    public function isCached($key, $fresh = true)
+    public function isCached($key)
     {
         $result = false;
 
@@ -307,13 +307,6 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             $hash   = crc32($key.PHP_VERSION);
             $cache  = $this->getConfig()->cache_path.'/response_'.$hash.'.php';
             $result = is_file($cache) ? $cache : false;
-
-            if($result && $fresh)
-            {
-                if(((time() - filemtime($cache)) > 60*24*7)) {
-                    $result = false;
-                }
-            }
         }
 
         return $result;
