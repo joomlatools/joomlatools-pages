@@ -12,13 +12,13 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     private $__collections;
 
     //The page was served from cache
-    const CACHE_HIT = 'HIT';
+    const CACHE_HIT     = 'HIT';
 
     //The page was not found in cache and has been generated
-    const CACHE_MISS = 'MISS';
+    const CACHE_MISS    = 'MISS';
 
     //The origin server instructed to bypass cache via a `Cache-Control` header set to `no-cache`
-    const CACHE_BYPASS = 'BYPASS';
+    const CACHE_BYPASS  = 'BYPASS';
 
     //The page was found in cache but has since expired. It has been generated
     const CACHE_EXPIRED = 'EXPIRED';
@@ -30,7 +30,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     const CACHE_REFRESHED = 'REFRESHED';
 
     //The page settings don't allow the resource to be cached.  Instead, the page was generated
-    const CACHE_DYNAMIC = 'DYNAMIC';
+    const CACHE_DYNAMIC  = 'DYNAMIC';
 
     public function __construct(KObjectConfig $config)
     {
@@ -106,7 +106,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                     } else {
                         $context->response->getHeaders()->set('Cache-Status', self::CACHE_MODIFIED);
                     }
-                 }
+                }
             }
             else $context->response->getHeaders()->set('Cache-Status', self::CACHE_MISS);
         }
@@ -283,7 +283,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             }
 
             $hash = crc32($key.PHP_VERSION);
-            $file  = $path.'/response_'.$hash.'.php';
+            $file  = $path.'/document_'.$hash.'.php';
 
             if(@file_put_contents($file, $result) === false) {
                 throw new RuntimeException(sprintf('The document cannot be cached in "%s"', $file));
