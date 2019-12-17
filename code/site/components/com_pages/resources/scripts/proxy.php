@@ -133,7 +133,7 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', $
                         header('HTTP/1.1 304 Not Modified');
                         header('Cache-Status: PROXY-REFRESHED');
                         header('Date: '.date_format(date_create('now', new DateTimeZone('UTC')), 'D, d M Y H:i:s').' GMT');
-                        exit();
+                        return true;
                     }
                 }
 
@@ -144,7 +144,7 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', $
                         header('HTTP/1.1 304 Not Modified');
                         header('Cache-Status: PROXY-REFRESHED');
                         header('Date: '.date_format(date_create('now', new DateTimeZone('UTC')), 'D, d M Y H:i:s').' GMT');
-                        exit();
+                        return true;
                     }
                 }
             }
