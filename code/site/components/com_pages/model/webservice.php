@@ -10,6 +10,7 @@
 class ComPagesModelWebservice extends ComPagesModelCollection
 {
     private $__client;
+    private $__data;
 
     protected $_url;
 
@@ -39,9 +40,9 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         return KHttpUrl::fromTemplate($this->_url, $variables);
     }
 
-    public function getLastModified()
+    public function getHash()
     {
-        $date = null;
+        $hash = null;
 
         if($url = $this->getUrl($this->getState()->getValues()))
         {
@@ -50,10 +51,15 @@ class ComPagesModelWebservice extends ComPagesModelCollection
                 //Do not return cached results
                 if($headers = $this->getObject('com://site/pages.http.client')->head($url))
                 {
-                    if(isset($headers['Last-Modified']))
+                    if(isset($headers['Last-Modified']) || isset($headers['Etag']))
                     {
-                        $value = $headers['Last-Modified'];
-                        $date  = new DateTime(date(DATE_RFC2822, strtotime($value)));
+                        if(isset($headers['Last-Modified'])) {
+                            $hash = hash('crc32b', $headers['Last-Modified']);
+                        }
+
+                        if(isset($headers['Etag'])) {
+                            $hash = hash('crc32b', $headers['Etag']);
+                        }
                     }
                 }
 
@@ -64,12 +70,12 @@ class ComPagesModelWebservice extends ComPagesModelCollection
                 if($this->getObject('com://site/pages.http.client')->isDebug()) {
                     throw $e;
                 } else {
-                    $date = null;
+                    $hash = null;
                 }
             }
         }
 
-        return $date;
+        return $hash;
     }
 
     public function setState(array $values)
@@ -87,25 +93,35 @@ class ComPagesModelWebservice extends ComPagesModelCollection
 
     public function fetchData($count = false)
     {
-        $data = array();
-
-        if($url = $this->getUrl($this->getState()->getValues()))
+        if(!isset($this->__data))
         {
-            try {
-                $data = $this->getObject('com://site/pages.http.client')->get($url);
-            }
-            catch(KHttpException $e)
+            $this->__data = array();
+
+            if($url = $this->getUrl($this->getState()->getValues()))
             {
-                //Re-throw exception if in debug mode
-                if($this->getObject('com://site/pages.http.client')->isDebug()) {
-                    throw $e;
-                } else {
-                    $data = array();
+                try {
+                    $this->__data = $this->getObject('com://site/pages.http.client')->get($url);
+                }
+                catch(KHttpException $e)
+                {
+                    //Re-throw exception if in debug mode
+                    if($this->getObject('com://site/pages.http.client')->isDebug()) {
+                        throw $e;
+                    } else {
+                        $this->__data = array();
+                    }
                 }
             }
         }
 
-        return $data;
+        return $this->__data;
+    }
+
+    protected function _actionReset(KModelContext $context)
+    {
+        $this->__data = null;
+
+        parent::_actionReset($context);
     }
 
     protected function _actionPersist(KModelContext $context)

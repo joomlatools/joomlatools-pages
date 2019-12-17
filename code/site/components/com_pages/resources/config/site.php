@@ -30,11 +30,11 @@ return [
             'cache_path' => $config['template_cache_path'] ?? $base_path.'/cache/templates',
         ],
         'com://site/pages.dispatcher.behavior.cacheable' => [
-            'cache'              => $config['http_cache'] ?? false,
-            'cache_path'         => $config['http_cache_path'] ?? $base_path.'/cache/responses',
-            'cache_time'         => $config['http_cache_time']       ?? 60*15,  //15min
-            'cache_time_shared'  => $config['http_cache_time_proxy'] ?? 60*60*2, //2h
-            'cache_invalidation' => $config['http_cache_invalidation'] ?? true,
+            'cache'             => $config['http_cache'] ?? false,
+            'cache_path'        => $config['http_cache_path'] ?? $base_path.'/cache/responses',
+            'cache_time'        => $config['http_cache_time']       ?? 60*15,  //15min
+            'cache_time_shared' => $config['http_cache_time_proxy'] ?? 60*60*2, //2h
+            'cache_validation'  => $config['http_cache_validation'] ?? true,
         ],
         'com://site/pages.http.client' => [
             'cache'       => $config['http_resource_cache'] ?? (JDEBUG ? false : true),
