@@ -134,7 +134,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                     }
 
                     $cache_control = $this->_getCacheControl();
-                    $cache_control['stale-while-revalidate'] = 3600;
+                    $cache_control['stale-while-revalidate'] = 60;
 
                     $context->getResponse()->getHeaders()->set('Cache-Control', $cache_control);
 
