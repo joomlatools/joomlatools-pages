@@ -34,8 +34,10 @@
  *
  * The proxy cache will return the following Cache-Status headers
  *
- * - PROXY-HIT: The resource was was served from the proxy cache
- * - PROXY-REFRESHED: The resource was found in cache and was validated. It has been served from the cache
+ * - PROXY-HIT: The resource was was served from the cache
+ * - PROXY-REFRESHED: The resource was found in cache and was refreshed. It has been served from the cache
+ * - PROXY-REVALIDATED: The resource is served from cache but is stale. The resource was revalidated by either an
+ *                       If-Modified-Since header or an If-None-Match header.
  *
  * If the resource was served from cache and the cache has not been refreshed the proxy will set the Age header with
  * the calculated the response was generated or validated by the origin server. After succesfull validation the proxy
@@ -131,7 +133,7 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', $
                     if(in_array($headers['Etag'], $etags) || in_array('*', $etags))
                     {
                         header('HTTP/1.1 304 Not Modified');
-                        header('Cache-Status: PROXY-REFRESHED');
+                        header('Cache-Status: PROXY-REVALIDATED');
                         header('Date: '.date_format(date_create('now', new DateTimeZone('UTC')), 'D, d M Y H:i:s').' GMT');
                         return true;
                     }
@@ -142,7 +144,7 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', $
                     if (!(strtotime($headers['Last-Modified']) > strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE'])))
                     {
                         header('HTTP/1.1 304 Not Modified');
-                        header('Cache-Status: PROXY-REFRESHED');
+                        header('Cache-Status: PROXY-REVALIDATED');
                         header('Date: '.date_format(date_create('now', new DateTimeZone('UTC')), 'D, d M Y H:i:s').' GMT');
                         return true;
                     }

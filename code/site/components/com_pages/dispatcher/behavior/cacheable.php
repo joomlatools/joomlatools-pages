@@ -133,6 +133,11 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                         $context->getResponse()->setMaxAge($max, $max_shared);
                     }
 
+                    $cache_control = $this->_getCacheControl();
+                    $cache_control['stale-while-revalidate'] = 3600;
+
+                    $context->getResponse()->getHeaders()->set('Cache-Control', $cache_control);
+
                     //Set the cache tags
                     if($collections = $this->getCollections())
                     {
