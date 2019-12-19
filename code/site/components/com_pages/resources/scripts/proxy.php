@@ -45,8 +45,12 @@
  * own stored response.
  *
  * @author  Johan Janssens <https://github.com/johanjanssens>
+ *
+ * @param string $cache_path The path for the cache responses
+ * @param integer|bool $max_age
+ * @param integer $user  The user identifier
  */
-return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', $max_age = true)
+return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', $max_age = true, $user = 0)
 {
     //Do not process cache for none GET or HEAD requests
     if(!in_array($_SERVER['REQUEST_METHOD'], ['GET', 'HEAD'])) {
@@ -69,8 +73,6 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', $
         $format = pathinfo(parse_url('http://'.$url, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'html';
 
         //Get the user
-        $user = 0; //only anonymous requests
-
         $key = 'url:' .$url. '#format:' . $format . '#user:'.$user;
 
         $hash = crc32($key . PHP_VERSION);
