@@ -133,11 +133,6 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                         $context->getResponse()->setMaxAge($max, $max_shared);
                     }
 
-                    $cache_control = $this->_getCacheControl();
-                    $cache_control['stale-while-revalidate'] = 60;
-
-                    $context->getResponse()->getHeaders()->set('Cache-Control', $cache_control);
-
                     //Set the cache tags
                     if($collections = $this->getCollections())
                     {
@@ -151,6 +146,10 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                     $context->response->getHeaders()->set('Cache-Status', self::CACHE_DYNAMIC);
                 }
             }
+
+            //Set Last Modified to 'now'. This is less accurate then the Etag but allows for cache validation in case
+            //the etag is being stripped by a cache transform
+            $context->response->setLastModified(new DateTime('now'));
         }
         else $context->getResponse()->getHeaders()->set('Cache-Status', self::CACHE_MISS);
 
