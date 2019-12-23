@@ -150,6 +150,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             //Set no-transform to by-pass pagespeed
             $cache_control = $context->getResponse()->getCacheControl();
             $cache_control[] = 'no-transform';
+            $cache_control[] = 'public';
             $context->getResponse()->getHeaders()->set('Cache-Control', $cache_control);
 
             //Set Last Modified to 'now'. This is less accurate then the Etag but allows for cache validation in case
