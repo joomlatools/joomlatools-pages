@@ -13,7 +13,7 @@ class ComPagesTemplateHelperBehavior extends ComKoowaTemplateHelperBehavior
     {
         $config = new KObjectConfigJson($config);
         $config->append(array(
-            'debug' => JFactory::getApplication()->getCfg('debug'),
+            'debug' =>  JDEBUG ? true : false,
             'options'  => array(
                 'placement' => 'right',
                 'visibale'  => 'hover',
@@ -28,7 +28,7 @@ class ComPagesTemplateHelperBehavior extends ComKoowaTemplateHelperBehavior
         $html = '';
         if (!static::isLoaded('anchor'))
         {
-            $html .= '<ktml:script src="assets://com_pages/js/'.($config->debug ? 'build/' : 'min/').'anchor.js" />';
+            $html .= '<ktml:script src="assets://com_pages/js/anchor-v4.2.1.'.($this->getConfig()->debug ? 'min.js' : 'js').'" />';
             $html .= '<script>
             anchors.options = '.$config->options.'   
             // Add anchors on DOMContentLoaded

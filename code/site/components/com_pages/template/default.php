@@ -183,20 +183,6 @@ class ComPagesTemplateDefault extends KTemplate
         }
     }
 
-    public function addFilters($filters)
-    {
-        foreach((array)KObjectConfig::unbox($filters) as $key => $value)
-        {
-            if (is_numeric($key)) {
-                $this->addFilter($value);
-            } else {
-                $this->addFilter($key, $value);
-            }
-        }
-
-        return $this;
-    }
-
     protected function _formatDate($date, $format = '')
     {
         if(!$date instanceof KDate)
