@@ -66,6 +66,15 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     {
         $result = null;
 
+        if(!isset($this->__route))
+        {
+            $base = $this->getRequest()->getBasePath();
+            $url  = urldecode($this->getRequest()->getUrl()->getPath());
+            $path = trim(str_replace(array($base, '/index.php'), '', $url), '/');
+
+            $this->__route = $this->getRouter()->resolve('pages:'.$path,  $this->getRequest()->query->toArray());
+        }
+
         if(is_object($this->__route)) {
             $result = clone $this->__route;
         }
@@ -120,16 +129,9 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
-        $base = $context->request->getBasePath();
-        $url  = urldecode($context->request->getUrl()->getPath());
-        $path = trim(str_replace(array($base, '/index.php'), '', $url), '/');
-
         //Throw 404 if the page was not found
-        if(false !== $route = $context->router->resolve('pages:'.$path, $context->request->query->toArray()))
+        if(false !== $route = $this->getRoute())
         {
-            //Store the route
-            $this->__route = $route;
-
             //Set the query in the request
             $context->request->setQuery($route->query);
 
