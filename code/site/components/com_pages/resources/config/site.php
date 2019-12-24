@@ -35,6 +35,7 @@ return [
             'cache_time'        => $config['http_cache_time']       ?? 60*15,  //15min
             'cache_time_shared' => $config['http_cache_time_proxy'] ?? 60*60*2, //2h
             'cache_validation'  => $config['http_cache_validation'] ?? true,
+            'cache_control'     => $config['http_cache_control'] ?? array(),
         ],
         'com://site/pages.http.client' => [
             'cache'       => $config['http_resource_cache'] ??  (bool) JFactory::getConfig()->get('caching'),
