@@ -64,7 +64,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     public function getRoute()
     {
-        $result = null;
+        $result = false;
 
         if(!isset($this->__route))
         {
@@ -137,8 +137,8 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
             //Set the page in the context
             $context->page = $route->getPage();
-
-        } else  throw new KHttpExceptionNotFound('Page Not Found');
+        }
+        else throw new KHttpExceptionNotFound('Page Not Found');
 
         //Throw 415 if the media type is not allowed
         $format = strtolower($context->request->getFormat());
@@ -241,7 +241,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
                 if($page = $this->getObject('page.registry')->getPage($code))
                 {
                     //Set the controller
-                    $this->setController($page->getType(), ['model' => $page]);
+                    $this->setController($page->getType(), ['page' => $page]);
 
                     //Render the error
                     $content = $this->getController()->render($exception);
