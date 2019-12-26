@@ -161,7 +161,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         $response = $this->getResponse();
 
         //Proxy Koowa Output
-        if($this->isCacheable() && $response->isCacheable())
+        if($this->isCacheable() && $response->isCacheable() && !$response->isError())
         {
             if($content = $response->getContent())
             {
@@ -191,7 +191,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         $response = $this->getResponse();
 
         //Proxy Joomla Output
-        if($this->isCacheable() && $response->isCacheable())
+        if($this->isCacheable() && $response->isCacheable() && !$response->isError())
         {
             if($content = $event->getTarget()->getBody())
             {
