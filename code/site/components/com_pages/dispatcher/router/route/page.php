@@ -41,7 +41,7 @@ class ComPagesDispatcherRouterRoutePage extends ComPagesDispatcherRouterRouteAbs
         parent::setPath($path);
 
         //A resolved route can only receive a path to be resolved, do not change it
-        if(!$this->isResolved()) {
+        if(!$this->isResolved() &&  $this->getObject('page.registry')->isPage($path)) {
             $this->_page_path = $this->getPath();
         }
     }
