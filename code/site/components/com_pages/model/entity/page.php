@@ -85,6 +85,11 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         return $this->date->format('y');
     }
 
+    public function getPropertyContent()
+    {
+        return $this->getContent();
+    }
+
     public function getPropertyExcerpt()
     {
         $parts = preg_split('#<!--(.*)more(.*)-->#i', $this->content, 2);
