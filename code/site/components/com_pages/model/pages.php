@@ -53,8 +53,14 @@ class ComPagesModelPages extends ComPagesModelCollection
             $this->__data = array();
             $state       = $this->getState();
 
-            //Make sure we have a valid folder
-            if($folder = $state->folder)
+            //Set the folder to the active page path if no folder is defined
+            if($state->folder === null) {
+                $folder = $this->getPage()->path;
+            } else {
+                $folder = $state->folder;
+            }
+
+            if($folder)
             {
                 $registry = $this->getObject('page.registry');
 
