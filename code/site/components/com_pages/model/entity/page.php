@@ -48,7 +48,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                 'language'    => 'en-GB',
                 'canonical'   => null,
             ],
-            'internal_properties' => ['process', 'layout', 'format', 'collection', 'form', 'route', 'slug', 'path', 'folder'],
+            'internal_properties' => ['process', 'layout', 'format', 'collection', 'form', 'route', 'slug', 'path', 'folder', 'content', 'hash'],
         ]);
 
         parent::_initialize($config);
@@ -85,14 +85,9 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         return $this->date->format('y');
     }
 
-    public function getPropertyContent()
-    {
-        return $this->getContent();
-    }
-
     public function getPropertyExcerpt()
     {
-        $parts = preg_split('#<!--(.*)more(.*)-->#i', $this->content, 2);
+        $parts = preg_split('#<!--(.*)more(.*)-->#i', $this->getContent(), 2);
 
         if(count($parts) > 1) {
             $excerpt = $parts[0];
@@ -105,7 +100,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
 
     public function getPropertyText()
     {
-        $parts = preg_split('#<!--(.*)more(.*)-->#i', $this->content, 2);
+        $parts = preg_split('#<!--(.*)more(.*)-->#i', $this->getContent(), 2);
 
         if(count($parts) > 1) {
             $text = $parts[1];
@@ -234,7 +229,11 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
 
     public function getContent()
     {
-        return $this->getObject('page.registry')->getPageContent($this->path);
+        if(!$this->content) {
+            $this->content = $this->getObject('page.registry')->getPageContent($this->path);
+        }
+
+        return $this->content;
     }
 
     public function getContentType()
@@ -249,6 +248,6 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
 
     public function __toString()
     {
-        return $this->getContent();
+        return $this->getObject('page.registry')->getPageContent($this->path, true);
     }
 }
