@@ -52,12 +52,16 @@ class ComPagesTemplateFilterMeta extends ComPagesTemplateFilterAbstract
 
                 if($page->metadata->has('og:type'))
                 {
-                    if(strpos($metadata['og:image'], 'http') === false) {
-                        $metadata['og:image'] = (string) $this->getTemplate()->url($metadata['og:image']);
+                    if (strpos($metadata['og:image'], 'http') === false) {
+                        $metadata['og:image'] = (string)$this->getTemplate()->url($metadata['og:image']);
                     }
 
-                    if(!$metadata['og:url']) {
-                        $metadata['og:url'] = (string) $this->getTemplate()->route($page);
+                    if (!$metadata['og:url']) {
+                        $metadata['og:url'] = (string)$this->getTemplate()->route($page);
+                    }
+
+                    if (strpos($metadata['og:url'], 'http') === false) {
+                        $metadata['og:url'] = (string)$this->getTemplate()->url($metadata['og:url']);
                     }
                 }
             }
