@@ -181,22 +181,33 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $page;
     }
 
-    public function getPageContent($path)
+    public function getPageContent($path, $render = false)
     {
+        $content = false;
+
         if($path instanceof ComPagesPageObject) {
             $path = $path->path;
         }
 
-        $content  = false;
-        $template = $this->getObject('com://site/pages.template.default');
-
-        //Load and render the page
-        if($template->loadFile('page://pages/'.$path))
+        if($render)
         {
-            $content = $template->render(KObjectConfig::unbox($template->getData()));
+            $template = $this->getObject('com://site/pages.template.default');
 
-            //Remove <ktml:*> filter tags
-            $content = preg_replace('#<ktml:*\s*([^>]*)>#siU', '', $content);
+            //Load and render the page
+            if($template->loadFile('page://pages/'.$path))
+            {
+                $content = $template->render(KObjectConfig::unbox($template->getData()));
+
+                //Remove <ktml:*> filter tags
+                $content = preg_replace('#<ktml:*\s*([^>]*)>#siU', '', $content);
+            }
+        }
+        else
+        {
+            $file = $this->getObject('template.locator.factory')->locate('page://pages/'.$path);
+            $page = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
+
+            $content = $page->getContent();
         }
 
         return $content;
