@@ -20,14 +20,28 @@ class ComPagesControllerBehaviorBreadcrumbable extends KControllerBehaviorAbstra
             if($path = ltrim(str_replace($menu_route->route, '', $page_route), '/'))
             {
                 $pathway = JFactory::getApplication()->getPathway();
+                $router = $this->getObject('dispatcher')->getRouter();
 
                 $segments = array();
                 foreach(explode('/', $path) as $segment)
                 {
                     $segments[] = $segment;
-                    $route      =  $this->getObject('dispatcher')->getRouter()->generate('pages:'.implode('/', $segments));
 
-                    $pathway->addItem(ucfirst($segment), (string) $route);
+                    if($route = $router->generate('pages:'.implode('/', $segments)))
+                    {
+                        $page = $route->getPage();
+
+                        if(!$page->name) {
+                            $name = ucwords(str_replace(array('_', '-'), ' ', $page->slug));
+                        } else {
+                            $name = ucfirst($page->name);
+                        }
+
+                        $route = $router->qualify($route);
+                        $url   = $route->toString(KHttpUrl::PATH);
+
+                        $pathway->addItem($name, (string) $url);
+                    }
                 }
             }
         }
