@@ -63,6 +63,12 @@ class ComPagesModelDatabase extends ComPagesModelCollection
         return $query;
     }
 
+    protected function _prepareContext(KModelContext $context)
+    {
+        //Fetch the data
+        $context->data = $this->fetchData($context->getName() == 'before.count');
+    }
+
     public function getTable()
     {
         if(!($this->__table instanceof KDatabaseTableInterface))
