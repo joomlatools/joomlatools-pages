@@ -9,6 +9,8 @@
 
 class ComPagesModelPages extends ComPagesModelCollection
 {
+    private $__data;
+
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
@@ -39,38 +41,49 @@ class ComPagesModelPages extends ComPagesModelCollection
         parent::_initialize($config);
     }
 
+    public function getHash()
+    {
+        return $this->getObject('page.registry')->getHash();
+    }
+
     public function fetchData($count = false)
     {
-        $pages = array();
-        $state = $this->getState();
-
-        //Make sure we have a valid folder
-        if($folder = $state->folder)
+        if(!isset($this->__data))
         {
-            $registry = $this->getObject('page.registry');
+            $this->__data = array();
+            $state       = $this->getState();
 
-            if ($state->isUnique())
-            {
-                if($page = $registry->getPage($folder.'/'.$this->getState()->slug)) {
-                    $pages = array($page->toArray());
-                }
+            //Set the folder to the active page path if no folder is defined
+            if($state->folder === null) {
+                $folder = $this->getPage()->path;
+            } else {
+                $folder = $state->folder;
             }
-            else
+
+            if($folder)
             {
-                if(!$state->recurse) {
-                    $mode = ComPagesPageRegistry::PAGES_ONLY;
-                } else {
-                    $mode = ComPagesPageRegistry::PAGES_TREE;
+                $registry = $this->getObject('page.registry');
+
+                if ($state->isUnique())
+                {
+                    if($page = $registry->getPage($folder.'/'.$this->getState()->slug)) {
+                        $this->__data = array($page->toArray());
+                    }
                 }
+                else
+                {
+                    if(!$state->recurse) {
+                        $mode = ComPagesPageRegistry::PAGES_ONLY;
+                    } else {
+                        $mode = ComPagesPageRegistry::PAGES_TREE;
+                    }
 
-                $pages = array_values($registry->getPages($folder, $mode, $state->level - 1));
-
-                //Filter the pages
-                $pages = $this->filterData($pages);
+                    $this->__data = array_values($registry->getPages($folder, $mode, $state->level - 1));
+                }
             }
         }
 
-        return $pages;
+        return $this->__data;
     }
 
     public function filterItem($page, KModelStateInterface $state)
@@ -185,5 +198,12 @@ class ComPagesModelPages extends ComPagesModelCollection
         }
 
         return $result;
+    }
+
+    protected function _actionReset(KModelContext $context)
+    {
+        $this->__data = null;
+
+        parent::_actionReset($context);
     }
 }

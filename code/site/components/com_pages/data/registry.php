@@ -87,7 +87,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
                 $result = $this->__fromFile($file);
             }
         }
-        else $result =  $this->getObject('com://site/pages.data.client')->fromUrl($path);
+        else $result =  $this->getObject('com://site/pages.http.client')->get($path);
 
         return $result;
     }
@@ -99,7 +99,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
 
         $url = trim(fgets(fopen($file, 'r')));
         if(strpos($url, '://') === 0) {
-            $result =  $this->getObject('com://site/pages.data.client')->fromUrl($url);
+            $result =  $this->getObject('com://site/pages.http.client')->get($url);
         } else {
             $result = $this->getObject('object.config.factory')->fromFile($file, false);
         }

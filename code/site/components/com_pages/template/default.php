@@ -10,6 +10,7 @@
 class ComPagesTemplateDefault extends KTemplate
 {
     protected $_layout;
+    protected $_type;
 
     private $__helpers = array();
 
@@ -55,6 +56,9 @@ class ComPagesTemplateDefault extends KTemplate
                 throw new RuntimeException(sprintf('Cannot find layout: "%s"', $url));
             }
 
+            //Store the type
+            $this->_type = pathinfo($file, PATHINFO_EXTENSION);
+
             //Load the layout
             $template = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
 
@@ -73,7 +77,7 @@ class ComPagesTemplateDefault extends KTemplate
             $this->_data = KObjectConfig::unbox($template->remove('layout'));
 
             //Load the content
-            $result = $this->loadString($template->getContent(), pathinfo($file, PATHINFO_EXTENSION), $url);
+            $result = $this->loadString($template->getContent(), $this->_type, $url);
         }
         else $result = parent::loadFile($url);
 
@@ -89,7 +93,14 @@ class ComPagesTemplateDefault extends KTemplate
     {
         unset($data['layout']);
 
-        return parent::render($data);
+        $result = parent::render($data);
+
+        //Exception for html files
+        if($this->_type == 'html') {
+            $result = $this->filter();
+        }
+
+        return $result;
     }
 
     public function invokeHelper($identifier, ...$params)
@@ -181,20 +192,6 @@ class ComPagesTemplateDefault extends KTemplate
                 $exception->getPrevious()
             );
         }
-    }
-
-    public function addFilters($filters)
-    {
-        foreach((array)KObjectConfig::unbox($filters) as $key => $value)
-        {
-            if (is_numeric($key)) {
-                $this->addFilter($value);
-            } else {
-                $this->addFilter($key, $value);
-            }
-        }
-
-        return $this;
     }
 
     protected function _formatDate($date, $format = '')

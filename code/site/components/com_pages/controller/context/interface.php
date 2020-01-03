@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-interface ComPagesDispatcherContextInterface extends KDispatcherContextInterface
+interface ComPagesControllerContextInterface extends KDispatcherContextInterface
 {
     public function getPage();
 }

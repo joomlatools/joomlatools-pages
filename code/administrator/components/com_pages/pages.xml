@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension type="component" version="0.15.0" method="upgrade">
+<extension type="component" version="0.16.1" method="upgrade">
     <identifier>com:pages</identifier>
     <name>com_pages</name>
     <author>Joomlatools</author>
-    <creationDate>January 2019</creationDate>
+    <creationDate>December 2019</creationDate>
     <copyright>Copyright (C) 2018 Timble CVBA (http://www.timble.net)</copyright>
     <license>GNU GPLv3 - http://www.gnu.org/licenses/gpl.html</license>
     <authorEmail>support@joomlatools.com</authorEmail>
     <authorUrl>www.joomlatools.com</authorUrl>
-    <version>0.15.0</version>
+    <version>0.16.1</version>
     <description>COM_PAGES_XML_DESCRIPTION</description>
 
     <files folder="site/components/com_pages">

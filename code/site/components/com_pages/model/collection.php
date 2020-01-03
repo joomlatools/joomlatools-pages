@@ -9,7 +9,6 @@
 
 abstract class ComPagesModelCollection extends KModelAbstract implements ComPagesModelInterface, ComPagesModelFilterable
 {
-    private $__data;
     private $__type;
 
     public function __construct(KObjectConfig $config)
@@ -98,7 +97,7 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         return (array) $keys;
     }
 
-    public function getLastModified()
+    public function getHash()
     {
         return null;
     }
@@ -167,17 +166,16 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
 
     protected function _prepareContext(KModelContext $context)
     {
-        if(!$this->__data) {
-            $this->__data = $this->fetchData($context->getName() == 'before.count');
-        }
+        //Fetch the data
+        $data = $this->fetchData($context->getName() == 'before.count');
 
-        $context->data = $this->__data;
+        //Filter the data
+        $context->data = $this->filterData($data);
     }
 
     protected function _actionFetch(KModelContext $context)
     {
-        $data     = $this->filterData($context->data);
-        $entities = $this->create($data);
+        $entities = $this->create($context->data);
 
         //Mark the entities as fetched
         foreach($entities as $key => $entity)
@@ -224,13 +222,6 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         }
 
         return $result;
-    }
-
-    protected function _actionReset(KModelContext $context)
-    {
-        $this->__data = null;
-
-        parent::_actionReset($context);
     }
 
     protected function _actionPersist(KModelContext $context)

@@ -15,8 +15,9 @@ markdown, etc.
 
 ## Requirements
 
-* Joomla 3.6.5 
-* PHP7 or newer
+* Joomla 3.6.5
+* PHP7 
+* Joomlatools Framework 3.4.0 
 
 ## Installation
 

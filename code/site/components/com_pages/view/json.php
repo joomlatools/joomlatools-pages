@@ -134,6 +134,10 @@ class ComPagesViewJson extends KViewAbstract
                     $document['meta']['image'] = (string) $this->getUrl((string)$image);
                 }
 
+                if($language = $page->language) {
+                    $document['meta']['language'] = $language;
+                }
+
                 if ($limit && $total > count($this->getModel()->fetch())) {
                     $document['links']['first'] = (string) $this->getRoute($route, array('offset' => 0));
                 }

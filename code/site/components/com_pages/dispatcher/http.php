@@ -64,7 +64,16 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     public function getRoute()
     {
-        $result = null;
+        $result = false;
+
+        if(!isset($this->__route))
+        {
+            $base = $this->getRequest()->getBasePath();
+            $url  = urldecode($this->getRequest()->getUrl()->getPath());
+            $path = trim(str_replace(array($base, '/index.php'), '', $url), '/');
+
+            $this->__route = $this->getRouter()->resolve('pages:'.$path,  $this->getRequest()->query->toArray());
+        }
 
         if(is_object($this->__route)) {
             $result = clone $this->__route;
@@ -120,23 +129,16 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
-        $base = $context->request->getBasePath();
-        $url  = urldecode($context->request->getUrl()->getPath());
-        $path = trim(str_replace(array($base, '/index.php'), '', $url), '/');
-
         //Throw 404 if the page was not found
-        if(false !== $route = $context->router->resolve('pages:'.$path, $context->request->query->toArray()))
+        if(false !== $route = $this->getRoute())
         {
-            //Store the route
-            $this->__route = $route;
-
             //Set the query in the request
             $context->request->setQuery($route->query);
 
             //Set the page in the context
             $context->page = $route->getPage();
-
-        } else  throw new KHttpExceptionNotFound('Page Not Found');
+        }
+        else throw new KHttpExceptionNotFound('Page Not Found');
 
         //Throw 415 if the media type is not allowed
         $format = strtolower($context->request->getFormat());
@@ -239,7 +241,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
                 if($page = $this->getObject('page.registry')->getPage($code))
                 {
                     //Set the controller
-                    $this->setController($page->getType(), ['model' => $page]);
+                    $this->setController($page->getType(), ['page' => $page]);
 
                     //Render the error
                     $content = $this->getController()->render($exception);

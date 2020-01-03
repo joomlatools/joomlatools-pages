@@ -4,7 +4,7 @@ build_dir=$(pwd)
 payload_dir=$build_dir/installer/payload
 
 framework_location=remote
-framework_branch=v3.3.6
+framework_branch=v3.4.0
 
 component_include=false
 

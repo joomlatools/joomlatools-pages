@@ -9,15 +9,6 @@
 
 class ComPagesEventSubscriberErrorhandler extends ComPagesEventSubscriberAbstract
 {
-    protected function _initialize(KObjectConfig $config)
-    {
-        $config->append(array(
-            'enabled' => JDEBUG,
-        ));
-
-        parent::_initialize($config);
-    }
-
     public function onException(KEventException $event)
     {
         if($this->getObject('request')->getFormat() == 'html')
