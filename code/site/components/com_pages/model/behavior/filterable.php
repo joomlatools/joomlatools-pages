@@ -48,6 +48,11 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
         }
     }
 
+    protected function _beforeCount(KModelContextInterface $context)
+    {
+        return $this->_beforeFetch($context);
+    }
+
     protected function _queryArray(array $data, KModelStateInterface $state)
     {
         $filters = $this->_filters;
