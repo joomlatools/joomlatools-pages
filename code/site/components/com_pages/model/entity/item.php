@@ -85,8 +85,15 @@ class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesMo
         {
             if(is_object($property))
             {
-                if(method_exists($property, '__debugInfo')) {
-                    $properties[$key] = var_dump($property);
+                if(method_exists($property, '__debugInfo'))
+                {
+                    ob_start();
+                    var_dump($property);
+                    $debug_info = ob_get_contents();
+                    ob_end_clean();
+
+                    $properties[$key] = $debug_info;
+
                 } elseif(method_exists($property, '__toString')) {
                     $properties[$key] = (string) $property;
                 } else {
