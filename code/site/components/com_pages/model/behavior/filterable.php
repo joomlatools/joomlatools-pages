@@ -61,51 +61,63 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
         {
             $data = array_filter($data, function ($item) use ($attribute, $filter)
             {
-                if (array_key_exists($attribute, $item))
+                foreach ((array)$filter['values'] as $value)
                 {
-                    foreach ((array)$filter['values'] as $value)
+                    //Convert boolean strings
+                    if(strtolower($value) == 'false') {
+                        $value = false;
+                    }
+
+                    if(strtolower($value) == 'true') {
+                        $value = true;
+                    }
+
+                    //Equal
+                    if ($filter['operation'] == 'eq')
                     {
-                        //Equal
-                        if ($filter['operation'] == 'eq')
+                        if (strtolower($value) == "null" || is_null($value))
                         {
-                            if (strtolower($value) == "null" || is_null($value)) {
-                                if (is_null($item[$attribute])) {
-                                    return true;
-                                }
-                            } else {
-                                if ($item[$attribute] == $value) {
-                                    return true;
-                                }
-                            }
-                        } //Not Equal
-                        elseif ($filter['operation'] == 'neq')
-                        {
-                            if (strtolower($value) == "null" || is_null($value)) {
-                                if (!is_null($item[$attribute])) {
-                                    return true;
-                                }
-                            } else {
-                                if ($item[$attribute] != $value) {
-                                    return true;
-                                }
+                            if (is_null($item[$attribute])) {
+                                return true;
                             }
                         }
-                        //Greater Than
-                        elseif ($filter['operation'] == 'gt' && $item[$attribute] > $value) {
-                            return true;
+                        else
+                        {
+                            if ($item[$attribute] == $value) {
+                                return true;
+                            }
                         }
-                        //Greater Or Equal To
-                        elseif ($filter['operation'] == 'gte' && $item[$attribute] >= $value) {
-                            return true;
+                    } //Not Equal
+                    elseif ($filter['operation'] == 'neq')
+                    {
+                        if (strtolower($value) == "null" || is_null($value))
+                        {
+                            if (!is_null($item[$attribute])) {
+                                return true;
+                            }
                         }
-                        //Less Then
-                        elseif ($filter['operation'] == 'lt' && $item[$attribute] < $value) {
-                            return true;
+                        else
+                        {
+                            if ($item[$attribute] != $value) {
+                                return true;
+                            }
                         }
-                        //Less Or Equal To
-                        elseif ($filter['operation'] == 'lte' && $item[$attribute] <= $value) {
-                            return true;
-                        }
+                    }
+                    //Greater Than
+                    elseif ($filter['operation'] == 'gt' && $item[$attribute] > $value) {
+                        return true;
+                    }
+                    //Greater Or Equal To
+                    elseif ($filter['operation'] == 'gte' && $item[$attribute] >= $value) {
+                        return true;
+                    }
+                    //Less Then
+                    elseif ($filter['operation'] == 'lt' && $item[$attribute] < $value) {
+                        return true;
+                    }
+                    //Less Or Equal To
+                    elseif ($filter['operation'] == 'lte' && $item[$attribute] <= $value) {
+                        return true;
                     }
                 }
             });
