@@ -24,8 +24,6 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                 'image'       => '',
                 'date'        => 'now',
                 'author'      => '',
-                'published'   => true,
-                'category'    => '',
                 'access'      => [
                     'roles'  => ['public'],
                     'groups' => ['public', 'guest']
@@ -154,15 +152,6 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         }
 
         return $name;
-    }
-
-    public function setPropertyCategory($category)
-    {
-        if(empty($category)) {
-            $category = trim(basename(dirname($this->path)), './');
-        }
-
-        return $category;
     }
 
     public function setPropertyAccess($value)
