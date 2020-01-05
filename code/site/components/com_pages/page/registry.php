@@ -45,6 +45,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             'cache_time'  => 60*60*24, //1 day
             'collections' => array(),
             'redirects'   => array(),
+            'properties'  => array(),
         ]);
 
         parent::_initialize($config);
@@ -324,6 +325,9 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                      */
                                     $page = (new ComPagesPageObject())->fromFile($file);
 
+                                    //Append the page properties
+                                    $page->append($this->getConfig()->properties);
+
                                     //Set the path
                                     $page->path = $path;
 
@@ -344,11 +348,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     //Set the route
                                     if (!$page->route && $page->route !== false) {
                                         $page->route = $path;
-                                    }
-
-                                    //Set the published state (if not set yet)
-                                    if (!isset($page->published)) {
-                                        $page->published = true;
                                     }
 
                                     //Set the date (if not set yet)

@@ -19,6 +19,7 @@ return [
             'cache_path'  => $config['page_cache_path'] ?? $base_path.'/cache/pages',
             'collections' => $config['collections'] ?? array(),
             'redirects'   => isset($config['redirects']) ? array_flip($config['redirects']) : array(),
+            'properties'  => $config['page'] ?? array(),
         ],
         'data.registry' => [
             'cache'      => $config['data_cache'] ?? (bool) JFactory::getConfig()->get('caching'),
@@ -43,11 +44,6 @@ return [
             'cache_path'  => $config['http_resource_cache_path'] ??  $base_path.'/cache/resources',
             'cache_force' => $config['http_resource_cache_force'] ?? false,
             'debug'       => $config['http_resource_cache_debug'] ?? (JDEBUG ? true : false),
-        ],
-        'com://site/pages.model.entity.page' => [
-            'data' => [
-                'metadata' => $config['metadata'] ?? array(),
-            ]
         ],
     ],
     'extensions' => $config['extensions'] ?? array(),
