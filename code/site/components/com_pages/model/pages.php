@@ -21,14 +21,10 @@ class ComPagesModelPages extends ComPagesModelCollection
             ->insert('recurse', 'cmd', null, false, array(), true)
             ->insert('level', 'int', 0, false, array(), true)
             ->insert('collection', 'boolean', null, false, array(), true)
-            ->insert('format', 'word', null, false, array(), true)
             //Filter states
-            ->insert('visible', 'boolean')
-            ->insert('category', 'cmd')
             ->insert('year', 'int')
             ->insert('month', 'int')
-            ->insert('day', 'int')
-            ->insert('published', 'boolean');
+            ->insert('day', 'int');
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -95,35 +91,6 @@ class ComPagesModelPages extends ComPagesModelCollection
             $result = false;
         }
 
-        //Format
-        if($result && !is_null($state->format)) {
-            $result = isset($page['format']) && $page['format'] == $state->format;
-        }
-
-        //Visible
-        if($result && !is_null($state->visible))
-        {
-            if($state->visible === true) {
-                $result = !isset($page['visible']) || $page['visible'] !== false;
-            }
-
-            if($state->visible === false) {
-                $result = isset($page['visible']) && $page['visible'] === false;
-            }
-        }
-
-        //Published
-        if($result &&  !is_null($state->published))
-        {
-            if($state->published === true) {
-                $result = !isset($page['published']) || $page['published'] !== false;
-            }
-
-            if($state->published === false) {
-                $result = isset($page['published']) && $page['published'] === false;
-            }
-        }
-
         //Collection
         if($result && !is_null($state->collection))
         {
@@ -134,11 +101,6 @@ class ComPagesModelPages extends ComPagesModelCollection
             if($state->collection === false) {
                 $result = !isset($page['collection']) || $page['collection'] === false;
             }
-        }
-
-        //Category
-        if($result && (bool) $state->category) {
-            $result =  isset($page['category']) && $page['category'] == $state->category;
         }
 
         //Date
