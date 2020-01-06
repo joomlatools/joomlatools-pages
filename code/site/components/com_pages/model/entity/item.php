@@ -96,8 +96,15 @@ class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesMo
 
                 } elseif(method_exists($property, '__toString')) {
                     $properties[$key] = (string) $property;
-                } else {
-                    $properties[$key] = get_class($property);
+                }
+                else
+                {
+                    if($property instanceof KObjectInterface)
+                    {
+                        $identifier = (string) $property->getIdentifier();
+                        $properties[$key] = $identifier.' :: ('.  get_class($property) .')';
+                    }
+                    else $properties[$key] = get_class($property);
                 }
             }
         }
