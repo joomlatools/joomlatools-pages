@@ -34,16 +34,6 @@ class ComPagesPageObject extends ComPagesObjectConfigFrontmatter
         return isset($this->collection) && $this->collection !== false ? KObjectConfig::unbox($this->collection) : false;
     }
 
-    public function isReadable()
-    {
-        $result = true;
-        if($this->format == 'html' && $this->isForm()) {
-            $result = $this->layout || $this->getContent();
-        }
-
-        return $result;
-    }
-
     public function isSubmittable()
     {
         return $this->isForm() && isset($this->form->schema);
