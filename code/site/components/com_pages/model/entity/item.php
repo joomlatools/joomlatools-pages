@@ -79,7 +79,38 @@ class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesMo
 
     public function __debugInfo()
     {
-        return $this->_data;
+        $properties = $this->toArray();
+
+        foreach($properties as $key => $property)
+        {
+            if(is_object($property))
+            {
+                if(method_exists($property, '__debugInfo'))
+                {
+                    ob_start();
+                    var_dump($property);
+                    $debug_info = ob_get_contents();
+                    ob_end_clean();
+
+                    $properties[$key] = $debug_info;
+
+                } elseif(method_exists($property, '__toString')) {
+                    $properties[$key] = (string) $property;
+                }
+                else
+                {
+                    if($property instanceof KObjectInterface)
+                    {
+                        $identifier = (string) $property->getIdentifier();
+                        $properties[$key] = $identifier.' :: ('.  get_class($property) .')';
+                    }
+                    else $properties[$key] = get_class($property);
+                }
+            }
+        }
+
+        return $properties;
+
     }
 
     public function __call($method, $arguments)
