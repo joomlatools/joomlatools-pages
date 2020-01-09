@@ -235,7 +235,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         {
             $page = $this->getObject('page.registry')->getPage($this->folder);
 
-            $this->__parernt = $this->getObject($this->getIdentifier(),
+            $this->__parent = $this->getObject($this->getIdentifier(),
                 array('data'  => $page->toArray())
             );
         }
