@@ -227,6 +227,11 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         return isset($this->form) && $this->form !== false ? $this->form : false;
     }
 
+    public function getParent()
+    {
+        return $this->getObject('page.registry')->getPage($this->folder);
+    }
+
     public function getContent()
     {
         if(!$this->content) {
