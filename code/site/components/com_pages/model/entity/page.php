@@ -9,6 +9,8 @@
 
 class ComPagesModelEntityPage extends ComPagesModelEntityItem
 {
+    private $__parent;
+
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
@@ -225,6 +227,20 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
     public function isForm()
     {
         return isset($this->form) && $this->form !== false ? $this->form : false;
+    }
+
+    public function getParent()
+    {
+        if(!$this->__parent)
+        {
+            $page = $this->getObject('page.registry')->getPage($this->folder);
+
+            $this->__parernt = $this->getObject($this->getIdentifier(),
+                array('data'  => $page->toArray())
+            );
+        }
+
+        return $this->__parent;
     }
 
     public function getContent()
