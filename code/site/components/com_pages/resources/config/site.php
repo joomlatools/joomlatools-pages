@@ -9,7 +9,8 @@
 
 return [
 
-    'identifiers' => [
+    'composer_path' => $config['composer_path'] ?? $base_path.'/vendor',
+    'identifiers'   => [
         'com://site/pages.template.filter.asset' => [
             'schemes' =>  $config['aliases'] ?? array()
         ],

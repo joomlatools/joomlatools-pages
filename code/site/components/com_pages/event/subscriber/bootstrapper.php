@@ -36,7 +36,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         $this->_config = $this->_loadConfig($config->getSitePath());
 
         //Bootstrap the site configuration
-        $this->_bootstrapIdentifiers($config->getSitePath(), $this->_config);
+        $this->_bootstrapSite($config->getSitePath(), $this->_config);
 
         //Bootstrap the extensions
         $this->_bootstrapExtensions($config->getSitePath('extensions'), $this->_config);
@@ -84,7 +84,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         return $config;
     }
 
-    protected function _bootstrapIdentifiers($path, $config = array())
+    protected function _bootstrapSite($path, $config = array())
     {
         //Load config options
         $base_path = $path;
@@ -100,6 +100,16 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         //Set config options
         foreach($options['extensions'] as $identifier => $values) {
             $this->getConfig($identifier)->merge($values);
+        }
+
+        //Register the composer class locator
+        if(isset($options['composer_path']) && file_exists($options['composer_path']))
+        {
+            $this->getObject('manager')->getClassLoader()->registerLocator(
+                new KClassLocatorComposer(array(
+                        'vendor_path' => $options['composer_path']
+                    )
+                ));
         }
     }
 
