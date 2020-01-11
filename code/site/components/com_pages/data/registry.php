@@ -11,6 +11,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
 {
     private $__data    = array();
     private $__locator = null;
+    private $__namespaces = array();
 
     public function __construct(KObjectConfig $config)
     {
@@ -18,14 +19,18 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
 
         //Create the locator
         $this->__locator = $this->getObject('com://site/pages.data.locator');
+
+        //Set the namespaces
+        $this->__namespaces = $config->namespaces;
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
             'cache'      => JDEBUG ? false : true,
-            'cache_path'  => $this->getObject('com://site/pages.config')->getSitePath('cache'),
-            'cache_time' => 60*60*24 //1 day
+            'cache_path' => $this->getObject('com://site/pages.config')->getSitePath('cache'),
+            'cache_time' => 60*60*24, //1 day
+            'namespaces' => array(),
         ]);
 
         parent::_initialize($config);
@@ -36,8 +41,24 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         return $this->__locator;
     }
 
+    public function getNamespaces()
+    {
+        return $this->__namespaces;
+    }
+
     public function getData($path, $object = true)
     {
+        //Set the base path in the locator
+        if($namespace = parse_url($path, PHP_URL_SCHEME))
+        {
+            $path = str_replace($namespace.'://', '', $path);
+            $base_path = $this->__namespaces[$namespace];
+        }
+        else $base_path = $this->getObject('com://site/pages.config')->getSitePath('data');
+
+        $this->getLocator()->setBasePath($base_path);
+
+        //Load the data and cache it
         $result = array();
         if(!isset($this->__data[$path]))
         {
@@ -68,7 +89,6 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         }
         else $result = $this->__data[$path];
 
-
         return $result;
     }
 
@@ -98,8 +118,14 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         $result = array();
 
         $url = trim(fgets(fopen($file, 'r')));
-        if(strpos($url, '://') === 0) {
-            $result =  $this->getObject('com://site/pages.http.client')->get($url);
+        if(strpos($url, '://') !== false)
+        {
+            if(strpos($url, 'file://') === 0) {
+                $result = $this->getObject('object.config.factory')->fromFile($url, false);
+            } else {
+                $result =  $this->getObject('com://site/pages.http.client')->get($url);
+            }
+
         } else {
             $result = $this->getObject('object.config.factory')->fromFile($file, false);
         }
