@@ -22,6 +22,7 @@ return [
             'redirects'   => isset($config['redirects']) ? array_flip($config['redirects']) : array(),
         ],
         'data.registry' => [
+            'namespaces' => $config['data_namespaces'] ?? array(),
             'cache'      => $config['data_cache'] ?? (bool) JFactory::getConfig()->get('caching'),
             'cache_time' => $config['data_cache_time'] ?? 60*60*24, //1d
             'cache_path' => $config['data_cache_path'] ?? $base_path.'/cache/data',
