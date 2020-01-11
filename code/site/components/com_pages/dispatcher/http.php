@@ -88,9 +88,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
         if(  $page = $this->getRoute()->getPage())
         {
-            if($page->isReadable()) {
-                $methods[] = 'get';
-            }
+            $methods[] = 'get';
 
             if($page->isSubmittable()) {
                 $methods[] = 'post';

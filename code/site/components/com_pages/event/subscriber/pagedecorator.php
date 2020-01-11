@@ -44,7 +44,7 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
                     else $page = false;
                 }
 
-                if($page)
+                if($page !== false)
                 {
                     $decorate = $this->getObject('page.registry')
                         ->getPage($page)

@@ -9,7 +9,8 @@
 
 return [
 
-    'identifiers' => [
+    'composer_path' => $config['composer_path'] ?? $base_path.'/vendor',
+    'identifiers'   => [
         'com://site/pages.template.filter.asset' => [
             'schemes' =>  $config['aliases'] ?? array()
         ],
@@ -22,6 +23,7 @@ return [
             'properties'  => $config['page'] ?? array(),
         ],
         'data.registry' => [
+            'namespaces' => $config['data_namespaces'] ?? array(),
             'cache'      => $config['data_cache'] ?? (bool) JFactory::getConfig()->get('caching'),
             'cache_time' => $config['data_cache_time'] ?? 60*60*24, //1d
             'cache_path' => $config['data_cache_path'] ?? $base_path.'/cache/data',
