@@ -107,7 +107,7 @@ class ComPagesDataObject extends KObjectConfig implements JsonSerializable
             $data = $data[0];
         }
 
-        return new self($data);
+        return is_array($data) ? new self($data) : $data;
     }
 
     public function find($key)
@@ -135,7 +135,8 @@ class ComPagesDataObject extends KObjectConfig implements JsonSerializable
             $result = $result[0];
         }
 
-        return new self($result);
+
+        return is_array($result) ? new self($result) : $result;
     }
 
     public function toString()
