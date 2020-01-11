@@ -19,4 +19,27 @@ class ComPagesDataLocator extends KTemplateLocatorFile
 
         parent::_initialize($config);
     }
+
+    public function setBasePath($path)
+    {
+        $this->_base_path = rtrim($path, '/');
+        return $this;
+    }
+
+    public function locate($url)
+    {
+        $base_path = $this->getBasePath();
+
+        if(!isset($this->_locations[$base_path.'/'.$url]))
+        {
+            $info = array(
+                'url'   => $url,
+                'path'  => '',
+            );
+
+            $this->_locations[$base_path.'/'.$url] = $this->find($info);
+        }
+
+        return $this->_locations[$base_path.'/'.$url];
+    }
 }
