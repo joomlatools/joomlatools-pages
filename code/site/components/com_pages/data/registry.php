@@ -118,7 +118,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         $result = array();
 
         $url = trim(fgets(fopen($file, 'r')));
-        if(strpos($url, '://') !== false && in_array($url[4], ['file', 'http']))
+        if(strpos($url, '://') !== false && in_array(substr($url, 0, 4), ['file', 'http']))
         {
             if(strpos($url, 'file://') === 0) {
                 $result = $this->getObject('object.config.factory')->fromFile($url, false);
