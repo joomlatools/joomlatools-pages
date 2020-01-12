@@ -86,9 +86,16 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     {
         $methods =  array('head', 'options');
 
-        if(  $page = $this->getRoute()->getPage())
+        if( $page = $this->getRoute()->getPage())
         {
-            $methods[] = 'get';
+            if($page->isEditable() || $page->isSubmittable())
+            {
+                //Do not allow get on empty forms or collection, only used as API endpoints
+                if($this->getObject('page.registry')->getPageContent($page)) {
+                    $methods[] = 'get';
+                }
+            }
+            else $methods[] = 'get';
 
             if($page->isSubmittable()) {
                 $methods[] = 'post';
