@@ -12,6 +12,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
     private $__data    = array();
     private $__locator = null;
     private $__namespaces = array();
+    private $__cache_keys  = array();
 
     public function __construct(KObjectConfig $config)
     {
@@ -29,7 +30,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         $config->append([
             'cache'      => JDEBUG ? false : true,
             'cache_path' => $this->getObject('com://site/pages.config')->getSitePath('cache'),
-            'cache_time' => 60*60*24, //1 day
+            'cache_validation'  => true,
             'namespaces' => array(),
         ]);
 
@@ -205,16 +206,32 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
     {
         $file = $this->getLocator()->getBasePath().'/'.$basedir;
 
-        if (!$cache = $this->isCached($file))
+        if ($refresh || !$cache = $this->isCached($file))
         {
             $data = $this->__fromPath($basedir);
-            $this->storeCache($file, KObjectConfig::unbox($data));
+
+            $result = array();
+            $result['data'] = $data;
+
+            //Calculate the key
+            if($this->getConfig()->cache && $this->getConfig()->cache_validation) {
+                $result['key'] = $this->getCacheKey($basedir);
+            }
+
+            $this->storeCache($file, $result);
         }
         else
         {
-            if (!$data = require($cache)) {
+            if (!$result = require($cache)) {
                 throw new RuntimeException(sprintf('The data "%s" cannot be loaded from cache.', $cache));
             }
+
+            //Check if the cache is still valid, if not refresh it
+            if($this->getConfig()->cache_validation && $result['key'] != $this->getCacheKey($basedir)) {
+                $this->loadCache($basedir, true);
+            }
+
+            $data = $result['data'];
         }
 
         return $data;
@@ -265,16 +282,44 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
             $hash   = crc32($file.PHP_VERSION);
             $cache  = $this->getConfig()->cache_path.'/data_'.$hash.'.php';
             $result = is_file($cache) ? $cache : false;
-
-            if($result && file_exists($file))
-            {
-                //Refresh cache if the file has changed or if the cache expired
-                if((filemtime($cache) < filemtime($file)) || ((time() - filemtime($cache)) > $this->getConfig()->cache_time)) {
-                    $result = false;
-                }
-            }
         }
 
         return $result;
+    }
+
+    public function getCacheKey($path)
+    {
+        if(!isset($this->__cache_keys[$path]))
+        {
+            if($file = $this->getLocator()->locate($path))
+            {
+                $size = function($path) use(&$size)
+                {
+                    $result = array();
+
+                    if (is_dir($path))
+                    {
+                        $files = array_diff(scandir($path), array('.', '..', '.DS_Store'));
+
+                        foreach ($files as $file)
+                        {
+                            if (is_dir($path.'/'.$file)) {
+                                $result[$file] =  $size($path .'/'.$file);
+                            } else {
+                                $result[$file] = sprintf('%u', filemtime($path .'/'.$file));
+                            }
+                        }
+                    }
+                    else $result[basename($path)] = sprintf('%u', filemtime($path));
+
+                    return $result;
+                };
+
+                $this->__cache_keys[$path] =  hash('crc32b', serialize( $size($file)));
+            }
+            else $this->__cache_keys[$path] = false;
+        }
+
+        return $this->__cache_keys[$path];
     }
 }
