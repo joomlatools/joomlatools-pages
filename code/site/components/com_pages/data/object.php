@@ -75,7 +75,7 @@ class ComPagesDataObject extends KObjectConfig implements JsonSerializable
         return new self($data);
     }
 
-    public function filter($key, $value = null, $strict = false)
+    public function filter($key, $value = null, $exclude = false)
     {
         $data = $this->toArray();
 
@@ -84,17 +84,37 @@ class ComPagesDataObject extends KObjectConfig implements JsonSerializable
         }
 
         //Filter the array
-        $data = array_filter($data, function($v) use ($key, $value, $strict)
+        $data = array_filter($data, function($v) use ($key, $value, $exclude)
         {
-            if($value !== null)
+            if($value !== null && isset($v[$key]))
             {
-                if(!$strict && is_array($value) && is_array($v[$key])) {
-                    return (bool) !array_diff_assoc($value, $v[$key]);
-                } else {
-                    return (isset($v[$key]) && $v[$key] === $value);
+                if(is_array($value)  && is_array($v[$key]))
+                {
+                    if($exclude) {
+                        return (bool) array_diff_assoc($value, $v[$key]);
+                    } else {
+                        return (bool) !array_diff_assoc($value, $v[$key]);
+                    }
+
+                }
+                else
+                {
+                    if($exclude) {
+                        return ($v[$key] !== $value);
+                    } else {
+                        return ($v[$key] === $value);
+                    }
                 }
             }
-            else return isset($v[$key]);
+            else
+            {
+                if($exclude) {
+                    return !isset($v[$key]);
+                } else {
+                    return isset($v[$key]);
+                }
+
+            }
         });
 
         //Reset the numeric keys
