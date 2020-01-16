@@ -367,7 +367,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
                                             if(!empty($matches[0]))
                                             {
-                                                $data = $this->getObject('data.registry')->getData($matches[1]);
+                                                $data = $this->getObject('data.registry')->fromPath($matches[1]);
 
                                                 if($data && !empty($matches[2])) {
                                                     $data = $data->get($matches[2]);
@@ -511,30 +511,29 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
     public function getCacheKey($path)
     {
-        if(!isset($this->__cache_keys[$path]))
+        $size = function($path) use(&$size)
         {
-            $size = function($path) use(&$size)
+            $result = array();
+
+            if (is_dir($path))
             {
-                $result = array();
+                $files = array_diff(scandir($path), array('.', '..', '.DS_Store'));
 
-                if (is_dir($path))
+                foreach ($files as $file)
                 {
-                    $files = array_diff(scandir($path), array('.', '..', '.DS_Store'));
-
-                    foreach ($files as $file)
-                    {
-                        if (is_dir($path.'/'.$file)) {
-                            $result[$file] =  $size($path .'/'.$file);
-                        } else {
-                            $result[$file] = sprintf('%u', filemtime($path .'/'.$file));
-                        }
+                    if (is_dir($path.'/'.$file)) {
+                        $result[$file] =  $size($path .'/'.$file);
+                    } else {
+                        $result[$file] = sprintf('%u', filemtime($path .'/'.$file));
                     }
                 }
-                else $result[basename($path)] = sprintf('%u', filemtime($path));
+            }
+            else $result[basename($path)] = sprintf('%u', filemtime($path));
 
-                return $result;
-            };
+            return $result;
+        };
 
+        if(!isset($this->__cache_keys[$path])) {
             $this->__cache_keys[$path] =  hash('crc32b', serialize( $size($path)));
         }
 
