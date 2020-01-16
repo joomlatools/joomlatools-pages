@@ -155,7 +155,6 @@ class ComPagesDataObject extends KObjectConfig implements JsonSerializable
             $result = $result[0];
         }
 
-
         return is_array($result) ? new self($result) : $result;
     }
 
@@ -165,22 +164,32 @@ class ComPagesDataObject extends KObjectConfig implements JsonSerializable
 
         if(is_array($data))
         {
-            if(!isset($data['@value']))
-            {
-                // Encode <, >, ', &, and " for RFC4627-compliant JSON, which may also be embedded into HTML.
-                $data = json_encode($data, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-
-                if (JSON_ERROR_NONE !== json_last_error())
-                {
-                    throw new InvalidArgumentException(
-                        'Cannot encode data to JSON string: ' . json_last_error_msg()
-                    );
-                }
+            if(!isset($data['@value'])) {
+                $data = $this->toJson()->toString();
+            } else {
+                $data = $data['@value'];
             }
-            else $data = $data['@value'];
         }
 
         return $data;
+    }
+
+    public function toHtml()
+    {
+        $html = new ComPagesObjectConfigHtml($this);
+        return $html->toDom();
+    }
+
+    public function toXml()
+    {
+        $html = new ComPagesObjectConfigXml($this);
+        return $html->toDom();
+    }
+
+    public function toJson()
+    {
+        $html = new ComPagesObjectConfigJson($this);
+        return $html;
     }
 
     public function jsonSerialize()
