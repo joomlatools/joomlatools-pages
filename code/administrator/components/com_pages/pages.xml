@@ -21,6 +21,7 @@
         <folder>database</folder>
         <folder>dispatcher</folder>
         <folder>event</folder>
+        <folder>http</folder>
         <folder>model</folder>
         <folder>object</folder>
         <folder>page</folder>
