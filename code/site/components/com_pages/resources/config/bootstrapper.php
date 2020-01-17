@@ -45,6 +45,7 @@ return [
                 'csv'  => 'ComPagesObjectConfigCsv',
                 'json' => 'ComPagesObjectConfigJson',
                 'xml'  => 'ComPagesObjectConfigXml',
+                'html' => 'ComPagesObjectConfigHtml',
             ],
         ],
         'template.locator.factory' => [
