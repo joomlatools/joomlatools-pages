@@ -24,9 +24,12 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
 
         if($menu->component !== 'com_pages')
         {
-            if($route = $this->getObject('com://site/pages.dispatcher.http')->getRoute())
+            $site_path  =  $this->getObject('com://site/pages.config')->getSitePath();
+            $page_route = $route = $this->getObject('com://site/pages.dispatcher.http')->getRoute();
+
+            if($page_route && $site_path)
             {
-                $page_route = $route->getPath(false);
+                $page_route = $page_route->getPath(false);
 
                 $base  = trim(dirname($menu->route), '.');
                 $route = trim(str_replace($base, '', $page_route), '/');
@@ -48,7 +51,7 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
                 {
                     $decorate = $this->getObject('page.registry')
                         ->getPage($page)
-                        ->process->get('decorate', true);
+                        ->process->get('decorate', false);
 
                     if($decorate === true || (is_int($decorate) && ($decorate >= $level))) {
                         $this->_decoratePage($page, $event->getTarget());
