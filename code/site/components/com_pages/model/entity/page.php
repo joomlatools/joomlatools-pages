@@ -54,7 +54,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         parent::_initialize($config);
     }
 
-    public function get($property, $default)
+    public function get($property, $default = null)
     {
         if($this->hasProperty($property)) {
             $result = $this->getProperty($property);

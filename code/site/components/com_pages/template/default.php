@@ -268,9 +268,9 @@ class ComPagesTemplateDefault extends KTemplate
                 foreach($path as $directory)
                 {
                     if (!$result instanceof ComPagesDataObject) {
-                        $result = $this->getObject('data.registry')->getData($directory);
+                        $result = $this->getObject('data.registry')->fromPath($directory);
                     } else {
-                        $result->append($this->getObject('data.registry')->getData($directory));
+                        $result->append($this->getObject('data.registry')->formPath($directory));
                     }
                 }
             }
@@ -281,7 +281,16 @@ class ComPagesTemplateDefault extends KTemplate
             }
 
         }
-        else $result = $this->getObject('data.registry')->getData($path);
+        else
+        {
+            $namespace = parse_url($path, PHP_URL_SCHEME);
+
+            if(!in_array($namespace, ['http', 'https'])) {
+                $result = $this->getObject('data.registry')->fromPath($path);
+            } else {
+                $result = $this->getObject('data.registry')->fromUrl($path);
+            }
+        }
 
         return $result;
     }

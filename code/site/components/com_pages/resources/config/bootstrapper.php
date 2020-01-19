@@ -45,6 +45,7 @@ return [
                 'csv'  => 'ComPagesObjectConfigCsv',
                 'json' => 'ComPagesObjectConfigJson',
                 'xml'  => 'ComPagesObjectConfigXml',
+                'html' => 'ComPagesObjectConfigHtml',
             ],
         ],
         'template.locator.factory' => [
@@ -61,9 +62,10 @@ return [
         ],
         'event.subscriber.factory' => [
             'subscribers' => [
+                'com://site/pages.event.subscriber.bootstrapper',
+                'com://site/pages.event.subscriber.dispatcher',
                 'com://site/pages.event.subscriber.pagedecorator',
                 'com://site/pages.event.subscriber.errorhandler',
-                'com://site/pages.event.subscriber.bootstrapper',
             ]
         ],
         'lib:template.engine.markdown' => [

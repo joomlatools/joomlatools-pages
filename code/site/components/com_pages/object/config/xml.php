@@ -15,17 +15,35 @@ class ComPagesObjectConfigXml extends KObjectConfigXml
 
         if(!empty($string))
         {
-            $dom = new DOMDocument('1.0', 'UTF-8');
+            $dom = new DOMDocumentXml('1.0', 'UTF-8');
             $dom->preserveWhiteSpace = false;
 
             if($dom->loadXml($string) === false) {
                 throw new DomainException('Cannot parse XML string');
             }
 
-            $data = $this->_domToArray($dom->documentElement);
+            $data = $this->_domToArray($dom);
         }
 
         return $object ? $this->merge($data) : $data;
+    }
+
+    public function toString()
+    {
+        return $this->toDom()->saveXML();
+    }
+
+    public function toDom()
+    {
+        $data   = $this->toArray();
+
+        $dom = new DOMDocumentXml('1.0', 'UTF-8');
+        $dom->preserveWhiteSpace = false;
+        $dom->formatOutput = true;
+
+        $this->_arrayToDom($dom, $dom, $data);
+
+        return $dom;
     }
 
     protected function _domToArray(DomNode $node)
@@ -51,13 +69,30 @@ class ComPagesObjectConfigXml extends KObjectConfigXml
                     $result['@value'] = $child->nodeValue;
                     return count($result) == 1 ? $result['@value'] : $result;
                 }
-
             }
 
             $groups = array();
             foreach ($children as $child)
             {
-                if (isset($result[$child->nodeName]))
+                if($child->nodeType == XML_TEXT_NODE)
+                {
+                    if(!ctype_space($child->nodeValue)) {
+                        $result['@text'] = $child->nodeValue;
+                    }
+
+                    continue;
+                }
+
+                if($child->nodeType == XML_COMMENT_NODE)
+                {
+                    if(!ctype_space($child->nodeValue)) {
+                        $result['@comment'] = $child->nodeValue;
+                    }
+
+                    continue;
+                }
+
+                if (isset($result[$child->nodeName]) && $result[$child->nodeName])
                 {
                     if (!isset($groups[$child->nodeName]))
                     {
@@ -66,12 +101,113 @@ class ComPagesObjectConfigXml extends KObjectConfigXml
                     }
 
                     $result[$child->nodeName][] = $this->_domToArray($child);
-
-
                 }
                 else $result[$child->nodeName] = $this->_domToArray($child);
             }
         }
+
         return $result;
+    }
+
+    protected function _arrayToDom(DOMDocument $xml, $node, $data)
+    {
+        //Create value and attributes
+        if (is_array($data))
+        {
+            // get the attributes first.;
+            if (array_key_exists('@attributes', $data) && is_array($data['@attributes']))
+            {
+                if(!$node instanceof DOMDocument)
+                {
+                    foreach ($data['@attributes'] as $key => $value) {
+                        $node->setAttribute($key, $this->_encodeValue($value));
+                    }
+                }
+
+                unset($data['@attributes']);
+            }
+
+            if (array_key_exists('@value', $data))
+            {
+                if(!$node instanceof DOMDocument)
+                {
+                    $node->appendChild($xml->createTextNode($this->_encodeValue($data['@value'])));
+                    unset($data['@value']);
+                }
+
+                return $node;
+            }
+        }
+
+        //Create subnodes using recursion
+        if (is_array($data))
+        {
+            // recurse to get the node for that key
+            foreach ($data as $key => $value)
+            {
+                if (is_array($value) && is_numeric(key($value)))
+                {
+                    foreach ($value as $k => $v) {
+                        $node->appendChild($this->_arrayToDom($xml, $xml->createElement($key), $v));
+                    }
+                }
+                else
+                {
+                    if($key == '@text') {
+                        $node->appendChild($xml->createTextNode($value));
+                    } elseif($key == '@comment') {
+                        $node->appendChild($xml->createComment($value));
+                    } else {
+                        $node->appendChild($this->_arrayToDom($xml, $xml->createElement($key), $value));
+                    }
+                }
+
+                unset($data[$key]); //remove the key from the array once done.
+            }
+        }
+
+        //Append any text values
+        if (!is_array($data)) {
+            $node->appendChild($xml->createTextNode($this->_encodeValue($data)));
+        }
+
+        return $node;
+    }
+
+
+    protected function _encodeValue($value)
+    {
+        //Convert boolean to text value
+        $value = $value === true ? 'true' : $value;
+        $value = $value === false ? 'false' : $value;
+
+        return $value;
+    }
+}
+
+class DomDocumentXml extends DOMDocument
+{
+    private $__xpath;
+
+    public function __toString() {
+        return parent::saveXML();
+    }
+
+    public function query($expression)
+    {
+        if(!isset($this->__xpath)) {
+            $this->__xpath =  new DOMXPath($this);
+        }
+
+        return $this->__xpath->query($expression);
+    }
+
+    public function evaluate($expression)
+    {
+        if(!isset($this->__xpath)) {
+            $this->__xpath =  new DOMXPath($this);
+        }
+
+        return $this->__xpath->evaluate($expression);
     }
 }

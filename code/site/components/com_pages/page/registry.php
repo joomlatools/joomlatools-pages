@@ -12,12 +12,13 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     const PAGES_TREE = \RecursiveIteratorIterator::SELF_FIRST;
     const PAGES_ONLY = \RecursiveIteratorIterator::CHILD_FIRST;
 
-    private $__locator = null;
+    private $__locator   = null;
 
     private $__pages  = array();
     private $__data   = null;
     private $__collections = array();
     private $__redirects   = array();
+    private $__cache_keys  = array();
 
     public function __construct(KObjectConfig $config)
     {
@@ -40,9 +41,9 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'cache'       => JDEBUG ? false : true,
-            'cache_path'  => $this->getObject('com://site/pages.config')->getSitePath('cache'),
-            'cache_time'  => 60*60*24, //1 day
+            'cache'         => JDEBUG ? false : true,
+            'cache_path'    => $this->getObject('com://site/pages.config')->getSitePath('cache'),
+            'cache_validation' => true,
             'collections' => array(),
             'redirects'   => array(),
             'properties'  => array(),
@@ -228,7 +229,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     public function isPage($path)
     {
         if(!isset($this->__pages[$path])) {
-           $result = (bool) $this->getLocator()->locate('page://pages/'. $path);
+            $result = (bool) $this->getLocator()->locate('page://pages/'. $path);
         } else {
             $result = ($this->__pages[$path] === false) ? false : true;
         }
@@ -365,7 +366,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
                                             if(!empty($matches[0]))
                                             {
-                                                $data = $this->getObject('data.registry')->getData($matches[1]);
+                                                $data = $this->getObject('data.registry')->fromPath($matches[1]);
 
                                                 if($data && !empty($matches[2])) {
                                                     $data = $data->get($matches[2]);
@@ -433,20 +434,28 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             $result['redirects']   = array_flip($redirects);
 
             //Generate a checksum
-            $result['hash']  = hash('crc32b', serialize($result));
+            $result['hash'] = hash('crc32b', serialize($result));
+
+            //Calculate the key
+            if($this->getConfig()->cache && $this->getConfig()->cache_validation) {
+                $result['key'] = $this->getCacheKey($basedir);
+            }
 
             $this->storeCache($basedir, $result);
-
         }
         else
         {
             if (!$result = require($cache)) {
                 throw new RuntimeException(sprintf('The page registry "%s" cannot be loaded from cache.', $cache));
             }
+
+            //Check if the cache is still valid, if not refresh it
+            if($this->getConfig()->cache_validation && $result['key'] != $this->getCacheKey($basedir)) {
+                $this->loadCache($basedir, true);
+            }
         }
 
         return $result;
-
     }
 
     public function storeCache($file, $data)
@@ -494,15 +503,39 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             $hash   = crc32($file.PHP_VERSION);
             $cache  = $this->getConfig()->cache_path.'/page_'.$hash.'.php';
             $result = is_file($cache) ? $cache : false;
-
-            if($result && file_exists($file))
-            {
-                if((filemtime($cache) < filemtime($file)) || ((time() - filemtime($cache)) > $this->getConfig()->cache_time)) {
-                    $result = false;
-                }
-            }
         }
 
         return $result;
+    }
+
+    public function getCacheKey($path)
+    {
+        $size = function($path) use(&$size)
+        {
+            $result = array();
+
+            if (is_dir($path))
+            {
+                $files = array_diff(scandir($path), array('.', '..', '.DS_Store'));
+
+                foreach ($files as $file)
+                {
+                    if (is_dir($path.'/'.$file)) {
+                        $result[$file] =  $size($path .'/'.$file);
+                    } else {
+                        $result[$file] = sprintf('%u', filemtime($path .'/'.$file));
+                    }
+                }
+            }
+            else $result[basename($path)] = sprintf('%u', filemtime($path));
+
+            return $result;
+        };
+
+        if(!isset($this->__cache_keys[$path])) {
+            $this->__cache_keys[$path] =  hash('crc32b', serialize( $size($path)));
+        }
+
+        return $this->__cache_keys[$path];
     }
 }

@@ -36,7 +36,8 @@ class ComPagesConfig extends KObject implements KObjectSingleton
 
     public function getSitePath($path = null)
     {
-        if($path)
+        //If the site path is empty do not try to return a path
+        if($this->_site_path && $path)
         {
             if(!$result = $this->_base_paths[$path]) {
                 $result = $this->_site_path.'/'.$path;

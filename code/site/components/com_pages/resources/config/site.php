@@ -15,22 +15,23 @@ return [
             'schemes' =>  $config['aliases'] ?? array()
         ],
         'page.registry' => [
-            'cache'       => $config['page_cache'] ?? (bool) JFactory::getConfig()->get('caching'),
-            'cache_time'  => $config['page_cache_time'] ?? 60*60*24, //1d
-            'cache_path'  => $config['page_cache_path'] ?? $base_path.'/cache/pages',
+            'cache'            => $config['page_cache'] ?? (bool) JFactory::getConfig()->get('caching'),
+            'cache_path'       => $config['page_cache_path'] ?? $base_path.'/cache/pages',
+            'cache_validation' => $config['page_cache_validation'] ?? true,
             'collections' => $config['collections'] ?? array(),
             'redirects'   => isset($config['redirects']) ? array_flip($config['redirects']) : array(),
             'properties'  => $config['page'] ?? array(),
         ],
         'data.registry' => [
             'namespaces' => $config['data_namespaces'] ?? array(),
-            'cache'      => $config['data_cache'] ?? (bool) JFactory::getConfig()->get('caching'),
-            'cache_time' => $config['data_cache_time'] ?? 60*60*24, //1d
-            'cache_path' => $config['data_cache_path'] ?? $base_path.'/cache/data',
+            'cache'            => $config['data_cache'] ?? (bool) JFactory::getConfig()->get('caching'),
+            'cache_path'       => $config['data_cache_path'] ?? $base_path.'/cache/data',
+            'cache_validation' => $config['data_cache_validation'] ?? true,
         ],
         'template.engine.factory' => [
-            'cache'      => $config['template_cache'] ?? (bool) JFactory::getConfig()->get('caching'),
-            'cache_path' => $config['template_cache_path'] ?? $base_path.'/cache/templates',
+            'cache'            => $config['template_cache'] ?? (bool) JFactory::getConfig()->get('caching'),
+            'cache_path'       => $config['template_cache_path'] ?? $base_path.'/cache/templates',
+            'cache_validation' => $config['template_cache_validation'] ?? true,
         ],
         'com://site/pages.dispatcher.behavior.cacheable' => [
             'cache'             => $config['http_cache'] ??  false,

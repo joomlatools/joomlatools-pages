@@ -144,9 +144,6 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
         //Check if we have a static route
         if(!isset($this->__static_routes[$path]))
         {
-            //Sort routes longest path to shortest
-            arsort($this->__dynamic_routes);
-
             //Match against the dynamic routes
             foreach($this->__dynamic_routes as $regex => $target)
             {

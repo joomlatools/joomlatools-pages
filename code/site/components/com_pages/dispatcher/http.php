@@ -86,9 +86,16 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     {
         $methods =  array('head', 'options');
 
-        if(  $page = $this->getRoute()->getPage())
+        if( $page = $this->getRoute()->getPage())
         {
-            $methods[] = 'get';
+            if($page->isEditable() || $page->isSubmittable())
+            {
+                //Do not allow get on empty forms or collection, only used as API endpoints
+                if($this->getObject('page.registry')->getPageContent($page)) {
+                    $methods[] = 'get';
+                }
+            }
+            else $methods[] = 'get';
 
             if($page->isSubmittable()) {
                 $methods[] = 'post';
@@ -127,16 +134,22 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
-        //Throw 404 if the page was not found
-        if(false !== $route = $this->getRoute())
-        {
-            //Set the query in the request
-            $context->request->setQuery($route->query);
-
-            //Set the page in the context
-            $context->page = $route->getPage();
+        //Throw 404 if the site was not found
+        if(false ===  $this->getObject('com://site/pages.config')->getSitePath()) {
+            throw new KHttpExceptionNotFound('Site Not Found');
         }
-        else throw new KHttpExceptionNotFound('Page Not Found');
+
+        //Throw 404 if the page was not found
+        if(false === $route = $this->getRoute()) {
+            throw new KHttpExceptionNotFound('Page Not Found');
+        }
+
+
+        //Set the query in the request
+        $context->request->setQuery($route->query);
+
+        //Set the page in the context
+        $context->page = $route->getPage();
 
         //Throw 415 if the media type is not allowed
         $format = strtolower($context->request->getFormat());
