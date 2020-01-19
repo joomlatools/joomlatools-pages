@@ -25,21 +25,21 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         $request = $this->getObject('request');
         $router  = $this->getObject('com://site/pages.dispatcher.router.site', ['request' => $request]);
 
-        if(false === $route = $router->resolve()) {
-            throw new KHttpExceptionNotFound('Site Not Found');
+        if(false !== $route = $router->resolve())
+        {
+            //Set the site path in the config
+            $config = $this->getObject('com://site/pages.config', ['site_path' => $route->getPath()]);
+
+            //Load the configuration
+            $this->_config = $this->_loadConfig($config->getSitePath());
+
+            //Bootstrap the site configuration
+            $this->_bootstrapSite($config->getSitePath(), $this->_config);
+
+            //Bootstrap the extensions
+            $this->_bootstrapExtensions($config->getSitePath('extensions'), $this->_config);
         }
-
-        //Set the site path in the config
-        $config = $this->getObject('com://site/pages.config', ['site_path' => $route->getPath()]);
-
-        //Load the configuration
-        $this->_config = $this->_loadConfig($config->getSitePath());
-
-        //Bootstrap the site configuration
-        $this->_bootstrapSite($config->getSitePath(), $this->_config);
-
-        //Bootstrap the extensions
-        $this->_bootstrapExtensions($config->getSitePath('extensions'), $this->_config);
+        else $this->getObject('com://site/pages.config', ['site_path' => false]);
     }
 
     public function onBeforeDispatcherDispatch(KEventInterface $event)
