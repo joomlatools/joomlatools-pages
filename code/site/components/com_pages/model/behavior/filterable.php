@@ -35,7 +35,7 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                     $combination = strtoupper($match[0]);
                     $expression  = $match[1];
 
-                    $filter = preg_split('#^(\w+)\s*([eq|neq|gt|gte|lt|lte|]+)\s*(.+)\s*$#i', trim($expression), null, PREG_SPLIT_DELIM_CAPTURE);
+                    $filter = preg_split('#^(\w+)\s*([eq|neq|gt|gte|lt|lte|in|nin]+)\s*(.+)\s*$#i', trim($expression), null, PREG_SPLIT_DELIM_CAPTURE);
 
                     $attribute = $filter[1];
                     $operation = $filter[2];
@@ -54,14 +54,13 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                 foreach ($filters as $attribute => $value)
                 {
                     // Parse filter value for possible operator
-                    if (preg_match('#^([eq|neq|gt|gte|lt|lte|]+):(.+)\s*$#i', $value, $matches))
+                    if (preg_match('#^([eq|neq|gt|gte|lt|lte|in|nin]+):(.+)\s*$#i', $value, $matches))
                     {
                         $this->_filters[] = [
                             'attribute' => $attribute,
                             'operation' => $matches[1],
                             'values' => array_unique(explode(',', $matches[2])),
                             'combination' => 'AND'
-
                         ];
                     }
                     else
@@ -156,6 +155,14 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                     elseif ($filter['operation'] == 'lte' && $item[$attribute] <= $value) {
                         return true;
                     }
+                    //In
+                    elseif ($filter['operation'] == 'in' &&  is_array($item[$attribute]) && in_array($value, $item[$attribute])) {
+                        return true;
+                    }
+                    //Not In
+                    elseif ($filter['operation'] == 'nin' &&  is_array($item[$attribute]) && !in_array($value, $item[$attribute])) {
+                        return true;
+                    }
                 }
             });
 
@@ -218,6 +225,14 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                     } //Less Or Equal To
                     elseif ($filter['operation'] == 'lte') {
                         $expression = 'tbl.' . $column . ' <= :' . $parameter;
+                    }
+                    //In
+                    elseif ($filter['operation'] == 'in') {
+                        continue; //not supported for now
+                    }
+                    //Not In
+                    elseif ($filter['operation'] == 'nin') {
+                        continue; //not supported for now
                     }
 
                     $query->where($expression, $combination)->bind(array($parameter => $value));
