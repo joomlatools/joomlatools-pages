@@ -57,39 +57,45 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
 
     public function onAfterTemplateModules(KEventInterface $event)
     {
-        if($route = $this->getObject('com://site/pages.dispatcher.http')->getRoute())
+        if($this->getObject('com://site/pages.dispatcher.http')->getRoute())
         {
-            $page = $route->getPage();
+            $page = $this->getObject('com://site/pages.dispatcher.http')->getRoute()->getPage();
 
             if($page->process->has('template') && $page->process->template->has('modules'))
             {
-                foreach($event->modules as $key => $module)
+                $modules = $page->process->template->modules;
+
+                if(count($modules))
                 {
-                    $include = array();
-                    $exclude = array();
+                    foreach ($event->modules as $key => $module)
+                    {
+                        $include = array();
+                        $exclude = array();
 
-                    foreach($page->process->template->get('modules') as $id)
-                    {
-                        if($id[0] == '-' || $id < 0) {
-                            $exclude[] = substr($id, 1);
-                        } else {
-                            $include[] = $id;
+                        foreach ($page->process->template->get('modules') as $id)
+                        {
+                            if ($id[0] == '-' || $id < 0) {
+                                $exclude[] = substr($id, 1);
+                            } else {
+                                $include[] = $id;
+                            }
                         }
-                    }
 
-                    if($include)
-                    {
-                        if (!in_array($module->title, $include) && !in_array($module->id, $include)) {
-                            unset($event->modules[$key]);
+                        if ($include)
+                        {
+                            if (!in_array($module->title, $include) && !in_array($module->id, $include)) {
+                                unset($event->modules[$key]);
+                            }
                         }
-                    }
-                    else
-                    {
-                        if (in_array($module->title, $exclude) || in_array($module->id, $exclude)) {
-                            unset($event->modules[$key]);
+                        else
+                        {
+                            if (in_array($module->title, $exclude) || in_array($module->id, $exclude)) {
+                                unset($event->modules[$key]);
+                            }
                         }
                     }
                 }
+                else $event->modules  = array();
             }
         }
     }
