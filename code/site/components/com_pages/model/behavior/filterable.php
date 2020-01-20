@@ -23,22 +23,56 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
     {
         if($filters = $context->state->filter)
         {
-            foreach ($filters as $attribute => $value)
+            if(!is_array($filters))
             {
-                // Parse filter value for possible operator
-                if (preg_match('#^([eq|neq|gt|gte|lt|lte|]+):(.+)\s*$#i', $value, $matches))
+                $matches = preg_split('#(and|or|xor)#', $filters, null, PREG_SPLIT_DELIM_CAPTURE);
+
+                array_unshift($matches, 'and');
+                $matches = array_chunk($matches, 2);
+
+                foreach($matches as $match)
                 {
-                    $this->_filters[$attribute] = [
-                        'operation' => $matches[1],
-                        'values'    => array_unique(explode(',',  $matches[2]))
+                    $combination = strtoupper($match[0]);
+                    $expression  = $match[1];
+
+                    $filter = preg_split('#^(\w+)\s*([eq|neq|gt|gte|lt|lte|]+)\s*(.+)\s*$#i', trim($expression), null, PREG_SPLIT_DELIM_CAPTURE);
+
+                    $attribute = $filter[1];
+                    $operation = $filter[2];
+                    $values    = $filter[3];
+
+                    $this->_filters[] = [
+                        'attribute' => $attribute,
+                        'operation' => $operation,
+                        'values'    => array_unique(explode(',',  $values)),
+                        'combination' => $combination
                     ];
                 }
-                else
+            }
+            else
+            {
+                foreach ($filters as $attribute => $value)
                 {
-                    $this->_filters[$attribute] = [
-                        'operation' => 'eq',
-                        'values'    => array_unique(explode(',', $value))
-                    ];
+                    // Parse filter value for possible operator
+                    if (preg_match('#^([eq|neq|gt|gte|lt|lte|]+):(.+)\s*$#i', $value, $matches))
+                    {
+                        $this->_filters[] = [
+                            'attribute' => $attribute,
+                            'operation' => $matches[1],
+                            'values' => array_unique(explode(',', $matches[2])),
+                            'combination' => 'AND'
+
+                        ];
+                    }
+                    else
+                    {
+                        $this->_filters[] = [
+                            'attribute' => $attribute,
+                            'operation' => 'eq',
+                            'values' => array_unique(explode(',', $value)),
+                            'combination' => 'AND'
+                        ];
+                    }
                 }
             }
 
@@ -55,14 +89,17 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
 
     protected function _queryArray(array $data, KModelStateInterface $state)
     {
-        $filters = $this->_filters;
+        $result = array();
+        $items  = $data;
 
-        foreach($filters as $attribute => $filter)
+        foreach($this->_filters as $filter)
         {
-            $data = array_filter($data, function ($item) use ($attribute, $filter)
+            $filtered = array_filter($items, function ($item) use ($filter)
             {
                 foreach ((array)$filter['values'] as $value)
                 {
+                    $attribute = $filter['attribute'];
+
                     //Convert boolean strings
                     if(strtolower($value) == 'false') {
                         $value = false;
@@ -121,28 +158,37 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                     }
                 }
             });
+
+            if($filter['combination'] == 'AND')
+            {
+                $items  = $filtered;
+                $result = $filtered;
+            }
+
+            if($filter['combination'] == 'OR')
+            {
+                $items  = $data;
+                $result = $result + $filtered;
+            }
+
         }
 
-        return $data;
+        return $result;
     }
 
     protected function _queryDatabase(KDatabaseQuerySelect $query, KModelStateInterface $state)
     {
-        $filters = $this->_filters;
-
-        $table   = $this->getTable();
-        $columns = array_intersect_key($filters, $table->getColumns());
-        $columns = $table->mapColumns($columns);
-
-        foreach ($columns as $column => $filter)
+        $table = $this->getTable();
+        foreach ($this->_filters as $filter)
         {
             if (isset($filter['values']))
             {
-                $combination = 'AND';
+                $combination = $filter['combination'];
+                $column      = $table->mapColumns($filter['attribute']);
 
-                foreach((array) $filter['values'] as $key => $value)
+                foreach ((array)$filter['values'] as $key => $value)
                 {
-                    $parameter = $column.$key;
+                    $parameter = $column . $key;
 
                     //Equal
                     if ($filter['operation'] == 'eq')
@@ -152,8 +198,7 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                         } else {
                             $expression = 'tbl.' . $column . ' = :' . $parameter;
                         }
-                    }
-                    //Not Equal
+                    } //Not Equal
                     elseif ($filter['operation'] == 'neq')
                     {
                         if (strtolower($value) == "null" || is_null($value)) {
@@ -161,20 +206,16 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                         } else {
                             $expression = 'tbl.' . $column . ' != :' . $parameter;
                         }
-                    }
-                    //Greater Than
+                    } //Greater Than
                     elseif ($filter['operation'] == 'gt') {
                         $expression = 'tbl.' . $column . ' > :' . $parameter;
-                    }
-                    //Greater Or Equal To
+                    } //Greater Or Equal To
                     elseif ($filter['operation'] == 'gte') {
                         $expression = 'tbl.' . $column . ' >= :' . $parameter;
-                    }
-                    //Less Then
+                    } //Less Then
                     elseif ($filter['operation'] == 'lt') {
                         $expression = 'tbl.' . $column . ' < :' . $parameter;
-                    }
-                    //Less Or Equal To
+                    } //Less Or Equal To
                     elseif ($filter['operation'] == 'lte') {
                         $expression = 'tbl.' . $column . ' <= :' . $parameter;
                     }
