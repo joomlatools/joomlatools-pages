@@ -25,7 +25,7 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
         {
             if(!is_array($filters))
             {
-                $matches = preg_split('#(and|or|xor)#', $filters, null, PREG_SPLIT_DELIM_CAPTURE);
+                $matches = preg_split('#(and|or)#', $filters, null, PREG_SPLIT_DELIM_CAPTURE);
 
                 array_unshift($matches, 'and');
                 $matches = array_chunk($matches, 2);
