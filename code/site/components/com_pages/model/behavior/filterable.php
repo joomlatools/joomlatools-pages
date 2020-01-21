@@ -99,6 +99,13 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                 {
                     $attribute = $filter['attribute'];
 
+                    if(strtotime($value) && strtotime($item[$attribute]))
+                    {
+                        $value      = strtotime($value);
+                        $item_value = strtotime($item[$attribute]);
+                    }
+                    else $item_value = $item[$attribute];
+
                     //Convert boolean strings
                     if(strtolower($value) == 'false') {
                         $value = false;
@@ -113,13 +120,13 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                     {
                         if (strtolower($value) == "null" || is_null($value))
                         {
-                            if (is_null($item[$attribute])) {
+                            if (is_null($item_value)) {
                                 return true;
                             }
                         }
                         else
                         {
-                            if ($item[$attribute] == $value) {
+                            if ($item_value == $value) {
                                 return true;
                             }
                         }
@@ -128,39 +135,39 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                     {
                         if (strtolower($value) == "null" || is_null($value))
                         {
-                            if (!is_null($item[$attribute])) {
+                            if (!is_null($item_value)) {
                                 return true;
                             }
                         }
                         else
                         {
-                            if ($item[$attribute] != $value) {
+                            if($item_value != $value) {
                                 return true;
                             }
                         }
                     }
                     //Greater Than
-                    elseif ($filter['operation'] == 'gt' && $item[$attribute] > $value) {
+                    elseif ($filter['operation'] == 'gt' && $item_value > $value) {
                         return true;
                     }
                     //Greater Or Equal To
-                    elseif ($filter['operation'] == 'gte' && $item[$attribute] >= $value) {
+                    elseif ($filter['operation'] == 'gte' && $item_value >= $value) {
                         return true;
                     }
                     //Less Then
-                    elseif ($filter['operation'] == 'lt' && $item[$attribute] < $value) {
+                    elseif ($filter['operation'] == 'lt' && $item_value < $value) {
                         return true;
                     }
                     //Less Or Equal To
-                    elseif ($filter['operation'] == 'lte' && $item[$attribute] <= $value) {
+                    elseif ($filter['operation'] == 'lte' && $item_value <= $value) {
                         return true;
                     }
                     //In
-                    elseif ($filter['operation'] == 'in' &&  is_array($item[$attribute]) && in_array($value, $item[$attribute])) {
+                    elseif ($filter['operation'] == 'in' &&  is_array($item_value) && in_array($value, $item_value)) {
                         return true;
                     }
                     //Not In
-                    elseif ($filter['operation'] == 'nin' &&  is_array($item[$attribute]) && !in_array($value, $item[$attribute])) {
+                    elseif ($filter['operation'] == 'nin' &&  is_array($item_value) && !in_array($value, $item_value)) {
                         return true;
                     }
                 }
