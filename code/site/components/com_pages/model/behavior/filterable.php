@@ -242,6 +242,11 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                         continue; //not supported for now
                     }
 
+                    //Convert to date if value is
+                    if(strtotime($value)) {
+                        $value = gmdate('Y-m-d H:i:s', strtotime($value));
+                    }
+
                     $query->where($expression, $combination)->bind(array($parameter => $value));
 
                     //Multiple values for the same filter are OR
