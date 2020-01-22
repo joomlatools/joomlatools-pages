@@ -28,6 +28,8 @@ class ComPagesDispatcherBehaviorValidatable extends KControllerBehaviorAbstract
                     {
                         if($context->request->data->get($honeypot, 'raw')) {
                             throw new ComPagesControllerExceptionRequestBlocked('Spam attempt blocked');
+                        } else {
+                            $context->request->data->remove($honeypot);
                         }
                     }
                 }
