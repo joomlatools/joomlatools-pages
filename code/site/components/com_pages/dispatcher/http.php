@@ -88,7 +88,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
         if( $page = $this->getRoute()->getPage())
         {
-            if($page->isEditable() || $page->isSubmittable())
+            if($page->isSubmittable())
             {
                 //Do not allow get on empty forms or collection, only used as API endpoints
                 if($this->getObject('page.registry')->getPageContent($page)) {

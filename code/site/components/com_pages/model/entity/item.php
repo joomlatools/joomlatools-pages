@@ -63,11 +63,6 @@ class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesMo
 
         foreach($data as $key => $value)
         {
-            //Remove NULL values
-            if(is_null($value)) {
-                unset($data[$key]);
-            }
-
             //Unpack config objects
             if($value instanceof KObjectConfigInterface) {
                 $data[$key] = KObjectConfig::unbox($value);

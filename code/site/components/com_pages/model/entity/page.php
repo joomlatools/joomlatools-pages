@@ -26,8 +26,6 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                 'image'       => '',
                 'date'        => 'now',
                 'author'      => '',
-                'published'   => true,
-                'category'    => '',
                 'access'      => [
                     'roles'  => ['public'],
                     'groups' => ['public', 'guest']
@@ -158,15 +156,6 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         return $name;
     }
 
-    public function setPropertyCategory($category)
-    {
-        if(empty($category)) {
-            $category = trim(basename(dirname($this->path)), './');
-        }
-
-        return $category;
-    }
-
     public function setPropertyAccess($value)
     {
         return new KObjectConfig($value);
@@ -260,6 +249,21 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
     public function getHandle()
     {
         return $this->path;
+    }
+
+    public function toArray()
+    {
+        $data = parent::toArray();
+
+        foreach($data as $key => $value)
+        {
+            //Remove NULL values
+            if(is_null($value)) {
+                unset($data[$key]);
+            }
+        }
+
+        return $data;
     }
 
     public function __toString()

@@ -20,6 +20,7 @@ return [
             'cache_validation' => $config['page_cache_validation'] ?? true,
             'collections' => $config['collections'] ?? array(),
             'redirects'   => isset($config['redirects']) ? array_flip($config['redirects']) : array(),
+            'properties'  => $config['page'] ?? array(),
         ],
         'data.registry' => [
             'namespaces' => $config['data_namespaces'] ?? array(),
@@ -46,11 +47,6 @@ return [
             'cache_path'  => $config['http_resource_cache_path'] ??  $base_path.'/cache/resources',
             'cache_force' => $config['http_resource_cache_force'] ?? false,
             'debug'       => $config['http_resource_cache_debug'] ?? (JDEBUG ? true : false),
-        ],
-        'com://site/pages.model.entity.page' => [
-            'data' => [
-                'metadata' => $config['metadata'] ?? array(),
-            ]
         ],
     ],
     'extensions' => $config['extensions'] ?? array(),
