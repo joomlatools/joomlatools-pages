@@ -70,6 +70,28 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         {
             $result = new KObjectConfig($this->__collections[$name]);
 
+            //If the collections extends another collection merge it
+            if(isset($result->extend))
+            {
+                $extend = $this->getCollection($result->extend);
+
+                //Merge state
+                if($extend->has('state')) {
+                    $extend->state->merge($result->get('state', array()));
+                } else {
+                    $extend->state = $result->get('state');
+                }
+
+                //Merge page
+                if($extend->has('page')) {
+                    $extend->page->merge($result->get('page', array()));
+                } else {
+                    $extend->page = $result->get('page');
+                }
+
+                $result = $extend;
+            }
+
             if(!isset($result->model)) {
                 $result->model = 'com://site/pages.model.pages';
             }
