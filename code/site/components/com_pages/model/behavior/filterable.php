@@ -25,28 +25,30 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
         {
             if(!is_array($filters))
             {
-                $matches = preg_split('#(and|or)#', $filters, null, PREG_SPLIT_DELIM_CAPTURE);
-
-                array_unshift($matches, 'and');
-                $matches = array_chunk($matches, 2);
-
-                foreach($matches as $match)
+                if($matches = preg_split('#(and|or)#', $filters, null, PREG_SPLIT_DELIM_CAPTURE))
                 {
-                    $combination = strtoupper($match[0]);
-                    $expression  = $match[1];
+                    array_unshift($matches, 'and');
+                    $matches = array_chunk($matches, 2);
 
-                    $filter = preg_split('#^(\w+)\s*([eq|neq|gt|gte|lt|lte|in|nin]+)\s*(.+)\s*$#i', trim($expression), null, PREG_SPLIT_DELIM_CAPTURE);
+                    foreach($matches as $match)
+                    {
+                        $combination = strtoupper($match[0]);
+                        $expression  = $match[1];
 
-                    $attribute = $filter[1];
-                    $operation = $filter[2];
-                    $values    = $filter[3];
+                        if($filter = preg_split('#^(\w+)\s*([eq|neq|gt|gte|lt|lte|in|nin]+)\s*(.+)\s*$#i', trim($expression), null, PREG_SPLIT_DELIM_CAPTURE))
+                        {
+                            $attribute = $filter[1];
+                            $operation = $filter[2];
+                            $values    = $filter[3];
 
-                    $this->_filters[] = [
-                        'attribute' => $attribute,
-                        'operation' => $operation,
-                        'values'    => array_unique(explode(',',  $values)),
-                        'combination' => $combination
-                    ];
+                            $this->_filters[] = [
+                                'attribute' => $attribute,
+                                'operation' => $operation,
+                                'values'    => array_unique(explode(',',  $values)),
+                                'combination' => $combination
+                            ];
+                        }
+                    }
                 }
             }
             else
