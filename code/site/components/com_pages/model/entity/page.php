@@ -133,6 +133,10 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
             if($this->summary) {
                 $metadata->set('og:description', $this->summary);
             }
+
+            if($this->language) {
+                $metadata->set('og:locale', $this->language);
+            }
         }
         else
         {
