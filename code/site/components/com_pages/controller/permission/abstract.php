@@ -33,40 +33,38 @@ class ComPagesControllerPermissionAbstract extends ComKoowaControllerPermissionA
 
     public function canAccess($path)
     {
+        $result = true;
+
         if($path)
         {
             $page = $this->getObject('page.registry')->getPage($path);
 
-            if($result = $page->published)
+            //Check groups
+            if(isset($page->access->groups))
             {
-                //Check groups
-                if(isset($page->access->groups))
-                {
-                    $groups = $this->getObject('com://site/pages.database.table.groups')
-                        ->select($this->getObject('user')->getGroups(), KDatabase::FETCH_ARRAY_LIST);
+                $groups = $this->getObject('com://site/pages.database.table.groups')
+                    ->select($this->getObject('user')->getGroups(), KDatabase::FETCH_ARRAY_LIST);
 
-                    $groups = array_map('strtolower', array_column($groups, 'title'));
+                $groups = array_map('strtolower', array_column($groups, 'title'));
 
-                    if(!array_intersect($groups, KObjectConfig::unbox($page->access->groups))) {
-                        $result = false;
-                    }
+                if(!array_intersect($groups, KObjectConfig::unbox($page->access->groups))) {
+                    $result = false;
                 }
+            }
 
-                //Check roles
-                if($result && isset($page->access->roles))
-                {
-                    $roles = $this->getObject('com://site/pages.database.table.roles')
-                        ->select($this->getObject('user')->getRoles(), KDatabase::FETCH_ARRAY_LIST);
+            //Check roles
+            if($result && isset($page->access->roles))
+            {
+                $roles = $this->getObject('com://site/pages.database.table.roles')
+                    ->select($this->getObject('user')->getRoles(), KDatabase::FETCH_ARRAY_LIST);
 
-                    $roles = array_map('strtolower', array_column($roles, 'title'));
+                $roles = array_map('strtolower', array_column($roles, 'title'));
 
-                    if(!array_intersect($roles, KObjectConfig::unbox($page->access->roles))) {
-                        $result = false;
-                    }
+                if(!array_intersect($roles, KObjectConfig::unbox($page->access->roles))) {
+                    $result = false;
                 }
             }
         }
-        else $result = true;
 
         return $result;
     }
