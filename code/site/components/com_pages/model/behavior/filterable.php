@@ -97,16 +97,21 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
         {
             $filtered = array_filter($items, function ($item) use ($filter)
             {
+                $attribute = $filter['attribute'];
+
+                if(isset($item[$attribute])) {
+                    $item_value = $item[$attribute];
+                } else {
+                    $item_value = null;
+                }
+
                 foreach ((array)$filter['values'] as $value)
                 {
-                    $attribute = $filter['attribute'];
-
-                    if(strtotime($value) && strtotime($item[$attribute]))
+                    if(strtotime($value) && strtotime($item_value))
                     {
                         $value      = strtotime($value);
-                        $item_value = strtotime($item[$attribute]);
+                        $item_value = strtotime($item_value);
                     }
-                    else $item_value = $item[$attribute];
 
                     //Convert boolean strings
                     if(strtolower($value) == 'false') {
