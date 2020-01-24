@@ -119,7 +119,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
             $metadata->set('description', $this->summary);
         }
 
-        if(!$metadata->has('og:image') && $this->image) {
+        if($this->image) {
             $metadata->set('og:image', $this->image);
         }
 
