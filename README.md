@@ -1,17 +1,20 @@
 # Joomlatools Pages
 
-Joomlatools Pages is a simple, static content generator for **[Joomla](http://www.joomla.org)**. It's inspired by the ideas 
-and concepts of flat-file CMS systems like [Jekhyll]( https://jekyllrb.com), [Grav](https://getgrav.org/), etc. Pages takes 
-your html content or renders Markdown, Twig, Joomla templates, ... spits out the result and injects it in your site.
+### What is Joomlatools Pages?
+
+Joomlatools Pages is an easy to use **dynamic page generator** for [Joomla](http://www.joomla.org) inspired by the ideas and concepts of flat-file CMS systems like [Grav](https://getgrav.org/) and [Statamic](statamic.com) and static site generators like [Jekyll]( https://jekyllrb.com), [Hugo](https://gohugo.io), [Gatsby](https://www.gatsbyjs.org/) etc. 
+
+Pages takes your Markdown files, custom HTML or PHP code churns through layouts to create a page, then injects that back into your site.  Throughout that process, you can tweak how you want the page to look, what data gets displayed in the layout, and more.
+
+Pages has a **flat-file bias**, and **doesn't require a database** to work. The content you’ll render on your site is generally written using Markdown, but you can use any kind of data source, like a, MySQL or NoSQL database, a [headless CMS](https://headlesscms.org) or a web service like [Contentful](https://www.contentful.com).
 
 ### Why Joomlatools Pages?
 
-For the rebuild of [Joomlatools.com](http://joomlatools.test/blog/services/introducing-our-brand-new-website) we needed a solution that allowed us to easily include and update static content into our site. Using Joomla modules would make the site very hard to manage. Pages solves this in an elegant and  simple way, and not to mention it's super fast too!
+For the rebuild of [Joomlatools.com](http://joomlatools.test/blog/services/introducing-our-brand-new-website) we needed a solution that would allow us to easily include, and update, content on our site. Using Joomla articles and modules would make the site very hard to manage. Pages solves this in an elegant and simple way, not to mention it's super fast and easy to work with too!
 
 ### Who is Joomlatools Pages for?
 
-Joomlatools Pages is for website developers and designers who create bespoke Joomla sites and have experience with html, 
-markdown, etc.
+Joomlatools Pages is for website developers and designers who create bespoke Joomla sites and have experience with html, markdown, etc.
 
 ## Requirements
 
