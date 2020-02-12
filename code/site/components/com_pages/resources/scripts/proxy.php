@@ -84,6 +84,7 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', $
 
             $headers = $data['headers'];
             $content = $data['content'];
+            $status  = $data['status'];
 
             //Cache expiration using max-age or s-maxage headers
             if($max_age !== false)
@@ -161,7 +162,7 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', $
                 }
 
                 //Set response code
-                header('HTTP/1.1 200 OK');
+                header(sprintf('HTTP/1.1 %s', $status));
 
                 //Set Age
                 if($max_age === false)
