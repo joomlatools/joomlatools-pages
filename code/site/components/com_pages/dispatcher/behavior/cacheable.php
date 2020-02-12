@@ -70,11 +70,13 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
                 $content     = $this->_prepareContent($data['content']);
                 $headers     = $this->_prepareHeaders($data['headers']);
+                $status      = $data['status'];
                 $page        = $data['page'];
                 $collections = $data['collections'];
 
                 $response = clone $this->getResponse();
                 $response
+                    ->setStatus($status)
                     ->setHeaders($headers)
                     ->setContent($content);
 
@@ -177,6 +179,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                 $data = array(
                     'page'        => $page,
                     'collections' => $this->getCollections(),
+                    'status'      => $response->getStatusCode(),
                     'headers'     => $response->getHeaders()->toArray(),
                     'content'     => (string) $content,
                 );
@@ -214,6 +217,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                 $data = array(
                     'page'        => $page,
                     'collections' => $this->getCollections(),
+                    'status'      => $response->getStatusCode(),
                     'headers'     => $headers,
                     'content'     => (string) $content
                 );
