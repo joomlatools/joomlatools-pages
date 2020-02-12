@@ -215,8 +215,33 @@ class Prefetcher
         {
             this.cache.add(url);
 
-            promise = this.isSupported('prerender') ? this.prerenderViaDOM(url) : fetch(url, {credentials: 'include'})
+            promise = this.canPrerender() ? this.prerenderViaDOM(url) : fetch(url, {credentials: 'include'})
             promise.then(result =>  this.log('Prerendering on ' + context + ':', url));
+        }
+
+        return Promise.all([promise]);
+    }
+
+    /**
+     * Prefetch a given URL
+     *
+     * Try to prefetch the url low priority using `<link rel=prefetch> and fallback to async XMLHttpRequest
+     *
+     * @param {String} url - the URL to fetch
+     * @param {String} context - the prefetch context
+     * @return {Object} a Promise
+     */
+    prefetch(url, context)
+    {
+        var promise;
+        var url  = new URL(url, location.href).toString();
+
+        if(!this.cache.has(url))
+        {
+            this.cache.add(url);
+
+            promise = this.canPrefetch() ? this.prefetchViaDOM(url) : this.prefetchViaXHR(url);
+            promise.then(result =>  this.log('Prefetched on ' + context + ':', url));
         }
 
         return Promise.all([promise]);
@@ -244,30 +269,6 @@ class Prefetcher
         });
     };
 
-    /**
-     * Prefetch a given URL
-     *
-     * Try to prefetch the url low priority using `<link rel=prefetch> and fallback to async XMLHttpRequest
-     *
-     * @param {String} url - the URL to fetch
-     * @param {String} context - the prefetch context
-     * @return {Object} a Promise
-     */
-    prefetch(url, context)
-    {
-        var promise;
-        var url  = new URL(url, location.href).toString();
-
-        if(!this.cache.has(url))
-        {
-            this.cache.add(url);
-
-            promise = this.isSupported('prefetch') ? this.prefetchViaDOM(url) : this.prefetchViaXHR(url);
-            promise.then(result =>  this.log('Prefetched on ' + context + ':', url));
-        }
-
-        return Promise.all([promise]);
-    }
 
     /**
      * Fetches a given URL using `<link rel=prefetch>`
@@ -367,18 +368,31 @@ class Prefetcher
     }
 
     /**
-     * Checks if a resource hint is supported
+     * Checks if prefetch is supported
      *
      * @return {Boolean} whether the feature is supported
      */
-    isSupported(hint)
+    canPrefetch()
     {
         var link = document.createElement('link');
-        return link.relList && link.relList.supports && link.relList.supports(hint);
+        return link.relList && link.relList.supports && link.relList.supports('prefetch');
     }
 
     /**
-     * Utitly to log to console
+     * Checks if prerender is supported
+     *
+     * Do not support prerender on Chrome. `NoStatePrefetch` is not caching the page in the browser cache.
+     *
+     * @return {Boolean} whether the feature is supported
+     */
+    canPrerender()
+    {
+        var link = document.createElement('link');
+        return !window.chrome && link.relList && link.relList.supports && link.relList.supports('prerender');
+    }
+
+    /**
+     * Utility to log to console
      */
     log()
     {
