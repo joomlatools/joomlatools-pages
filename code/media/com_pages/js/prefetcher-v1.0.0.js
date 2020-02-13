@@ -26,26 +26,26 @@ class Prefetcher
         this.hoverTimestamp;
 
         //Options
-        options =  options || {};
-        options.onload  = options.onload || false;
-        options.onhover = options.onhover || true;
-        options.onclick = options.onclick || false;
+        var defaults = {
+            onload: false,
+            onhover: true,
+            onclick: false,
+            limit: 1/0,
+            throttle: 1/0,
+            delay: 100,
+            timeout: 1000,
+            savedata: true,
+            elements: 'a',
+            origins: [location.hostname],
+            ignored: [uri => uri.includes('#')],
+            debug: false
+        };
 
-        options.limit    = options.limit|| 1/0;
-        options.throttle = options.throttle || 1/0;
-        options.delay    = options.delay || 100;
-        options.timeout  = options.timeout|| 1000;
-        options.savedata = options.savedata|| true;
-        options.elements = options.elements || 'a';
-        options.origins  = options.origins || [location.hostname];
-        options.ignored  = options.ignored || [uri => uri.includes('#')]
-        options.debug    = options.debug || false;
-
-        this.options = options;
+        this.options = {...defaults, ...options }
         this.log("Prefetcher Options", this.options);
 
         if(this.options.onload) {
-            document.addEventListener("DOMContentLoaded", () => this.onLoad());
+           this.onLoad();
         }
 
         if(this.options.onhover) {
@@ -216,7 +216,7 @@ class Prefetcher
             this.cache.add(url);
 
             promise = this.canPrerender() ? this.prerenderViaDOM(url) : fetch(url, {credentials: 'include'})
-            promise.then(result =>  this.log('Prerendering on ' + context + ':', url));
+            promise.then(result =>  this.log('Prerendered on ' + context + ':', url));
         }
 
         return Promise.all([promise]);
