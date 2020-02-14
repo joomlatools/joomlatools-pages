@@ -123,7 +123,7 @@ class ComPagesDataObject extends KObjectConfig implements JsonSerializable
         }
 
         //Do no return an array if we only found one result
-        if(count($data) == 1) {
+        if(count($data) == 1 && isset($data[0])) {
             $data = $data[0];
         }
 
@@ -151,7 +151,7 @@ class ComPagesDataObject extends KObjectConfig implements JsonSerializable
         }
 
         //Do no return an array if we only found one result
-        if(count($result) == 1) {
+        if(count($result) == 1  && isset($result[0])) {
             $result = $result[0];
         }
 
