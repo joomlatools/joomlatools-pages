@@ -34,6 +34,7 @@ class ComPagesTemplateDefault extends KTemplate
                 'data'       => [$this, '_fetchData'],
                 'slug'       => [$this, '_createSlug'],
                 'attributes' => [$this, '_createAttributes'],
+                'config'     => [$this, '_getConfig'],
             ],
             'cache'           => false,
             'cache_namespace' => 'pages',
@@ -293,5 +294,10 @@ class ComPagesTemplateDefault extends KTemplate
         }
 
         return $result;
+    }
+
+    protected function _getConfig($identifier = 'com://site/pages.config')
+    {
+        return clone $this->getObject($identifier)->getConfig();
     }
 }
