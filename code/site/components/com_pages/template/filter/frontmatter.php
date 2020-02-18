@@ -13,7 +13,7 @@ class ComPagesTemplateFilterFrontmatter extends ComPagesTemplateFilterAbstract
     {
         if (strpos($text, "---") !== false)
         {
-            if(preg_match('#^\s*---(.*|[\s\S]*)\s*---#siU', $text, $matches))
+            if(preg_match('#\s*---(.*|[\s\S]*)\s*---#siU', $text, $matches))
             {
                 foreach($matches as $match) {
                     $text = str_replace($matches, '', $text);
