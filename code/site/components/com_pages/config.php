@@ -9,42 +9,96 @@
 
 class ComPagesConfig extends KObject implements KObjectSingleton
 {
-    protected $_base_paths;
     protected $_site_path;
 
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
 
-        $this->_base_paths = $config->base_paths;
-        $this->_site_path  = $config->site_path;
+        $this->_site_path = $config->site_path;
+
+        //Load the site specific options
+        $this->_loadOptions();
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'base_paths'     => [
-                'cache'      => null,
-                'data'       => null,
-                'extensions' => null,
-                'logs'       => null,
-                'theme'      => null,
-            ],
             'site_path' => Koowa::getInstance()->getRootPath().'/joomlatools-pages'
+        ))->append(array(
+            'page_cache'            => (bool) JFactory::getConfig()->get('caching'),
+            'page_cache_path'       =>  $config->site_path.'/cache/pages',
+            'page_cache_validation' => true,
+
+            'data_namespaces'       => array(),
+            'data_cache'            => (bool) JFactory::getConfig()->get('caching'),
+            'data_cache_path'       => $config->site_path ? $config->site_path.'/cache/data' : false,
+
+            'template_cache'            => (bool) JFactory::getConfig()->get('caching'),
+            'template_cache_path'       => $config->site_path ? $config->site_path.'/cache/templates' : false,
+            'template_cache_validation' => true,
+
+            'http_cache'                => false,
+            'http_cache_path'           => $config->site_path ? $config->site_path.'/cache/responses': false,
+            'http_cache_time'           => 60*15,  //15min
+            'http_cache_time_proxy'     => 60*60*2, //2h
+            'http_cache_validation'     => true,
+            'http_cache_control'        => array(),
+
+            'collections' => array(),
+            'redirects'   => array(),
+            'page'        => array(),
+            'sites'       => array('[*]' => JPATH_ROOT.'/joomlatools-pages'),
+            'headers'     => array(),
+
+            'composer_path' => $config->site_path.'/vendor',
         ));
     }
 
     public function getSitePath($path = null)
     {
         //If the site path is empty do not try to return a path
-        if($this->_site_path && $path)
-        {
-            if(!$result = $this->_base_paths[$path]) {
-                $result = $this->_site_path.'/'.$path;
-            }
+        if($this->_site_path && $path) {
+            $result = $this->_site_path.'/'.$path;
+        } else {
+            $result = $this->_site_path;
         }
-        else $result = $this->_site_path;
 
         return $result;
+    }
+
+    public function getOptions()
+    {
+        return KObjectConfig::unbox($this->getConfig());
+    }
+
+    protected function _loadOptions()
+    {
+        $options = array();
+
+        //Load site config
+        if($path = $this->getSitePath())
+        {
+            //Get the defaults
+            $options = KObjectConfig::unbox($this->getConfig());
+
+            //Load default config options
+            if(file_exists(JPATH_CONFIGURATION.'/configuration-pages.php'))
+            {
+                $config = (array) include JPATH_CONFIGURATION.'/configuration-pages.php';
+                $options = array_replace_recursive($options, $config);
+            }
+
+            //Load site config options
+            if(file_exists($path.'/config.php'))
+            {
+                $config   = $this->getObject('object.config.factory')->fromFile($path.'/config.php', false);
+                $options = array_replace_recursive($options, $config);
+            }
+
+            $this->getConfig()->merge($options);
+        }
+
+        return $options;
     }
 }

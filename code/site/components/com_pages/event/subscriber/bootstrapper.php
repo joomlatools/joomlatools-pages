@@ -9,8 +9,6 @@
 
 class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstract
 {
-    protected $_config;
-
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
@@ -30,61 +28,42 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
             //Set the site path in the config
             $config = $this->getObject('com://site/pages.config', ['site_path' => $route->getPath()]);
 
-            //Load the configuration
-            $this->_config = $this->_loadConfig($config->getSitePath());
+            //Get the config options
+            $options = $config->getOptions();
 
             //Bootstrap the site configuration
-            $this->_bootstrapSite($config->getSitePath(), $this->_config);
+            $this->_bootstrapSite($config->getSitePath(), $options);
 
             //Bootstrap the extensions
-            $this->_bootstrapExtensions($config->getSitePath('extensions'), $this->_config);
+            $this->_bootstrapExtensions($config->getSitePath('extensions'), $options);
         }
         else $this->getObject('com://site/pages.config', ['site_path' => false]);
     }
 
     public function onBeforeDispatcherDispatch(KEventInterface $event)
     {
+        $config = $this->getObject('com://site/pages.config')->getOptions();
+
         //Configure the Joomla template
-        if(isset($this->_config['template']) || isset($this->_config['template_config']))
+        if(isset($config['template']) || isset($config['template_config']))
         {
             if(isset($config['template'])) {
-                $template = $this->_config['template'];
+                $template = $config['template'];
             } else {
                 $template = JFactory::getApplication()->getTemplate();
             }
 
-            if(isset($config['template_config']) && is_array($this->_config['template_config']))
+            if(isset($config['template_config']) && is_array($config['template_config']))
             {
                 $params = JFactory::getApplication()->getTemplate(true)->params;
 
-                foreach($this->_config['template_config'] as $name => $value) {
+                foreach($config['template_config'] as $name => $value) {
                     $params->set($name, $value);
                 }
             }
 
             JFactory::getApplication()->setTemplate($template, $params);
         }
-    }
-
-    protected function _loadConfig($path)
-    {
-        $config = array();
-
-        //Load default config
-        if(file_exists(JPATH_CONFIGURATION.'/configuration-pages.php')) {
-            $config = (array) include JPATH_CONFIGURATION.'/configuration-pages.php';
-        }
-
-        //Load site config
-        $file =  $path.'/config.php';
-        if(file_exists($file))
-        {
-            //Load config
-            $site   = $this->getObject('object.config.factory')->fromFile($file, false);
-            $config = array_merge_recursive($site, $config);
-        }
-
-        return $config;
     }
 
     protected function _bootstrapSite($path, $config = array())
