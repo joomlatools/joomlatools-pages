@@ -78,7 +78,7 @@ class ComPagesTemplateDefault extends KTemplate
             $this->_data = KObjectConfig::unbox($template->remove('layout'));
 
             //Load the content
-            $result = $this->loadString($template->getContent(), $this->_type, $url);
+            $result = parent::loadFile($url);
         }
         else $result = parent::loadFile($url);
 
