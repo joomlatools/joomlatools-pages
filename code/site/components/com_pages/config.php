@@ -26,15 +26,15 @@ class ComPagesConfig extends KObject implements KObjectSingleton
         $config->append(array(
             'site_path' => Koowa::getInstance()->getRootPath().'/joomlatools-pages'
         ))->append(array(
-            'page_cache'            => (bool) JFactory::getConfig()->get('caching'),
+            'page_cache'            => true,
             'page_cache_path'       =>  $config->site_path.'/cache/pages',
             'page_cache_validation' => true,
 
             'data_namespaces'       => array(),
-            'data_cache'            => (bool) JFactory::getConfig()->get('caching'),
+            'data_cache'            => true,
             'data_cache_path'       => $config->site_path ? $config->site_path.'/cache/data' : false,
 
-            'template_cache'            => (bool) JFactory::getConfig()->get('caching'),
+            'template_cache'            => true,
             'template_cache_path'       => $config->site_path ? $config->site_path.'/cache/templates' : false,
             'template_cache_validation' => true,
 
