@@ -47,8 +47,7 @@ class ComPagesModelDatabase extends ComPagesModelCollection
 
         if ($states = $this->getState()->getValues())
         {
-            $columns = array_intersect_key($states, $this->getTable()->getColumns());
-            $columns = $this->getTable()->mapColumns($columns);
+            $columns = $this->getTable()->filter($states);
 
             foreach ($columns as $column => $value)
             {
@@ -79,7 +78,7 @@ class ComPagesModelDatabase extends ComPagesModelCollection
                 if(is_string($this->__table) && strpos($this->__table, '.') !== false ) {
                     $this->__table = $this->getObject($this->__table);
                 } else {
-                    $this->__table = $this->getObject('com://site/pages.database.table.default', array('name' => $this->__table));
+                    $this->__table = $this->getObject('com://site/pages.database.table.'.$this->__table, array('name' => $this->__table));
                 }
             }
 
