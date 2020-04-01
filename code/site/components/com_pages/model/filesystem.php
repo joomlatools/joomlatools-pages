@@ -49,19 +49,6 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
         return bin2hex(random_bytes($this->_identity_key_length));
     }
 
-    public function setState(array $values)
-    {
-        //Automatically create states that don't exist yet
-        foreach($values as $name => $value)
-        {
-            if(!$this->getState()->has($name)) {
-                $this->getState()->insert($name, 'string');
-            }
-        }
-
-        return parent::setState($values);
-    }
-
     public function getHash()
     {
         $hahs = null;

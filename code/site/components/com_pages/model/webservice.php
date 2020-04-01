@@ -78,19 +78,6 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         return $hash;
     }
 
-    public function setState(array $values)
-    {
-        //Automatically create states that don't exist yet
-        foreach($values as $name => $value)
-        {
-            if(!$this->getState()->has($name)) {
-                $this->getState()->insert($name, 'string');
-            }
-        }
-
-        return parent::setState($values);
-    }
-
     public function fetchData($count = false)
     {
         if(!isset($this->__data))
