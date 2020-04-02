@@ -53,26 +53,30 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
             }
             else
             {
-                foreach ($filters as $attribute => $value)
+                foreach ($filters as $attribute => $values)
                 {
-                    // Parse filter value for possible operator
-                    if (preg_match('#^([eq|neq|gt|gte|lt|lte|in|nin]+):(.+)\s*$#i', $value, $matches))
+                    //Support multiple constraints on the same attribute
+                    foreach((array) $values as $value)
                     {
-                        $this->_filters[] = [
-                            'attribute' => $attribute,
-                            'operation' => $matches[1],
-                            'values' => array_unique(explode(',', $matches[2])),
-                            'combination' => 'AND'
-                        ];
-                    }
-                    else
-                    {
-                        $this->_filters[] = [
-                            'attribute' => $attribute,
-                            'operation' => 'eq',
-                            'values' => array_unique(explode(',', $value)),
-                            'combination' => 'AND'
-                        ];
+                        // Parse filter value for possible operator
+                        if (preg_match('#^([eq|neq|gt|gte|lt|lte|in|nin]+):(.+)\s*$#i', $value, $matches))
+                        {
+                            $this->_filters[] = [
+                                'attribute' => $attribute,
+                                'operation' => $matches[1],
+                                'values' => array_unique(explode(',', $matches[2])),
+                                'combination' => 'AND'
+                            ];
+                        }
+                        else
+                        {
+                            $this->_filters[] = [
+                                'attribute' => $attribute,
+                                'operation' => 'eq',
+                                'values' => array_unique(explode(',', $value)),
+                                'combination' => 'AND'
+                            ];
+                        }
                     }
                 }
             }
