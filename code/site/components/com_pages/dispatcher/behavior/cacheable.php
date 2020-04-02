@@ -80,7 +80,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                     ->setHeaders($headers)
                     ->setContent($content);
 
-                if(!$this->isBypass() && (!$response->isStale() || $this->isValid($page, $collections) === true))
+                if(!$this->isBypass() && !$response->isStale() && $this->isValid($page, $collections) === true)
                 {
                     $response->getHeaders()->set('Cache-Status', self::CACHE_HIT);
 
@@ -88,13 +88,13 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                     if(!$response->isError() && ($response->isNotModified() || $response->isStale()))
                     {
                         $response->setDate(new DateTime('now'));
-
-                        $data['headers']['Date'] = (string) $response->getHeaders()->get('Date');
-                        $this->storeCache($this->getCacheKey(), $data);
-
+                        $response->getHeaders()->set('Age', null);
                         $response->getHeaders()->set('Cache-Status', self::CACHE_REFRESHED);
                     }
-                    else $response->getHeaders()->set('Age', $response->getAge());
+                    else $response->getHeaders()->set('Age', max(time() - $response->getDate()->format('U'), 0));
+
+                    $data['headers'] = $response->getHeaders()->toArray();
+                    $this->storeCache($this->getCacheKey(), $data);
 
                     //Terminate the request
                     $response->send();
@@ -148,10 +148,6 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                     $context->response->getHeaders()->set('Cache-Status', self::CACHE_DYNAMIC);
                 }
             }
-
-            //Set Last Modified to 'now'. This is less accurate then the Etag but allows for cache validation in case
-            //the etag is being stripped by a cache transform
-            $context->response->setLastModified(new DateTime('now'));
         }
         else $context->getResponse()->getHeaders()->set('Cache-Status', self::CACHE_MISS);
 
@@ -162,30 +158,9 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     {
         $response = $this->getResponse();
 
-        //Proxy Koowa Output
-        if($this->isCacheable() && $response->isCacheable() && !$response->isError())
-        {
-            if($content = $response->getContent())
-            {
-                //Remove blank empty lines
-                $content = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $content);
-
-                //Get the page data
-                $page = [
-                    'path' => $this->getRoute()->getPage()->path,
-                    'hash' => $this->getRoute()->getPage()->hash
-                ];
-
-                $data = array(
-                    'page'        => $page,
-                    'collections' => $this->getCollections(),
-                    'status'      => $response->getStatusCode(),
-                    'headers'     => $response->getHeaders()->toArray(),
-                    'content'     => (string) $content,
-                );
-
-                $this->storeCache($this->getCacheKey(), $data);
-            }
+        //Store the response in the cache
+        if($this->isCacheable() && $response->isCacheable() && !$response->isError()) {
+            $this->cache();
         }
     }
 
@@ -196,34 +171,44 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         //Proxy Joomla Output
         if($this->isCacheable() && $response->isCacheable() && !$response->isError())
         {
-            if($content = $event->getTarget()->getBody())
+            $headers = array();
+            foreach (headers_list() as $header)
             {
-                $headers = array();
-                foreach (headers_list() as $header)
-                {
-                    $parts = explode(':', $header, 2);
-                    $headers[trim($parts[0])] = trim($parts[1]);
-                }
-
-                //Remove blank empty lines
-                $content = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $content);
-
-                //Get the page data
-                $page = [
-                    'path' => $this->getRoute()->getPage()->path,
-                    'hash' => $this->getRoute()->getPage()->hash
-                ];
-
-                $data = array(
-                    'page'        => $page,
-                    'collections' => $this->getCollections(),
-                    'status'      => $response->getStatusCode(),
-                    'headers'     => $headers,
-                    'content'     => (string) $content
-                );
-
-                $this->storeCache($this->getCacheKey(), $data);
+                $parts = explode(':', $header, 2);
+                $headers[trim($parts[0])] = trim($parts[1]);
             }
+
+            $response->setHeaders($headers);
+            $response->setContent($event->getTarget()->getBody());
+
+            $this->cache();
+        }
+    }
+
+    protected function _actionCache(KDispatcherContextInterface $context)
+    {
+        $response = $context->getResponse();
+
+        if($content = $response->getContent())
+        {
+            //Remove blank empty lines
+            $content = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $content);
+
+            //Get the page data
+            $page = [
+                'path' => $this->getRoute()->getPage()->path,
+                'hash' => $this->getRoute()->getPage()->hash
+            ];
+
+            $data = array(
+                'page'        => $page,
+                'collections' => $this->getCollections(),
+                'status'      => $response->getStatusCode(),
+                'headers'     => $response->getHeaders()->toArray(),
+                'content'     => (string) $content,
+            );
+
+            $this->storeCache($this->getCacheKey(), $data);
         }
     }
 
@@ -320,7 +305,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         return $result;
     }
 
-    public function isValid($page, $collections)
+    public function isValid($page, $collections = array())
     {
         $valid = true;
 
