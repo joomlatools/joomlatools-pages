@@ -230,6 +230,16 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         }
     }
 
+    protected function _actionSend(KDispatcherContextInterface $context)
+    {
+        //Do not send the response if it was already send
+        if(!headers_sent()) {
+            parent::_actionSend($context);
+        } else {
+            $this->terminate($context);
+        }
+    }
+
     protected function _renderError(KDispatcherContextInterface $context)
     {
         //Get the exception object
