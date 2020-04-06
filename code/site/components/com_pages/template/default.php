@@ -28,7 +28,7 @@ class ComPagesTemplateDefault extends KTemplate
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'filters'   => ['frontmatter', 'partial'],
+            'filters'   => ['partial'],
             'functions' => [
                 'date'       => [$this, '_formatDate'],
                 'data'       => [$this, '_fetchData'],
@@ -51,18 +51,17 @@ class ComPagesTemplateDefault extends KTemplate
             $url = 'page://layouts/'.$url;
         }
 
-        if(parse_url($url, PHP_URL_SCHEME) == 'page')
+        //Locate the template
+        if(!$file = $this->getObject('template.locator.factory')->locate($url)) {
+            throw new RuntimeException(sprintf('Cannot find layout: "%s"', $url));
+        }
+
+        //Load the template
+        $template = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
+
+        //Set the parent layout
+        if(strpos($url, 'page://layouts/') === 0)
         {
-            if(!$file = $this->getObject('template.locator.factory')->locate($url)) {
-                throw new RuntimeException(sprintf('Cannot find layout: "%s"', $url));
-            }
-
-            //Store the type
-            $this->_type = pathinfo($file, PATHINFO_EXTENSION);
-
-            //Load the layout
-            $template = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
-
             //Set the parent layout
             if($layout = KObjectConfig::unbox($template->layout))
             {
@@ -76,13 +75,33 @@ class ComPagesTemplateDefault extends KTemplate
 
             //Store the data and remove the layout
             $this->_data = KObjectConfig::unbox($template->remove('layout'));
-
-            //Load the content
-            $result = parent::loadFile($url);
         }
-        else $result = parent::loadFile($url);
 
-        return $result;
+        //Store the type
+        $this->_type = pathinfo($file, PATHINFO_EXTENSION);
+
+        if(!in_array($this->_type, $this->_excluded_types))
+        {
+            //Create the template engine
+            $config = array(
+                'template'  => $this,
+                'functions' => $this->_functions
+            );
+
+            $this->_source = $this->getObject('template.engine.factory')->createEngine($this->_type, $config);
+
+            if($cache = $this->_source->isCached(crc32($url)))
+            {
+                if($this->_source->getConfig()->cache_reload && filemtime($cache) < filemtime($file)) {
+                    unlink($cache);
+                }
+            }
+
+            $this->_source->loadString($template->getContent(),  $url);
+        }
+        else $this->_source = $template->getContent();
+
+        return $this;
     }
 
     public function getLayout()
