@@ -330,6 +330,11 @@ class Prefetcher
             return false;
         }
 
+        //Is same page
+        if(element.href.split('#')[0] === location.href.split('#')[0]) {
+            return false;
+        }
+
         //Is origin allowed ( a`[]` or `true` means everything is allowed)
         if (this.options.origins.length && !this.options.origins.includes((new URL(element.href, location.href)).hostname)) {
             return false;
@@ -339,7 +344,6 @@ class Prefetcher
         if (!['http:', 'https:'].includes(element.protocol)) {
             return false;
         }
-
 
         //Is ignored
         if (this.isIgnored(element, this.options.ignored)) {
