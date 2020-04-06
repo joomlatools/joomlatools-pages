@@ -63,24 +63,15 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     {
         if($this->isCacheable())
         {
-            if($file = $this->isCached($this->getCacheKey()))
+            if($cache = $this->loadCache())
             {
-                //Require the file from cache
-                $data = require $file;
-
-                $content     = $this->_prepareContent($data['content']);
-                $headers     = $this->_prepareHeaders($data['headers']);
-                $status      = $data['status'];
-                $page        = $data['page'];
-                $collections = $data['collections'];
-
                 $response = clone $this->getResponse();
                 $response
-                    ->setStatus($status)
-                    ->setHeaders($headers)
-                    ->setContent($content);
+                    ->setStatus($cache['status'])
+                    ->setHeaders($cache['headers'])
+                    ->setContent($cache['content']);
 
-                if(!$this->isBypass() && !$response->isStale() && $this->isValid($page, $collections) === true)
+                if(!$this->isBypass() && !$response->isStale() && $this->isValid($cache['page'], $cache['collections']) === true)
                 {
                     $response->getHeaders()->set('Cache-Status', self::CACHE_HIT);
 
@@ -93,8 +84,8 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                     }
                     else $response->getHeaders()->set('Age', max(time() - $response->getDate()->format('U'), 0));
 
-                    $data['headers'] = $response->getHeaders()->toArray();
-                    $this->storeCache($this->getCacheKey(), $data);
+                    $cache['headers'] = $response->getHeaders()->toArray();
+                    $this->storeCache($this->getCacheKey(), $cache);
 
                     //Terminate the request
                     $response->send();
@@ -255,6 +246,38 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         return (array) $this->__collections;
     }
 
+    public function loadCache($key = null)
+    {
+        static $cache;
+
+        if(!$key) {
+            $key = $this->getCacheKey();
+        }
+
+        if(!isset($cache[$key]))
+        {
+            if($this->getConfig()->cache)
+            {
+                $hash = crc32($key.PHP_VERSION);
+                $file = $this->getConfig()->cache_path.'/response_'.$hash.'.php';
+
+                if(is_file($file))
+                {
+                    $data = require $file;
+
+                    $data['content'] = $this->_prepareContent($data['content']);
+                    $data['headers'] = $this->_prepareHeaders($data['headers']);
+
+                    $cache[$key] = $data;
+                }
+                else $cache[$key] = false;
+            }
+            else $cache[$key] = false;
+        }
+
+        return $cache[$key];
+    }
+
     public function storeCache($key, $data)
     {
         if($this->getConfig()->cache)
@@ -289,20 +312,6 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         }
 
         return false;
-    }
-
-    public function isCached($key)
-    {
-        $result = false;
-
-        if($this->getConfig()->cache)
-        {
-            $hash   = crc32($key.PHP_VERSION);
-            $cache  = $this->getConfig()->cache_path.'/response_'.$hash.'.php';
-            $result = is_file($cache) ? $cache : false;
-        }
-
-        return $result;
     }
 
     public function isValid($page, $collections = array())
