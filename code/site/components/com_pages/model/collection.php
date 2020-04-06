@@ -55,11 +55,6 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
             if(!$this->getState()->has($name)) {
                 $this->getState()->insert($name, 'string');
             }
-
-            //Explode comma seperated values
-            if(is_string($value) && strpos($value, ',') !== false) {
-                $values[$name] = array_unique(explode(',',  $value));
-            }
         }
 
         return parent::setState($values);
