@@ -116,6 +116,10 @@ class ComPagesModelBehaviorSortable extends ComPagesModelBehaviorQueryable
             $query->order($column, $order);
         }
 
+        if($state->order && $state->order == 'shuffle') {
+            $query->shuffle();
+        }
+
         return $query;
     }
 }
