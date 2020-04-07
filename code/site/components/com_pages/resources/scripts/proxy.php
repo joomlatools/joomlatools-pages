@@ -77,7 +77,10 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', c
     $hash = crc32($key . PHP_VERSION);
     $file = $cache_path . '/response_' . $hash . '.php';
 
-    if (file_exists($file))
+    //Clear the cache for the specific file to avoid any errors.
+    clearstatcache (true,  $file);
+
+    if (is_file($file))
     {
         $data = require $file;
 
