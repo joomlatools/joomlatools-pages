@@ -96,6 +96,7 @@ class ComPagesModelBehaviorSortable extends ComPagesModelBehaviorQueryable
                     $data = array_reverse($data);
                     break;
 
+                case 'random':
                 case 'shuffle':
                     shuffle($data);
                     break;
@@ -116,7 +117,7 @@ class ComPagesModelBehaviorSortable extends ComPagesModelBehaviorQueryable
             $query->order($column, $order);
         }
 
-        if($state->order && $state->order == 'shuffle') {
+        if($state->order && in_array($state->order, ['shuffle', 'random'])) {
             $query->shuffle();
         }
 
