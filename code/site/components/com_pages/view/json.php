@@ -196,11 +196,18 @@ class ComPagesViewJson extends KViewAbstract
     protected function _getEntityId(KModelEntityInterface $entity)
     {
         $values = array();
-        foreach($this->getModel()->getPrimaryKey() as $key){
-            $values[] = $entity->{$key};
-        }
 
-        return implode('/', $values);
+        if($keys = $this->getModel()->getPrimaryKey())
+        {
+            foreach($keys as $key){
+                $values[] = $entity->{$key};
+            }
+
+            $id = implode('/', $values);
+        }
+        else  $id = $entity->getProperty($entity->getIdentityKey(), '');
+
+        return $id;
     }
 
     /**
@@ -276,8 +283,11 @@ class ComPagesViewJson extends KViewAbstract
                 $query[$key] = $entity->{$key};
             }
 
-            $url = $this->getRoute($this->getModel()->getPage(), $query);
-            $links = ['self' => (string) $url];
+            if(!empty($query))
+            {
+                $url = $this->getRoute($this->getModel()->getPage(), $query);
+                $links = ['self' => (string) $url];
+            }
         }
 
         return $links;
