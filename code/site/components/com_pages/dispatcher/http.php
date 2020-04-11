@@ -227,6 +227,11 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             }
 
             $this->getResponse()->getHeaders()->set('Link', array($context->page->canonical => array('rel' => 'canonical')));
+
+            //Add X-Robots-Tag
+            if($context->page->metadata->has('robots')) {
+                $this->getResponse()->getHeaders()->set('X-Robots-Tag', KObjectConfig::unbox($context->page->metadata->robots));
+            }
         }
     }
 
