@@ -378,6 +378,11 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                         $page->date = filemtime($file);
                                     }
 
+                                    //Set the process
+                                    if (!$page->language) {
+                                        $page->language = 'en-GB';
+                                    }
+
                                     //Handle dynamic data
                                     array_walk_recursive ($page, function(&$value, $key)
                                     {
