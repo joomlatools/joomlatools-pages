@@ -137,6 +137,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                 {
                     $this->getConfig()->cache = false;
                     $context->response->getHeaders()->set('Cache-Status', self::CACHE_DYNAMIC);
+                    $context->response->getHeaders()->set('Cache-Control', ['no-store']);
                 }
             }
         }
@@ -187,11 +188,13 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
             //Get the page data
             $page = [
-                'path' => $this->getRoute()->getPage()->path,
-                'hash' => $this->getRoute()->getPage()->hash
+                'path'     => $this->getRoute()->getPage()->path,
+                'hash'     => $this->getRoute()->getPage()->hash,
+                'language' => $this->getRoute()->getPage()->language,
             ];
 
             $data = array(
+                'url'         => rtrim((string) $context->getRequest()->getUrl(), '/'),
                 'page'        => $page,
                 'collections' => $this->getCollections(),
                 'status'      => $response->getStatusCode(),
