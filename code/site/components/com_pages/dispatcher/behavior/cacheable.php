@@ -213,7 +213,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             //Set Cache-Control to no-store if response is not cacheable
             $context->getResponse()->getHeaders()->set('Cache-Control', ['no-store']);
 
-            //error_log( (string)(string)$response->getRequest()->getUrl()."\n", 3, '/var/www/joomlatools/debug.txt');
+            //error_log((string)$response->getRequest()->getUrl()."\n", 3, '/var/www/joomlatools/debug.txt');
         }
     }
 
