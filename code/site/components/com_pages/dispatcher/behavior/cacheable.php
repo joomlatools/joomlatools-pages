@@ -210,7 +210,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             //In case cache exists delete it
             $this->deleteCache($this->getCacheKey());
 
-            error_log( (string)(string)$response->getRequest()->getUrl()."\n", 3, '/var/www/joomlatools/debug.txt');
+            //error_log( (string)(string)$response->getRequest()->getUrl()."\n", 3, '/var/www/joomlatools/debug.txt');
 
             //Set Cache-Control to no-store if response is not cacheable
             $context->getResponse()->getHeaders()->set('Cache-Control', ['no-store']);
