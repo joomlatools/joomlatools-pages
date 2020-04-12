@@ -33,7 +33,7 @@ class ComPagesModelCache extends ComPagesModelCollection
                 $data = require $file;
 
                 $this->__data[] = array(
-                    'id'        => crc32($data['url']),
+                    'id'        => str_replace('response_', '', basename($file, '.php')),
                     'url'       => $data['url'],
                     'date'      => $data['headers']['Date'],
                     'hash'      => $data['headers']['Etag'],
