@@ -102,10 +102,29 @@ class ComPagesViewJson extends KViewAbstract
         {
             $context->parameters->total = $this->getModel()->count();
 
-            $page = $this->getModel()->getPage();
-
             foreach ($this->getModel()->fetch() as $entity) {
                 $document['data'][] = $this->_createResource($entity);
+            }
+
+            $page = $this->getModel()->getPage();
+
+            $document['meta'] = array();
+            $document['meta']['total'] = $this->getModel()->count();
+
+            if($title = $page->title) {
+                $document['meta']['title'] = $title;
+            }
+
+            if($description = $page->metadata->get('description')) {
+                $document['meta']['description'] = $description;
+            }
+
+            if($image = $page->image) {
+                $document['meta']['image'] = (string) $this->getUrl((string)$image);
+            }
+
+            if($language = $page->language) {
+                $document['meta']['language'] = $language;
             }
 
             if($this->getModel()->isPaginatable())
@@ -116,27 +135,8 @@ class ComPagesViewJson extends KViewAbstract
                 $limit  = (int) $paginator->limit;
                 $offset = (int) $paginator->offset;
 
-                $document['meta'] = [
-                    'offset'   => $offset,
-                    'limit'    => $limit,
-                    'total'	   => $total,
-                ];
-
-                if($title = $page->title) {
-                    $document['meta']['title'] = $title;
-                }
-
-                if($description = $page->metadata->get('description')) {
-                    $document['meta']['description'] = $description;
-                }
-
-                if($image = $page->image) {
-                    $document['meta']['image'] = (string) $this->getUrl((string)$image);
-                }
-
-                if($language = $page->language) {
-                    $document['meta']['language'] = $language;
-                }
+                $document['meta']['offset'] = $offset;
+                $document['meta']['limit']  = $limit;
 
                 if ($limit && $total > count($this->getModel()->fetch())) {
                     $document['links']['first'] = (string) $this->getRoute($route, array('offset' => 0));
@@ -196,11 +196,18 @@ class ComPagesViewJson extends KViewAbstract
     protected function _getEntityId(KModelEntityInterface $entity)
     {
         $values = array();
-        foreach($this->getModel()->getPrimaryKey() as $key){
-            $values[] = $entity->{$key};
-        }
 
-        return implode('/', $values);
+        if($keys = $this->getModel()->getPrimaryKey())
+        {
+            foreach($keys as $key){
+                $values[] = $entity->{$key};
+            }
+
+            $id = implode('/', $values);
+        }
+        else  $id = $entity->getProperty($entity->getIdentityKey(), '');
+
+        return $id;
     }
 
     /**
@@ -276,8 +283,11 @@ class ComPagesViewJson extends KViewAbstract
                 $query[$key] = $entity->{$key};
             }
 
-            $url = $this->getRoute($this->getModel()->getPage(), $query);
-            $links = ['self' => (string) $url];
+            if(!empty($query))
+            {
+                $url = $this->getRoute($this->getModel()->getPage(), $query);
+                $links = ['self' => (string) $url];
+            }
         }
 
         return $links;

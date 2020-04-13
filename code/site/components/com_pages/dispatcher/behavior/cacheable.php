@@ -88,7 +88,9 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                     $this->storeCache($this->getCacheKey(), $cache);
 
                     //Terminate the request
-                    $response->send();
+                    if(!headers_sent()) {
+                        $response->send();
+                    }
                 }
                 else
                 {
@@ -135,10 +137,11 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                 }
                 else
                 {
-                    $this->getConfig()->cache = false;
-                    $context->response->getHeaders()->set('Cache-Status', self::CACHE_DYNAMIC);
+                    $context->getResponse()->getHeaders()->set('Cache-Status', self::CACHE_DYNAMIC);
+                    $context->getResponse()->getHeaders()->set('Cache-Control', ['no-store']);
                 }
             }
+            else $context->getResponse()->getHeaders()->set('Cache-Control', ['no-store']);
         }
         else $context->getResponse()->getHeaders()->set('Cache-Status', self::CACHE_MISS);
 
@@ -147,20 +150,16 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
     protected function _beforeTerminate(KDispatcherContextInterface $context)
     {
-        $response = $this->getResponse();
-
         //Store the response in the cache
-        if($this->isCacheable() && $response->isCacheable() && !$response->isError()) {
+        if($this->isCacheable()) {
             $this->cache();
         }
     }
 
     public function onAfterApplicationRespond(KEventInterface $event)
     {
-        $response = $this->getResponse();
-
         //Proxy Joomla Output
-        if($this->isCacheable() && $response->isCacheable() && !$response->isError())
+        if($this->isCacheable())
         {
             $headers = array();
             foreach (headers_list() as $header)
@@ -169,8 +168,8 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                 $headers[trim($parts[0])] = trim($parts[1]);
             }
 
-            $response->setHeaders($headers);
-            $response->setContent($event->getTarget()->getBody());
+            $this->getResponse()->setHeaders($headers);
+            $this->getResponse()->setContent($event->getTarget()->getBody());
 
             $this->cache();
         }
@@ -180,26 +179,41 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     {
         $response = $context->getResponse();
 
-        if($content = $response->getContent())
+        if($response->isCacheable())
         {
-            //Remove blank empty lines
-            $content = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $content);
+            if($content = $response->getContent())
+            {
+                //Remove blank empty lines
+                $content = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $content);
 
-            //Get the page data
-            $page = [
-                'path' => $this->getRoute()->getPage()->path,
-                'hash' => $this->getRoute()->getPage()->hash
-            ];
+                //Get the page data
+                $page = [
+                    'path'     => $this->getRoute()->getPage()->path,
+                    'hash'     => $this->getRoute()->getPage()->hash,
+                    'language' => $this->getRoute()->getPage()->language,
+                ];
 
-            $data = array(
-                'page'        => $page,
-                'collections' => $this->getCollections(),
-                'status'      => $response->getStatusCode(),
-                'headers'     => $response->getHeaders()->toArray(),
-                'content'     => (string) $content,
-            );
+                $data = array(
+                    'url'         => rtrim((string) $context->getRequest()->getUrl(), '/'),
+                    'page'        => $page,
+                    'collections' => $this->getCollections(),
+                    'status'      => $response->getStatusCode(),
+                    'headers'     => $response->getHeaders()->toArray(),
+                    'content'     => (string) $content,
+                );
 
-            $this->storeCache($this->getCacheKey(), $data);
+                $this->storeCache($this->getCacheKey(), $data);
+            }
+        }
+        else
+        {
+            //In case cache exists delete it
+            $this->deleteCache($this->getCacheKey());
+
+            //Set Cache-Control to no-store if response is not cacheable
+            $context->getResponse()->getHeaders()->set('Cache-Control', ['no-store']);
+
+            //error_log((string)$response->getRequest()->getUrl()."\n", 3, '/var/www/joomlatools/debug.txt');
         }
     }
 
@@ -248,34 +262,25 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
     public function loadCache($key = null)
     {
-        static $cache;
-
         if(!$key) {
             $key = $this->getCacheKey();
         }
 
-        if(!isset($cache[$key]))
+        if($this->getConfig()->cache)
         {
-            if($this->getConfig()->cache)
+            $hash = crc32($key . PHP_VERSION);
+            $file = $this->getConfig()->cache_path . '/response_' . $hash . '.php';
+
+            if (is_file($file))
             {
-                $hash = crc32($key.PHP_VERSION);
-                $file = $this->getConfig()->cache_path.'/response_'.$hash.'.php';
+                $data = require $file;
 
-                if(is_file($file))
-                {
-                    $data = require $file;
-
-                    $data['content'] = $this->_prepareContent($data['content']);
-                    $data['headers'] = $this->_prepareHeaders($data['headers']);
-
-                    $cache[$key] = $data;
-                }
-                else $cache[$key] = false;
+                $data['content'] = $this->_prepareContent($data['content']);
+                $data['headers'] = $this->_prepareHeaders($data['headers']);
             }
-            else $cache[$key] = false;
         }
 
-        return $cache[$key];
+        return $data;
     }
 
     public function storeCache($key, $data)
@@ -312,6 +317,23 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         }
 
         return false;
+    }
+
+    public function deleteCache($key = null)
+    {
+        if(!$key) {
+            $key = $this->getCacheKey();
+        }
+
+        if($this->getConfig()->cache)
+        {
+            $hash = crc32($key . PHP_VERSION);
+            $file = $this->getConfig()->cache_path . '/response_' . $hash . '.php';
+
+            if (is_file($file)) {
+                unlink($file);
+            }
+        }
     }
 
     public function isValid($page, $collections = array())

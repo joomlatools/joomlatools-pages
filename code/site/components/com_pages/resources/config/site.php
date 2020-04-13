@@ -48,6 +48,9 @@ return [
             'cache_force' => $config['http_resource_cache_force'],
             'debug'       => $config['http_resource_cache_debug'],
         ],
+        'com://site/pages.model.cache' => [
+            'cache_path' => $config['http_cache_path'],
+        ]
     ],
     'extensions' => $config['extensions'] ?? array(),
 ];
