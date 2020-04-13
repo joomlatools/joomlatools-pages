@@ -141,6 +141,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                     $context->getResponse()->getHeaders()->set('Cache-Control', ['no-store']);
                 }
             }
+            //If the page doesn't exist don't try to store the response.
             else $context->getResponse()->getHeaders()->set('Cache-Control', ['no-store']);
         }
         else $context->getResponse()->getHeaders()->set('Cache-Status', self::CACHE_MISS);
