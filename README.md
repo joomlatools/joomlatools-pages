@@ -2,7 +2,7 @@
 
 ### What is Joomlatools Pages?
 
-Joomlatools Pages is an easy to use **dynamic page generator** for [Joomla](http://www.joomla.org) inspired by the ideas and concepts of flat-file CMS systems like [Grav](https://getgrav.org/) and [Statamic](statamic.com) and static site generators like [Jekyll]( https://jekyllrb.com), [Hugo](https://gohugo.io), [Gatsby](https://www.gatsbyjs.org/) etc. 
+Joomlatools Pages is an easy to use **page generator** for [Joomla](http://www.joomla.org) inspired by the ideas and concepts of flat-file CMS systems like [Grav](https://getgrav.org/) and [Statamic](statamic.com) and static site generators like [Jekyll]( https://jekyllrb.com), [Hugo](https://gohugo.io), [Gatsby](https://www.gatsbyjs.org/) etc. 
 
 Pages takes your Markdown files, custom HTML or PHP code churns through layouts to create a page, then injects that back into your site.  Throughout that process, you can tweak how you want the page to look, what data gets displayed in the layout, and more.
 
