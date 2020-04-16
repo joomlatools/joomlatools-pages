@@ -182,40 +182,41 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
         if($response->isCacheable())
         {
-            if($content = $response->getContent())
+            //Reset the date and last-modified
+            $response->setDate(new DateTime('now'));
+            $response->setLastModified($response->getDate());
+
+            if($cache = $this->loadCache())
             {
-                //Remove blank empty lines
-                $content = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $content);
-
-                //Get the page data
-                $page = [
-                    'path'     => $this->getRoute()->getPage()->path,
-                    'hash'     => $this->getRoute()->getPage()->hash,
-                    'language' => $this->getRoute()->getPage()->language,
-                ];
-
-                $data = array(
-                    'url'         => rtrim((string) $context->getRequest()->getUrl(), '/'),
-                    'page'        => $page,
-                    'collections' => $this->getCollections(),
-                    'status'      => $response->getStatusCode(),
-                    'headers'     => $response->getHeaders()->toArray(),
-                    'content'     => (string) $content,
-                );
-
-                $this->storeCache($this->getCacheKey(), $data);
+                //If the cache exists and it has not been modified to not reset the Last-Modified date
+                if($cache['headers']['Etag'] == $response->getEtag()) {
+                    $response->setLastModified(new DateTime($cache['headers']['Last-Modified']));
+                }
             }
-        }
-        else
-        {
-            //In case cache exists delete it
-            $this->deleteCache($this->getCacheKey());
 
-            //Set Cache-Control to no-store if response is not cacheable
-            $context->getResponse()->getHeaders()->set('Cache-Control', ['no-store']);
+            //Remove blank empty lines
+            $content = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $response->getContent());
 
-            //error_log((string)$response->getRequest()->getUrl()."\n", 3, '/var/www/joomlatools/debug.txt');
+            //Get the page data
+            $page = [
+                'path'     => $this->getRoute()->getPage()->path,
+                'hash'     => $this->getRoute()->getPage()->hash,
+                'language' => $this->getRoute()->getPage()->language,
+            ];
+
+            $data = array(
+                'url'         => rtrim((string) $response->getRequest()->getUrl(), '/'),
+                'page'        => $page,
+                'collections' => $this->getCollections(),
+                'status'      => $response->getStatusCode(),
+                'headers'     => $response->getHeaders()->toArray(),
+                'content'     => (string) $content,
+            );
+
+            $this->storeCache($this->getCacheKey(), $data);
         }
+        //In case cache exists delete it
+        else $this->deleteCache($this->getCacheKey());
     }
 
     protected function _prepareContent($content)
@@ -263,6 +264,8 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
     public function loadCache($key = null)
     {
+        $data = array();
+
         if(!$key) {
             $key = $this->getCacheKey();
         }
