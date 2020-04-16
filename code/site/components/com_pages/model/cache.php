@@ -35,7 +35,7 @@ class ComPagesModelCache extends ComPagesModelCollection
                 $this->__data[] = array(
                     'id'        => str_replace('response_', '', basename($file, '.php')),
                     'url'       => $data['url'],
-                    'date'      => $this->getObject('date', array('date' => $data['headers']['Date'])),
+                    'date'      => $this->getObject('date', array('date' => $data['headers']['Last-Modified'])),
                     'hash'      => $data['headers']['Etag'],
                     'language'  => $data['page']['language'],
                     'tags'      => array_unique(array_column($data['collections'], 'type')),
