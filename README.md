@@ -4,9 +4,11 @@
 
 Joomlatools Pages is an easy to use **page generator** for [Joomla](http://www.joomla.org) inspired by the ideas and concepts of flat-file CMS systems like [Grav](https://getgrav.org/) and [Statamic](statamic.com) and static site generators like [Jekyll]( https://jekyllrb.com), [Hugo](https://gohugo.io), [Gatsby](https://www.gatsbyjs.org/) etc. 
 
+Make no mistake, Pages is **not** a static site generator (SSG), Pages works in a _dynamic, lazy and smart_ way. A page is dynamically generated, cached and only re-generated when its content or layout has changed.
+
 Pages takes your Markdown files, custom HTML or PHP code churns through layouts to create a page, then injects that back into your site.  Throughout that process, you can tweak how you want the page to look, what data gets displayed in the layout, and more.
 
-Pages has a **flat-file bias**, and **doesn't require a database** to work. The content you’ll render on your site is generally written using Markdown, but you can use any kind of data source, like a, MySQL or NoSQL database, a [headless CMS](https://headlesscms.org) or a web service like [Contentful](https://www.contentful.com).
+Pages has a **flat-file bias**, and **doesn't require a database** to work. The content you’ll render on your site is generally written using Markdown, but you can use any kind of data source, for example you could use, a Joomla component, a database table, a headless CMS like [Strapi](https://strapi.io/), or even a webservice like [Airtable](https://airtable.com) or [Google Sheets](https://www.google.com/sheets/about/).
 
 ### Why Joomlatools Pages?
 
@@ -14,7 +16,7 @@ For the rebuild of [Joomlatools.com](http://joomlatools.test/blog/services/intro
 
 ### Who is Joomlatools Pages for?
 
-Joomlatools Pages is for website developers and designers who create bespoke Joomla sites and have experience with html, markdown, etc.
+Joomlatools Pages is for website developers and designers who create bespoke Joomla sites and have experience with html, markdown, etc. If you know how to use notepad you can work with Pages, knowledge of PHP is not required to get started.
 
 ## Requirements
 
