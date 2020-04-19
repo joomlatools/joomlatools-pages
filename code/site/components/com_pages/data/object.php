@@ -122,7 +122,7 @@ class ComPagesDataObject extends KObjectConfig implements JsonSerializable
             $data = array_values($data);
         }
 
-       //Do no return an array if we only found a single scalar result
+        //Do no return an array if we only found a single scalar result
         if(count($data) == 1 && isset($data[0]) && !is_array($data[0])) {
             $data = $data[0];
         } else {
@@ -142,14 +142,14 @@ class ComPagesDataObject extends KObjectConfig implements JsonSerializable
         $result = array();
         foreach ($iterator as $k => $v)
         {
-            if($key === $k) {
-                $result[] = $v;
+            if($key === $k)
+            {
+                if(is_array($v) && is_numeric(key($v))) {
+                    $result = array_merge($result, $v);
+                } else {
+                    $result[] = $v;
+                }
             }
-        }
-
-        //Reset the numeric keys
-        if (is_numeric(key($result))) {
-            $data = array_values($result);
         }
 
         //Do no return an array if we only found a single scalar result
