@@ -139,37 +139,45 @@ class ComPagesObjectConfigXml extends KObjectConfigXml
             }
         }
 
-        //Create subnodes using recursion
+
         if (is_array($data))
         {
-            // recurse to get the node for that key
-            foreach ($data as $key => $value)
+            //Create child nodes using recursion
+            if(!is_numeric(key($data)))
             {
-                if (is_array($value) && is_numeric(key($value)))
+                // recurse to get the node for that key
+                foreach ($data as $key => $value)
                 {
-                    foreach ($value as $k => $v) {
-                        $node->appendChild($this->_arrayToDom($xml, $xml->createElement($key), $v));
+                    if (is_array($value) && is_numeric(key($value)))
+                    {
+                        foreach ($value as $k => $v) {
+                            $node->appendChild($this->_arrayToDom($xml, $xml->createElement($key), $v));
+                        }
                     }
-                }
-                else
-                {
-                    if($key == '@text') {
-                        $node->appendChild($xml->createTextNode($value));
-                    } elseif($key == '@comment') {
-                        $node->appendChild($xml->createComment($value));
-                    } else {
-                        $node->appendChild($this->_arrayToDom($xml, $xml->createElement($key), $value));
+                    else
+                    {
+                        if($key == '@text') {
+                            $node->appendChild($xml->createTextNode($value));
+                        } elseif($key == '@comment') {
+                            $node->appendChild($xml->createComment($value));
+                        } else {
+                            $node->appendChild($this->_arrayToDom($xml, $xml->createElement($key), $value));
+                        }
                     }
-                }
 
-                unset($data[$key]); //remove the key from the array once done.
+                    unset($data[$key]); //remove the key from the array once done.
+                }
+            }
+            else
+            {
+                //Create siblling nodes using recursion
+                foreach($data as $item) {
+                    $node = $this->_arrayToDom($xml, $node, $item);
+                }
             }
         }
-
         //Append any text values
-        if (!is_array($data)) {
-            $node->appendChild($xml->createTextNode($this->_encodeValue($data)));
-        }
+        else  $node->appendChild($xml->createTextNode($this->_encodeValue($data)));
 
         return $node;
     }
