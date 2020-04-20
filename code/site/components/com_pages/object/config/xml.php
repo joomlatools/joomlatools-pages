@@ -18,7 +18,7 @@ class ComPagesObjectConfigXml extends KObjectConfigXml
             $dom = new DOMDocumentXml('1.0', 'UTF-8');
             $dom->preserveWhiteSpace = false;
 
-            if($dom->loadXml($string) === false) {
+            if($dom->loadXml($string, LIBXML_COMPACT) === false) {
                 throw new DomainException('Cannot parse XML string');
             }
 
@@ -77,7 +77,7 @@ class ComPagesObjectConfigXml extends KObjectConfigXml
                 if($child->nodeType == XML_TEXT_NODE)
                 {
                     if(!ctype_space($child->nodeValue)) {
-                        $result['@text'] = $child->nodeValue;
+                        $result['@text'] =  isset($result['@text']) ? $result['@text'].$child->nodeValue : $child->nodeValue;
                     }
 
                     continue;
