@@ -181,13 +181,13 @@ class ComPagesDataObject extends KObjectConfig implements JsonSerializable
     public function toHtml()
     {
         $html = new ComPagesObjectConfigHtml($this);
-        return $html->toDom();
+        return $html->toDom()->saveHtml();
     }
 
     public function toXml()
     {
         $html = new ComPagesObjectConfigXml($this);
-        return $html->toDom();
+        return $html->toDom()->saveXML();
     }
 
     public function toJson()
