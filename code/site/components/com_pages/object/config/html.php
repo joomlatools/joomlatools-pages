@@ -23,7 +23,7 @@ class ComPagesObjectConfigHtml extends ComPagesObjectConfigXml
             $dom->normalizeDocument();
             $dom->preserveWhiteSpace = false;
 
-            if($dom->loadHtml($string, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD | LIBXML_NOBLANKS) === false) {
+            if($dom->loadHtml($string, LIBXML_COMPACT, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD | LIBXML_NOBLANKS) === false) {
                 throw new DomainException('Cannot parse HTML string');
             }
 
