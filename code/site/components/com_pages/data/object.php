@@ -123,13 +123,11 @@ class ComPagesDataObject extends KObjectConfig implements JsonSerializable
         }
 
         //Do no return an array if we only found a single scalar result
-        if(count($data) == 1 && isset($data[0]) && !is_array($data[0])) {
+        if(count($data) == 1 && isset($data[0])) {
             $data = $data[0];
-        } else {
-            $data = new self($data);
         }
 
-        return $data;
+        return is_array($data) ? new self($data) : $data;
     }
 
     public function find($key)
@@ -152,14 +150,12 @@ class ComPagesDataObject extends KObjectConfig implements JsonSerializable
             }
         }
 
-        //Do no return an array if we only found a single scalar result
-        if(count($result) == 1 && isset($result[0]) && !is_array($result[0])) {
+        //Do no return an array if we only found one result
+        if(count($result) == 1  && isset($result[0])) {
             $result = $result[0];
-        } else {
-            $result = new self($result);
         }
 
-        return $result;
+        return is_array($result) ? new self($result) : $result;
     }
 
     public function toString()
