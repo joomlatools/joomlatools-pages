@@ -7,8 +7,8 @@ ports:
   - port: 3306
     onOpen: ignore
 tasks:
-  - init: composer install
-    command: composer install
+  - init: Bootstrap
+    command: ./.gitpod/bootstrap.sh
   - name: Terminal
     command: >
       echo "";
