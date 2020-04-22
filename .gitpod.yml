@@ -1,5 +1,5 @@
 image:
-  file: Dockerfile
+  file: .gitpod/Dockerfile
   context: .gitpod
 ports:
   - port: 8080
@@ -7,6 +7,8 @@ ports:
   - port: 3306
     onOpen: ignore
 tasks:
+  - init: Bootstrap
+    command: ./.gitpod/bootstrap.sh
   - name: Terminal
     command: >
       echo "";
