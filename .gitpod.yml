@@ -7,16 +7,15 @@ ports:
   - port: 3306
     onOpen: ignore
 tasks:
-  - init: Bootstrap
-    command: ./.gitpod/bootstrap.sh
-  - name: Terminal
+  - init: ./.gitpod/bootstrap.sh
+    name: Terminal
     command: >
-      echo "";
-      echo "Commands you can try:";
-      echo " * apachectl stop";
-      echo " * apachectl start";
-      echo " * gp open /var/log/apache2/access.log";
-      echo " * gp open /var/log/apache2/error.log";
+      echo "" &&
+      echo "Commands you can try:" &&
+      echo " * apachectl stop" &&
+      echo " * apachectl start" &&
+      echo " * gp open /var/log/apache2/access.log" &&
+      echo " * gp open /var/log/apache2/error.log"
   - name: Apache
     command: >
       apachectl start &&
