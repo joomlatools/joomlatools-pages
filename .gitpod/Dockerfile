@@ -8,8 +8,7 @@ COPY apache.conf /etc/apache2/apache2.conf
 
 COPY my.cnf /etc/mysql/my.cnf
 
-RUN /etc/init.d/mysql restart \
- && /etc/init.d/apache2 restart 
+RUN /etc/init.d/apache2 restart
 
 RUN apt-get update \
     && apt-get install php-ldap php-xml libxml2-dev build-essential php-yaml -y

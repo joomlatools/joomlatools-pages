@@ -9,6 +9,19 @@ composer install  --no-interaction
 # Install joomla/console
 composer global require joomlatools/console --no-interaction
 
+if [ ! -e /var/run/mysqld/gitpod-init.lock ]
+then
+    touch /var/run/mysqld/gitpod-init.lock
+
+    # initialize database structures on disk, if needed
+    [ ! -d /workspace/mysql ] && mysqld --initialize-insecure
+
+    # launch database, if not running
+    [ ! -e /var/run/mysqld/mysqld.pid ] && mysqld --daemonize
+
+    rm /var/run/mysqld/gitpod-init.lock
+fi
+
 # Set up a new Joomla site
 /home/gitpod/.composer/vendor/bin/joomla site:download preview --www="${GITPOD_REPO_ROOT}"
 /home/gitpod/.composer/vendor/bin/joomla site:install preview --www="${GITPOD_REPO_ROOT}" --mysql-login=root:
