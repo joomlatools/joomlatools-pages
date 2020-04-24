@@ -3,3 +3,8 @@ FROM gitpod/workspace-mysql:latest
 COPY apache.conf /etc/apache2/apache2.conf
 
 ENV APACHE_DOCROOT_IN_REPO="preview"
+
+USER root
+
+RUN apt-get update \
+    && apt-get install php-ldap php-xml libxml2-dev build-essential -y
