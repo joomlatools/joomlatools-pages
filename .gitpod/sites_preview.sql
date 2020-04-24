@@ -1,3 +1,6 @@
+SET GLOBAL sql_mode = 'NO_ENGINE_SUBSTITUTION';
+SET SESSION sql_mode = 'NO_ENGINE_SUBSTITUTION';
+
 DROP TABLE IF EXISTS `j_action_log_config`;
 CREATE TABLE `j_action_log_config` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
