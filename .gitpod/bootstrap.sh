@@ -27,11 +27,7 @@ mysql -uroot  sites_preview < /workspace/joomlatools-pages/.gitpod/sites_preview
 
 mkdir -p /workspace/joomlatools-pages/preview/joomlatools-pages/pages/
 
-touch /workspace/joomlatools-pages/preview/joomlatools-pages/pages/hello.html.php
-
-echo "<h1>Hello sexy, where have you been?</h1>" > /workspace/joomlatools-pages/preview/joomlatools-pages/pages/hello.html.php
-
-
+cp /workspace/joomlatools-pages/.gitpod/hello.html.php /workspace/joomlatools-pages/preview/joomlatools-pages/pages/hello.html.php
 ## This is all going to be have to run on dockerfile or gitpod.yml so when the workspace is rendered it is all good to go
 
 # problem with DATETIME insert
