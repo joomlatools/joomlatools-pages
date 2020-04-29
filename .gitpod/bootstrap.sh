@@ -8,9 +8,6 @@
 echo "Create the document root"
 mkdir -p "/var/www/preview"
 
-echo "Install Composer dependencies"
-composer install  --no-interaction
-
 echo "Install joomla/console"
 composer global require joomlatools/console --no-interaction
 
@@ -24,7 +21,7 @@ echo "Install the joomlatools/console-joomlatools helper plugin"
 joomla plugin:install joomlatools/console-joomlatools:dev-master
 
 echo "Clone Joomlatools FW"
-git clone -b master --depth 1 git@github.com:joomlatools/joomlatools-framework.git /workspace/joomlatools-framework
+git clone -b master --depth 1 https://github.com/joomlatools/joomlatools-framework.git /workspace/joomlatools-framework
 
 #ERROR 1292 (22007): Incorrect datetime value: '0000-00-00 00:00:00' for column 'checked_out_time' at row 1
 mysql -e "SET GLOBAL sql_mode = 'NO_ENGINE_SUBSTITUTION'; SET SESSION sql_mode = 'NO_ENGINE_SUBSTITUTION';"
