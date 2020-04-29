@@ -24,7 +24,12 @@ echo "* Install the joomlatools/console-joomlatools helper plugin"
 joomla plugin:install joomlatools/console-joomlatools:dev-master
 
 echo "* Clone Joomlatools FW"
-git clone -b master --depth 1 https://github.com/joomlatools/joomlatools-framework.git /workspace/joomlatools-framework
+[ ! -d /workspacejoomlatools-framework-files ] && git clone -b master --depth 1 https://github.com/joomlatools/joomlatools-framework-files.git /workspacejoomlatools-framework-files
+[ ! -d /workspacejoomlatools-framework-activities ] && git clone -b master --depth 1 https://github.com/joomlatools/joomlatools-framework-activities.git /workspacejoomlatools-framework-activities
+[ ! -d /workspacejoomlatools-framework-scheduler ] && git clone -b master --depth 1 https://github.com/joomlatools/joomlatools-framework-scheduler.git /workspacejoomlatools-framework-scheduler
+[ ! -d /workspacejoomlatools-framework-migrator ] && git clone -b master --depth 1 https://github.com/joomlatools/joomlatools-framework-migrator.git /workspacejoomlatools-framework-migrator
+[ ! -d /workspacejoomlatools-framework-ckeditor ] && git clone -b master --depth 1 https://github.com/joomlatools/joomlatools-framework-ckeditor.git /workspacejoomlatools-framework-ckeditor
+[ ! -d /workspacejoomlatools-framework-tags ] && git clone -b master --depth 1 https://github.com/joomlatools/joomlatools-framework-tags.git /workspacejoomlatools-framework-tags
 
 #ERROR 1292 (22007): Incorrect datetime value: '0000-00-00 00:00:00' for column 'checked_out_time' at row 1
 mysql -e "SET GLOBAL sql_mode = 'NO_ENGINE_SUBSTITUTION'; SET SESSION sql_mode = 'NO_ENGINE_SUBSTITUTION';"
