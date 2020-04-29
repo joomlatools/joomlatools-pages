@@ -31,7 +31,7 @@ mysql -e "SET GLOBAL sql_mode = 'NO_ENGINE_SUBSTITUTION'; SET SESSION sql_mode =
 
 echo "* Set up a new Joomla site"
 joomla site:download preview
-joomla site:install preview --mysql-login=root: --symlink=joomlatools-pages --projects-dir="/workspace"
+joomla site:install preview --mysql-login=root: --symlink=joomlatools-pages,joomlatools-framework --projects-dir="/workspace"
 
 #ensure that the componnent can be found, enable and correct state
 mysql -uroot  sites_preview < /workspace/joomlatools-pages/.gitpod/sites_preview.sql
