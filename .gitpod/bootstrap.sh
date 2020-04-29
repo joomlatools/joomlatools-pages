@@ -3,6 +3,7 @@
 ## This is all going to be have to run on dockerfile or gitpod.yml so when the workspace is rendered it is all good to go
 ## problem being first run, the preview bar opens to the side with apache permission errors. This is because the site isn't installed
 ## it is only installed  after the gitpod has been initialised
+## That and it  takes a ridiculous amount of time to wait for the site
 
 # Create the document root
 mkdir "${GITPOD_REPO_ROOT}/preview"
@@ -27,6 +28,10 @@ composer require joomlatools/framework:3.* --working-dir="${GITPOD_REPO_ROOT}/pr
 
 #extension install fubar... maybe wrong date time problem
 /home/gitpod/.composer/vendor/bin/joomla extension:install preview joomlatools-pages --www="${GITPOD_REPO_ROOT}"
+
+#ensure that the componnent can be found, enable and correct state 
+mysql -uroot  sites_preview < /workspace/joomlatools-pages/.gitpod/sites_preview.sql
+
 
 mkdir -p /workspace/joomlatools-pages/preview/joomlatools-pages/pages/
 
