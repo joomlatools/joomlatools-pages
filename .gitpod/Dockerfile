@@ -12,3 +12,5 @@ RUN apt-get update \
 RUN chown gitpod:gitpod -R /var/www/
 
 RUN mkdir /var/www/testing
+
+RUN echo 'sql-mode ="ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"' >> /etc/mysql/mysql.conf.d/mysqld.cnf

@@ -5,6 +5,9 @@
 ## it is only installed  after the gitpod has been initialised
 ## That and it  takes a ridiculous amount of time to wait for the site
 
+echo "restart mysql after docker config change"
+chmod +x /workspace/joomlatools-pages/.gitpod/mysql-restart.sh
+
 echo "Create the document root"
 mkdir -p "/var/www/preview"
 
