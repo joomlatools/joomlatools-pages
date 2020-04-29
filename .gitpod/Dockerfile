@@ -4,7 +4,7 @@ ENV APACHE_DOCROOT_IN_REPO="preview"
 
 USER root
 
-COPY apache.conf /etc/apache2/apache2.conf
+COPY .apache.conf /etc/apache2/apache2.conf
 
 RUN apt-get update \
     && apt-get install php-ldap php-xml libxml2-dev build-essential php-yaml -y
