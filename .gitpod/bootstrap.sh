@@ -26,10 +26,12 @@ composer require joomlatools/framework:3.* --working-dir="${GITPOD_REPO_ROOT}/pr
 
 /home/gitpod/.composer/vendor/bin/joomla extension:symlink preview joomlatools-pages --www="${GITPOD_REPO_ROOT}"  --projects-dir="/workspace"
 
-#extension install fubar... maybe wrong date time problem
+#extension install fubar... most probably command related I remember:
+#joomla site:create testing --symlink=joomlatools-pages,joomlatools-framework
+#works out of the box where as extension:install doesn't
 /home/gitpod/.composer/vendor/bin/joomla extension:install preview joomlatools-pages --www="${GITPOD_REPO_ROOT}"
 
-#ensure that the componnent can be found, enable and correct state 
+#ensure that the componnent can be found, enable and correct state
 mysql -uroot  sites_preview < /workspace/joomlatools-pages/.gitpod/sites_preview.sql
 
 
