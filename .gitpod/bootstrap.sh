@@ -14,7 +14,7 @@ composer install  --no-interaction
 composer global require joomlatools/console --no-interaction
 
 #ERROR 1292 (22007): Incorrect datetime value: '0000-00-00 00:00:00' for column 'checked_out_time' at row 1
-mysql -uroot  sites_preview < /workspace/joomlatools-pages/.gitpod/set_globals.sql
+mysql -e "SET GLOBAL sql_mode = 'NO_ENGINE_SUBSTITUTION'; SET SESSION sql_mode = 'NO_ENGINE_SUBSTITUTION';"
 
 # Set up a new Joomla site
 /home/gitpod/.composer/vendor/bin/joomla site:download preview --www="${GITPOD_REPO_ROOT}"
