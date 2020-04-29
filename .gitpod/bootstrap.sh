@@ -24,6 +24,7 @@ echo "* Install the joomlatools/console-joomlatools helper plugin"
 joomla plugin:install joomlatools/console-joomlatools:dev-master
 
 echo "* Clone Joomlatools FW"
+[ ! -d /workspace/joomlatools-framework ] && git clone -b master --depth 1 https://github.com/joomlatools/joomlatools-framework.git /workspace/joomlatools-framework
 [ ! -d /workspace/joomlatools-framework-files ] && git clone -b master --depth 1 https://github.com/joomlatools/joomlatools-framework-files.git /workspace/joomlatools-framework-files
 [ ! -d /workspace/joomlatools-framework-activities ] && git clone -b master --depth 1 https://github.com/joomlatools/joomlatools-framework-activities.git /workspace/joomlatools-framework-activities
 [ ! -d /workspace/joomlatools-framework-scheduler ] && git clone -b master --depth 1 https://github.com/joomlatools/joomlatools-framework-scheduler.git /workspace/joomlatools-framework-scheduler
