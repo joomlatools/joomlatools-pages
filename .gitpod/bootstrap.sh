@@ -8,28 +8,28 @@
 echo "restart mysql after docker config change"
 chmod +x /workspace/joomlatools-pages/.gitpod/mysql-restart.sh
 
-echo "Create the document root"
+echo "* Create the document root"
 mkdir -p "/var/www/preview"
 
-echo "Install joomla/console"
+echo "* Install joomla/console"
 composer global require joomlatools/console --no-interaction
 
-echo "Add joomla/console to the PATH in the current session"
+echo "* Add joomla/console to the PATH in the current session"
 export PATH=/home/gitpod/.composer/vendor/bin/:$PATH
 
-echo "Make sure PATH is always updated"
-echo "export PATH=/home/gitpod/.composer/vendor/bin/:$PATH" >> ~/.bashrc
+echo "* Make sure PATH is always updated"
+echo "* export PATH=/home/gitpod/.composer/vendor/bin/:$PATH" >> ~/.bashrc
 
-echo "Install the joomlatools/console-joomlatools helper plugin"
+echo "* Install the joomlatools/console-joomlatools helper plugin"
 joomla plugin:install joomlatools/console-joomlatools:dev-master
 
-echo "Clone Joomlatools FW"
+echo "* Clone Joomlatools FW"
 git clone -b master --depth 1 https://github.com/joomlatools/joomlatools-framework.git /workspace/joomlatools-framework
 
 #ERROR 1292 (22007): Incorrect datetime value: '0000-00-00 00:00:00' for column 'checked_out_time' at row 1
 mysql -e "SET GLOBAL sql_mode = 'NO_ENGINE_SUBSTITUTION'; SET SESSION sql_mode = 'NO_ENGINE_SUBSTITUTION';"
 
-echo "Set up a new Joomla site"
+echo "* Set up a new Joomla site"
 joomla site:download preview
 joomla site:install preview --mysql-login=root: --symlink=joomlatools-pages --projects-dir="/workspace"
 
