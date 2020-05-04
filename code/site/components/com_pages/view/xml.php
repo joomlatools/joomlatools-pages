@@ -22,7 +22,7 @@ class ComPagesViewXml extends KViewTemplate
     protected function _actionRender(KViewContext $context)
     {
         //Prepend the xml prolog
-        $content  = '<?xml version="1.0" encoding="utf-8" ?>';
+        $content  = '<?xml version="1.0" encoding="utf-8" ?>'."\n";
         $content .= $this->getContent();
 
         return trim($content);
