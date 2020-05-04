@@ -14,6 +14,8 @@ RUN mkdir /var/www/preview
 
 RUN composer global require joomlatools/console --no-interaction
 
+RUN export PATH=/home/gitpod/.composer/vendor/bin/:$PATH
+
 RUN joomla plugin:install joomlatools/console-joomlatools:dev-master
 
 RUN  git clone -b master --depth 1 https://github.com/joomlatools/joomlatools-framework.git /workspace/joomlatools-framework; \
