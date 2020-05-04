@@ -23,4 +23,3 @@ RUN /home/gitpod/.composer/vendor/bin/joomla site:download preview
 RUN chown gitpod:gitpod -R /home/gitpod/.composer
 RUN chown gitpod:gitpod -R /home/gitpod/.joomlatools
 RUN chown gitpod:gitpod -R /var/www/
-RUN chown gitpod:gitpod -R /workspace
