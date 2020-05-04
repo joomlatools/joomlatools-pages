@@ -35,4 +35,6 @@ RUN /home/gitpod/.composer/vendor/bin/joomla plugin:install joomlatools/console-
 
 #RUN mysql -uroot  sites_preview < /workspace/joomlatools-pages/.gitpod/sites_preview.sql
 
+RUN chown gitpod:gitpod -R /home/gitpod/.composer
+RUN chown gitpod:gitpod -R /home/gitpod/.joomlatools
 RUN chown gitpod:gitpod -R /var/www/
