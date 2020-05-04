@@ -9,18 +9,16 @@ COPY apache.conf /etc/apache2/apache2.conf
 RUN apt-get update \
     && apt-get install php-ldap php-xml libxml2-dev build-essential php-yaml -y
 
-RUN chown gitpod:gitpod -R /var/www/
-
 #note apache restarts and complains the folder doesn't exist
 RUN mkdir /var/www/preview
 
-RUN composer global require joomlatools/console --no-interaction --working-dir=/home/gitpod/.composer/
+RUN composer global require joomlatools/console --no-interaction
 
-RUN export PATH=/home/gitpod/.composer/vendor/bin/:$PATH
+RUN export PATH=/root/.composer/vendor/bin/:$PATH
 
-RUN export PATH=/home/gitpod/.composer/vendor/bin/:$PATH" >> /home/gitpod/.bashrc
+RUN export PATH=/root/.composer/vendor/bin/:$PATH" >> ~/.bashrc
 
-RUN php /home/gitpod/.composer/vendor/bin/joomla plugin:install joomlatools/console-joomlatools:dev-master
+RUN joomla plugin:install joomlatools/console-joomlatools:dev-master
 
 RUN  if test -d /workspace/joomlatools-framework; git clone -b master --depth 1 https://github.com/joomlatools/joomlatools-framework.git /workspace/joomlatools-framework; fi \
     && if test -d /workspace/joomlatools-framework-files; git clone -b master --depth 1 https://github.com/joomlatools/joomlatools-framework-files.git /workspace/joomlatools-framework-files; fi \
@@ -33,8 +31,10 @@ RUN  if test -d /workspace/joomlatools-framework; git clone -b master --depth 1 
 ##ERROR 1292 (22007): Incorrect datetime value: '0000-00-00 00:00:00' for column 'checked_out_time' at row 1
 RUN mysql -e "SET GLOBAL sql_mode = 'NO_ENGINE_SUBSTITUTION'; SET SESSION sql_mode = 'NO_ENGINE_SUBSTITUTION';"
 
-RUN php /home/gitpod/.composer/vendor/bin/joomla site:download preview
+RUN joomla site:download preview
 
-RUN php /home/gitpod/.composer/vendor/bin/joomla site:install preview --mysql-login=root:
+RUN joomla site:install preview --mysql-login=root:
 
 RUN mysql -uroot  sites_preview < /workspace/joomlatools-pages/.gitpod/sites_preview.sql
+
+RUN chown gitpod:gitpod -R /var/www/
