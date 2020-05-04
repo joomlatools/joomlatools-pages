@@ -1,0 +1,13 @@
+{
+   "folders": [
+      {
+         "path": "file:///workspace/joomlatools-pages"
+      },
+      {
+         "path": "file:///var/www/preview"
+      }
+   ],
+   "settings": {
+       "explorer.autoReveal": true
+   }
+}
