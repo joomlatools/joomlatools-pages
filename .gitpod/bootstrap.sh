@@ -1,4 +1,7 @@
 #!/bin/bash
+
+cp /workspace/joomlatools-pages/.gitpod/joomlatools-pages.theia-workspace /home/gitpod/.theia/recentworkspace.json
+
 echo "* Ensure mysql can be resarted easily"
 chmod +x /workspace/joomlatools-pages/.gitpod/mysql-restart.sh
 

@@ -17,7 +17,6 @@ tasks:
       echo " * gp open /var/log/apache2/error.log" &&
       echo " * sh .gitpod/mysql-restart.sh" &&
       echo " * sh .gitpod/bootstrap.sh "
-      cp .gitpod/joomlatools-pages.theia-workspace /home/gitpod/.theia/
   - name: Apache
     command: >
       apachectl start &&
