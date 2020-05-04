@@ -2,10 +2,10 @@
 echo "* Ensure mysql can be resarted easily"
 chmod +x /workspace/joomlatools-pages/.gitpod/mysql-restart.sh
 
-#echo "* Add joomla/console to the PATH in the current session"
+echo "* Add joomla/console to the PATH in the current session"
 export PATH=/home/gitpod/.composer/vendor/bin/:$PATH
 
-#ERROR 1292 (22007): Incorrect datetime value: '0000-00-00 00:00:00' for column 'checked_out_time' at row 1
+echo "* Fix mysql settings for session"
 mysql -e "SET GLOBAL sql_mode = 'NO_ENGINE_SUBSTITUTION'; SET SESSION sql_mode = 'NO_ENGINE_SUBSTITUTION';"
 
 echo "* Clone Joomlatools FW"
@@ -19,11 +19,10 @@ echo "* Clone Joomlatools FW"
 
 mysql -u root -e 'DROP DATABASE IF EXISTS sites_preview'
 
-#echo "* Set up a new Joomla site"
+echo "* Set up a new Joomla site"
 joomla site:install preview --mysql-login=root: --symlink=joomlatools-pages,joomlatools-framework --projects-dir="/workspace"
 
-#ensure that the componnent can be found, enable and correct state
-mysql -uroot  sites_preview < /workspace/joomlatools-pages/.gitpod/sites_preview.sql
+echo "* Creating new Joomlatools-pages content"
 
 mkdir -p /var/www/preview/joomlatools-pages/pages/
 
@@ -32,8 +31,7 @@ cp /workspace/joomlatools-pages/.gitpod/hello.html.php /var/www/preview/joomlato
 #ensure that the componnent can be found, enable and correct state
 mysql -uroot  sites_preview < /workspace/joomlatools-pages/.gitpod/sites_preview.sql
 
-mkdir -p /var/www/preview/joomlatools-pages/pages/
-
-cp /workspace/joomlatools-pages/.gitpod/hello.html.php /var/www/preview/joomlatools-pages/pages/hello.html.php
+echo "* Symlinking Joomlatools-pages content  to editor workspace"
+ln -s /var/www/preview/joomlatools-pages/* /workspace/joomlatools-pages/content/
 
 
