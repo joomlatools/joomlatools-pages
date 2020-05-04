@@ -39,8 +39,8 @@ chmod +x /workspace/joomlatools-pages/.gitpod/mysql-restart.sh
 #ensure that the componnent can be found, enable and correct state
 #mysql -uroot  sites_preview < /workspace/joomlatools-pages/.gitpod/sites_preview.sql
 
-mkdir -p /var/www/preview/joomlatools-pages/pages/
+#mkdir -p /var/www/preview/joomlatools-pages/pages/
 
-cp /workspace/joomlatools-pages/.gitpod/hello.html.php /var/www/preview/joomlatools-pages/pages/hello.html.php
+#cp /workspace/joomlatools-pages/.gitpod/hello.html.php /var/www/preview/joomlatools-pages/pages/hello.html.php
 
 
