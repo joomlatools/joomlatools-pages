@@ -7,7 +7,7 @@ ports:
   - port: 3306
     onOpen: ignore
 tasks:
-  - init: ./.gitpod/bootstrap.sh
+  - before: ./.gitpod/bootstrap.sh
     name: Terminal
     command: >
       echo "" &&
