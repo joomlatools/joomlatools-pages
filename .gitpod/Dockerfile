@@ -29,7 +29,7 @@ RUN /home/gitpod/.composer/vendor/bin/joomla plugin:install joomlatools/console-
 ##ERROR 1292 (22007): Incorrect datetime value: '0000-00-00 00:00:00' for column 'checked_out_time' at row 1
 #RUN mysql -e "SET GLOBAL sql_mode = 'NO_ENGINE_SUBSTITUTION'; SET SESSION sql_mode = 'NO_ENGINE_SUBSTITUTION';"
 
-#RUN /home/gitpod/.composer/vendor/bin/joomla site:download preview
+RUN /home/gitpod/.composer/vendor/bin/joomla site:download preview
 
 #RUN /home/gitpod/.composer/vendor/bin/joomla site:install preview --mysql-login=root:
 
