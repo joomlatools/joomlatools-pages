@@ -6,13 +6,13 @@ ports:
   - port: 3306
     onOpen: ignore
 tasks:
-  - before: ./.gitpod/bootstrap.sh
-      name: Apache
-      command: >
+  - name: Apache
+    command: >
       apachectl start &&
       multitail /var/log/apache2/access.log -I /var/log/apache2/error.log
-  -  name: Terminal
-     command: >
+  - before: ./.gitpod/bootstrap.sh
+    name: Terminal
+    command: >
       echo "" &&
       echo "Commands you can try:" &&
       echo " * apachectl stop" &&
