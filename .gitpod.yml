@@ -3,7 +3,6 @@ image:
   context: .gitpod
 ports:
   - port: 8080
-    onOpen: open-preview
   - port: 3306
     onOpen: ignore
 tasks:
