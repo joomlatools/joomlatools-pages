@@ -16,7 +16,7 @@ RUN composer global require joomlatools/console --no-interaction
 
 RUN export PATH=/root/.composer/vendor/bin/:$PATH
 
-RUN export PATH=/root/.composer/vendor/bin/:$PATH" >> ~/.bashrc
+RUN export "PATH=/root/.composer/vendor/bin/:$PATH" >> /root/.bashrc
 
 RUN joomla plugin:install joomlatools/console-joomlatools:dev-master
 
