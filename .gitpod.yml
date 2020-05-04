@@ -7,11 +7,7 @@ ports:
     onOpen: ignore
 tasks:
   - before: ./.gitpod/bootstrap.sh
-    name: Apache
-    command: >
-      apachectl start &&
-      multitail /var/log/apache2/access.log -I /var/log/apache2/error.log
-  - name: Terminal
+    name: Terminal
     command: >
       echo "" &&
       echo "Commands you can try:" &&
@@ -21,3 +17,5 @@ tasks:
       echo " * gp open /var/log/apache2/error.log" &&
       echo " * sh .gitpod/mysql-restart.sh" &&
       echo " * sh .gitpod/bootstrap.sh "
+      apachectl start &&
+      multitail /var/log/apache2/access.log -I /var/log/apache2/error.log
