@@ -31,7 +31,7 @@ mkdir -p /var/www/preview/joomlatools-pages/pages/
 
 cp /workspace/joomlatools-pages/.gitpod/config.php /var/www/preview/joomlatools-pages/pages/config.php
 
-cp /workspace/joomlatools-pages/.gitpod/hello.html.php /var/www/preview/joomlatools-pages/pages/hello.html.php
+cp /workspace/joomlatools-pages/.gitpod/index.html.php /var/www/preview/joomlatools-pages/pages/index.html.php
 
 #ensure that the componnent can be found, enable and correct state
 mysql -uroot  sites_preview < /workspace/joomlatools-pages/.gitpod/sites_preview.sql
