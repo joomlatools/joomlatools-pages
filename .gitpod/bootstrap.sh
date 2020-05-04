@@ -26,6 +26,8 @@ echo "* Creating new Joomlatools-pages content"
 
 mkdir -p /var/www/preview/joomlatools-pages/pages/
 
+cp /workspace/joomlatools-pages/.gitpod/config.php /var/www/preview/joomlatools-pages/pages/config.php
+
 cp /workspace/joomlatools-pages/.gitpod/hello.html.php /var/www/preview/joomlatools-pages/pages/hello.html.php
 
 #ensure that the componnent can be found, enable and correct state
