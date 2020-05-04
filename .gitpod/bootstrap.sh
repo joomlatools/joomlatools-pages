@@ -18,21 +18,24 @@ echo "* Clone Joomlatools FW"
 [ ! -d /workspace/joomlatools-framework-tags ] && git clone -b master --depth 1 https://github.com/joomlatools/joomlatools-framework-tags.git /workspace/joomlatools-framework-tags
 
 
-#echo "* Set up a new Joomla site"
-joomla site:install preview --mysql-login=root: --symlink=joomlatools-pages,joomlatools-framework --projects-dir="/workspace"
+#dont reinstall the site if  the workspace is relaunched
+if [ ! -f /var/www/preview/joomlatools-pages/pages/hello.html.php ]
+then
+  #echo "* Set up a new Joomla site"
+  joomla site:install preview --mysql-login=root: --symlink=joomlatools-pages,joomlatools-framework --projects-dir="/workspace"
 
-#ensure that the componnent can be found, enable and correct state
-mysql -uroot  sites_preview < /workspace/joomlatools-pages/.gitpod/sites_preview.sql
+  #ensure that the componnent can be found, enable and correct state
+  mysql -uroot  sites_preview < /workspace/joomlatools-pages/.gitpod/sites_preview.sql
 
-mkdir -p /var/www/preview/joomlatools-pages/pages/
+  mkdir -p /var/www/preview/joomlatools-pages/pages/
 
-cp /workspace/joomlatools-pages/.gitpod/hello.html.php /var/www/preview/joomlatools-pages/pages/hello.html.php
+  cp /workspace/joomlatools-pages/.gitpod/hello.html.php /var/www/preview/joomlatools-pages/pages/hello.html.php
 
-#ensure that the componnent can be found, enable and correct state
-mysql -uroot  sites_preview < /workspace/joomlatools-pages/.gitpod/sites_preview.sql
+  #ensure that the componnent can be found, enable and correct state
+  mysql -uroot  sites_preview < /workspace/joomlatools-pages/.gitpod/sites_preview.sql
 
-mkdir -p /var/www/preview/joomlatools-pages/pages/
+  mkdir -p /var/www/preview/joomlatools-pages/pages/
 
-cp /workspace/joomlatools-pages/.gitpod/hello.html.php /var/www/preview/joomlatools-pages/pages/hello.html.php
-
+  cp /workspace/joomlatools-pages/.gitpod/hello.html.php /var/www/preview/joomlatools-pages/pages/hello.html.php
+fi
 
