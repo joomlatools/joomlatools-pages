@@ -32,6 +32,8 @@ class ComPagesTemplateDefault extends KTemplate
             'functions' => [
                 'date'       => [$this, '_formatDate'],
                 'data'       => [$this, '_fetchData'],
+                'xml'        => [$this, '_fetchXml'],
+                'html'       => [$this, '_fetchHtml'],
                 'slug'       => [$this, '_createSlug'],
                 'attributes' => [$this, '_createAttributes'],
                 'config'     => [$this, '_getConfig'],
@@ -139,7 +141,7 @@ class ComPagesTemplateDefault extends KTemplate
         if(!empty($parts)) {
             $identifier = implode('.', $parts).'.template.helper.'.$identifier;
         }
-        
+
         $helper = $this->createHelper($identifier);
 
         //Call the helper function
@@ -280,7 +282,7 @@ class ComPagesTemplateDefault extends KTemplate
 
     protected function _fetchData($path)
     {
-        $result = false;
+        $result = array();
         if(is_array($path))
         {
             if(is_numeric(key($path)))
@@ -310,6 +312,64 @@ class ComPagesTemplateDefault extends KTemplate
             } else {
                 $result = $this->getObject('data.registry')->fromUrl($path);
             }
+        }
+
+        return $result;
+    }
+
+    protected function _fetchHtml($html = array())
+    {
+        $data = false;
+
+        if(is_string($html))
+        {
+            if(trim($html)[0] != '<') {
+                $data = $this->_fetchData($html);
+            }
+        }
+        else
+        {
+            if(!$html instanceof KObjectConfigInterface) {
+                $data = $this->_fetchData($html);
+            } else {
+                $data = $html;
+            }
+        }
+
+        $config = new ComPagesObjectConfigHtml();
+        if(is_string($html) && $data === false) {
+            $result = $config->fromString($html, false);
+        } else {
+            $result = $config->fromArray($data, false);
+        }
+
+        return $result;
+    }
+
+    protected function _fetchXml($xml = array())
+    {
+        $data = false;
+
+        if(is_string($xml))
+        {
+            if(trim($xml)[0] != '<') {
+                $data = $this->_fetchData($xml);
+            }
+        }
+        else
+        {
+            if(!$xml instanceof KObjectConfigInterface) {
+                $data = $this->_fetchData($xml);
+            } else {
+                $data = $xml;
+            }
+        }
+
+        $config = new ComPagesObjectConfigXml();
+        if(is_string($xml) && $data === false) {
+            $result = $config->fromString($xml, false);
+        } else {
+            $result = $config->fromArray($data, false);
         }
 
         return $result;
