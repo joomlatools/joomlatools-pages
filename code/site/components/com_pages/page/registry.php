@@ -44,7 +44,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             'cache'         => JDEBUG ? false : true,
             'cache_path'    => $this->getObject('com://site/pages.config')->getSitePath('cache'),
             'cache_validation' => true,
-            'collections' => array(),
+            'collections' => array('pages' => ['model' => 'com://site/pages.model.pages']),
             'redirects'   => array(),
             'properties'  => array(),
         ]);
