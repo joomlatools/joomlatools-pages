@@ -45,6 +45,9 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
                 $identifier = $temp;
             }
 
+            //Set the name
+            $config['name'] = $name;
+
             //Set the type
             if($collection->has('type')) {
                 $config['type'] = $collection->type;
