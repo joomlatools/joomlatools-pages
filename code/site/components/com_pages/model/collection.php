@@ -10,6 +10,7 @@
 abstract class ComPagesModelCollection extends KModelAbstract implements ComPagesModelInterface, ComPagesModelFilterable
 {
     private $__type;
+    private $__name;
 
     public function __construct(KObjectConfig $config)
     {
@@ -27,13 +28,17 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
 
         //Set the type
         $this->__type = $config->type;
+
+        //Set the name
+        $this->__name = $config->name;
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
             'entity' => $this->getIdentifier()->getName(),
-            'type'             =>  '',
+            'type'             => '', //the collection type used when generating JSDNAPI
+            'name'             => '', //the collection name used to generate this model
             'identity_key'     => null,
             'behaviors'   => [
                 'com://site/pages.model.behavior.paginatable',
@@ -80,6 +85,11 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
     public function getType()
     {
         return $this->__type;
+    }
+
+    public function getName()
+    {
+        return $this->__name;
     }
 
     public function getIdentityKey()
