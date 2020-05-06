@@ -19,6 +19,8 @@ RUN mkdir /var/www/preview
 
 # Fix file permissions
 RUN chown gitpod:gitpod -R /var/www/
+RUN chown gitpod:gitpod -R /etc/apache2/
+RUN chown gitpod:gitpod -R /etc/mysql/
 
 USER gitpod
 
