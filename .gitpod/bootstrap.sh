@@ -13,7 +13,7 @@ joomla extension:symlink preview joomlatools-framework joomlatools-pages --proje
 joomla extension:install preview all
 
 echo "* Setting up Joomlatools-pages content"
-ln -fs /var/www/preview/joomlatools-pages/pages /workspace/joomlatools-pages/pages
+ln -fs /var/www/preview/joomlatools-pages /workspace/joomlatools-pages
 
 echo "* Launch preview pane"
 gp preview $(gp url 8080)

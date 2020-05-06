@@ -43,5 +43,3 @@ RUN rm -f /home/gitpod/joomla-install.sh
 RUN mkdir -p /var/www/preview/joomlatools-pages/
 COPY --chown=gitpod:gitpod config.php /var/www/preview/joomlatools-pages/config.php
 COPY --chown=gitpod:gitpod index.html.php /var/www/preview/joomlatools-pages/pages/index.html.php
-
-RUN ln -s /workspace/joomlatools-pages/content/ /var/www/preview/joomlatools-pages/
