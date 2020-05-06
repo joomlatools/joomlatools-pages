@@ -1,6 +1,8 @@
 FROM gitpod/workspace-mysql:latest
 
 ENV APACHE_DOCROOT_IN_REPO="preview"
+ENV APACHE_RUN_USER="gitpod"
+ENV APACHE_RUN_GROUP="gitpod"
 
 USER root
 
