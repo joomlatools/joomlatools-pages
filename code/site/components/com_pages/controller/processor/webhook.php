@@ -12,7 +12,10 @@ class ComPagesControllerProcessorWebhook extends ComPagesControllerProcessorAbst
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'url' => '',
+            'method'  => KHttpRequest::POST,
+            'url'     => '',
+            'headers' => [],
+            'format' => null,
         ]);
 
         parent::_initialize($config);
@@ -20,16 +23,25 @@ class ComPagesControllerProcessorWebhook extends ComPagesControllerProcessorAbst
 
     public function processData(array $data)
     {
-        $url = $this->getUrl();
+        $data = $this->getPayload($data);
 
         $request = $this->getObject('http.request')
             ->setMethod($this->getMethod())
-            ->setUrl($url)
-            ->setContent(http_build_query($data, '', '&'), 'application/x-www-form-urlencoded');
+            ->setUrl($this->getUrl());
 
+        //Set the content
+        if(is_array($data))
+        {
+            $content = http_build_query($data, '', '&');
+            $request->setContent($content, 'application/x-www-form-urlencoded');
+        }
+        else $request->setContent((string) $data, $data->getMediaType());
+
+        //Add the headers
         $request->getHeaders()->add($this->getHeaders());
 
-        $this->getObject('lib:http.client')->send($request);
+        //Send content
+        return $this->getObject('lib:http.client')->send($request);
     }
 
     public function getUrl()
@@ -39,14 +51,28 @@ class ComPagesControllerProcessorWebhook extends ComPagesControllerProcessorAbst
 
     public function getMethod()
     {
-        return KHttpRequest::POST;
+        return $this->getConfig()->method;
     }
 
     public function getHeaders()
     {
-        $headers = array();
+        $headers = KObjectConfig::unbox($this->getConfig()->headers);
         $headers['Origin'] = $this->getRequest()->getOrigin();
 
         return $headers;
+    }
+
+    public function getPayload(array $data)
+    {
+        if($format = $this->getConfig()->format)
+        {
+            $factory = $this->getObject('object.config.factory');
+
+            if($factory->isRegistered($format)) {
+                $data = $factory->createFormat($format, $data);
+            }
+        }
+
+        return $data;
     }
 }
