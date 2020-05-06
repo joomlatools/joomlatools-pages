@@ -6,7 +6,7 @@ export PATH=/home/gitpod/.composer/vendor/bin/:$PATH
 
 joomla plugin:install joomlatools/console-joomlatools:dev-master
 
-mkdidr ~/Projects
+mkdir ~/Projects
 
 echo "* Clone Joomlatools FW"
 [ ! -d ~/Projects/joomlatools-framework ] && git clone -b master --depth 1 https://github.com/joomlatools/joomlatools-framework.git ~/Projects/joomlatools-framework

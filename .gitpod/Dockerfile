@@ -23,6 +23,5 @@ RUN composer global require joomlatools/console --no-interaction
 RUN echo 'export PATH=/home/gitpod/.composer/vendor/bin/:$PATH' >> ~/.bashrc
 
 COPY joomla-install.sh /home/gitpod/joomla-install.sh
-RUN chmod +x /home/gitpod/joomla-install.sh \
- && /home/gitpod/joomla-install.sh
+RUN /home/gitpod/joomla-install.sh
 
