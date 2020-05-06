@@ -8,19 +8,19 @@ ports:
 tasks:
   #- name: Copy editor configurations
   #  command: /workspace/joomlatools-pages/.gitpod/joomlatools-pages.theia-workspace /home/gitpod/.theia/recentworkspace.json
-  - init: /workspace/joomlatools-pages/.gitpod/bootstrap.sh
-    name: Apache
-    command: >
-      apachectl start &&
-      gp preview $(gp url 8080) &&
+  - name: Apache
+    command: |
+      apachectl start
       multitail /var/log/apache2/access.log -I /var/log/apache2/error.log
-  - name: Terminal
-    command: >
-      echo "" &&
-      echo "Commands you can try:" &&
-      echo " * apachectl stop" &&
-      echo " * apachectl start" &&
-      echo " * gp open /var/log/apache2/access.log" &&
-      echo " * gp open /var/log/apache2/error.log" &&
-      echo " * sh .gitpod/mysql-restart.sh" &&
-      echo " * sh .gitpod/bootstrap.sh "
+  - init: /workspace/joomlatools-pages/.gitpod/bootstrap.sh
+    name: Terminal
+    command: |
+      gp preview $(gp url 8080)
+      echo ""
+      echo "Commands you can try:"
+      echo " * apachectl stop"
+      echo " * apachectl start"
+      echo " * gp open /var/log/apache2/access.log"
+      echo " * gp open /var/log/apache2/error.log"
+      echo " * gp preview $(gp url 8080)"
+      echo " * sh .gitpod/mysql-restart.sh"

@@ -17,5 +17,7 @@ echo "* Clone Joomlatools FW"
 [ ! -d ~/Projects/joomlatools-framework-ckeditor ] && git clone -b master --depth 1 https://github.com/joomlatools/joomlatools-framework-ckeditor.git ~/Projects/joomlatools-framework-ckeditor
 [ ! -d ~/Projects/joomlatools-framework-tags ] && git clone -b master --depth 1 https://github.com/joomlatools/joomlatools-framework-tags.git ~/Projects/joomlatools-framework-tags
 
+ln -s /workspace/joomlatools-pages ~/Projects/
+
 echo "* Download a new Joomla site"
 joomla site:download preview
