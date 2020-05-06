@@ -30,13 +30,11 @@ echo "* Creating new Joomlatools-pages content"
 mkdir -p /var/www/preview/joomlatools-pages/pages/
 
 cp /workspace/joomlatools-pages/.gitpod/config.php /var/www/preview/joomlatools-pages/pages/config.php
-
 cp /workspace/joomlatools-pages/.gitpod/index.html.php /var/www/preview/joomlatools-pages/pages/index.html.php
 
-#ensure that the componnent can be found, enable and correct state
+# Ensure that the component can be found, enable and correct state
 mysql -uroot  sites_preview < /workspace/joomlatools-pages/.gitpod/sites_preview.sql
 
 echo "* Symlinking Joomlatools-pages content  to editor workspace"
-ln -s /var/www/preview/joomlatools-pages/* /workspace/joomlatools-pages/content/
-
+ln -fs /var/www/preview/joomlatools-pages/* /workspace/joomlatools-pages/content/
 
