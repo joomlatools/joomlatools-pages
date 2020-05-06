@@ -18,6 +18,11 @@ RUN echo -e "\nsql-mode=\"NO_ENGINE_SUBSTITUTION\"" >> /etc/mysql/mysql.conf.d/m
 RUN mkdir /var/www/preview \
  && chown gitpod:gitpod /var/www/preview
 
+# Fix file permissions
+RUN chown -R gitpod:gitpod /var/www/
+RUN chown -R gitpod:gitpod /etc/apache2/
+RUN chown -R gitpod:gitpod /etc/mysql/
+
 USER gitpod
 
 # Install joomlatools/console
@@ -34,10 +39,6 @@ RUN rm -f /home/gitpod/joomla-install.sh
 
 # Copy the Pages content files into place
 RUN mkdir -p /var/www/preview/joomlatools-pages/pages
-COPY config.php /var/www/preview/joomlatools-pages/pages/config.php
-COPY index.html.php /var/www/preview/joomlatools-pages/pages/index.html.php
+COPY --chown=gitpod:gitpod config.php /var/www/preview/joomlatools-pages/pages/config.php
+COPY --chown=gitpod:gitpod index.html.php /var/www/preview/joomlatools-pages/pages/index.html.php
 
-# Fix file permissions
-RUN chown -R gitpod:gitpod /var/www/
-RUN chown -R gitpod:gitpod /etc/apache2/
-RUN chown -R gitpod:gitpod /etc/mysql/
