@@ -21,7 +21,7 @@ ln -s /workspace/joomlatools-pages ~/Projects/
 
 echo "* Create a new Joomla site"
 joomla site:download preview
-joomla site:install preview --overwrite --drop --mysql-login=root: --projects-dir="/home/gitpod/Projects"
+joomla site:configure preview --overwrite --mysql-login=root:
 
 echo "* Create directory for Pages content"
 mkdir -p /var/www/preview/joomlatools-pages/pages/

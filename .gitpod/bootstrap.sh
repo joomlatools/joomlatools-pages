@@ -7,7 +7,8 @@ set -e
 echo "* (Re)installing Joomlatools Pages into the preview site"
 joomla extension:symlink preview joomlatools-framework joomlatools-pages --projects-dir="/home/gitpod/Projects"
 
-echo "* Updating database"
+echo "* Installing Joomla database"
+joomla database:install preview --drop --mysql-login=root:
 mysql -uroot sites_preview < /workspace/joomlatools-pages/.gitpod/sites_preview.sql
 
 echo "* Symlinking Joomlatools-pages content to editor workspace"
