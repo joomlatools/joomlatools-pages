@@ -4,17 +4,21 @@ ENV APACHE_DOCROOT_IN_REPO="preview"
 
 USER root
 
+# Configure Apache2
 COPY apache.conf /etc/apache2/apache2.conf
 
+# Install extra PHP extensions
 RUN apt-get update \
  && apt-get install php-ldap php-xml libxml2-dev build-essential php-yaml -y
 
+# Configure MySQL's sql-mode
 RUN echo -e "\nsql-mode=\"NO_ENGINE_SUBSTITUTION\"" >> /etc/mysql/mysql.conf.d/mysqld.cnf
 
-#note apache restarts and complains the folder doesn't exist
+# Note: Apache restarts and complains the folder doesn't exist
 RUN mkdir /var/www/preview
-RUN chown gitpod:gitpod -R /var/www/
 
+# Fix file permissions
+RUN chown gitpod:gitpod -R /var/www/
 
 USER gitpod
 
@@ -28,7 +32,5 @@ RUN echo 'export PATH=/home/gitpod/.composer/vendor/bin/:$PATH' >> ~/.bashrc
 COPY joomla-install.sh /home/gitpod/joomla-install.sh
 
 RUN /home/gitpod/joomla-install.sh
+RUN rm -f /home/gitpod/joomla-install.sh
 
-# Copy the Pages content files into place
-COPY config.php /var/www/preview/joomlatools-pages/pages/config.php
-COPY index.html.php /var/www/preview/joomlatools-pages/pages/index.html.php

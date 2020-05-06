@@ -12,8 +12,9 @@ echo "* (Re)installing Joomlatools Pages into the preview site"
 joomla extension:symlink preview joomlatools-framework joomlatools-pages --projects-dir="/home/gitpod/Projects"
 joomla extension:install preview all
 
-echo "* Symlinking Joomlatools-pages content to editor workspace"
-ln -fs /var/www/preview/joomlatools-pages/* /workspace/joomlatools-pages/content/
+echo "* Setting up Joomlatools-pages content"
+mkdir -p /var/www/preview/joomlatools-pages/pages/
+ln -fs /workspace/joomlatools-pages/content/* /var/www/preview/joomlatools-pages/pages/
 
 echo "* Launch preview pane"
 gp preview $(gp url 8080)
