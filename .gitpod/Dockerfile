@@ -15,12 +15,8 @@ RUN apt-get update \
 RUN echo -e "\nsql-mode=\"NO_ENGINE_SUBSTITUTION\"" >> /etc/mysql/mysql.conf.d/mysqld.cnf
 
 # Note: Apache restarts and complains the folder doesn't exist
-RUN mkdir /var/www/preview
-
-# Fix file permissions
-RUN chown gitpod:gitpod -R /var/www/
-RUN chown gitpod:gitpod -R /etc/apache2/
-RUN chown gitpod:gitpod -R /etc/mysql/
+RUN mkdir /var/www/preview \
+ && chown gitpod:gitpod /var/www/preview
 
 USER gitpod
 
@@ -36,3 +32,12 @@ COPY joomla-install.sh /home/gitpod/joomla-install.sh
 RUN /home/gitpod/joomla-install.sh
 RUN rm -f /home/gitpod/joomla-install.sh
 
+# Copy the Pages content files into place
+RUN mkdir -p /var/www/preview/joomlatools-pages/pages
+COPY config.php /var/www/preview/joomlatools-pages/pages/config.php
+COPY index.html.php /var/www/preview/joomlatools-pages/pages/index.html.php
+
+# Fix file permissions
+RUN chown -R gitpod:gitpod /var/www/
+RUN chown -R gitpod:gitpod /etc/apache2/
+RUN chown -R gitpod:gitpod /etc/mysql/
