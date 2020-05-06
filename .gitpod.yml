@@ -8,12 +8,13 @@ ports:
 tasks:
   #- name: Copy editor configurations
   #  command: /workspace/joomlatools-pages/.gitpod/joomlatools-pages.theia-workspace /home/gitpod/.theia/recentworkspace.json
-  - name: Apache
+  - init: /workspace/joomlatools-pages/.gitpod/bootstrap.sh
+    name: Apache
     command: >
       apachectl start &&
+      gp preview $(gp url 8080) &&
       multitail /var/log/apache2/access.log -I /var/log/apache2/error.log
-  - before: /workspace/joomlatools-pages/.gitpod/bootstrap.sh
-    name: Terminal
+  - name: Terminal
     command: >
       echo "" &&
       echo "Commands you can try:" &&
