@@ -8,7 +8,7 @@ Make no mistake, Pages is **not** a static site generator (SSG), Pages works in 
 
 Pages takes your Markdown files, custom HTML or PHP code churns through layouts to create a page, then injects that back into your site.  Throughout that process, you can tweak how you want the page to look, what data gets displayed in the layout, and more.
 
-Pages has a **flat-file bias**, and **doesn't require a database** to work. The content you’ll render on your site is generally written using Markdown, but you can use any kind of data source, for example you could use, a Joomla component, a database table, a headless CMS like [Strapi](https://strapi.io/), or even a webservice like [Airtable](https://airtable.com) or [Google Sheets](https://www.google.com/sheets/about/).
+Pages has a **flat-file bias**, and **doesn't require a database** to work. The content you’ll render on your site is generally written using Markdown, but you can use any kind of data source, for example you could use, a Joomla component, a database table, a headless CMS like [Strapi](https://strapi.io/) or [Prismic](https://prismic.io/) or even a webservice like [Airtable](https://airtable.com) or [Google Sheets](https://www.google.com/sheets/about/).
 
 ### Why Joomlatools Pages?
 
