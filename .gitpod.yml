@@ -5,7 +5,7 @@ ports:
   - port: 8080
   - port: 3306
     onOpen: ignore
-workspaceLocation: '/var/www/preview'
+workspaceLocation: /var/www/preview
 tasks:
   #- name: Copy editor configurations
   #  command: /workspace/joomlatools-pages/.gitpod/joomlatools-pages.theia-workspace /home/gitpod/.theia/recentworkspace.json
@@ -13,7 +13,7 @@ tasks:
     command: >
       apachectl start &&
       multitail /var/log/apache2/access.log -I /var/log/apache2/error.log
-  - before: ./.gitpod/bootstrap.sh
+  - before: /workspace/joomlatools-pages/.gitpod/bootstrap.sh
     name: Terminal
     command: >
       echo "" &&
