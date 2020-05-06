@@ -19,5 +19,9 @@ echo "* Clone Joomlatools FW"
 
 ln -s /workspace/joomlatools-pages ~/Projects/
 
-echo "* Download a new Joomla site"
+echo "* Create a new Joomla site"
 joomla site:download preview
+joomla site:install preview --overwrite --drop --mysql-login=root: --projects-dir="/home/gitpod/Projects"
+
+echo "* Create directory for Pages content"
+mkdir -p /var/www/preview/joomlatools-pages/pages/

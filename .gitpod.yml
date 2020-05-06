@@ -12,9 +12,9 @@ tasks:
     command: |
       apachectl start
       multitail /var/log/apache2/access.log -I /var/log/apache2/error.log
-  - before: /workspace/joomlatools-pages/.gitpod/bootstrap.sh
-    name: Terminal
+  - name: Terminal
     command: |
+      /workspace/joomlatools-pages/.gitpod/bootstrap.sh
       gp preview $(gp url 8080)
       echo ""
       echo "Commands you can try:"
