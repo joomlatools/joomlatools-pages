@@ -30,6 +30,7 @@ class ComPagesModelWebservice extends ComPagesModelCollection
             'client'       => 'http.client',
             'entity'       => 'resource',
             'url'          => '',
+            'data'         => '',
         ]);
 
         parent::_initialize($config);
@@ -97,6 +98,25 @@ class ComPagesModelWebservice extends ComPagesModelCollection
                     } else {
                         $this->__data = array();
                     }
+                }
+            }
+
+            if($path = $this->getConfig()->data)
+            {
+                if(is_string($path)) {
+                    $segments = explode('/', $path);
+                } else {
+                    $segments = KObjectConfig::unbox($path);
+                }
+
+                foreach($segments as $segment)
+                {
+                    if(!isset($this->__data[$segment]))
+                    {
+                        $this->__data = array();
+                        break;
+                    }
+                    else $this->__data = $this->__data[$segment];
                 }
             }
         }
