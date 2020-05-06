@@ -5,7 +5,6 @@ ports:
   - port: 8080
   - port: 3306
     onOpen: ignore
-workspaceLocation: /var/www/preview
 tasks:
   #- name: Copy editor configurations
   #  command: /workspace/joomlatools-pages/.gitpod/joomlatools-pages.theia-workspace /home/gitpod/.theia/recentworkspace.json

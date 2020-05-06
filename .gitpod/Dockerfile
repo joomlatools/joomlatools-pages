@@ -23,3 +23,7 @@ RUN /home/gitpod/.composer/vendor/bin/joomla site:download preview
 RUN chown gitpod:gitpod -R /home/gitpod/.composer
 RUN chown gitpod:gitpod -R /home/gitpod/.joomlatools
 RUN chown gitpod:gitpod -R /var/www/
+
+# Quick test to see if we can create directories in /workspace during Docker build time
+USER gitpod
+RUN /home/gitpod/.composer/vendor/bin/joomla site:download --use-webroot-dir --www=/workspace/preview/
