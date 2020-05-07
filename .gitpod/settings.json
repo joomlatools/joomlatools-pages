@@ -4,10 +4,10 @@
          "path": "file:///workspace/joomlatools-pages"
       },
       {
-         "path": "file:///var/www/preview"
+         "path": "file:///var/www/preview/joomlatools-pages"
       }
    ],
    "settings": {
-       "explorer.autoReveal": true
-   }
+          "explorer.autoReveal": true
+      }
 }
