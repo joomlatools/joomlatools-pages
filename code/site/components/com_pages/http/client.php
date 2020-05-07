@@ -292,7 +292,7 @@ class ComPagesHttpClient extends KHttpClient
         {
             $path = rtrim($this->getConfig()->cache_path, '/');
 
-            if(!is_dir($path) && (false === @mkdir($path, 0755, true) && !is_dir($path))) {
+            if(!is_dir($path) && (false === @mkdir($path, 0777, true) && !is_dir($path))) {
                 throw new RuntimeException(sprintf('The resource cache path "%s" does not exist', $path));
             }
 
