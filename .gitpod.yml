@@ -6,7 +6,7 @@ ports:
   - port: 3306
     onOpen: ignore
 tasks:
-  - before: cp /workspace/joomlatools-pages/.gitpod/settings.json /home/gitpod/.theia/setting.json
+  - before: cp /workspace/joomlatools-pages/.gitpod/settings.json /home/gitpod/.theia/settings.json
   #- name: Copy editor configurations
   #  command: /workspace/joomlatools-pages/.gitpod/joomlatools-pages.theia-workspace /home/gitpod/.theia/recentworkspace.json
   - name: Apache
