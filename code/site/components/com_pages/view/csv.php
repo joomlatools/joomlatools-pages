@@ -14,7 +14,7 @@ class ComPagesViewCsv extends KViewCsv
         return (bool) !$this->getModel()->getState()->isUnique();
     }
 
-    public function getRoute($page, $query = array(), $escape = false)
+    public function getRoute($page = null, $query = array(), $escape = false)
     {
         return $this->getBehavior('routable')->getRoute($page, $query, $escape);
     }
