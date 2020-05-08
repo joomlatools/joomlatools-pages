@@ -27,12 +27,25 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         {
             $page = $page_route->getPage();
 
-            //Set the option
-            if($page->process->get('decorate', false) === false) {
+            /*
+             * Make Joomla route the request through Pages
+             *
+             * - Do not route through pages if the request data contains an 'option'. This means we are receiving a POST
+             *   request that should be routed to the specified component
+             *
+             * - Do not route through pages if we are decorating the page. In this case we let Joomla handle the request
+             *   and we pick it up later
+             */
+            if(!$this->getObject('request')->data->has('option') && $page->process->get('decorate', false) === false) {
                 $event->getTarget()->input->set('option', 'com_pages');
             }
 
-            //Set the template
+            /*
+             * Configure the template
+             *
+             * - Set a specific template by name
+             * - Set the template parameters
+             */
             if($page->process->has('template'))
             {
                 if($page->process->template->has('name')) {
