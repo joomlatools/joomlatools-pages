@@ -83,7 +83,10 @@ class ComPagesDispatcherRouterResolverPagination extends ComPagesDispatcherRoute
 
             if (isset($state['limit']) && isset($page['offset']))
             {
-                $page['number'] = ceil($page['offset'] / $state['limit']) + 1;
+                if($state['limit']) {
+                    $page['number'] = ceil($page['offset'] / $state['limit']) + 1;
+                }
+
                 unset($page['offset']);
             }
 
