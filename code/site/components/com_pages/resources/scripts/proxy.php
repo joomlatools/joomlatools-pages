@@ -29,7 +29,8 @@
  *    - Not GET or HEAD
  *    - Contain Cache-Control directives
  *
- * The proxy offers Cache Validation using ETag
+ * The proxy offers Cache Validation using ETag and will generate a Warning: 110 Joomlatools/Pages "Response is Stale"
+ * header if the response is stale.
  *
  * @author  Johan Janssens <https://github.com/johanjanssens>
  *
@@ -99,6 +100,7 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', c
             if(in_array($headers['Etag'], $etags) || in_array('*', $etags))
             {
                 http_response_code ('304');
+                header('Cache-Status: HIT');
 
                 //Revalidation the cache async
                 fastcgi_finish_request();
@@ -115,6 +117,45 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', c
 
         //Set response code
         http_response_code ($status);
+        header('Cache-Status: HIT');
+
+        //Check the cache is stale
+        if(isset($headers['Cache-Control']))
+        {
+            $cache_control = explode(',', $headers['Cache-Control']);
+
+            foreach ($cache_control as $key => $value)
+            {
+                if(is_string($value))
+                {
+                    $parts = explode('=', $value);
+
+                    if (count($parts) > 1)
+                    {
+                        unset( $cache_control[$key]);
+                        $cache_control[trim($parts[0])] = trim($parts[1]);
+                    }
+                }
+            }
+
+            if (isset($cache_control['max-age'])) {
+                $max_age = $cache_control['max-age'];
+            }
+
+            if (isset($cache_control['s-maxage'])) {
+                $max_age = $cache_control['s-maxage'];
+            }
+
+            $age = max(time() - strtotime($headers['Date']), 0);
+
+            //Set the exact age
+            header('Age: '.$age);
+
+            //Se: https://tools.ietf.org/html/rfc7234#section-5.5.1
+            if($age > $max_age) {
+                header('Warning: 110 Joomlatools/Pages "Response is Stale"');
+            }
+        }
 
         //Send the content
         if($_SERVER['REQUEST_METHOD'] == 'GET') {
