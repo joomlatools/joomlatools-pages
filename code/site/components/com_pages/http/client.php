@@ -119,7 +119,7 @@ class ComPagesHttpClient extends KHttpClient
 
                         //Revalidation Failed
                         //See: https://tools.ietf.org/html/rfc7234#section-5.5.2
-                        $response->getHeaders()->set('Warning', '111 - "Revalidation Failed "'.$response->getHeaders()->get('Date'));
+                        $response->getHeaders()->set('Warning', '111 Joomlatools/Pages "Revalidation Failed"'.$response->getHeaders()->get('Date'));
                     }
                     //Re-throw exception if in debug mode or cache must be revalidated
                     else throw $e;
