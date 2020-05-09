@@ -87,9 +87,11 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                     $cache['headers'] = $response->getHeaders()->toArray();
                     $this->storeCache($this->getCacheKey(), $cache);
 
-                    //Terminate the request
+                    // Send the request if nothing has been send yet, or terminate otherwise
                     if(!headers_sent()) {
                         $response->send();
+                    } else {
+                        $response->terminate();
                     }
                 }
                 else
@@ -110,6 +112,8 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
     protected function _beforeSend(KDispatcherContextInterface $context)
     {
+        $response = $context->getResponse();
+
         if($this->isCacheable())
         {
             //Disable caching
@@ -125,26 +129,26 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                         $max        = $this->getConfig()->cache_time < $cache ? $this->getConfig()->cache_time : $cache;
                         $max_shared = $cache;
 
-                        $context->getResponse()->setMaxAge($max, $max_shared);
+                        $response->setMaxAge($max, $max_shared);
                     }
 
                     //Set the cache tags
                     if($collections = $this->getCollections())
                     {
                         $tags = array_unique(array_column($collections, 'type'));
-                        $context->getResponse()->getHeaders()->set('Cache-Tag', implode(',',  $tags));
+                        $response->getHeaders()->set('Cache-Tag', implode(',',  $tags));
                     }
                 }
                 else
                 {
-                    $context->getResponse()->getHeaders()->set('Cache-Status', self::CACHE_DYNAMIC);
-                    $context->getResponse()->getHeaders()->set('Cache-Control', ['no-store']);
+                    $response->getHeaders()->set('Cache-Status', self::CACHE_DYNAMIC);
+                    $response->getHeaders()->set('Cache-Control', ['no-store']);
                 }
             }
             //If the page doesn't exist don't try to store the response.
-            else $context->getResponse()->getHeaders()->set('Cache-Control', ['no-store']);
+            else $response->getHeaders()->set('Cache-Control', ['no-store']);
         }
-        else $context->getResponse()->getHeaders()->set('Cache-Status', self::CACHE_MISS);
+        else $response->getHeaders()->set('Cache-Status', self::CACHE_MISS);
 
         parent::_beforeSend($context);
     }
