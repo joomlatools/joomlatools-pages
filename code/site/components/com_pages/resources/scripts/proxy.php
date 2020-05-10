@@ -89,6 +89,8 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', c
         $content = $data['content'];
         $status  = $data['status'];
 
+        $age = max(time() - strtotime($headers['Date']), 0);
+
         //Cache validation
         if(isset($_SERVER['HTTP_IF_NONE_MATCH']) && isset($headers['Etag']))
         {
@@ -101,6 +103,20 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', c
             {
                 http_response_code ('304');
                 header('Cache-Status: HIT');
+
+                //Generating a 304 response MUST generate any of the following header fields that would have been sent
+                //in a 200 (OK) response to the same request: Cache-Control, Content-Location, Date, ETag and Vary
+                $required = ['Cache-Control', 'Content-Location', 'ETag', 'Vary'];
+
+                foreach($required as $header)
+                {
+                    if(isset($headers[$header])) {
+                        header($header.': '.$headers[$header]);
+                    }
+                }
+
+                //Refresh the date
+                header('Date: '.date('D, d M Y H:i:s', strtotime('now')).' GMT');
 
                 //Revalidation the cache async
                 fastcgi_finish_request();
@@ -118,6 +134,9 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', c
         //Set response code
         http_response_code ($status);
         header('Cache-Status: HIT');
+
+        //Do not send an Age header when using the proxy
+        header_remove('Age');
 
         //Check the cache is stale
         if(isset($headers['Cache-Control']))
@@ -145,11 +164,6 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', c
             if (isset($cache_control['s-maxage'])) {
                 $max_age = $cache_control['s-maxage'];
             }
-
-            $age = max(time() - strtotime($headers['Date']), 0);
-
-            //Set the exact age
-            header('Age: '.$age);
 
             //Se: https://tools.ietf.org/html/rfc7234#section-5.5.1
             if($age > $max_age) {
