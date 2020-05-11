@@ -89,7 +89,42 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', c
         $content = $data['content'];
         $status  = $data['status'];
 
-        $age = max(time() - strtotime($headers['Date']), 0);
+        $max_age = false;
+        $age     = max(time() - strtotime($headers['Date']), 0);
+
+        //Check the cache is stale
+        if(isset($headers['Cache-Control']))
+        {
+            $cache_control = explode(',', $headers['Cache-Control']);
+
+            foreach ($cache_control as $key => $value)
+            {
+                if(is_string($value))
+                {
+                    $parts = explode('=', $value);
+
+                    if (count($parts) > 1)
+                    {
+                        unset( $cache_control[$key]);
+                        $cache_control[trim($parts[0])] = trim($parts[1]);
+                    }
+                }
+            }
+
+
+            if (isset($cache_control['max-age'])) {
+                $max_age = $cache_control['max-age'];
+            }
+
+            if (isset($cache_control['s-maxage'])) {
+                $max_age = $cache_control['s-maxage'];
+            }
+        }
+
+        //Divide the max_age in half and set it in the $_SERVER global
+        if($headers['Cache-Status'] != 'EXPIRED') {
+            $_SERVER['HTTP_CACHE_CONTROL'] = 'max-age='.(int) ($max_age / 2);
+        }
 
         //Cache validation
         if(isset($_SERVER['HTTP_IF_NONE_MATCH']) && isset($headers['Etag']))
@@ -139,36 +174,10 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', c
         header_remove('Age');
 
         //Check the cache is stale
-        if(isset($headers['Cache-Control']))
+        if($max_age !== false && $age > $max_age)
         {
-            $cache_control = explode(',', $headers['Cache-Control']);
-
-            foreach ($cache_control as $key => $value)
-            {
-                if(is_string($value))
-                {
-                    $parts = explode('=', $value);
-
-                    if (count($parts) > 1)
-                    {
-                        unset( $cache_control[$key]);
-                        $cache_control[trim($parts[0])] = trim($parts[1]);
-                    }
-                }
-            }
-
-            if (isset($cache_control['max-age'])) {
-                $max_age = $cache_control['max-age'];
-            }
-
-            if (isset($cache_control['s-maxage'])) {
-                $max_age = $cache_control['s-maxage'];
-            }
-
             //Se: https://tools.ietf.org/html/rfc7234#section-5.5.1
-            if($age > $max_age) {
-                header('Warning: 110 Joomlatools/Pages "Response is Stale"');
-            }
+            header('Warning: 110 Joomlatools/Pages "Response is Stale"');
         }
 
         //Send the content
