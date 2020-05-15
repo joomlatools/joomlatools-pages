@@ -27,7 +27,7 @@ class ComPagesDispatcherRouterPages extends ComPagesDispatcherRouterAbstract
     public function getRoute($route, array $parameters = array())
     {
         if($route instanceof ComPagesModelEntityPage) {
-            $route = 'pages:'.$route->path;
+            $route = 'page:'.$route->path;
         }
 
         return parent::getRoute($route, $parameters);
