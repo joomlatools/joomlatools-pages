@@ -239,10 +239,29 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
     public function getRoutes($path = null)
     {
-        if(!is_null($path)) {
-            $result = $this->__data['routes'][$path];
-        } else {
-            $result = $this->__data['routes'];
+        $result = array();
+        if(is_null($path))
+        {
+            foreach( $this->__data['routes'] as $path => $routes)
+            {
+                foreach((array) $routes as $regex)
+                {
+                    if (is_numeric($path)) {
+                        $result[$regex] = $regex;
+                    } else {
+                        $result[$regex] = $path;
+                    }
+                }
+            }
+        }
+        else
+        {
+            if(isset($this->__data['routes'][$path]))
+            {
+                foreach((array) $this->__data['routes'][$path] as $regex) {
+                    $result[$regex] = $path;
+                }
+            }
         }
 
         return $result;
@@ -458,7 +477,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             $result['pages']       = $pages;
             $result['routes']      = $routes;
             $result['collections'] = $collections;
-            $result['redirects']   = array_flip($redirects);
+            $result['redirects']   = $redirects;
 
             //Generate a checksum
             $result['hash'] = hash('crc32b', serialize($result));

@@ -19,7 +19,7 @@ return [
             'cache_path'       => $config['page_cache_path'],
             'cache_validation' => $config['page_cache_validation'],
             'collections' => $config['collections'],
-            'redirects'   => array_flip($config['redirects']),
+            'redirects'   => $config['redirects'],
             'properties'  => $config['page'],
         ],
         'data.registry' => [
