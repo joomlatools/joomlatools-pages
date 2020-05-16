@@ -170,8 +170,8 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
 
         if($result !== false)
         {
-            if(is_callable($result)) {
-                $result = (bool) call_user_func($result, $route, false);
+            if(isset($result['resolve']) && is_callable($result['resolve'])) {
+                $result = (bool) call_user_func($result['resolve'], $route);
             } else {
                 $result = $this->_buildRoute($result, $route);
             }
@@ -198,16 +198,17 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
 
         foreach($routes as $regex => $target)
         {
-            if(is_callable($target))
+            if(isset($target['generate']) && is_callable($target['generate']))
             {
                 //Parse the route to match it
-                if($this->_parseRoute($regex, $route) && (bool) call_user_func($target, $route, false) == true) {
+                if($this->_parseRoute($regex, $route) && (bool) call_user_func($target['generate'], $route) == true) {
                     $generated = true; break;
                 }
             }
             else
             {
-                if($target == $path && $this->_buildRoute($regex, $route)) {
+                //Parse the route to match it
+                if($this->_parseRoute($regex, $route) && $this->_buildRoute($target, $route)) {
                     $generated = true; break;
                 }
             }
@@ -220,15 +221,16 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
 
             foreach($routes as $regex => $target)
             {
-                if(is_callable($target))
+                if(isset($target['generate']) && is_callable($target['generate']))
                 {
                     //Compare the path to match it
-                    if($regex == $path && (bool) call_user_func($target, $route, false) == true) {
+                    if($regex == $path && (bool) call_user_func($target['generate'], $route) == true) {
                         $generated = true; break;
                     }
                 }
                 else
                 {
+                    //Compare the path to match it
                     if($target == $path && $this->_buildRoute($regex, $route)) {
                         $generated = true; break;
                     }
