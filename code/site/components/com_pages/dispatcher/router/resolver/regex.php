@@ -373,10 +373,10 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
             }
 
             if(strpos($regex, '://') === false) {
-                $route->setPath('/'.ltrim($regex, '/'));
-            } else {
-                $route->setUrl($regex);
+                $regex = '/' . ltrim($regex, '/');
             }
+
+            $route->setUrl($regex);
         }
 
         return $result;
