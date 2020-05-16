@@ -64,6 +64,7 @@ return [
             'subscribers' => [
                 'com://site/pages.event.subscriber.bootstrapper',
                 'com://site/pages.event.subscriber.redirector',
+                'com://site/pages.event.subscriber.downloader',
                 'com://site/pages.event.subscriber.dispatcher',
                 'com://site/pages.event.subscriber.pagedecorator',
                 'com://site/pages.event.subscriber.errorhandler',
