@@ -48,9 +48,9 @@ return [
             'cache_force' => $config['http_resource_cache_force'],
             'debug'       => $config['http_resource_cache_debug'],
         ],
-        'com://site/pages.model.cache' => [
-            'cache_path' => $config['http_cache_path'],
-        ]
+        'com://site/pages.dispatcher.router.file' => [
+            'routes'  => isset($config['files']) ? $config['files'] : array(),
+        ],
     ],
     'extensions' => $config['extensions'] ?? array(),
 ];
