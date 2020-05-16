@@ -9,38 +9,42 @@
 
 class ComPagesEventSubscriberDownloader extends ComPagesEventSubscriberAbstract
 {
-	protected function _initialize(KObjectConfig $config)
-	{
-		$config->append(array(
-			'priority' => KEvent::PRIORITY_HIGH,
-		));
+    protected function _initialize(KObjectConfig $config)
+    {
+        $config->append(array(
+            'priority' => KEvent::PRIORITY_HIGH,
+        ));
 
-		parent::_initialize($config);
-	}
+        parent::_initialize($config);
+    }
 
-	public function onAfterApplicationRoute(KEventInterface $event)
-	{
-		$request = $this->getObject('request');
-		$router  = $this->getObject('com://site/pages.dispatcher.router.file', ['request' => $request]);
+    public function onAfterApplicationRoute(KEventInterface $event)
+    {
+        $request = $this->getObject('request');
+        $router  = $this->getObject('com://site/pages.dispatcher.router.file', ['request' => $request]);
 
-		if(false !== $route = $router->resolve())
-		{
-			//Qualify the route
-			$path = (string) $router->qualify($route, true);
+        if(false !== $route = $router->resolve())
+        {
+            //Qualify the route
+            $route = $router->qualify($route);
 
-			//Set the location header
-			$dispatcher = $this->getObject('com://site/pages.dispatcher.http');
+            //Get the file path
+            $path = $route->getPath();
 
-			try
-			{
-				$dispatcher->getResponse()
-					->setContent((string) $path, @mime_content_type($path) ?? 'application/octet-stream');
-			}
-			catch (InvalidArgumentException $e) {
-				throw new KControllerExceptionResourceNotFound('File not found');
-			}
+            if(isset($route->query['force-download'])) {
+                $request->query->set('force-download', true);
+            }
 
-			$dispatcher->send();
-		}
-	}
+            //Set the location header
+            $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
+
+            try {
+                $dispatcher->getResponse()->setContent($path, @mime_content_type($path) ??  'application/octet-stream');
+            } catch (InvalidArgumentException $e) {
+                throw new KControllerExceptionResourceNotFound('File not found');
+            }
+
+            $dispatcher->send();
+        }
+    }
 }
