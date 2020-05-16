@@ -12,6 +12,7 @@ class ComPagesDispatcherRouterFile extends ComPagesDispatcherRouterAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
+            'route'  => 'file',
             'routes' => []
         ])->append([
             'resolvers' => [
@@ -25,15 +26,15 @@ class ComPagesDispatcherRouterFile extends ComPagesDispatcherRouterAbstract
     public function resolve($route = null, array $parameters = array())
     {
         $result = false;
-        if(count($this->getConfig()->routes))
+        if (count($this->getConfig()->routes))
         {
-            if(!$route)
+            if (!$route)
             {
-                $base       = $this->getRequest()->getBasePath();
-                $url        = urldecode( $this->getRequest()->getUrl()->getPath());
+                $base = $this->getRequest()->getBasePath();
+                $url = urldecode($this->getRequest()->getUrl()->getPath());
                 $parameters = $this->getRequest()->getUrl()->getQuery(true);
 
-                $route  = trim(str_replace(array($base, '/index.php'), '', $url), '/');
+                $route = trim(str_replace(array($base, '/index.php'), '', $url), '/');
             }
 
             $result = parent::resolve($route, $parameters);
@@ -42,17 +43,16 @@ class ComPagesDispatcherRouterFile extends ComPagesDispatcherRouterAbstract
         return $result;
     }
 
-    public function qualify(ComPagesDispatcherRouterRouteInterface $route,  $replace = false)
+    public function qualify(ComPagesDispatcherRouterRouteInterface $route, $replace = false)
     {
         $url = clone $route;
 
-        $path = $url->getPath();
-        if(!is_file($path))
+        if(!$url->isAbsolute())
         {
-            //Qualify the path
-            $path = trim($path, '/');
-            $base = $this->getRequest()->getBasePath(true);
-            $url->setPath($base.'/'.$path);
+            $base =  $this->getRequest()->getBasePath(true);
+            $path = trim($url->getPath(), '/');
+
+            $url->setPath($base . '/' . $path);
         }
 
         return $url;
