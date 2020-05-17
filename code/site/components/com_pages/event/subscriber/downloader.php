@@ -43,8 +43,16 @@ class ComPagesEventSubscriberDownloader extends ComPagesEventSubscriberAbstract
                 $response = $dispatcher->getResponse();
 
                 //Attach a different transport [stream or sendfile]
-                if(isset($route->query['transport'])) {
-                    $response->attachTransport($route->query['transport']);
+                if(isset($route->query['transport']))
+                {
+                    $transport = $route->query['transport'];
+
+                    //Enable using the header
+                    if($transport == 'sendfile') {
+                        $response->getHeaders()->set('X-Sendfile', 1);
+                    }
+
+                    $response->attachTransport($transport);
                 }
 
                 $response->setContent($path, @mime_content_type($path) ??  'application/octet-stream');
