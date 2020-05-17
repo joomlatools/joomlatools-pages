@@ -38,8 +38,17 @@ class ComPagesEventSubscriberDownloader extends ComPagesEventSubscriberAbstract
             //Set the location header
             $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
 
-            try {
-                $dispatcher->getResponse()->setContent($path, @mime_content_type($path) ??  'application/octet-stream');
+            try
+            {
+                $response = $dispatcher->getResponse();
+
+                //Attach a different transport [stream or sendfile]
+                if(isset($route->query['transport'])) {
+                    $response->attachTransport($route->query['transport']);
+                }
+
+                $response->setContent($path, @mime_content_type($path) ??  'application/octet-stream');
+
             } catch (InvalidArgumentException $e) {
                 throw new KControllerExceptionResourceNotFound('File not found');
             }
