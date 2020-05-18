@@ -25,26 +25,32 @@ class ComPagesEventSubscriberRedirector extends ComPagesEventSubscriberAbstract
 
         if(false !== $route = $router->resolve())
         {
-            if($route->toString(KHttpUrl::AUTHORITY))
-            {
+            $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
+            $response   = $dispatcher->getResponse();
+
+            //Set the location header
+            if($route->toString(KHttpUrl::AUTHORITY)) {
                 //External redierct: 301 permanent
                 $status = KHttpResponse::MOVED_PERMANENTLY;
-            }
-            else
-            {
+            } else {
                 //Internal redirect: 307 temporary
                 $status = KHttpResponse::TEMPORARY_REDIRECT;
+            }
+
+            //Set the redirect status
+            $response->setStatus($status);
+
+            //Set the cache time
+            if(isset($route->query['cache']))
+            {
+                $response->setMaxAge($route->query['cache']);
+                unset($route->query['cache']);
             }
 
             //Qualify the route
             $url = $router->qualify($route);
 
-            //Set the location header
-            $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
-            $dispatcher->getResponse()->getHeaders()->set('Location',  $url);
-            $dispatcher->getResponse()->setStatus($status);
-
-            $dispatcher->send();
+            $dispatcher->redirect($url);
         }
     }
 }
