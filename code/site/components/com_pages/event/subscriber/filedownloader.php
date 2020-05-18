@@ -52,7 +52,7 @@ class ComPagesEventSubscriberFiledownloader extends ComPagesEventSubscriberAbstr
             }
 
             //Set the cache time
-            if(isset($route->query['cache']) && ctype_alnum($route->query['cache']))
+            if(isset($route->query['cache']))
             {
                 $response->setMaxAge($route->query['cache']);
                 unset($route->query['cache']);
