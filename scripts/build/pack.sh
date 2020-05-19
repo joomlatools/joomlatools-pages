@@ -15,7 +15,7 @@ rm -f com_pages.zip
 rm -f joomlatools-framework.zip
 
 # build pages
-phing
+phing -verbose
 
 # build framework
 [ ! -d ../../../joomlatools-framework ] && git clone -b $framework_branch https://github.com/joomlatools/joomlatools-framework.git ../../../joomlatools-framework
@@ -23,7 +23,12 @@ cd ../../../joomlatools-framework && phing -Dframework.location=$framework_locat
 cd $build_dir
 
 # clone installer
-git clone --depth 1 --branch master git@github.com:joomlatools/joomlatools-extension-installer.git $build_dir/installer
+if [[ ! -n "$PAGES_GITHUB_TOKEN" ]]; then
+  git clone --depth 1 --branch master https://$PAGES_GITHUB_USERNAME:$PAGES_GITHUB_TOKEN@github.com/joomlatools/joomlatools-extension-installer.git $build_dir/installer
+else
+  git clone --depth 1 --branch master git@github.com:@joomlatools/joomlatools-extension-installer.git $build_dir/installer
+fi
+
 rm -rf $build_dir/installer/.git
 rm -f $build_dir/installer/.gitignore
 rm -f $build_dir/installer/README.md
