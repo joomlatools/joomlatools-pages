@@ -29,11 +29,11 @@ rm -f com_pages.zip
 rm -f joomlatools-framework.zip
 
 # build pages
-phing -verbose
+phing
 
 # build framework
 [ ! -d ../../../joomlatools-framework ] && git clone -b $framework_branch https://github.com/joomlatools/joomlatools-framework.git ../../../joomlatools-framework
-cd ../../../joomlatools-framework && phing -verbose -Dframework.location=$framework_location -Dframework.branch=$framework_branch -Dcomponent.include=$component_include && mv joomlatools-framework.zip $build_dir/joomlatools-framework.zip
+cd ../../../joomlatools-framework && phing -Dframework.location=$framework_location -Dframework.branch=$framework_branch -Dcomponent.include=$component_include && mv joomlatools-framework.zip $build_dir/joomlatools-framework.zip
 cd $build_dir
 
 # clone installer
