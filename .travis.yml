@@ -4,13 +4,7 @@ php:
 branches:
   only:
   - master
-  - 1.0
-  - 1.1
-  - 1.2
-  - 1.3
-  - 2.0
-  - 3.0
-  - feature/349-travis
+    - /^\d+\.\d+$/
   - "/^v\\d+\\.\\d+(\\.\\d+)?(-\\S*)?$/"
 before_install:
 - chmod +x $TRAVIS_BUILD_DIR/scripts/travis/before_install.sh
