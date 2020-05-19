@@ -19,11 +19,11 @@ phing -verbose
 
 # build framework
 [ ! -d ../../../joomlatools-framework ] && git clone -b $framework_branch https://github.com/joomlatools/joomlatools-framework.git ../../../joomlatools-framework
-cd ../../../joomlatools-framework && phing -Dframework.location=$framework_location -Dframework.branch=$framework_branch -Dcomponent.include=$component_include && mv joomlatools-framework.zip $build_dir/joomlatools-framework.zip
+cd ../../../joomlatools-framework && phing -v -Dframework.location=$framework_location -Dframework.branch=$framework_branch -Dcomponent.include=$component_include && mv joomlatools-framework.zip $build_dir/joomlatools-framework.zip
 cd $build_dir
 
 # clone installer
-if [[ ! -n "$PAGES_GITHUB_TOKEN" ]]; then
+if [[ -n "$PAGES_GITHUB_TOKEN" ]]; then
   git clone --depth 1 --branch master https://$PAGES_GITHUB_USERNAME:$PAGES_GITHUB_TOKEN@github.com/joomlatools/joomlatools-extension-installer.git $build_dir/installer
 else
   git clone --depth 1 --branch master git@github.com:@joomlatools/joomlatools-extension-installer.git $build_dir/installer
