@@ -37,7 +37,7 @@ cd ../../../joomlatools-framework && phing -verbose -Dframework.location=$framew
 cd $build_dir
 
 # clone installer
-git clone --depth 1 --branch master git@github.com:@joomlatools/joomlatools-extension-installer.git $build_dir/installer
+git clone --depth 1 --branch master git@github.com:joomlatools/joomlatools-extension-installer.git $build_dir/installer
 rm -rf $build_dir/installer/.git
 rm -f $build_dir/installer/.gitignore
 rm -f $build_dir/installer/README.md
