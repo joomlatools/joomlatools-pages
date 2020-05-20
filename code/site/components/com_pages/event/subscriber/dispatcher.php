@@ -18,7 +18,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         parent::_initialize($config);
     }
 
-    public function onAfterApplicationInitialise(KEventInterface $event)
+    public function onAfterApplicationRoute(KEventInterface $event)
     {
         $site_path  = $this->getObject('com://site/pages.config')->getSitePath();
         $page_route = $route = $this->getObject('com://site/pages.dispatcher.http')->getRoute();
@@ -30,13 +30,13 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
             /*
              * Make Joomla route the request through Pages
              *
-             * - Do not route through pages if the request data contains an 'option'. This means we are receiving
+             * - Do not route through pages if the request contains an 'option'. This means we are receiving
              *   a request that should be routed to the specified component
              *
              * - Do not route through pages if we are decorating the page. In this case we let Joomla handle the
              *   request and we pick it up later
              */
-            if(!isset($_REQUEST['option']) && $page->process->get('decorate', false) === false) {
+            if(!JFactory::getApplication()->input->get('option', null) && $page->process->get('decorate', false) === false) {
                 $event->getTarget()->input->set('option', 'com_pages');
             }
 
