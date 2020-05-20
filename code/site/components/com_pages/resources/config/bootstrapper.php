@@ -41,11 +41,11 @@ return [
         ],
         'object.config.factory' => [
             'formats' => [
-                'md'   => 'ComPagesObjectConfigMarkdown',
-                'csv'  => 'ComPagesObjectConfigCsv',
-                'json' => 'ComPagesObjectConfigJson',
-                'xml'  => 'ComPagesObjectConfigXml',
-                'html' => 'ComPagesObjectConfigHtml',
+                'md'   => 'com://site/pages.object.config.markdown',
+                'csv'  => 'com://site/pages.object.config.csv',
+                'json' => 'com://site/pages.object.config.json',
+                'xml'  => 'com://site/pages.object.config.xml',
+                'html' => 'com://site/pages.object.config.html',
             ],
         ],
         'template.locator.factory' => [
