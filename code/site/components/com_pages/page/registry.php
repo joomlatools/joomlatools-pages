@@ -383,6 +383,11 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                         $page->language = 'en-GB';
                                     }
 
+                                    //Set the metadata
+                                    if(!$page->metadata) {
+                                        $page->metadata = array();
+                                    }
+
                                     //Handle dynamic data
                                     array_walk_recursive ($page, function(&$value, $key)
                                     {
