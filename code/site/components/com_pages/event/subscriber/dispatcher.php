@@ -36,7 +36,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
              * - Do not route through pages if we are decorating the page. In this case we let Joomla handle the
              *   request and we pick it up later
              */
-            if(!JFactory::getApplication()->input->get('option', null) && $page->process->get('decorate', false) === false) {
+            if(!$this->getObject('request')->query->has('option') && $page->process->get('decorate', false) === false) {
                 $event->getTarget()->input->set('option', 'com_pages');
             }
 
