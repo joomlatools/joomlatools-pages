@@ -7,7 +7,13 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-return function()
+return function($user = null)
 {
-    return $this->getObject('user');
+    if($user) {
+        $result = $this->getObject('user.provider')->load($user);
+    } else {
+        $result = $this->getObject('user');
+    }
+
+    return $result;
 };
