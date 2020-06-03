@@ -106,13 +106,13 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
         //Register event subscribers
         foreach (glob($path.'/subscriber/[!_]*.php') as $filename) {
-            $this->getObject('event.subscriber.factory')->registerSubscriber('ext:subscriber.'.basename($filename, '.php'));
+            $this->getObject('event.subscriber.factory')->registerSubscriber('ext:pages.subscriber.'.basename($filename, '.php'));
         }
 
         //Register template filters
         $filters = array();
         foreach (glob($path.'/template/filter/[!_]*.php') as $filename) {
-            $filters[] = 'ext:template.filter.'.basename($filename, '.php');
+            $filters[] = 'ext:pages.template.filter.'.basename($filename, '.php');
         }
 
         if($filters) {
