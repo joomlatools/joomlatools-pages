@@ -59,13 +59,27 @@ class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesMo
     {
         $data = parent::toArray();
 
-        $data = array_diff_key($data, array_flip($this->getInteralProperties()));
+        $computed = $this->getComputedProperties();
+        $internal = $this->getInteralProperties();
+
+        //Remove internal properties
+        $data = array_diff_key($data, array_flip($internal));
+
+        //Add none-internal computed properties
+        foreach(array_diff($computed, $internal) as $property) {
+            $data[$property] = $this->{$property};
+        }
 
         foreach($data as $key => $value)
         {
             //Unpack config objects
             if($value instanceof KObjectConfigInterface) {
                 $data[$key] = KObjectConfig::unbox($value);
+            }
+
+            //Remove NULL values
+            if(is_null($value)) {
+                unset($data[$key]);
             }
         }
 
