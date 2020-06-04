@@ -97,36 +97,51 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
     protected function _bootstrapExtensions($path, $config = array())
     {
-        //Add extension locators
-        $this->getObject('manager')->getClassLoader()->registerLocator(new ComPagesClassLocatorExtension(array(
-            'namespaces' => array('\\'  => $path)
-        )));
+        $filters    = array();
+        $functions  = array();
+        $namespaces = array();
 
-        $this->getObject('manager')->registerLocator('com://site/pages.object.locator.extension');
+        foreach (glob($path.'/*', GLOB_ONLYDIR) as $directory)
+        {
+            $name = strtolower(basename($directory));
 
-        //Register event subscribers
-        foreach (glob($path.'/subscriber/[!_]*.php') as $filename) {
-            $this->getObject('event.subscriber.factory')->registerSubscriber('ext:subscriber.'.basename($filename, '.php'));
+            //Register event subscribers
+            foreach (glob($directory.'/subscriber/[!_]*.php') as $filename) {
+                $this->getObject('event.subscriber.factory')->registerSubscriber('ext:'.$name.'.subscriber.'.basename($filename, '.php'));
+            }
+
+            //Find template filters
+            foreach (glob($directory.'/template/filter/[!_]*.php') as $filename) {
+                $filters[] = 'ext:'.$name.'.template.filter.'.basename($filename, '.php');
+            }
+
+            //Find template functions
+            foreach (glob($directory.'/template/function/[!_]*.php') as $filename) {
+                $functions[basename($filename, '.php')] = $filename;
+            }
+
+            //Store the namespace
+            $namespaces[ucfirst($name)] = $directory;
         }
 
-        //Register template filters
-        $filters = array();
-        foreach (glob($path.'/template/filter/[!_]*.php') as $filename) {
-            $filters[] = 'ext:template.filter.'.basename($filename, '.php');
-        }
+        if($namespaces)
+        {
+            //Register template functions
+            if($functions) {
+                $this->getConfig('com://site/pages.template.default')->merge(['functions' => $functions]);
+            }
 
-        if($filters) {
-            $this->getConfig('com://site/pages.template.default')->merge(['filters' => $filters]);
-        }
+            //Register template filters
+            if($filters) {
+                $this->getConfig('com://site/pages.template.default')->merge(['filters' => $filters]);
+            }
 
-        //Register template functions
-        $functions = array();
-        foreach (glob($path.'/template/function/[!_]*.php') as $filename) {
-            $functions[basename($filename, '.php')] = $filename;
-        }
+            //Register extension namespaces
+            $this->getObject('manager')->getClassLoader()->registerLocator(new ComPagesClassLocatorExtension([
+                'namespaces' => $namespaces
+            ]));
 
-        if($functions) {
-            $this->getConfig('com://site/pages.template.default')->merge(['functions' => $functions]);
+            $this->getObject('manager')->registerLocator('com://site/pages.object.locator.extension');
         }
     }
 }

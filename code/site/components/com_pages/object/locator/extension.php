@@ -15,7 +15,7 @@ class ComPagesObjectLocatorExtension extends KObjectLocatorAbstract
     {
         $config->append(array(
             'sequence' => array(
-                'Extension<Package><Class>',
+                'Ext<Package><Path><File>',
             )
         ));
 
