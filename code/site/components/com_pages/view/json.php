@@ -231,23 +231,27 @@ class ComPagesViewJson extends KViewAbstract
     {
         $attributes = $entity->toArray();
 
-        //Cast objects to string
-        foreach($attributes as $key => $value)
+        //Recursively serialize the data
+        array_walk_recursive($attributes, function(&$value)
         {
-            //Qualify the url's
-            if($value instanceof KHttpUrlInterface) {
-                $value = $this->getUrl($value);
-            }
-
-            if(is_object($value))
+            if(!$value instanceof KModelEntityInterface)
             {
-                if(!method_exists($value, '__toString')) {
-                    unset($attributes[$key]);
-                } else {
-                    $attributes[$key] = (string) $value;
+                //Qualify the url's
+                if($value instanceof KHttpUrlInterface) {
+                    $value = $this->getUrl($value);
+                }
+
+                if(is_object($value))
+                {
+                    if(!method_exists($value, '__toString')) {
+                        $value = null;
+                    } else {
+                        $value = (string) $value;
+                    }
                 }
             }
-        }
+            else $value = $this->_getEntityAttributes($value);
+        });
 
         //Remove the identity key from the attributes
         $key = $entity->getIdentityKey();
