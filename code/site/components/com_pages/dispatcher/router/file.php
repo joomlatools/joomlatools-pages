@@ -7,12 +7,13 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesDispatcherRouterRedirect extends ComPagesDispatcherRouterAbstract
+class ComPagesDispatcherRouterFile extends ComPagesDispatcherRouterAbstract
 {
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'routes' => $this->getObject('page.registry')->getRedirects(),
+            'route'  => 'file',
+            'routes' => []
         ])->append([
             'resolvers' => [
                 'regex' => ['routes' => $config->routes]
@@ -25,20 +26,35 @@ class ComPagesDispatcherRouterRedirect extends ComPagesDispatcherRouterAbstract
     public function resolve($route = null, array $parameters = array())
     {
         $result = false;
-        if(count($this->getConfig()->routes))
+        if (count($this->getConfig()->routes))
         {
-            if(!$route)
+            if (!$route)
             {
-                $base       = $this->getRequest()->getBasePath();
-                $url        = urldecode( $this->getRequest()->getUrl()->getPath());
+                $base = $this->getRequest()->getBasePath();
+                $url = urldecode($this->getRequest()->getUrl()->getPath());
                 $parameters = $this->getRequest()->getUrl()->getQuery(true);
 
-                $route  = trim(str_replace(array($base, '/index.php'), '', $url), '/');
+                $route = trim(str_replace(array($base, '/index.php'), '', $url), '/');
             }
 
             $result = parent::resolve($route, $parameters);
         }
 
         return $result;
+    }
+
+    public function qualify(ComPagesDispatcherRouterRouteInterface $route, $replace = false)
+    {
+        $url = clone $route;
+
+        if(!$url->isAbsolute())
+        {
+            $base =  $this->getRequest()->getBasePath(true);
+            $path = trim($url->getPath(), '/');
+
+            $url->setPath($base . '/' . $path);
+        }
+
+        return $url;
     }
 }

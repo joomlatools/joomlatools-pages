@@ -19,7 +19,7 @@ return [
             'cache_path'       => $config['page_cache_path'],
             'cache_validation' => $config['page_cache_validation'],
             'collections' => $config['collections'],
-            'redirects'   => array_flip($config['redirects']),
+            'redirects'   => $config['redirects'],
             'properties'  => $config['page'],
         ],
         'data.registry' => [
@@ -48,9 +48,9 @@ return [
             'cache_force' => $config['http_resource_cache_force'],
             'debug'       => $config['http_resource_cache_debug'],
         ],
-        'com://site/pages.model.cache' => [
-            'cache_path' => $config['http_cache_path'],
-        ]
+        'com://site/pages.dispatcher.router.file' => [
+            'routes'  => isset($config['files']) ? $config['files'] : array(),
+        ],
     ],
     'extensions' => $config['extensions'] ?? array(),
 ];
