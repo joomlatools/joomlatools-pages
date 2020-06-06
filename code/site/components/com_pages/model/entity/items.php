@@ -9,6 +9,8 @@
 
 class ComPagesModelEntityItems extends KModelEntityComposite implements JsonSerializable, ComPagesModelEntityInterface
 {
+    use ComPagesObjectDebuggable;
+
     public function jsonSerialize()
     {
         $result = array();
@@ -17,10 +19,5 @@ class ComPagesModelEntityItems extends KModelEntityComposite implements JsonSeri
         }
 
         return $result;
-    }
-
-    public function __debugInfo()
-    {
-        return $this->toArray();
     }
 }
