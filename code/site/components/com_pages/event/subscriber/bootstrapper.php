@@ -97,36 +97,75 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
     protected function _bootstrapExtensions($path, $config = array())
     {
-        //Add extension locators
-        $this->getObject('manager')->getClassLoader()->registerLocator(new ComPagesClassLocatorExtension(array(
-            'namespaces' => array('\\'  => $path)
-        )));
+        if($directories = glob($path.'/*', GLOB_ONLYDIR))
+        {
+            $filters    = array();
+            $functions  = array();
 
-        $this->getObject('manager')->registerLocator('com://site/pages.object.locator.extension');
+            $locator = new ComPagesClassLocatorExtension();
 
-        //Register event subscribers
-        foreach (glob($path.'/subscriber/[!_]*.php') as $filename) {
-            $this->getObject('event.subscriber.factory')->registerSubscriber('ext:subscriber.'.basename($filename, '.php'));
+            //Register the extension locator
+            $this->getObject('manager')->getClassLoader()->registerLocator($locator);
+            $this->getObject('manager')->registerLocator('com://site/pages.object.locator.extension');
+
+            foreach ($directories as $directory)
+            {
+                //The extension name
+                $name = strtolower(basename($directory));
+
+                //Register the extension namespace
+                $locator->registerNamespace(ucfirst($name), $directory);
+
+                //Register event subscribers
+                foreach (glob($directory.'/subscriber/[!_]*.php') as $filename)
+                {
+                    $this->getObject('event.subscriber.factory')
+                        ->registerSubscriber('ext:'.$name.'.subscriber.'.basename($filename, '.php'));
+                }
+
+                //Find template filters
+                foreach (glob($directory.'/template/filter/[!_]*.php') as $filename) {
+                    $filters[] = 'ext:'.$name.'.template.filter.'.basename($filename, '.php');
+                }
+
+                //Find template functions
+                foreach (glob($directory.'/template/function/[!_]*.php') as $filename) {
+                    $functions[basename($filename, '.php')] = $filename;
+                }
+            }
+
+            //Register template functions
+            if($functions) {
+                $this->getConfig('com://site/pages.template.default')->merge(['functions' => $functions]);
+            }
+
+            //Register template filters
+            if($filters) {
+                $this->getConfig('com://site/pages.template.default')->merge(['filters' => $filters]);
+            }
         }
 
-        //Register template filters
-        $filters = array();
-        foreach (glob($path.'/template/filter/[!_]*.php') as $filename) {
-            $filters[] = 'ext:template.filter.'.basename($filename, '.php');
-        }
+        //Register aliases for pages extension bundle
+        if(file_exists($path.'/pages'))
+        {
+            $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path.'/pages'));
 
-        if($filters) {
-            $this->getConfig('com://site/pages.template.default')->merge(['filters' => $filters]);
-        }
+            foreach($iterator as $file)
+            {
+                if ($file->isFile() && $file->getExtension() == 'php')
+                {
+                    $segments = explode('/', $iterator->getSubPathName());
+                    $segments[] = basename(array_pop($segments), '.php');
 
-        //Register template functions
-        $functions = array();
-        foreach (glob($path.'/template/function/[!_]*.php') as $filename) {
-            $functions[basename($filename, '.php')] = $filename;
-        }
+                    //Create the identifier path + file
+                    $path = implode('.', $segments);
 
-        if($functions) {
-            $this->getConfig('com://site/pages.template.default')->merge(['functions' => $functions]);
+                    $this->getObject('manager')->registerAlias(
+                        'ext:pages.'.$path,
+                        'com://site/pages.'.$path
+                    );
+                }
+            }
         }
     }
 }

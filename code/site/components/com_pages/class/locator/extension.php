@@ -13,7 +13,7 @@ class ComPagesClassLocatorExtension extends KClassLocatorAbstract
 
     public function locate($classname, $basepath = null)
     {
-        if (substr($classname, 0, 9) === 'Extension')
+        if (substr($classname, 0, 3) === 'Ext')
         {
             $word  = strtolower(preg_replace('/(?<=\\w)([A-Z])/', ' \\1', $classname));
             $parts = explode(' ', $word);
@@ -41,10 +41,10 @@ class ComPagesClassLocatorExtension extends KClassLocatorAbstract
                 $path = implode('/', $parts) . '/';
             }
 
-            $result = $basepath.'/'.$package.'/'.$path . $file.'.php';
+            $result = $basepath.'/'.$path . $file.'.php';
 
             if(!is_file($result)) {
-                $result = $basepath.'/'.$package.'/'.$path . $file.'/'.$file.'.php';
+                $result = $basepath.'/'.$path . $file.'/'.$file.'.php';
             }
 
             return $result;
