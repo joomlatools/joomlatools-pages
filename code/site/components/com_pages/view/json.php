@@ -231,7 +231,7 @@ class ComPagesViewJson extends KViewAbstract
     {
         $attributes = $entity->toArray();
 
-        //Recursively serialize the data
+        //Recursively serialize the attributes
         array_walk_recursive($attributes, function(&$value)
         {
             if(!$value instanceof KModelEntityInterface)
@@ -252,6 +252,25 @@ class ComPagesViewJson extends KViewAbstract
             }
             else $value = $this->_getEntityAttributes($value);
         });
+
+        //Remove NULL values
+        $filter = function($attributes) use (&$filter)
+        {
+            foreach($attributes as $k => $v)
+            {
+                if(!is_array($v))
+                {
+                    if(is_null($v)) {
+                        unset($attributes[$k]);
+                    }
+                }
+                else $attributes[$k] = $filter($v);
+            }
+
+            return $attributes;
+        };
+
+        $attributes = $filter($attributes);
 
         //Remove the identity key from the attributes
         $key = $entity->getIdentityKey();
