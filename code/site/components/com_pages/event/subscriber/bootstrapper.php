@@ -97,16 +97,20 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
     protected function _bootstrapExtensions($path, $config = array())
     {
+        //Register 'ext' fallback location
+        $locator = new ComPagesClassLocatorExtension(['namespaces' =>
+            ['\\' => JPATH_SITE.'/components/com_pages/resources/extensions']
+        ]);
+
+        //Register the extension locator
+        $this->getObject('manager')->getClassLoader()->registerLocator($locator);
+        $this->getObject('manager')->registerLocator('com://site/pages.object.locator.extension');
+
+        //Register 'ext:[package]' locations
         if($directories = glob($path.'/*', GLOB_ONLYDIR))
         {
             $filters    = array();
             $functions  = array();
-
-            $locator = new ComPagesClassLocatorExtension();
-
-            //Register the extension locator
-            $this->getObject('manager')->getClassLoader()->registerLocator($locator);
-            $this->getObject('manager')->registerLocator('com://site/pages.object.locator.extension');
 
             foreach ($directories as $directory)
             {
@@ -145,7 +149,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
             }
         }
 
-        //Register aliases for pages extension bundle
+        //Register 'ext:pages' aliases
         if(file_exists($path.'/pages'))
         {
             $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path.'/pages'));
