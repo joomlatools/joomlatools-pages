@@ -72,7 +72,13 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             $url  = urldecode($this->getRequest()->getUrl()->getPath());
             $path = trim(str_replace(array($base, '/index.php'), '', $url), '/');
 
-            $this->__route = $this->getRouter()->resolve('pages:'.$path,  $this->getRequest()->query->toArray());
+            $query = $this->getRequest()->query->toArray();
+
+            //Unset Joomla specific query variables
+            unset($query['option']);
+            unset($query['Itemid']);
+
+            $this->__route = $this->getRouter()->resolve('pages:'.$path,  $query);
         }
 
         if(is_object($this->__route)) {

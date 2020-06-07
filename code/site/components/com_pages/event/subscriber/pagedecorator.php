@@ -22,7 +22,8 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
     {
         $menu = JFactory::getApplication()->getMenu()->getActive();
 
-        if($menu->component !== 'com_pages')
+        //Only decorate GET requests that are not routing to com_pages
+        if($this->getObject('request')->isGet() && $menu->component != 'com_pages')
         {
             $site_path  =  $this->getObject('com://site/pages.config')->getSitePath();
             $page_route = $route = $this->getObject('com://site/pages.dispatcher.http')->getRoute();
