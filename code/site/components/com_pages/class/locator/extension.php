@@ -28,23 +28,32 @@ class ComPagesClassLocatorExtension extends KClassLocatorAbstract
                 $file = $package;
             }
 
-            //Switch basepath
-            if(!$this->getNamespace($namespace)) {
-                $basepath = $this->getNamespace('\\');
-            } else {
-                $basepath = $this->getNamespace($namespace);
-            }
-
             $path = '';
-
             if (!empty($parts)) {
                 $path = implode('/', $parts) . '/';
             }
 
-            $result = $basepath.'/'.$path . $file.'.php';
+            $paths = [];
 
-            if(!is_file($result)) {
-                $result = $basepath.'/'.$path . $file.'/'.$file.'.php';
+            //Namespace paths
+            if($basepath = $this->getNamespace($namespace))
+            {
+                $paths[] = $basepath.'/'.$path . $file.'.php';
+                $paths[] = $basepath.'/'.$path . $file.'/'.$file.'.php';
+            }
+
+            ///Fallback paths
+            $basepath = $this->getNamespace('\\');
+            $paths[] = $basepath.'/'.strtolower($namespace) .'/'.$path . $file.'.php';
+            $paths[] = $basepath.'/'.strtolower($namespace) .'/'.$path . $file.'/'.$file.'.php';
+
+            foreach($paths as $path)
+            {
+                if(is_file($path))
+                {
+                    $result = $path;
+                    break;
+                }
             }
 
             return $result;
