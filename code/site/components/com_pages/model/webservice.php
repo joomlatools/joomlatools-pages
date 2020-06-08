@@ -26,6 +26,7 @@ class ComPagesModelWebservice extends ComPagesModelCollection
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
+            'persistable'  => true,
             'identity_key' => 'id',
             'client'       => 'http.client',
             'entity'       => 'resource',

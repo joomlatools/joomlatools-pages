@@ -11,6 +11,7 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
 {
     private $__type;
     private $__name;
+    private $__persistable;
 
     public function __construct(KObjectConfig $config)
     {
@@ -25,12 +26,16 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         $this->addCommandCallback('before.fetch'  , '_prepareContext');
         $this->addCommandCallback('before.count'  , '_prepareContext');
         $this->addCommandCallback('before.persist', '_prepareContext');
+        $this->addCommandCallback('before.persist', '_beforePersist');
 
         //Set the type
         $this->__type = $config->type;
 
         //Set the name
         $this->__name = $config->name;
+
+        //Set if the collection is persistable
+        $this->__persistable = $config->persistable;
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -47,6 +52,7 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
                 'com://site/pages.model.behavior.sparsable',
                 'com://site/pages.model.behavior.filterable',
             ],
+            'persistable' => false,
         ]);
 
         parent::_initialize($config);
@@ -250,6 +256,11 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         return $result;
     }
 
+    protected function _beforePersist(KModelContext $context)
+    {
+        return $this->isPersistable();
+    }
+
     protected function _actionPersist(KModelContext $context)
     {
         return false;
@@ -263,5 +274,10 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         $context->setIdentityKey($this->getIdentityKey());
 
         return $context;
+    }
+
+    public function isPersistable()
+    {
+        return $this->__persistable;
     }
 }
