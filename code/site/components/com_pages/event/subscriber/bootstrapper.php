@@ -97,18 +97,16 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
     protected function _bootstrapExtensions($path, $config = array())
     {
-        //Register 'ext' fallback location
-        $locator = new ComPagesClassLocatorExtension(['namespaces' =>
-            ['\\' => JPATH_SITE.'/components/com_pages/resources/extensions']
-        ]);
-
-        //Register the extension locator
-        $this->getObject('manager')->getClassLoader()->registerLocator($locator);
-        $this->getObject('manager')->registerLocator('com://site/pages.object.locator.extension');
-
         //Register 'ext:[package]' locations
         if($directories = glob($path.'/*', GLOB_ONLYDIR))
         {
+            //Register 'ext' fallback location
+            $locator = new ComPagesClassLocatorExtension();
+
+            //Register the extension locator
+            $this->getObject('manager')->getClassLoader()->registerLocator($locator);
+            $this->getObject('manager')->registerLocator('com://site/pages.object.locator.extension');
+
             $filters    = array();
             $functions  = array();
 
