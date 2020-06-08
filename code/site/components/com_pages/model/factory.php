@@ -60,15 +60,15 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
 
             $model = $this->getObject($identifier, $config);
 
-            if(!$model instanceof KModelInterface && !$model instanceof KControllerModellable)
+            if(!$model instanceof KControllerModellable && !$model instanceof KModelInterface)
             {
                 throw new UnexpectedValueException(
                     'Collection: '.get_class($model).' does not implement KModelInterface or KControllerModellable'
                 );
             }
 
-            if($model instanceof KControllerModellable) {
-                $model = $this->getObject('com://site/pages.model.controller', ['controller' => $model]);
+            if($model instanceof KControllerModellable || !$model instanceof ComPagesModelInterface) {
+                $model = $this->getObject('com://site/pages.model.decorator', ['delegate' => $model]);
             }
 
             //Add model filters for unique fields
