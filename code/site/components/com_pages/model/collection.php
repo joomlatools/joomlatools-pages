@@ -209,28 +209,34 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
 
     protected function _actionCreate(KModelContext $context)
     {
+        $options = array();
+
+        //Set the entity identifier
+        $identifier = $this->getConfig()->entity;
+        if(is_string($identifier) && strpos($identifier, '.') === false )
+        {
+            $identifier = $this->getIdentifier()->toArray();
+            $identifier['path'] = ['model', 'entity'];
+            $identifier['name'] = KStringInflector::pluralize($this->getConfig()->entity);
+        }
+
+        $options['entity'] = $this->getIdentifier($identifier);
+
+        //Set the data
         $data = KModelContext::unbox($context->entity);
-
-        $identifier = $this->getIdentifier()->toArray();
-        $identifier['path'] = ['model', 'entity'];
-        $identifier['name'] = KStringInflector::pluralize($this->getConfig()->entity);
-
-        //Fallback to default
-        if(!$this->getObject('manager')->getClass($identifier, false)) {
-            $identifier = 'com://site/pages.model.entity.items';
-        }
-
         if(!empty($data) && !is_numeric(key($data))) {
-            $data = array($data);
+            $options['data'] = array($data);
+        } else {
+            $options['data'] = $data;
         }
 
-        $options = array('data' => $data);
-
+        //Set the identitiy key
         if($identity_key = $context->getIdentityKey()) {
             $options['identity_key'] = $identity_key;
         }
 
-        return $this->getObject($identifier, $options);
+        //Delegate entity instantiation
+        return $this->getObject('com://site/pages.model.entity.items', $options);
     }
 
     protected function _actionCount(KModelContext $context)

@@ -13,6 +13,22 @@ class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesMo
 
     private $__internal_properties;
 
+    public static function getInstance(KObjectConfigInterface $config, KObjectManagerInterface $manager)
+    {
+        if($config->entity)
+        {
+            if(!$class = $manager->getClass($config->entity, false))
+            {
+                $config->object_identifier = $config->entity;
+                $instance = new static($config);
+            }
+            else $instance = new $class($config);
+        }
+        else $instance = new static($config);
+
+        return $instance;
+    }
+
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
@@ -66,11 +82,6 @@ class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesMo
 
         //Remove internal properties
         $data = array_diff_key($data, array_flip($internal));
-
-        //Add none-internal computed properties
-        foreach(array_diff($computed, $internal) as $property) {
-            $data[$property] = $this->{$property};
-        }
 
         //Add none-internal computed properties
         foreach(array_diff($computed, $internal) as $property) {
