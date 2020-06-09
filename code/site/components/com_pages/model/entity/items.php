@@ -15,14 +15,15 @@ class ComPagesModelEntityItems extends KModelEntityComposite implements JsonSeri
     {
         if($config->entity)
         {
-            if(!$class = $manager->getClass($config->entity, false))
-            {
-                $config->object_identifier = $config->entity;
-                $instance = new static($config);
+            $config->object_identifier = $config->entity;
+
+            if(!$class = $manager->getClass($config->entity, false)) {
+                $instance = new self($config);
+            } else {
+                $instance = new $class($config);
             }
-            else $instance = new $class($config);
         }
-        else $instance = new static($config);
+        else $instance = new self($config);
 
         return $instance;
     }
@@ -82,5 +83,23 @@ class ComPagesModelEntityItems extends KModelEntityComposite implements JsonSeri
         $this->insert($entity);
 
         return $entity;
+    }
+
+    public function __call($method, $arguments)
+    {
+        $result = null;
+
+        $methods = $this->getMethods();
+        if(!isset($methods[$method]))
+        {
+            //Forward the call to the entity
+            if($entity = parent::getIterator()->current()) {
+                $result = $entity->__call($method, $arguments);
+            }
+
+        }
+        else $result = KObject::__call($method, $arguments);
+
+        return $result;
     }
 }

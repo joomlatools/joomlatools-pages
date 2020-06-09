@@ -17,12 +17,13 @@ class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesMo
     {
         if($config->entity)
         {
-            if(!$class = $manager->getClass($config->entity, false))
-            {
-                $config->object_identifier = $config->entity;
+            $config->object_identifier = $config->entity;
+
+            if(!$class = $manager->getClass($config->entity, false)) {
                 $instance = new static($config);
+            } else {
+                $instance = new $class($config);
             }
-            else $instance = new $class($config);
         }
         else $instance = new static($config);
 
