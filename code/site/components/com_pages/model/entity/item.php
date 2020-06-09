@@ -50,6 +50,17 @@ class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesMo
         return $this->__internal_properties;
     }
 
+    public function get($property, $default = null)
+    {
+        $result = $this->getProperty($property);
+
+        if(empty($result)) {
+            $result = $default;
+        }
+
+        return $result;
+    }
+
     public function save()
     {
         if (!$this->isNew()) {
