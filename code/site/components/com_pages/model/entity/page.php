@@ -54,17 +54,6 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         parent::_initialize($config);
     }
 
-    public function get($property, $default = null)
-    {
-        if($this->hasProperty($property)) {
-            $result = $this->getProperty($property);
-        } else {
-            $result = $default;
-        }
-
-        return $result;
-    }
-
     public function getPropertyFolder()
     {
         return dirname($this->path);
