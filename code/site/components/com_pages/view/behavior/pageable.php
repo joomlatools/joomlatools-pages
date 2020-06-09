@@ -88,8 +88,13 @@ class ComPagesViewBehaviorPageable extends KViewBehaviorAbstract
     public function getDirection()
     {
         $result = 'auto';
+
         if($page = $this->getPage()) {
             $result = $page->direction ?: 'auto';
+        }
+
+        if($this->getState()->isUnique()) {
+            $result = $this->getCollection()->get('direction', $result);
         }
 
         return $result;
@@ -100,6 +105,10 @@ class ComPagesViewBehaviorPageable extends KViewBehaviorAbstract
         $result = 'en-GB';
         if($page = $this->getPage()) {
             $result = $page->language ?: 'en-GB';
+        }
+
+        if($this->getState()->isUnique()) {
+            $result = $this->getCollection()->get('language', $result);
         }
 
         return $result;

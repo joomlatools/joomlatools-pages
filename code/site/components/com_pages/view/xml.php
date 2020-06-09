@@ -35,12 +35,17 @@ class ComPagesViewXml extends KViewTemplate
 
     public function getTitle()
     {
-        $result = '';
-        if($page = $this->getModel()->getPage()) {
-            $result = $page->title ? $page->title :  '';
+        $title = '';
+        if($page = $this->getModel()->getPage())
+        {
+            $title = $page->title ?: '';
+
+            if($this->getModel()->getState()->isUnique()) {
+                $title = $this->getCollection()->get('title', $title);
+            }
         }
 
-        return $result;
+        return $title;
     }
 
     public function getRoute($page = null, $query = array(), $escape = false)
