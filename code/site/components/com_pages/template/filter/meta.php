@@ -52,8 +52,11 @@ class ComPagesTemplateFilterMeta extends ComPagesTemplateFilterAbstract
                 {
                     if($metadata = $this->getTemplate()->collection()->metadata) {
                         $metadata->append($page->metadata);
+                    } else {
+                        $metadata = $page->metadata;
                     }
                 }
+                else $metadata = $page->metadata;
 
                 $metadata = KObjectConfig::unbox($metadata);
 
