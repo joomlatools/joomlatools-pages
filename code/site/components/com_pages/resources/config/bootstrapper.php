@@ -52,7 +52,8 @@ return [
             'locators' => [
                 'com://site/pages.data.locator',
                 'com://site/pages.page.locator',
-                'com://site/pages.template.locator.theme'
+                'com://site/pages.template.locator.theme',
+                'com://site/pages.template.locator.template'
             ]
         ],
         'template.engine.factory' => [
