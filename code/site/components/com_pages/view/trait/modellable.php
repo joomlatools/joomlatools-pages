@@ -39,13 +39,12 @@ trait ComPagesViewTraitModellable
     public function getTitle()
     {
         $title = '';
-        if($page = $this->getPage())
-        {
+        if($page = $this->getPage()) {
             $title = $page->title ?: '';
+        }
 
-            if($this->getState()->isUnique()) {
-                $title = $this->getCollection()->get('title', $title);
-            }
+        if($this->getState()->isUnique()) {
+            $title = $this->getCollection()->get('title', $title);
         }
 
         return $title;
@@ -53,37 +52,31 @@ trait ComPagesViewTraitModellable
 
     public function getDirection()
     {
-        $result = 'auto';
+        $direction = 'auto';
 
         if($page = $this->getPage()) {
-            $result = $page->direction ?: 'auto';
+            $direction = $page->direction ?: 'auto';
         }
 
-        if($this->getModel()->getState()->isUnique())
-        {
-            if($direction = $this->getCollection()->direction) {
-                $result = $direction;
-            }
+        if($this->getModel()->getState()->isUnique()) {
+           $direction = $this->getCollection()->get('direction', $direction);
         }
 
-        return $result;
+        return $direction;
     }
 
     public function getLanguage()
     {
-        $result = 'en-GB';
+        $language = 'en-GB';
         if($page = $this->getPage()) {
-            $result = $page->language ?: 'en-GB';
+            $language = $page->language ?: 'en-GB';
         }
 
-        if($this->getModel()->getState()->isUnique())
-        {
-            if($language = $this->getCollection()->language) {
-                $result = $language;
-            }
+        if($this->getModel()->getState()->isUnique()) {
+            $language = $this->getCollection()->get('language', $language);
         }
 
-        return $result;
+        return $language;
     }
 
     public function isCollection()
