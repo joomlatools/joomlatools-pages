@@ -68,9 +68,6 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
 
         ob_start();
 
-        //Do not filter the content (but allow for LOW or LOWEST priority filters to still work)
-        $this->getConfig('com:koowa.template.filter.decorator')->priority = 4; //PRIORITY_LOW
-
         $dispatcher = $this->getObject('com://site/pages.dispatcher.http', ['controller' => 'decorator']);
 
         $dispatcher->getRequest()->getUrl()->setPath($page);

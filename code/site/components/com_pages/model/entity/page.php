@@ -23,7 +23,11 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                 'content'     => '',
                 'excerpt'     => '',
                 'text'        => '',
-                'image'       => '',
+                'image'       => [
+                    'url' 	   => '',
+                    'alt'	   => '',
+                    'caption'  => '',
+                ],
                 'date'        => 'now',
                 'author'      => '',
                 'access'      => [
@@ -108,8 +112,8 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
             $metadata->set('description', $this->summary);
         }
 
-        if($this->image) {
-            $metadata->set('og:image', $this->image);
+        if($this->image && $this->image->url) {
+            $metadata->set('og:image', $this->image->url);
         }
 
         //Type and image are required. If they are not set remove any opengraph properties
@@ -183,17 +187,35 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
 
     public function setPropertyImage($value)
     {
+        //Normalize images
+        $image = array();
+
         if(!empty($value))
         {
-            if(is_string($value) && strpos($value, '://') === false) {
-                $value = '/'.ltrim($value, '/');
+            if(is_array($value)) {
+                $url = $value['url'] ?? '';
+            } else {
+                $url = $value;
             }
 
-            $image = $this->getObject('lib:http.url')->setUrl($value);
-        }
-        else $image = null;
+            if($url)
+            {
+                if(is_string($url) && strpos($url, '://') === false) {
+                    $url = '/'.ltrim($url, '/');
+                }
 
-        return $image;
+                $url = $this->getObject('lib:http.url')->setUrl($url);
+
+                $image = [
+                    'url'      => $url,
+                    'alt'      => $value['alt'] ?? '',
+                    'caption'  => $value['caption'] ?? '',
+                ];
+            }
+
+        }
+
+        return new KObjectConfigJson($image);
     }
 
     public function setPropertyLayout($value)
@@ -242,21 +264,6 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
     public function getHandle()
     {
         return $this->path;
-    }
-
-    public function toArray()
-    {
-        $data = parent::toArray();
-
-        foreach($data as $key => $value)
-        {
-            //Remove NULL values
-            if(is_null($value)) {
-                unset($data[$key]);
-            }
-        }
-
-        return $data;
     }
 
     public function __toString()
