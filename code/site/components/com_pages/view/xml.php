@@ -9,11 +9,20 @@
 
 class ComPagesViewXml extends KViewTemplate
 {
+    use ComPagesViewTraitModellable, ComPagesViewTraitLocatable;
+
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'behaviors'  => ['routable', 'pageable'],
+            'behaviors'  => ['layoutable'],
             'auto_fetch' => false,
+            'template_functions' => [
+                'page'        => [$this, 'getPage'],
+                'collection'  => [$this, 'getCollection'],
+                'state'       => [$this, 'getState'],
+                'direction'   => [$this, 'getDirection'],
+                'language'    => [$this, 'getLanguage'],
+            ],
         ]);
 
         parent::_initialize($config);
@@ -26,46 +35,6 @@ class ComPagesViewXml extends KViewTemplate
         $content .= $this->getContent();
 
         return trim($content);
-    }
-
-    public function isCollection()
-    {
-        return (bool) !$this->getModel()->getState()->isUnique();
-    }
-
-    public function getTitle()
-    {
-        $result = '';
-        if($page = $this->getModel()->getPage()) {
-            $result = $page->title ? $page->title :  '';
-        }
-
-        return $result;
-    }
-
-    public function getRoute($page = null, $query = array(), $escape = false)
-    {
-        return $this->getBehavior('routable')->getRoute($page, $query, $escape);
-    }
-
-    public function getUrl($url = null)
-    {
-        if(!empty($url))
-        {
-            if($url instanceof KHttpUrlInterface)
-            {
-                $result = clone $url;
-                $result->setUrl(parent::getUrl()->toString(KHttpUrl::AUTHORITY));
-            }
-            else
-            {
-                $result = clone parent::getUrl();;
-                $result->setUrl($url);
-            }
-        }
-        else $result = parent::getUrl();
-
-        return $result;
     }
 
     protected function _fetchData(KViewContext $context)

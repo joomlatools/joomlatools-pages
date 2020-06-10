@@ -9,6 +9,8 @@
 
 class ComPagesViewJson extends KViewAbstract
 {
+    use ComPagesViewTraitLocatable;
+
     /**
      * JSON API version
      *
@@ -39,7 +41,6 @@ class ComPagesViewJson extends KViewAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'behaviors'   => ['routable'],
             'version'     => '1.0',
         ]);
 
@@ -325,30 +326,5 @@ class ComPagesViewJson extends KViewAbstract
     protected function _getEntityRelationships(KModelEntityInterface $entity)
     {
         return array();
-    }
-
-    public function getRoute($page = null, $query = array(), $escape = false)
-    {
-        return $this->getBehavior('routable')->getRoute($page, $query, $escape);
-    }
-
-    public function getUrl($url = null)
-    {
-        if(!empty($url))
-        {
-            if($url instanceof KHttpUrlInterface)
-            {
-                $result = clone $url;
-                $result->setUrl(parent::getUrl()->toString(KHttpUrl::AUTHORITY));
-            }
-            else
-            {
-                $result = clone parent::getUrl();;
-                $result->setUrl($url);
-            }
-        }
-        else $result = parent::getUrl();
-
-        return $result;
     }
 }
