@@ -7,41 +7,28 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-/**
- * Routable View Behavior
- *
- * @author  Johan Janssens <http://github.com/johanjanssens>
- * @package Kodekit\Library\View\Behavior
- */
-class ComPagesViewBehaviorRoutable extends KViewBehaviorAbstract
+trait ComPagesViewTraitLocatable
 {
-    /**
-     * Register a route() function in the template
-     *
-     * @param KViewContext $context	A view context object
-     * @return void
-     */
-    protected function _beforeRender(KViewContext $context)
+    public function getUrl($url = null)
     {
-        //Register 'route' method in template
-        if($context->subject instanceof KViewTemplate)
+        if(!empty($url))
         {
-            $context->subject
-                ->getTemplate()
-                ->registerFunction('route', array($this, 'getRoute'));
+            if($url instanceof KHttpUrlInterface)
+            {
+                $result = clone $url;
+                $result->setUrl(parent::getUrl()->toString(KHttpUrl::AUTHORITY));
+            }
+            else
+            {
+                $result = clone parent::getUrl();;
+                $result->setUrl($url);
+            }
         }
+        else $result = parent::getUrl();
+
+        return $result;
     }
 
-    /**
-     * Get a route based on route and query
-     *
-     * In templates, use route()
-     *
-     * @param   mixed  $route
-     * @param   array  $query  The query string or array used to create the route
-     * @param   boolean   $escpae    If TRUE  escapes '&' to '&amp;' for xml compliance
-     * @return  KHttpUrl The route
-     */
     public function getRoute($route = null, $query = array(), $escape = false)
     {
         $result = null;

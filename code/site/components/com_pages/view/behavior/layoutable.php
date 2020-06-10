@@ -9,6 +9,35 @@
 
 class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
 {
+    protected function _beforeRender(KViewContext $context)
+    {
+        //Render the page
+        if($page = $this->getPage())
+        {
+            //Register template functions
+            $template = $context->subject->getTemplate();
+
+
+            //Create template (add parameters BEFORE cloning)
+            $template = clone $template->setParameters($context->parameters);
+
+            //Add the filters
+            $template->addFilters($page->process->filters);
+
+            //Load the page
+            $template->loadFile('page://pages/'.$page->path);
+
+            //Render page
+            $content = $template->render(KObjectConfig::unbox($context->data->append($template->getData())));
+
+            //Set the content in the object
+            $this->getPage()->content = $content;
+
+            //Set the rendered page in the view to allow for view decoration
+            $this->setContent($content);
+        }
+    }
+
     protected function _afterRender(KViewContext $context)
     {
         $data       = $context->data;
