@@ -3,3 +3,10 @@ framework:
   branch: master
 extensions:
   folder: contrib
+bundle:
+  manifest:
+    packages:
+      - title: Joomlatools Framework
+        path: framework
+      - title: Pages
+        path: pages

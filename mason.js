@@ -45,8 +45,9 @@ async function buildExtensions({ config = {} }) {
     config = mason.config.merge(
         {
             location: pagesRoot,
+            folder: 'contrib'
         },
-        (config.extensions || {folder: 'contrib'})
+        {...config, ...(config.extension || {})}
     );
 
     const contribFolder = `${config.location}/${config.folder}`;
@@ -115,6 +116,9 @@ async function bundle({ config = {} }) {
         {
             githubToken: null,
             framework: {},
+            bundle: {
+                manifest: {}
+            }
         },
         config
     );
@@ -157,7 +161,7 @@ async function bundle({ config = {} }) {
     await fs.unlink(`${installer}/README.md`);
     await fs.unlink(`${installer}/LICENSE`);
 
-    await fs.copyFile(`${pagesRoot}/scripts/build/manifest.json`, `${installer}/payload/manifest.json`);
+    await fs.writeFile(`${installer}/payload/manifest.json`, JSON.stringify(config.bundle.manifest, null, 4));
 
     const xmlManifest = (await fs.readFile(`${installer}/payload/pages/pages.xml`)).toString();
     const version = xmlManifest.match(/<version>(.*?)<\/version>/);
