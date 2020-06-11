@@ -12,7 +12,7 @@ class ExtK2ModelArticles extends ComPagesModelDatabase
 
 			->insert('published' , 'bool')
 			->insert('archived'  , 'bool')
-			->insert('trashed'   , 'bool')
+			->insert('trashed'   , 'bool', false)
 			->insert('featured'  , 'bool')
 
 			->insert('author' , 'string')
