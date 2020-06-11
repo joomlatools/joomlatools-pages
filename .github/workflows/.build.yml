@@ -54,7 +54,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.tagname.outputs.tag }}
           name: ${{ env.GITHUB_REF_SLUG }}
-          allow_override: true
 
       - name: Upload package to release
         uses: svenstaro/upload-release-action@v1-release
