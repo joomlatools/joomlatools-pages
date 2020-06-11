@@ -1,0 +1,5 @@
+framework:
+  source: remote # or local
+  branch: master
+extensions:
+  folder: contrib
