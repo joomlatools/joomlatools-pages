@@ -44,7 +44,7 @@ jobs:
 
       - run: mason bundle --config.githubToken=${{ secrets.JOOMLATOOLS_BUILDS_GITHUB_TOKEN }} --verbose --debug
 
-      #- run: mason buildExtensions --verbose --debug
+      - run: mason buildExtensions --verbose --debug
 
       - name: Create release
         uses: meeDamian/github-release@2.0
@@ -60,7 +60,7 @@ jobs:
         uses: svenstaro/upload-release-action@v1-release
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ env.GITHUB_REF_SLUG }}
+          tag: ${{ steps.tagname.outputs.tag }}
           file: ${{ github.workspace }}/com_pages*.zip
           file_glob: true
           overwrite: true
