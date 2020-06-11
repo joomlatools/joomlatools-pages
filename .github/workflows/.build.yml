@@ -55,14 +55,13 @@ jobs:
           tag: ${{ steps.tagname.outputs.tag }}
           name: ${{ env.GITHUB_REF_SLUG }}
           allow_override: true
-          commitish: ${{ env.GITHUB_SHA }}
 
       - name: Upload package to release
         uses: svenstaro/upload-release-action@v1-release
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ env.GITHUB_REF_SLUG }}
-          file: ${{ github.workspace }}/com_docman*.zip
+          file: ${{ github.workspace }}/com_pages*.zip
           file_glob: true
           overwrite: true
 
