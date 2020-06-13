@@ -41,7 +41,7 @@ trait ComPagesViewTraitLocatable
             }
 
             //Generate the route
-            $router = $this->getObject('dispatcher')->getRouter();
+            $router = $this->getObject('router');
 
             if($route = $router->generate($route, $query))
             {
