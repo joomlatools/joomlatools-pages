@@ -178,7 +178,7 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         return $result;
     }
 
-    public function filterItem($item, KModelStateInterface $state)
+    public function filterItem(&$item, KModelStateInterface $state)
     {
         foreach($state->getValues(true) as $key => $value)
         {
