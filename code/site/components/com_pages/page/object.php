@@ -25,7 +25,16 @@ class ComPagesPageObject extends ComPagesObjectConfigFrontmatter implements ComP
             $type = 'decorator';
         }
 
+        if($this->isRedirect()) {
+            $type = 'redirect';
+        }
+
         return $type;
+    }
+
+    public function isRedirect()
+    {
+        return isset($this->redirect) && $this->redirect !== false ? KObjectConfig::unbox($this->redirect) : false;
     }
 
     public function isForm()

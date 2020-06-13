@@ -65,7 +65,16 @@ class ComPagesPageEntity extends ComPagesModelEntityPage
             $type = 'decorator';
         }
 
+        if($this->isRedirect()) {
+            $type = 'redirect';
+        }
+
         return $type;
+    }
+
+    public function isRedirect()
+    {
+        return $this->redirect ? $this->redirect : false;
     }
 
     public function isCollection()

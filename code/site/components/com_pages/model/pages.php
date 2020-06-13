@@ -134,6 +134,7 @@ class ComPagesModelPages extends ComPagesModelCollection
         unset($page['collection']);
         unset($page['form']);
         unset($page['layout']);
+        unset($page['redirect']);
 
         return $result;
     }

@@ -11,6 +11,7 @@ interface ComPagesPageInterface
 {
     public function getType();
 
+    public function isRedirect();
     public function isForm();
     public function isCollection();
     public function isDecorator();
