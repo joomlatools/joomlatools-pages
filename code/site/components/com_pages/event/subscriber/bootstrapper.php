@@ -72,6 +72,11 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
     {
         //Load config options
         $directory = $this->getObject('object.bootstrapper')->getComponentPath('pages');
+
+        //Include autoloader
+        include $directory.'/resources/vendor/autoload.php';
+
+        //Set config options
         $options   = include $directory.'/resources/config/site.php';
 
         //Set config options
@@ -133,6 +138,11 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                 //Find template functions
                 foreach (glob($directory.'/template/function/[!_]*.php') as $filename) {
                     $functions[basename($filename, '.php')] = $filename;
+                }
+
+                //Include autoloader
+                if(file_exists($directory.'/resources/vendor/autoload.php')) {
+                    include $directory.'/resources/vendor/autoload.php';
                 }
 
                 //Set config options
