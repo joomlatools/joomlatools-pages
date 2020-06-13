@@ -25,17 +25,19 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
         if(false !== $route = $router->resolve())
         {
+            define('JPATH_PAGES', $route->getPath());
+
             //Set the site path in the config
             $config = $this->getObject('com://site/pages.config', ['site_path' => $route->getPath()]);
 
             //Get the config options
             $options = $config->getOptions();
 
-            //Bootstrap the site configuration
-            $this->_bootstrapSite($config->getSitePath(), $options);
-
             //Bootstrap the extensions
             $this->_bootstrapExtensions($config->getSitePath('extensions'), $options);
+
+            //Bootstrap the site configuration (after extensions to allow overriding)
+            $this->_bootstrapSite($config->getSitePath(), $options);
         }
         else $this->getObject('com://site/pages.config', ['site_path' => false]);
     }
@@ -68,8 +70,6 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
     protected function _bootstrapSite($path, $config = array())
     {
-        define('JPATH_PAGES', $path);
-
         //Load config options
         $directory = $this->getObject('object.bootstrapper')->getComponentPath('pages');
         $options   = include $directory.'/resources/config/site.php';
