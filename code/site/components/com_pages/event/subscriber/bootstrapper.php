@@ -68,9 +68,9 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
     protected function _bootstrapSite($path, $config = array())
     {
-        //Load config options
-        $base_path = $path;
+        define('JPATH_PAGES', $path);
 
+        //Load config options
         $directory = $this->getObject('object.bootstrapper')->getComponentPath('pages');
         $options   = include $directory.'/resources/config/site.php';
 
@@ -134,6 +134,16 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                 foreach (glob($directory.'/template/function/[!_]*.php') as $filename) {
                     $functions[basename($filename, '.php')] = $filename;
                 }
+
+                //Set config options
+                if(file_exists($directory.'/config.php'))
+                {
+                    $identifiers = include $directory.'/config.php';
+
+                    foreach($identifiers as $identifier => $values) {
+                        $this->getConfig($identifier)->merge($values);
+                    }
+                }
             }
 
             //Register template functions
@@ -154,7 +164,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
             foreach($iterator as $file)
             {
-                if ($file->isFile() && $file->getExtension() == 'php')
+                if ($file->isFile() && $file->getExtension() == 'php' && $file->getFileName() !== 'config.php')
                 {
                     $segments = explode('/', $iterator->getSubPathName());
                     $segments[] = basename(array_pop($segments), '.php');
