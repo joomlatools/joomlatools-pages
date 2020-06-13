@@ -12,7 +12,7 @@ trait ComPagesViewTraitModellable
     public function getPage($path = null)
     {
         if(!is_null($path)) {
-            $result = $this->getObject('com://site/pages.model.factory')->createPage($path);
+            $result = $this->getObject('page.registry')->getPageEntity($path);
         } else {
             $result = $this->getModel()->getPage();
         }
@@ -23,7 +23,7 @@ trait ComPagesViewTraitModellable
     public function getCollection($model = '', $state = array())
     {
         if($model) {
-            $result = $this->getObject('com://site/pages.model.factory')->createCollection($model, $state)->fetch();
+            $result = $this->getObject('model.factory')->createModel($model, $state)->fetch();
         } else {
             $result = $this->getModel()->fetch();
         }
