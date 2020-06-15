@@ -10,7 +10,6 @@ on:
     branches: # Add your feature branch here if you want a release and package generated for it
       - master
       - develop
-      - feature/370-mason
 
 jobs:
   build:
@@ -29,8 +28,12 @@ jobs:
           if [[ "${REF:0:1}" == "v" ]];
           then
             echo "::set-output name=tag::$REF";
+            echo "::set-output name=prerelease::false";
+            echo "::set-output name=body::Automated build from $REF tag";
           else
             echo "::set-output name=tag::dev-$REF";
+            echo "::set-output name=prerelease::true";
+            echo "::set-output name=body::Automated build from $REF branch";
           fi;
         env:
           REF: ${{ env.GITHUB_REF_SLUG }}
@@ -53,7 +56,9 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.tagname.outputs.tag }}
-          name: ${{ env.GITHUB_REF_SLUG }}
+          name: ${{ steps.tagname.outputs.tag }}
+          prerelease: ${{ steps.tagname.outputs.prerelease }}
+          body: ${{ steps.tagname.outputs.body }}
           allow_override: true
 
       - name: Upload package to release
