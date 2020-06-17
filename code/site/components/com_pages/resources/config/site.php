@@ -50,7 +50,10 @@ return [
         ],
         'com://site/pages.model.cache' => [
             'cache_path' => $config['http_cache_path'],
-        ]
+        ],
+        'com://site/pages.dispatcher.router.url' => [
+            'routes'  => $config['rewrites'],
+        ],
     ],
     'extensions' => $config['extensions'] ?? array(),
 ];
