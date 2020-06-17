@@ -68,18 +68,19 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
         $config->append(array(
             'routes'   => array(),
             'types' =>  [
-                'email' => '\S+@\S+',
-                'month' => '(0?[1-9]|1[012])',
-                'year'  => '(19|20)\d{2}',
-                'digit' => '[0-9]++',
+                'email'  => '\S+@\S+',
+                'month'  => '(0?[1-9]|1[012])',
+                'year'   => '(19|20)\d{2}',
+                'digit'  => '[0-9]++',
                 '*digit' => '[0-9]+(,[0-9]+)*',
-                'alnum' => '[0-9A-Za-z]++',
+                'alnum'  => '[0-9A-Za-z]++',
                 '*alnum' => '[0-9A-Za-z]+(,[0-9A-Za-z]+)*',
-                'alpha' => '[A-Za-z]++',
+                'alpha'  => '[A-Za-z]++',
                 '*alpha' => '[A-Za-z]+(,[A-Za-z]+)*',
-                '*'     => '.+?',
-                '**'    => '.++',
-                ''      => '[^/\.]++',
+                'slug'   => '[0-9]++[-]++([0-9A-Za-z-]++)',
+                '*'      => '.+?',
+                '**'     => '.++',
+                ''       => '[^/\.]++',
             ],
         ));
 
@@ -341,9 +342,17 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
                     if(isset($route->query[$param]))
                     {
                         if(is_array($route->query[$param])) {
-                            $value= implode(',', $route->query[$param]);
+                            $value = implode(',', $route->query[$param]);
                         } else {
                             $value = $route->query[$param];
+                        }
+
+                        if ($type && isset($this->_match_types[$type]))
+                        {
+                            $type = $this->_match_types[$type];
+
+                            preg_match('/'.$type.'/', $value, $matches);
+                            $value = $matches[1] ?? $value;
                         }
 
                         //Part is found, replace for param value
