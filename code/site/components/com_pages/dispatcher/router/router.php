@@ -49,6 +49,7 @@ class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract implemen
                 'page'     => 'com://site/pages.dispatcher.router.pages',
                 'site'     => 'com://site/pages.dispatcher.router.site',
                 'redirect' => 'com://site/pages.dispatcher.router.redirect',
+                'url'      => 'com://site/pages.dispatcher.router.url',
             ],
         ));
 
