@@ -15,6 +15,8 @@ class ComPagesClassLocatorExtension extends KClassLocatorAbstract
     {
         if (substr($classname, 0, 3) === 'Ext')
         {
+            $result = false;
+
             $word  = strtolower(preg_replace('/(?<=\\w)([A-Z])/', ' \\1', $classname));
             $parts = explode(' ', $word);
 
@@ -42,10 +44,12 @@ class ComPagesClassLocatorExtension extends KClassLocatorAbstract
                 $paths[] = $basepath.'/'.$path . $file.'/'.$file.'.php';
             }
 
-            ///Fallback paths
-            $basepath = $this->getNamespace('\\');
-            $paths[] = $basepath.'/'.strtolower($namespace) .'/'.$path . $file.'.php';
-            $paths[] = $basepath.'/'.strtolower($namespace) .'/'.$path . $file.'/'.$file.'.php';
+            ///Fallback paths (unused)
+            if($basepath = $this->getNamespace('\\'))
+            {
+                $paths[] = $basepath.'/'.strtolower($namespace) .'/'.$path . $file.'.php';
+                $paths[] = $basepath.'/'.strtolower($namespace) .'/'.$path . $file.'/'.$file.'.php';
+            }
 
             foreach($paths as $path)
             {

@@ -17,12 +17,13 @@ class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesMo
     {
         if($config->entity)
         {
-            if(!$class = $manager->getClass($config->entity, false))
-            {
-                $config->object_identifier = $config->entity;
+            $config->object_identifier = $config->entity;
+
+            if(!$class = $manager->getClass($config->entity, false)) {
                 $instance = new static($config);
+            } else {
+                $instance = new $class($config);
             }
-            else $instance = new $class($config);
         }
         else $instance = new static($config);
 
@@ -48,6 +49,17 @@ class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesMo
     public function getInteralProperties()
     {
         return $this->__internal_properties;
+    }
+
+    public function get($property, $default = null)
+    {
+        $result = $this->getProperty($property);
+
+        if(empty($result)) {
+            $result = $default;
+        }
+
+        return $result;
     }
 
     public function save()

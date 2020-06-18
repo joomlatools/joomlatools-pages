@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesPageObject extends ComPagesObjectConfigFrontmatter
+class ComPagesPageObject extends ComPagesObjectConfigFrontmatter implements ComPagesPageInterface
 {
     public function getType()
     {
@@ -21,7 +21,20 @@ class ComPagesPageObject extends ComPagesObjectConfigFrontmatter
             $type = 'form';
         }
 
+        if($this->isDecorator()) {
+            $type = 'decorator';
+        }
+
+        if($this->isRedirect()) {
+            $type = 'redirect';
+        }
+
         return $type;
+    }
+
+    public function isRedirect()
+    {
+        return isset($this->redirect) && $this->redirect !== false ? KObjectConfig::unbox($this->redirect) : false;
     }
 
     public function isForm()
@@ -32,6 +45,11 @@ class ComPagesPageObject extends ComPagesObjectConfigFrontmatter
     public function isCollection()
     {
         return isset($this->collection) && $this->collection !== false ? KObjectConfig::unbox($this->collection) : false;
+    }
+
+    public function isDecorator()
+    {
+        return (bool) $this->process->get('decorate', false) !== false;
     }
 
     public function isSubmittable()

@@ -20,11 +20,7 @@ class ComPagesModelPages extends ComPagesModelCollection
             //Internal states
             ->insert('recurse', 'cmd', null, false, array(), true)
             ->insert('level', 'int', 0, false, array(), true)
-            ->insert('collection', 'boolean', null, false, array(), true)
-            //Filter states
-            ->insert('year', 'int')
-            ->insert('month', 'int')
-            ->insert('day', 'int');
+            ->insert('collection', 'boolean', null, false, array(), true);
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -82,7 +78,7 @@ class ComPagesModelPages extends ComPagesModelCollection
         return $this->__data;
     }
 
-    public function filterItem($page, KModelStateInterface $state)
+    public function filterItem(&$page, KModelStateInterface $state)
     {
         $result = true;
 
@@ -100,32 +96,6 @@ class ComPagesModelPages extends ComPagesModelCollection
 
             if($state->collection === false) {
                 $result = !isset($page['collection']) || $page['collection'] === false;
-            }
-        }
-
-        //Date
-        if($result &&  (bool) ($state->year || $state->month || $state->day))
-        {
-            if(isset($page['date']))
-            {
-                //Get the timestamp
-                if(!is_integer($page['date'])) {
-                    $date = strtotime($page['date']);
-                } else {
-                    $date = $page['date'];
-                }
-
-                if($state->year) {
-                    $result = ($state->year == date('Y', $date));
-                }
-
-                if($result && $state->month) {
-                    $result = ($state->month == date('m', $date));
-                }
-
-                if($result && $state->day) {
-                    $result = ($state->day == date('d', $date));
-                }
             }
         }
 
@@ -158,6 +128,13 @@ class ComPagesModelPages extends ComPagesModelCollection
                 }
             }
         }
+
+        //Unset reserved properties
+        unset($page['process']);
+        unset($page['collection']);
+        unset($page['form']);
+        unset($page['layout']);
+        unset($page['redirect']);
 
         return $result;
     }

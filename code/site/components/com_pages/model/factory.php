@@ -9,23 +9,9 @@
 
 class ComPagesModelFactory extends KObject implements KObjectSingleton
 {
-    private $__collections;
+    private $__models;
 
-    public function createPage($path)
-    {
-        $entity = false;
-
-        if ($page = $this->getObject('page.registry')->getPage($path))
-        {
-            $entity = $this->getObject('com://site/pages.model.entity.page',
-                array('data'  => $page->toArray())
-            );
-        }
-
-        return $entity;
-    }
-
-    public function createCollection($name, $state = array(), $replace = true)
+    public function createModel($name, $state = array(), $replace = true)
     {
         $model = null;
 
@@ -112,20 +98,20 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
             $model->setState($state);
 
             //Store the collection
-            $this->__collections[$name] = $model;
+            $this->__models[$name] = $model;
         }
         else
         {
             throw new UnexpectedValueException(
-                'Collection: '.get_class($name).' cannot be found'
+                'Collection Model: '.get_class($name).' cannot be found'
             );
         }
 
         return $model;
     }
 
-    public function getCollections()
+    public function getModels()
     {
-        return (array) $this->__collections;
+        return (array) $this->__models;
     }
 }

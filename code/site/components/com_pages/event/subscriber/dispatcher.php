@@ -20,12 +20,11 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
 
     public function onAfterApplicationRoute(KEventInterface $event)
     {
-        $site_path  = $this->getObject('com://site/pages.config')->getSitePath();
-        $page_route = $route = $this->getObject('com://site/pages.dispatcher.http')->getRoute();
+        $site = $this->getObject('com://site/pages.config')->getSitePath();
+        $page = $this->getObject('com://site/pages.dispatcher.http')->getPage();
 
-        if($page_route !== false && $site_path !== false)
+        if($page !== false && $site !== false)
         {
-            $page    = $page_route->getPage();
             $request = $this->getObject('request');
 
             if($request->isSafe())
@@ -39,7 +38,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
 
                 if(JFactory::getApplication()->getMenu()->getActive()->home && !empty($page->path)) {
                     $event->getTarget()->input->set('option', 'com_pages');
-                } elseif($page->process->get('decorate', false) === false) {
+                } elseif(!$page->isDecorator()) {
                     $event->getTarget()->input->set('option', 'com_pages');
                 }
             }
@@ -85,10 +84,8 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
 
     public function onAfterTemplateModules(KEventInterface $event)
     {
-        if($this->getObject('com://site/pages.dispatcher.http')->getRoute())
+        if($page = $this->getObject('com://site/pages.dispatcher.http')->getPage())
         {
-            $page = $this->getObject('com://site/pages.dispatcher.http')->getRoute()->getPage();
-
             if($page->process->has('template') && $page->process->template->has('modules'))
             {
                 $modules = $page->process->template->modules;

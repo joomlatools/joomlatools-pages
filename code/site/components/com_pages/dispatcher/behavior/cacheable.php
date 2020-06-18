@@ -253,12 +253,12 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     {
         if(!isset($this->__collections))
         {
-            foreach($this->getObject('com://site/pages.model.factory')->getCollections() as $name => $collection)
+            foreach($this->getObject('model.factory')->getModels() as $name => $model)
             {
                 $this->__collections[] = [
                     'name' => $name,
-                    'type' => $collection->getType(),
-                    'hash' => $collection->getHash()
+                    'type' => $model->getType(),
+                    'hash' => $model->getHash()
                 ];
             }
         }
@@ -358,7 +358,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                     //If the collection has a hash validate it
                     if($collection['hash'])
                     {
-                        $model = $this->getObject('com://site/pages.model.factory')->createCollection($collection['name']);
+                        $model = $this->getObject('model.factory')->createModel($collection['name']);
 
                         if($collection['hash'] != $model->getHash()) {
                             $valid = false; break;

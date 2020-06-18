@@ -50,6 +50,18 @@ return [
         ],
         'com://site/pages.model.cache' => [
             'cache_path' => $config['http_cache_path'],
+        ],
+        'lib:template.engine.markdown' => [
+            'compiler' => function($text) {
+                //See: https://michelf.ca/projects/php-markdown/extra/
+                return \Michelf\MarkdownExtra::defaultTransform($text);
+            }
+        ],
+        'com://site/pages.template.filter.highlight' => [
+            'highlighter' => function($source, $language) {
+                //See: https://github.com/scrivo/highlight.php
+                return (new \Highlight\Highlighter())->highlight($language, $source, false)->value;
+            }
         ]
     ],
     'extensions' => $config['extensions'] ?? array(),

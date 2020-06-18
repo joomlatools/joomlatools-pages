@@ -7,9 +7,15 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-interface ComPagesModelFilterable extends KModelInterface
+interface ComPagesPageInterface
 {
-    public function fetchData($count = false);
-    public function filterData($data);
-    public function filterItem(&$item, KModelStateInterface $state);
+    public function getType();
+
+    public function isRedirect();
+    public function isForm();
+    public function isCollection();
+    public function isDecorator();
+
+    public function isSubmittable();
+    public function isEditable();
 }

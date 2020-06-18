@@ -27,6 +27,15 @@
  */
 class ComPagesModelBehaviorSparsable extends ComPagesModelBehaviorQueryable
 {
+    protected function _initialize(KObjectConfig $config)
+    {
+        $config->append(array(
+            'filter' => false
+        ));
+
+        parent::_initialize($config);
+    }
+
     /**
      * Insert the model states
      *
