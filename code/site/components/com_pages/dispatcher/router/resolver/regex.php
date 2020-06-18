@@ -77,7 +77,8 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
                 '*alnum' => '[0-9A-Za-z]+(,[0-9A-Za-z]+)*',
                 'alpha'  => '[A-Za-z]++',
                 '*alpha' => '[A-Za-z]+(,[A-Za-z]+)*',
-                'slug'   => '[0-9]++[-]++([0-9A-Za-z-]++)',
+                'id'     => '[0-9]++[-]++[0-9A-Za-z-]++',
+                'slug'   => '[^0-9-][a-z-0-9]++',
                 '*'      => '.+?',
                 '**'     => '.++',
                 ''       => '[^/\.]++',
@@ -351,8 +352,10 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
                         {
                             $type = $this->_match_types[$type];
 
-                            preg_match('/'.$type.'/', $value, $matches);
-                            $value = $matches[1] ?? $value;
+                            //Get first capturing group if it exists, if not use full match
+                            if(preg_match('/'.$type.'/', $value, $matches)) {
+                                $value = $matches[0] ?? $value;
+                            }
                         }
 
                         //Part is found, replace for param value
