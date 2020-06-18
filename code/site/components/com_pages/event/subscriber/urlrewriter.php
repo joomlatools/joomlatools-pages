@@ -54,7 +54,9 @@ class ComPagesEventSubscriberUrlrewriter extends ComPagesEventSubscriberAbstract
                 $url->setQuery($route->getQuery(true));
 
                 //Cache the route resolution
-                $this->__routes[$path] = $target;
+                if($path != $target) {
+                    $this->__routes[$path] = $target;
+                }
             }
 
         },  JRouter::PROCESS_AFTER);
