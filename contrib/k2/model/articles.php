@@ -1,195 +1,213 @@
 <?php
+/**
+ * Joomlatools Pages
+ *
+ * @copyright   Copyright (C) 2018 Timble CVBA. (http://www.timble.net)
+ * @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl.html>
+ * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
+ */
+
 class ExtK2ModelArticles extends ComPagesModelDatabase
 {
-	public function __construct(KObjectConfig $config)
-	{
-		parent::__construct($config);
+    public function __construct(KObjectConfig $config)
+    {
+        parent::__construct($config);
 
-		$this->getState()
-			->insert('id'        , 'cmd', null, true)
-			->insert('category'  , 'cmd')
-			->insert('tags'      , 'cmd')
+        $this->getState()
+            ->insert('id'        , 'cmd', null, true)
+            ->insert('slug'      , 'cmd', null, true)
+            ->insert('category'  , 'cmd')
+            ->insert('tags'      , 'cmd')
 
-			->insert('published' , 'bool')
-			->insert('archived'  , 'bool')
-			->insert('trashed'   , 'bool', false)
-			->insert('featured'  , 'bool')
+            ->insert('published' , 'boolean')
+            ->insert('archived'  , 'boolean')
+            ->insert('trashed'   , 'boolean', false)
+            ->insert('featured'  , 'boolean')
 
-			->insert('author' , 'string')
-			->insert('editor' , 'string')
-			->insert('access' , 'cmd', array_unique($this->getObject('user')->getRoles()))
-		;
-	}
+            ->insert('author' , 'string')
+            ->insert('editor' , 'string')
+            ->insert('access' , 'cmd', array_unique($this->getObject('user')->getRoles()))
+        ;
+    }
 
-	protected function _initialize(KObjectConfig $config)
-	{
-		$config->append(array(
-			'persistable' => false,
-			'type'   => 'articles',
-			'entity' => 'article',
-			'table'  => 'k2_items',
-		));
-		parent::_initialize($config);
-	}
+    protected function _initialize(KObjectConfig $config)
+    {
+        $config->append(array(
+            'persistable' => false,
+            'type'    => 'articles',
+            'entity'  => 'article',
+            'table'   => 'k2_items',
+            'aliases' => array()
+        ));
+        parent::_initialize($config);
+    }
 
-	public function fetchData($count = false)
-	{
-		$state = $this->getState();
+    public function getAliases()
+    {
+        return $this->getConfig()->aliases;
+    }
 
-		$query = $this->getObject('database.query.select')
-			->table(array('tbl' => $this->getTable()->getName()));
+    public function fetchData($count = false)
+    {
+        $state = $this->getState();
 
-		//#__tags
-		$query->columns([
-			'tags'	=> $this->getObject('database.query.select')
-				->table(array('t' => 'k2_tags'))
-				->columns('GROUP_CONCAT(t.name)')
-				->join(['m' => 'k2_tags_xref'], 'm.tagID = t.id')
-				->where('m.itemID = tbl.id')
-				->where('(t.published = :published)')->bind(['published' => 1])
-		]);
+        $query = $this->getObject('database.query.select')
+            ->table(array('tbl' => $this->getTable()->getName()));
 
-		//#__content
-		if(!$count)
-		{
-			$query->columns([
-				'id'       => 'tbl.id',
-				'title'    => 'tbl.title',
-				'slug'     => 'tbl.alias',
-				'summary'  => 'tbl.metadesc',
-				'content'  => 'CONCAT_WS("<!--more-->", tbl.introtext, IF(LENGTH(tbl.fulltext), tbl.fulltext ,NULL))',
-				'category' => 'tbl.catid',
+        //#__tags
+        $query->columns([
+            'tags'	=> $this->getObject('database.query.select')
+                ->table(array('t' => 'k2_tags'))
+                ->columns('GROUP_CONCAT(t.name)')
+                ->join(['m' => 'k2_tags_xref'], 'm.tagID = t.id')
+                ->where('m.itemID = tbl.id')
+                ->where('(t.published = :published)')->bind(['published' => 1])
+        ]);
 
-				'published' => 'tbl.published',
-				'archived'  => 'IF(tbl.publish_down > CURRENT_TIMESTAMP, 1, 0)',
-				'trashed'   => 'tbl.trash',
-				'featured'  => 'tbl.featured',
+        //#__content
+        if(!$count)
+        {
+            $query->columns([
+                'id'       => 'tbl.id',
+                'title'    => 'tbl.title',
+                'slug'     => 'tbl.alias',
+                'summary'  => 'tbl.metadesc',
+                'content'  => 'CONCAT_WS("<!--more-->", tbl.introtext, IF(LENGTH(tbl.fulltext), tbl.fulltext ,NULL))',
+                'category' => 'tbl.catid',
 
-				'author'      => 'tbl.created_by',
-				'editor'      => 'GREATEST(tbl.created_by, tbl.modified_by)',
+                'published' => 'tbl.published',
+                'archived'  => 'IF(tbl.publish_down > CURRENT_TIMESTAMP, 1, 0)',
+                'trashed'   => 'tbl.trash',
+                'featured'  => 'tbl.featured',
 
-				'date'           => 'tbl.created',
-				'edited_date'    => 'GREATEST(tbl.created, tbl.modified)',
-				'published_date' => 'tbl.publish_up',
-				'archived_date'  => 'tbl.publish_down',
+                'author'      => 'tbl.created_by',
+                'editor'      => 'GREATEST(tbl.created_by, tbl.modified_by)',
 
-				'fields'      => 'tbl.extra_fields',
- 				'parameters'  => 'tbl.params',
-				'impressions' => 'tbl.hits',
+                'date'           => 'tbl.created',
+                'edited_date'    => 'GREATEST(tbl.created, tbl.modified)',
+                'published_date' => 'tbl.publish_up',
+                'archived_date'  => 'tbl.publish_down',
 
-				//Protected properties (for getters)
-				'_metadata'      => 'tbl.metadata',
-				'_image_caption' => 'tbl.image_caption',
-			]);
-		}
-		else $query->columns('COUNT(*)');
+                'fields'      => 'tbl.extra_fields',
+                'parameters'  => 'tbl.params',
+                'impressions' => 'tbl.hits',
 
-		//Joins
-		$query
-			->join(['c' => 'k2_categories'] , 'tbl.catid = c.id')
-			->join(['g' => 'usergroups']    , 'tbl.access = g.id')
-			->join(['m' => 'k2_tags_xref']  , 'tbl.id = m.itemID')
-			->join(['t' => 'k2_tags']		, 't.id = m.tagID');
+                //Protected properties (for getters)
+                '_metadata'      => 'tbl.metadata',
+                '_image_caption' => 'tbl.image_caption',
+            ]);
+        }
+        else $query->columns('COUNT(*)');
 
-		if(!is_null($state->id))
-		{
-			if(is_string($state->id)) {
-				$articles = array_unique(explode(',',  $state->id));
-			} else {
-				$articles = (array) $state->id;
-			}
+        //Joins
+        $query
+            ->join(['c' => 'k2_categories'] , 'tbl.catid = c.id')
+            ->join(['g' => 'usergroups']    , 'tbl.access = g.id')
+            ->join(['m' => 'k2_tags_xref']  , 'tbl.id = m.itemID')
+            ->join(['t' => 'k2_tags']		, 't.id = m.tagID');
 
-			$query->where('(tbl.id IN :articles)')->bind(['articles' => $articles]);
-		}
+        if(!is_null($state->id))
+        {
+            if(is_string($state->id)) {
+                $articles = array_unique(explode(',',  $state->id));
+            } else {
+                $articles = (array) $state->id;
+            }
 
-		if(!is_null($state->category))
-		{
-			if(is_string($state->category)) {
-				$categories = array_unique(explode(',',  $state->category));
-			} else {
-				$categories = (array) $state->category;
-			}
+            $query->where('(tbl.id IN :articles)')->bind(['articles' => $articles]);
+        }
+        else if(!is_null($state->slug)) {
+            $query->where('(tbl.alias = :article)')->bind(['article' => $state->slug]);
+        }
 
-			$query->where('(tbl.catid IN :category)')->bind(['category' => $categories]);
-		}
+        if(!is_null($state->category))
+        {
+            if(is_string($state->category)) {
+                $categories = array_unique(explode(',',  $state->category));
+            } else {
+                $categories = (array) $state->category;
+            }
 
-		if(!is_null($state->tags))
-		{
-			if(is_string($state->tags)) {
-				$tags = array_unique(explode(',',  $state->tags));
-			} else {
-				$tags = (array) $state->tags;
-			}
+            $query->where('(tbl.catid IN :category)')->bind(['category' => $categories]);
+        }
 
-			$query->where('(t.title IN :tags)')->bind(['tags' => $tags]);
-		}
+        if(!is_null($state->tags))
+        {
+            if(is_string($state->tags)) {
+                $tags = array_unique(explode(',',  $state->tags));
+            } else {
+                $tags = (array) $state->tags;
+            }
 
-		if(!is_null($state->author))
-		{
-			if(is_string($state->author)) {
-				$users = array_unique(explode(',',  $state->author));
-			} else {
-				$users = (array) $state->author;
-			}
+            $query->where('(t.title IN :tags)')->bind(['tags' => $tags]);
+        }
 
-			$query->where('(tbl.created_by IN :authors)')->bind(['authors' => $users]);
-		}
+        if(!is_null($state->author))
+        {
+            if(is_string($state->author)) {
+                $users = array_unique(explode(',',  $state->author));
+            } else {
+                $users = (array) $state->author;
+            }
 
-		if (!is_null($state->editor))
-		{
-			if(is_string($state->editor)) {
-				$users = array_unique(explode(',',  $state->editor));
-			} else {
-				$users = (array) $state->editor;
-			}
+            $query->where('(tbl.created_by IN :authors)')->bind(['authors' => $users]);
+        }
 
-			$query->where('(tbl.modified_by IN :editors)')->bind(['editors' => $users]);
-		}
+        if (!is_null($state->editor))
+        {
+            if(is_string($state->editor)) {
+                $users = array_unique(explode(',',  $state->editor));
+            } else {
+                $users = (array) $state->editor;
+            }
 
-		if (!is_null($state->access))
-		{
-			if(is_string($state->access)) {
-				$access = array_unique(explode(',',  $state->access));
-			} else {
-				$access = (array) $state->access;
-			}
+            $query->where('(tbl.modified_by IN :editors)')->bind(['editors' => $users]);
+        }
 
-			//If user doesn't have access to the category, he doesn't have access to the articles
-			$query->where('(tbl.access IN :access)')->bind(['access' => $access]);
-			$query->where('(c.access IN :access)')->bind(['access' => $access]);
-		}
+        if (!is_null($state->access))
+        {
+            if(is_string($state->access)) {
+                $access = array_unique(explode(',',  $state->access));
+            } else {
+                $access = (array) $state->access;
+            }
 
-		if (!is_null($state->published))
-		{
-			if($state->published) {
-				$query->where('(tbl.published = 1)');
-			} else {
-				$query->where('(tbl.published = 0');
-			}
-		}
+            //If user doesn't have access to the category, he doesn't have access to the articles
+            $query->where('(tbl.access IN :access)')->bind(['access' => $access]);
+            $query->where('(c.access IN :access)')->bind(['access' => $access]);
+        }
 
-		if (!is_null($state->trashed))
-		{
-			if($state->trashed) {
-				$query->where('(tbl.trash = 1)');
-			} else {
-				$query->where('(tbl.trash = 0)');
-			}
-		}
+        if (!is_null($state->published))
+        {
+            if($state->published) {
+                $query->where('(tbl.published = 1)');
+            } else {
+                $query->where('(tbl.published = 0)');
+            }
+        }
 
-		if (!is_null($state->archived))
-		{
-			if($state->archived) {
-				$query->where('(tbl.publish_down > CURRENT_TIMESTAMP)');
-			} else {
-				$query->where('(tbl.publish_down < CURRENT_TIMESTAMP)');
-			}
-		}
+        if (!is_null($state->trashed))
+        {
+            if($state->trashed) {
+                $query->where('(tbl.trash = 1)');
+            } else {
+                $query->where('(tbl.trash = 0)');
+            }
+        }
 
-		if (!is_null($state->featured)) {
-			$query->where('(tbl.featured = :featured)')->bind(['featured' => (bool) $state->featured]);
-		}
+        if (!is_null($state->archived))
+        {
+            if($state->archived) {
+                $query->where('(tbl.publish_down > CURRENT_TIMESTAMP)');
+            } else {
+                $query->where('(tbl.publish_down < CURRENT_TIMESTAMP)');
+            }
+        }
 
-		return $query;
-	}
+        if (!is_null($state->featured)) {
+            $query->where('(tbl.featured = :featured)')->bind(['featured' => (bool) $state->featured]);
+        }
+
+        return $query;
+    }
 }
