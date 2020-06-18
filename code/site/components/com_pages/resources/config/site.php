@@ -19,7 +19,7 @@ return [
             'cache_path'       => $config['page_cache_path'],
             'cache_validation' => $config['page_cache_validation'],
             'collections' => $config['collections'],
-            'redirects'   => $config['redirects'],
+            'redirects'   => array_flip($config['redirects']),
             'properties'  => $config['page'],
         ],
         'data.registry' => [
@@ -50,6 +50,18 @@ return [
         ],
         'com://site/pages.model.cache' => [
             'cache_path' => $config['http_cache_path'],
+        ],
+        'lib:template.engine.markdown' => [
+            'compiler' => function($text) {
+                //See: https://michelf.ca/projects/php-markdown/extra/
+                return \Michelf\MarkdownExtra::defaultTransform($text);
+            }
+        ],
+        'com://site/pages.template.filter.highlight' => [
+            'highlighter' => function($source, $language) {
+                //See: https://github.com/scrivo/highlight.php
+                return (new \Highlight\Highlighter())->highlight($language, $source, false)->value;
+            }
         ],
         'com://site/pages.dispatcher.router.url' => [
             'routes'  => $config['rewrites'],

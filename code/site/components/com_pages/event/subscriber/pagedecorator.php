@@ -22,7 +22,8 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
     {
         $menu = JFactory::getApplication()->getMenu()->getActive();
 
-        if($menu->component !== 'com_pages')
+        //Only decorate GET requests that are not routing to com_pages
+        if($this->getObject('request')->isGet() && $menu->component != 'com_pages')
         {
             $site_path  =  $this->getObject('com://site/pages.config')->getSitePath();
             $page_route = $route = $this->getObject('com://site/pages.dispatcher.http')->getRoute();
@@ -66,9 +67,6 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
         $buffer = $app->getDocument()->getBuffer('component');
 
         ob_start();
-
-        //Do not filter the content (but allow for LOW or LOWEST priority filters to still work)
-        $this->getConfig('com:koowa.template.filter.decorator')->priority = 4; //PRIORITY_LOW
 
         $dispatcher = $this->getObject('com://site/pages.dispatcher.http', ['controller' => 'decorator']);
 

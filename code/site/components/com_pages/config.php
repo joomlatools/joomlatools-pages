@@ -33,6 +33,7 @@ class ComPagesConfig extends KObject implements KObjectSingleton
             'data_namespaces'       => array(),
             'data_cache'            => true,
             'data_cache_path'       => $config->site_path ? $config->site_path.'/cache/data' : false,
+            'data_cache_validation' => true,
 
             'template_cache'            => true,
             'template_cache_path'       => $config->site_path ? $config->site_path.'/cache/templates' : false,

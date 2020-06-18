@@ -163,17 +163,6 @@ class ComPagesTemplateDefault extends KTemplate
 
     public function createHelper($helper, $config = array())
     {
-        //Create the complete extension identifier if a partial identifier was passed
-        if (is_string($helper) && strpos($helper, ':') === false)
-        {
-            $identifier = 'ext:template.helper.'.$helper;
-
-            //Create the template helper
-            if($this->getObject('manager')->getClass($identifier)) {
-                $helper = $identifier;
-            }
-         }
-
         if(!isset($this->__helpers[$helper])) {
             $this->__helpers[$helper] = parent::createHelper($helper, $config);
         }
@@ -317,6 +306,10 @@ class ComPagesTemplateDefault extends KTemplate
 
     protected function _getConfig($identifier = 'com://site/pages.config')
     {
+        if (is_string($identifier) && strpos($identifier, ':') === false) {
+            $identifier = 'com://site/pages.'.$identifier;
+        }
+
         return clone $this->getObject($identifier)->getConfig();
     }
 }

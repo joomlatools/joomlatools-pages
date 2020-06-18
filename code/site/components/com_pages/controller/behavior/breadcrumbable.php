@@ -20,7 +20,7 @@ class ComPagesControllerBehaviorBreadcrumbable extends KControllerBehaviorAbstra
             if($path = ltrim(str_replace($menu_route->route, '', $page_route), '/'))
             {
                 $pathway = JFactory::getApplication()->getPathway();
-                $router = $this->getObject('dispatcher')->getRouter();
+                $router = $this->getObject('router');
 
                 $segments = array();
                 foreach(explode('/', $path) as $segment)

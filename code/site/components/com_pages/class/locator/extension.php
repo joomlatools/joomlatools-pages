@@ -13,8 +13,10 @@ class ComPagesClassLocatorExtension extends KClassLocatorAbstract
 
     public function locate($classname, $basepath = null)
     {
-        if (substr($classname, 0, 9) === 'Extension')
+        if (substr($classname, 0, 3) === 'Ext')
         {
+            $result = false;
+
             $word  = strtolower(preg_replace('/(?<=\\w)([A-Z])/', ' \\1', $classname));
             $parts = explode(' ', $word);
 
@@ -28,23 +30,34 @@ class ComPagesClassLocatorExtension extends KClassLocatorAbstract
                 $file = $package;
             }
 
-            //Switch basepath
-            if(!$this->getNamespace($namespace)) {
-                $basepath = $this->getNamespace('\\');
-            } else {
-                $basepath = $this->getNamespace($namespace);
-            }
-
             $path = '';
-
             if (!empty($parts)) {
                 $path = implode('/', $parts) . '/';
             }
 
-            $result = $basepath.'/'.$package.'/'.$path . $file.'.php';
+            $paths = [];
 
-            if(!is_file($result)) {
-                $result = $basepath.'/'.$package.'/'.$path . $file.'/'.$file.'.php';
+            //Namespace paths
+            if($basepath = $this->getNamespace($namespace))
+            {
+                $paths[] = $basepath.'/'.$path . $file.'.php';
+                $paths[] = $basepath.'/'.$path . $file.'/'.$file.'.php';
+            }
+
+            ///Fallback paths (unused)
+            if($basepath = $this->getNamespace('\\'))
+            {
+                $paths[] = $basepath.'/'.strtolower($namespace) .'/'.$path . $file.'.php';
+                $paths[] = $basepath.'/'.strtolower($namespace) .'/'.$path . $file.'/'.$file.'.php';
+            }
+
+            foreach($paths as $path)
+            {
+                if(is_file($path))
+                {
+                    $result = $path;
+                    break;
+                }
             }
 
             return $result;

@@ -1,3 +1,5 @@
+![Build package](https://github.com/joomlatools/joomlatools-pages/workflows/Build%20package/badge.svg?branch=master)
+
 # Joomlatools Pages
 
 ### What is Joomlatools Pages?

@@ -14,16 +14,6 @@ if(file_exists(JPATH_CONFIGURATION.'/configuration-pages.php')) {
     $config   = array();
 }
 
-//Require markdown library
-if(!class_exists('\Michelf\MarkdownExtra')) {
-    require_once dirname(dirname(__FILE__)).'/vendor/markdown/MarkdownExtra.inc.php';
-}
-
-//Require highlight library
-if(!class_exists('\Highlight\Highlighter')) {
-    require_once dirname(dirname(__FILE__)).'/vendor/highlight/Autoloader.php';
-}
-
 //Load config options
 return [
 
@@ -32,6 +22,7 @@ return [
         'router'        => 'com://site/pages.dispatcher.router',
         'page.registry' => 'com://site/pages.page.registry',
         'data.registry' => 'com://site/pages.data.registry',
+        'model.factory' => 'com://site/pages.model.factory',
         'com://site/pages.version' => 'com://admin/pages.version',
     ],
 
@@ -41,11 +32,11 @@ return [
         ],
         'object.config.factory' => [
             'formats' => [
-                'md'   => 'ComPagesObjectConfigMarkdown',
-                'csv'  => 'ComPagesObjectConfigCsv',
-                'json' => 'ComPagesObjectConfigJson',
-                'xml'  => 'ComPagesObjectConfigXml',
-                'html' => 'ComPagesObjectConfigHtml',
+                'md'   => 'com://site/pages.object.config.markdown',
+                'csv'  => 'com://site/pages.object.config.csv',
+                'json' => 'com://site/pages.object.config.json',
+                'xml'  => 'com://site/pages.object.config.xml',
+                'html' => 'com://site/pages.object.config.html',
             ],
         ],
         'template.locator.factory' => [
@@ -68,19 +59,6 @@ return [
                 'com://site/pages.event.subscriber.pagedecorator',
                 'com://site/pages.event.subscriber.errorhandler',
             ]
-        ],
-        'lib:template.engine.markdown' => [
-            'compiler' => function($text) {
-                //See: https://michelf.ca/projects/php-markdown/extra/
-                return \Michelf\MarkdownExtra::defaultTransform($text);
-            }
-        ],
-        'com://site/pages.template.filter.highlight' => [
-            'highlighter' => function($source, $language) {
-                //See: https://github.com/scrivo/highlight.php
-                spl_autoload_register('\Highlight\Autoloader::load');
-                return (new \Highlight\Highlighter())->highlight($language, $source, false)->value;
-            }
         ],
         'com://site/pages.dispatcher.router.site' => [
             'routes'  => isset($config['sites']) ? $config['sites'] : array('[*]' => JPATH_ROOT.'/joomlatools-pages'),

@@ -40,6 +40,7 @@ class ComPagesModelCache extends ComPagesModelCollection
                     'language'  => $data['page']['language'],
                     'tags'      => array_unique(array_column($data['collections'], 'type')),
                     'robots'    => isset($data['headers']['X-Robots-Tag']) ? array_map('trim', explode(',', $data['headers']['X-Robots-Tag'])) : array(),
+                    'status'    => $data['status'],
                 );
             }
         }
