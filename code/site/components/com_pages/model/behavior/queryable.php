@@ -9,6 +9,15 @@
 
 abstract class ComPagesModelBehaviorQueryable extends KModelBehaviorAbstract
 {
+    protected function _initialize(KObjectConfig $config)
+    {
+        $config->append(array(
+            'filter' => true
+        ));
+
+        parent::_initialize($config);
+    }
+
     protected function _beforeFetch(KModelContextInterface $context)
     {
         $state = $context->state;
@@ -23,6 +32,17 @@ abstract class ComPagesModelBehaviorQueryable extends KModelBehaviorAbstract
                 $context->data = $this->_queryDatabase($context->data, $state);
             }
         }
+    }
+
+    protected function _beforeCount(KModelContextInterface $context)
+    {
+        if($this->getConfig()->filter) {
+            $result = $this->_beforeFetch($context);
+        } else {
+            $result = $context->data;
+        }
+
+        return $result;
     }
 
     protected function _queryArray(array $data, KModelStateInterface $state)

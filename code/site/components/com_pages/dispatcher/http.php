@@ -11,6 +11,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 {
     private $__router;
     private $__route;
+    private $__page;
 
     public function __construct( KObjectConfig $config)
     {
@@ -61,6 +62,23 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         return $this->__router;
     }
 
+    public function getPage()
+    {
+        $result = false;
+
+        if(!isset($this->__page))
+        {
+            if($route = $this->getRoute()) {
+                $this->__page = $route->getPage();
+            }
+        }
+
+        if(is_object($this->__page)) {
+            $result = $this->__page;
+        }
+
+        return $result;
+    }
 
     public function getRoute()
     {
@@ -68,11 +86,12 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
         if(!isset($this->__route))
         {
-            $base = $this->getRequest()->getBasePath();
-            $url  = urldecode($this->getRequest()->getUrl()->getPath());
-            $path = trim(str_replace(array($base, '/index.php'), '', $url), '/');
+            $base  = $this->getRequest()->getBasePath();
+            $url   = urldecode($this->getRequest()->getUrl()->getPath());
+            $path  = trim(str_replace(array($base, '/index.php'), '', $url), '/');
+            $query = $this->getRequest()->getUrl()->getQuery(true);
 
-            $this->__route = $this->getRouter()->resolve('pages:'.$path,  $this->getRequest()->query->toArray());
+            $this->__route = $this->getRouter()->resolve('pages:'.$path,  $query);
         }
 
         if(is_object($this->__route)) {
@@ -86,12 +105,12 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     {
         $methods =  array('head', 'options');
 
-        if( $page = $this->getRoute()->getPage())
+        if($page = $this->getPage())
         {
             if($page->isSubmittable())
             {
                 //Do not allow get on empty forms or collection, only used as API endpoints
-                if($this->getObject('page.registry')->getPageContent($page)) {
+                if($page->getContent()) {
                     $methods[] = 'get';
                 }
             }
@@ -117,7 +136,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     {
         $formats = array();
 
-        if($page = $this->getRoute()->getPage())
+        if($page = $this->getPage())
         {
             $formats = (array) $page->format;
 
@@ -144,12 +163,14 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             throw new KHttpExceptionNotFound('Page Not Found');
         }
 
-
         //Set the query in the request
         $context->request->setQuery($route->query);
 
         //Set the page in the context
-        $context->page = $route->getPage();
+        $context->page = $this->getPage();
+
+        //Set the route in the context
+        $context->route = $this->getRoute();
 
         //Throw 415 if the media type is not allowed
         $format = strtolower($context->request->getFormat());
