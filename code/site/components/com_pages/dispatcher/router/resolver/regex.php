@@ -78,7 +78,7 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
                 'alpha'  => '[A-Za-z]++',
                 '*alpha' => '[A-Za-z]+(,[A-Za-z]+)*',
                 'id'     => '[0-9]++[-]++[0-9A-Za-z-]++',
-                'slug'   => '[^0-9-][a-z-0-9]++',
+                'slug'   => '(?![0-9]++-)[^-][0-9A-Za-z-]++',
                 '*'      => '.+?',
                 '**'     => '.++',
                 ''       => '[^/\.]++',
