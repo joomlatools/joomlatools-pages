@@ -9,38 +9,12 @@
 
 class ComPagesDataObject extends KObjectConfig implements JsonSerializable
 {
-    public function get($name, $default = null)
-    {
-        $result = $default;
-        $path   = explode('/', $name);
-
-        if($result = parent::get(array_shift($path)))
-        {
-            foreach($path as $name)
-            {
-                if($result instanceof KObjectConfigInterface && $result->has($name)) {
-                    $result = $result->get($name);
-                } else {
-                    $result = $default;
-                    break;
-                }
-            }
-        }
-
-        return $result;
-    }
-
-    public function has($name)
-    {
-        return (bool) $this->get($name);
-    }
-
     public function shuffle()
     {
         $data = $this->toArray();
         shuffle($data);
 
-        return new self($data);
+        return new static($data);
     }
 
     public function slice($offset, $length = NULL)
@@ -48,7 +22,15 @@ class ComPagesDataObject extends KObjectConfig implements JsonSerializable
         $data = $this->toArray();
         $data = array_slice($data, $offset, $length);
 
-        return new self($data);
+        return new static($data);
+    }
+
+    public function reverse()
+    {
+        $data = $this->toArray();
+        array_reverse($data);
+
+        return new static($data);
     }
 
     public function flatten($key_as_property = null)
@@ -72,7 +54,7 @@ class ComPagesDataObject extends KObjectConfig implements JsonSerializable
             else $data[] = $values;
         }
 
-        return new self($data);
+        return new static($data);
     }
 
     public function filter($key, $value = null, $exclude = false)
@@ -127,35 +109,7 @@ class ComPagesDataObject extends KObjectConfig implements JsonSerializable
             $data = $data[0];
         }
 
-        return is_array($data) ? new self($data) : $data;
-    }
-
-    public function find($key)
-    {
-        $data = $this->toArray();
-
-        $array    = new RecursiveArrayIterator($data);
-        $iterator = new RecursiveIteratorIterator($array, \RecursiveIteratorIterator::SELF_FIRST);
-
-        $result = array();
-        foreach ($iterator as $k => $v)
-        {
-            if($key === $k)
-            {
-                if(is_array($v) && is_numeric(key($v))) {
-                    $result = array_merge($result, $v);
-                } else {
-                    $result[] = $v;
-                }
-            }
-        }
-
-        //Do no return an array if we only found one result
-        if(count($result) == 1  && isset($result[0])) {
-            $result = $result[0];
-        }
-
-        return is_array($result) ? new self($result) : $result;
+        return is_array($data) ? new static($data) : $data;
     }
 
     public function toString()
@@ -164,32 +118,15 @@ class ComPagesDataObject extends KObjectConfig implements JsonSerializable
 
         if(is_array($data))
         {
-            if(!isset($data['@value'])) {
-                $data = $this->toJson()->toString();
-            } else {
-                $data = $data['@value'];
+            if(!isset($data['@value']))
+            {
+                $json = new ComPagesObjectConfigJson($this);
+                $data = $json->toString();
             }
+            else $data = $data['@value'];
         }
 
         return $data;
-    }
-
-    public function toHtml()
-    {
-        $html = new ComPagesObjectConfigHtml($this);
-        return $html->toDom();
-    }
-
-    public function toXml()
-    {
-        $html = new ComPagesObjectConfigXml($this);
-        return $html->toDom();
-    }
-
-    public function toJson()
-    {
-        $html = new ComPagesObjectConfigJson($this);
-        return $html;
     }
 
     public function jsonSerialize()
@@ -199,7 +136,7 @@ class ComPagesDataObject extends KObjectConfig implements JsonSerializable
 
     public function __debugInfo()
     {
-        return self::unbox($this);
+        return static::unbox($this);
     }
 
     /**
