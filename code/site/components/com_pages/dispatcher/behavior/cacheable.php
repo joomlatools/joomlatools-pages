@@ -45,8 +45,8 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         $config->append(array(
             'cache'      => false,
             'cache_path' =>  $this->getObject('com://site/pages.config')->getSitePath('cache'),
-            'cache_time'        => 60*15,   //15min
-            'cache_time_shared' => 60*60*2, //2h
+            'cache_time'        => '15min', //15min
+            'cache_time_shared' => '2h',    //2h
             'cache_validation'  => true,
         ));
 
