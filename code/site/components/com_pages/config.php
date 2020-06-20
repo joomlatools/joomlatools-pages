@@ -41,13 +41,13 @@ class ComPagesConfig extends KObject implements KObjectSingleton
 
             'http_cache'                => false,
             'http_cache_path'           => $config->site_path ? $config->site_path.'/cache/responses': false,
-            'http_cache_time'           => 60*15,  //15min
-            'http_cache_time_proxy'     => 60*60*2, //2h
+            'http_cache_time'           => '15min',
+            'http_cache_time_proxy'     => '2h',
             'http_cache_validation'     => true,
             'http_cache_control'        => array(),
 
             'http_resource_cache'       => JFactory::getConfig()->get('caching'),
-            'http_resource_cache_time'  => 60*60*24, //1d
+            'http_resource_cache_time'  => '1day',
             'http_resource_cache_path'  => $config->site_path ? $config->site_path.'/cache/resources' : false,
             'http_resource_cache_force' => false,
             'http_resource_cache_debug' => (JDEBUG ? true : false),
