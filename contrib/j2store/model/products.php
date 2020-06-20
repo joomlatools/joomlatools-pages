@@ -87,7 +87,6 @@ class ExtJ2StoreModelProducts extends ComPagesModelDatabase
 				'_product_button'   => 'p.addtocart_text',
 				'_product_price'    => 'v.price',
 				'_product_button'   => 'p.addtocart_text',
-                '_product_currency' => 'USD',
 
 				'_product_image_main'      => 'i.main_image',
 				'_product_image_main_alt'  => 'i.main_image_alt',

@@ -21,12 +21,13 @@ class ExtJ2storeModelEntityProduct extends ExtJ2storeModelEntityAbstract
 				'excerpt'     => '',
 				'text'        => '',
                 'product' => [
-                    'type'    => '',
-                    'button'  => '',
-                    'visible' => '',
-                    'enabled' => 0,
-                    'price'   => '',
-                    'tag'     => '',
+                    'type'     => '',
+                    'button'   => '',
+                    'visible'  => '',
+                    'enabled'  => 0,
+                    'price'    => '',
+                    'tag'      => '',
+                    'currency' => 'USD'
 
                 ],
  				'category'    => [],
@@ -100,7 +101,7 @@ class ExtJ2storeModelEntityProduct extends ExtJ2storeModelEntityAbstract
         }
 
         if(!empty($this->_product_currency)) {
-            $metadata->set('product:price:currency', (string)  $this->_product_currency);
+            $metadata->set('product:price:currency', 'USD');
         }
 
         return $metadata;
@@ -124,12 +125,13 @@ class ExtJ2storeModelEntityProduct extends ExtJ2storeModelEntityAbstract
 	public function getPropertyProduct()
 	{
 		$product = [
-			'type'    => $this->_product_type,
-			'button'  => $this->_product_button,
-			'visible' => $this->_product_visible,
-			'enabled' => $this->_product_enabled,
-			'price'   => $this->_product_price,
-			'tag'     => $this->_product_tag,
+			'type'     => $this->_product_type,
+			'button'   => $this->_product_button,
+			'visible'  => $this->_product_visible,
+			'enabled'  => $this->_product_enabled,
+			'price'    => $this->_product_price,
+			'tag'      => $this->_product_tag,
+			'currency' => 'USD',
 		];
 
 		if($this->_product_image_main)
