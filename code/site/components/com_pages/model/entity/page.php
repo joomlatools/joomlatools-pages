@@ -30,10 +30,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                 ],
                 'date'        => 'now',
                 'author'      => null,
-                'access'      => [
-                    'roles'  => ['public'],
-                    'groups' => ['public', 'guest']
-                ],
+                'access'      => [],
                 'metadata'    => [
                     'og:type'        => 'website',
                     'og:title'       => null,
