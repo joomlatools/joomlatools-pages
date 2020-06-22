@@ -2,6 +2,8 @@
 
 # Joomlatools Pages
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/0f8dee58a9ed40558d1b6614cc0a8df2)](https://app.codacy.com/gh/joomlatools/joomlatools-pages?utm_source=github.com&utm_medium=referral&utm_content=joomlatools/joomlatools-pages&utm_campaign=Badge_Grade_Settings)
+
 ### What is Joomlatools Pages?
 
 Joomlatools Pages is an easy to use **page generator** for [Joomla](http://www.joomla.org) inspired by the ideas and concepts of flat-file CMS systems like [Grav](https://getgrav.org/) and [Statamic](statamic.com), static site generators like [Jekyll]( https://jekyllrb.com), [Hugo](https://gohugo.io), [Gatsby](https://www.gatsbyjs.org/) and Headless CMS system like [Strapi](https://strapi.io/) and [Prismic](https://prismic.io/) etc. 
