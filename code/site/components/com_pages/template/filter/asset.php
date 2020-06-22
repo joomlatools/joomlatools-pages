@@ -7,15 +7,18 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-
 class ComPagesTemplateFilterAsset extends ComKoowaTemplateFilterAsset
 {
     protected function _initialize(KObjectConfig $config)
     {
+        $site_path = $this->getObject('com://site/pages.config')->getSitePath();
+        $root_path = Koowa::getInstance()->getRootPath();
+
         $config->append(array(
             'priority' => self::PRIORITY_LOW,
             'schemes' => array(
-                'theme://'  => 'base:///joomlatools-pages/theme/',
+                'theme://'  => 'site://theme/',
+                'site://'   => 'base://'.trim(str_replace($root_path, '', $site_path), '/').'/',
             ),
         ));
 
