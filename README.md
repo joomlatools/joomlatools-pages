@@ -25,7 +25,7 @@ Joomlatools Pages is for website developers and designers who create bespoke Joo
 
 * Joomla 3.6.5
 * PHP7 
-* Joomlatools Framework 3.4.2
+* Joomlatools Framework 3.4.3
 
 ## Installation
 
