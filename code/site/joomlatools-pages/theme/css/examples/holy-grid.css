@@ -1,0 +1,56 @@
+.holy-grid {
+  display: grid;
+
+  grid-template-areas:
+    "header header header"
+    "nav content side"
+    "footer footer footer";
+
+  grid-template-columns: 25% 1fr 25%;
+  grid-template-rows: auto 1fr auto;
+  grid-gap: 10px;
+}
+
+header {
+  grid-area: header;
+}
+
+nav {
+  grid-area: nav;
+}
+
+main {
+  grid-area: content;
+}
+
+aside {
+  grid-area: side;
+}
+
+footer {
+  grid-area: footer;
+}
+
+@media (max-width: 768px) {
+  .holy-grid {
+    grid-template-areas:
+      "header"
+      "nav"
+      "content"
+      "side"
+      "footer";
+
+    grid-template-columns: 1fr;
+    grid-template-rows:
+      auto /* Header */
+      minmax(75px, auto) /* Nav */
+      1fr /* Content */
+      minmax(75px, auto) /* Sidebar */
+      auto; /* Footer */
+  }
+
+  nav, 
+  aside {
+    margin: 0;
+  }
+}
