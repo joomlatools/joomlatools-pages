@@ -1,5 +1,5 @@
 <?php
-class ExtensionModelSpreadsheet extends ComPagesModelFilesystem
+class ExtPhpofficeModelSpreadsheet extends ComPagesModelFilesystem
 {
 	public function fetchData($count = false)
 	{

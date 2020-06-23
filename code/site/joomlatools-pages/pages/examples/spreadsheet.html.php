@@ -5,7 +5,7 @@ title: Spreadsheet Example
 summary: Spreadsheet model example to get you going
 slug: spreadsheet
 collection:
-    model: ext:model.spreadsheet?path=logs/examples/results.xlsx
+    model: ext:phpoffice.model.spreadsheet?path=logs/examples/results.xlsx
     state:
         limit: 20
 ---
