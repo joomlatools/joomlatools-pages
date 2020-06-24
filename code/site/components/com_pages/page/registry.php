@@ -19,6 +19,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     private $__collections = array();
     private $__redirects   = array();
     private $__cache_keys  = array();
+    private $__entities    = array();
 
     public function __construct(KObjectConfig $config)
     {
@@ -237,6 +238,22 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $content;
     }
 
+    public function getPageEntity($path)
+    {
+        $entity = null;
+
+        if($page = $this->getPage($path))
+        {
+            if(!isset($this->__entities[$path])) {
+                $this->__entities[$path] = $this->getObject('com://site/pages.page.entity', ['data' => $page]);
+            }
+
+            $entity = $this->__entities[$path];
+        }
+
+        return $entity;
+    }
+
     public function getRoutes($path = null)
     {
         if(!is_null($path)) {
@@ -441,7 +458,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     $pages[$file] = $page->toArray();
 
                                     //Route
-                                    if($page->route !== false)
+                                    if($page->route !== false && !$page->redirect)
                                     {
                                         $routes[$path] = (array) KObjectConfig::unbox($page->route);
                                         unset($page->route);

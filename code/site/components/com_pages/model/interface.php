@@ -21,4 +21,5 @@ interface ComPagesModelInterface extends KModelInterface
     public function getHash();
 
     public function isAtomic();
+    public function isPersistable();
 }

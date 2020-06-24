@@ -13,6 +13,7 @@ class ComPagesModelBehaviorPaginatable extends ComPagesModelBehaviorQueryable
     {
         $config->append([
             'priority' => self::PRIORITY_LOW,
+            'filter'   => false,
         ]);
 
         parent::_initialize($config);

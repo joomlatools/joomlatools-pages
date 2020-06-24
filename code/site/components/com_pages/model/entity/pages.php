@@ -17,30 +17,4 @@ class ComPagesModelEntityPages extends ComPagesModelEntityItems
 
         parent::_initialize($config);
     }
-
-    public function get($property, $default)
-    {
-        if($this->hasProperty($property)) {
-            $result = $this->getProperty($property);
-        } else {
-            $result = $default;
-        }
-    }
-
-    public function __call($method, $arguments)
-    {
-        $result = null;
-
-        $methods = $this->getMethods();
-        if(!isset($methods[$method]))
-        {
-            //Forward the call to the entity
-            if($entity = parent::getIterator()->current()) {
-                $result = $entity->__call($method, $arguments);
-            }
-
-        } else $result = KObject::__call($method, $arguments);
-
-        return $result;
-    }
 }

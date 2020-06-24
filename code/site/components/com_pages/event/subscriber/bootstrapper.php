@@ -25,17 +25,19 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
         if(false !== $route = $router->resolve())
         {
+            define('JPATH_PAGES', $route->getPath());
+
             //Set the site path in the config
             $config = $this->getObject('com://site/pages.config', ['site_path' => $route->getPath()]);
 
             //Get the config options
             $options = $config->getOptions();
 
-            //Bootstrap the site configuration
-            $this->_bootstrapSite($config->getSitePath(), $options);
-
             //Bootstrap the extensions
             $this->_bootstrapExtensions($config->getSitePath('extensions'), $options);
+
+            //Bootstrap the site configuration (after extensions to allow overriding)
+            $this->_bootstrapSite($config->getSitePath(), $options);
         }
         else $this->getObject('com://site/pages.config', ['site_path' => false]);
     }
@@ -69,9 +71,12 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
     protected function _bootstrapSite($path, $config = array())
     {
         //Load config options
-        $base_path = $path;
-
         $directory = $this->getObject('object.bootstrapper')->getComponentPath('pages');
+
+        //Include autoloader
+        include $directory.'/resources/vendor/autoload.php';
+
+        //Set config options
         $options   = include $directory.'/resources/config/site.php';
 
         //Set config options
@@ -97,36 +102,92 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
     protected function _bootstrapExtensions($path, $config = array())
     {
-        //Add extension locators
-        $this->getObject('manager')->getClassLoader()->registerLocator(new ComPagesClassLocatorExtension(array(
-            'namespaces' => array('\\'  => $path)
-        )));
+        //Register 'ext:[package]' locations
+        if($directories = glob($path.'/*', GLOB_ONLYDIR))
+        {
+            //Register 'ext' fallback location
+            $locator = new ComPagesClassLocatorExtension();
 
-        $this->getObject('manager')->registerLocator('com://site/pages.object.locator.extension');
+            //Register the extension locator
+            $this->getObject('manager')->getClassLoader()->registerLocator($locator);
+            $this->getObject('manager')->registerLocator('com://site/pages.object.locator.extension');
 
-        //Register event subscribers
-        foreach (glob($path.'/subscriber/[!_]*.php') as $filename) {
-            $this->getObject('event.subscriber.factory')->registerSubscriber('ext:subscriber.'.basename($filename, '.php'));
+            $filters    = array();
+            $functions  = array();
+
+            foreach ($directories as $directory)
+            {
+                //The extension name
+                $name = strtolower(basename($directory));
+
+                //Register the extension namespace
+                $locator->registerNamespace(ucfirst($name), $directory);
+
+                //Register event subscribers
+                foreach (glob($directory.'/subscriber/[!_]*.php') as $filename)
+                {
+                    $this->getObject('event.subscriber.factory')
+                        ->registerSubscriber('ext:'.$name.'.subscriber.'.basename($filename, '.php'));
+                }
+
+                //Find template filters
+                foreach (glob($directory.'/template/filter/[!_]*.php') as $filename) {
+                    $filters[] = 'ext:'.$name.'.template.filter.'.basename($filename, '.php');
+                }
+
+                //Find template functions
+                foreach (glob($directory.'/template/function/[!_]*.php') as $filename) {
+                    $functions[basename($filename, '.php')] = $filename;
+                }
+
+                //Include autoloader
+                if(file_exists($directory.'/resources/vendor/autoload.php')) {
+                    include $directory.'/resources/vendor/autoload.php';
+                }
+
+                //Set config options
+                if(file_exists($directory.'/config.php'))
+                {
+                    $identifiers = include $directory.'/config.php';
+
+                    foreach($identifiers as $identifier => $values) {
+                        $this->getConfig($identifier)->merge($values);
+                    }
+                }
+            }
+
+            //Register template functions
+            if($functions) {
+                $this->getConfig('com://site/pages.template.default')->merge(['functions' => $functions]);
+            }
+
+            //Register template filters
+            if($filters) {
+                $this->getConfig('com://site/pages.template.default')->merge(['filters' => $filters]);
+            }
         }
 
-        //Register template filters
-        $filters = array();
-        foreach (glob($path.'/template/filter/[!_]*.php') as $filename) {
-            $filters[] = 'ext:template.filter.'.basename($filename, '.php');
-        }
+        //Register 'ext:pages' aliases
+        if(file_exists($path.'/pages'))
+        {
+            $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path.'/pages'));
 
-        if($filters) {
-            $this->getConfig('com://site/pages.template.default')->merge(['filters' => $filters]);
-        }
+            foreach($iterator as $file)
+            {
+                if ($file->isFile() && $file->getExtension() == 'php' && $file->getFileName() !== 'config.php')
+                {
+                    $segments = explode('/', $iterator->getSubPathName());
+                    $segments[] = basename(array_pop($segments), '.php');
 
-        //Register template functions
-        $functions = array();
-        foreach (glob($path.'/template/function/[!_]*.php') as $filename) {
-            $functions[basename($filename, '.php')] = $filename;
-        }
+                    //Create the identifier path + file
+                    $path = implode('.', $segments);
 
-        if($functions) {
-            $this->getConfig('com://site/pages.template.default')->merge(['functions' => $functions]);
+                    $this->getObject('manager')->registerAlias(
+                        'ext:pages.'.$path,
+                        'com://site/pages.'.$path
+                    );
+                }
+            }
         }
     }
 }

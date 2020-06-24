@@ -27,6 +27,7 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
+            'persistable'         => true,
             'identity_key'        => null,
             'identity_key_length' =>  4,
             'path'         => '',
