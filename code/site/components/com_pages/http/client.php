@@ -63,7 +63,7 @@ class ComPagesHttpClient extends KHttpClient
         $config->append([
             'cache'       => false,
             'cache_path'  => $this->getObject('com://site/pages.config')->getSitePath('cache'),
-            'cache_time'  => 60*60*24, //1 day https://tools.ietf.org/html/rfc7234#section-4.2.2
+            'cache_time'  => '1day', //1 day https://tools.ietf.org/html/rfc7234#section-4.2.2
             'cache_force' => false,
             'debug'       => JDEBUG ? true : false,
         ]);
@@ -339,8 +339,14 @@ class ComPagesHttpClient extends KHttpClient
 
             if($result && $fresh)
             {
-                //Refresh cache if it expired
-                if((time() - filemtime($result)) > $this->getConfig()->cache_time) {
+                $cache_time = $this->getConfig()->cache_time;
+
+                //Convert cache_time to seconds
+                if(!is_numeric($cache_time)) {
+                   $cache_time = strtotime($cache_time);
+                }
+
+                if((time() - filemtime($result)) > $cache_time) {
                     $result = false;
                 }
             }

@@ -164,17 +164,6 @@ class ComPagesTemplateDefault extends KTemplate
 
     public function createHelper($helper, $config = array())
     {
-        //Create the complete extension identifier if a partial identifier was passed
-        if (is_string($helper) && strpos($helper, ':') === false)
-        {
-            $identifier = 'ext:template.helper.'.$helper;
-
-            //Create the template helper
-            if($this->getObject('manager')->getClass($identifier)) {
-                $helper = $identifier;
-            }
-         }
-
         if(!isset($this->__helpers[$helper])) {
             $this->__helpers[$helper] = parent::createHelper($helper, $config);
         }
@@ -213,5 +202,106 @@ class ComPagesTemplateDefault extends KTemplate
                 $exception->getPrevious()
             );
         }
+    }
+
+    protected function _formatDate($date, $format = '')
+    {
+        if(!$date instanceof KDate)
+        {
+            if(empty($format)) {
+                $format = $this->getObject('translator')->translate('DATE_FORMAT_LC3');
+            }
+
+            $result = $this->createHelper('date')->format(array('date' => $date, 'format' => $format));
+        }
+        else $result = $date->format($format);
+
+        return $result;
+    }
+
+    protected function _createSlug($string)
+    {
+        return $this->getObject('filter.factory')->createFilter('slug')->sanitize($string);
+    }
+
+    protected function _createAttributes($name, $value = null)
+    {
+        $result = '';
+
+        if(!is_array($name) && $value) {
+            $name = array($name => $value);
+        }
+
+        if($name instanceof KObjectConfig) {
+            $name = KObjectConfig::unbox($name);
+        }
+
+        if(is_array($name))
+        {
+            $output = array();
+            foreach($name as $key => $item)
+            {
+                if(is_array($item))
+                {
+                    foreach($item as $k => $v)
+                    {
+                        if(empty($v)) {
+                            unset($item[$k]);
+                        }
+                    }
+
+                    $item = implode(' ', $item);
+                }
+
+                if (is_bool($item))
+                {
+                    if ($item === false) continue;
+                    $item = $key;
+                }
+
+                $output[] = $key.'="'.str_replace('"', '&quot;', $item).'"';
+            }
+
+            $result = ' '.implode(' ', $output);
+        }
+
+        return $result;
+    }
+
+    protected function _fetchData($path)
+    {
+        $result = false;
+        if(is_array($path))
+        {
+            if(is_numeric(key($path)))
+            {
+                foreach($path as $directory)
+                {
+                    if (!$result instanceof ComPagesDataObject) {
+                        $result = $this->getObject('data.registry')->fromPath($directory);
+                    } else {
+                        $result->append($this->getObject('data.registry')->formPath($directory));
+                    }
+                }
+            }
+            else
+            {
+                $class = $this->getObject('manager')->getClass('com://site/pages.data.object');
+                $result = new $class($path);
+            }
+
+        }
+        else
+        {
+            $namespace = parse_url($path, PHP_URL_SCHEME);
+
+            if(!in_array($namespace, ['http', 'https'])) {
+                $result = $this->getObject('data.registry')->fromPath($path);
+            } else {
+                $result = $this->getObject('data.registry')->fromUrl($path);
+            }
+        }
+
+        return $result;
     }
 }

@@ -1,0 +1,12 @@
+framework:
+  source: remote # or local
+  branch: v3.4.3
+extensions:
+  folder: contrib
+bundle:
+  manifest:
+    packages:
+      - title: Joomlatools Framework
+        path: framework
+      - title: Pages
+        path: pages

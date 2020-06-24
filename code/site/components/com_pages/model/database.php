@@ -28,7 +28,7 @@ class ComPagesModelDatabase extends ComPagesModelCollection
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'entity'       => 'row',
+            'persistable'  => true,
             'table'        => '',
         ));
 
@@ -37,7 +37,8 @@ class ComPagesModelDatabase extends ComPagesModelCollection
 
     public function fetchData($count = false)
     {
-        $query = $this->getObject('lib:database.query.select')->table(array('tbl' => $this->getTable()->getName()));
+        $query = $this->getObject('lib:database.query.select')
+                       ->table(array('tbl' => $this->getTable()->getName()));
 
         if($count) {
             $query->columns('COUNT(*)');
@@ -75,11 +76,12 @@ class ComPagesModelDatabase extends ComPagesModelCollection
             //Make sure we have a table identifier
             if(!($this->__table instanceof KObjectIdentifier))
             {
-                if(is_string($this->__table) && strpos($this->__table, '.') !== false ) {
-                    $this->__table = $this->getObject($this->__table);
-                } else {
-                    $this->__table = $this->getObject('com://site/pages.database.table.'.$this->__table, array('name' => $this->__table));
+                if(is_string($this->__table) && strpos($this->__table, '.') === false )
+                {
+                    $identifier = 'com://site/pages.database.table.'.$this->__table;
+                    $this->__table = $this->getObject($identifier, array('name' => $this->__table));
                 }
+                else $this->__table = $this->getObject($this->__table);
             }
 
             if(!$this->__table instanceof KDatabaseTableInterface)
@@ -154,18 +156,26 @@ class ComPagesModelDatabase extends ComPagesModelCollection
 
         foreach($context->entity as $entity)
         {
+            //Cast the entity to KDatabaseRowInterface
+            if(!$entity instanceof KDatabaseRowInterface)
+            {
+                $row = $this->getTable()->createRow([
+                    'data' => $entity->getProperties()
+                ]);
+            }
+
             try
             {
                 if($entity->getStatus() == $entity::STATUS_CREATED) {
-                    $result = $this->getTable()->insert($entity);
+                    $result = $this->getTable()->insert($row);
                 }
 
                 if($entity->getStatus() == $entity::STATUS_UPDATED) {
-                    $result = $this->getTable()->update($entity);
+                    $result = $this->getTable()->update($row);
                 }
 
                 if($entity->getStatus() == $entity::STATUS_DELETED) {
-                    $result = $this->getTable()->delete($entity);
+                    $result = $this->getTable()->delete($row);
                 }
             }
             catch(RuntimeException $exception)

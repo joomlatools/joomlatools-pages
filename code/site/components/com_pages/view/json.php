@@ -9,6 +9,8 @@
 
 class ComPagesViewJson extends KViewAbstract
 {
+    use ComPagesViewTraitLocatable;
+
     /**
      * JSON API version
      *
@@ -39,7 +41,6 @@ class ComPagesViewJson extends KViewAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'behaviors'   => ['routable'],
             'version'     => '1.0',
         ]);
 
@@ -119,8 +120,8 @@ class ComPagesViewJson extends KViewAbstract
                 $document['meta']['description'] = $description;
             }
 
-            if($image = $page->image) {
-                $document['meta']['image'] = (string) $this->getUrl((string)$image);
+            if($url = $page->image->url) {
+                $document['meta']['image'] = (string) $this->getUrl($url);
             }
 
             if($language = $page->language) {
@@ -231,23 +232,46 @@ class ComPagesViewJson extends KViewAbstract
     {
         $attributes = $entity->toArray();
 
-        //Cast objects to string
-        foreach($attributes as $key => $value)
+        //Recursively serialize the attributes
+        array_walk_recursive($attributes, function(&$value)
         {
-            //Qualify the url's
-            if($value instanceof KHttpUrlInterface) {
-                $value = $this->getUrl($value);
-            }
-
-            if(is_object($value))
+            if(!$value instanceof KModelEntityInterface)
             {
-                if(!method_exists($value, '__toString')) {
-                    unset($attributes[$key]);
-                } else {
-                    $attributes[$key] = (string) $value;
+                //Qualify the url's
+                if($value instanceof KHttpUrlInterface) {
+                    $value = $this->getUrl($value);
+                }
+
+                if(is_object($value))
+                {
+                    if(!method_exists($value, '__toString')) {
+                        $value = null;
+                    } else {
+                        $value = (string) $value;
+                    }
                 }
             }
-        }
+            else $value = $this->_getEntityAttributes($value);
+        });
+
+        //Remove NULL values
+        $filter = function($attributes) use (&$filter)
+        {
+            foreach($attributes as $k => $v)
+            {
+                if(!is_array($v))
+                {
+                    if(is_null($v)) {
+                        unset($attributes[$k]);
+                    }
+                }
+                else $attributes[$k] = $filter($v);
+            }
+
+            return $attributes;
+        };
+
+        $attributes = $filter($attributes);
 
         //Remove the identity key from the attributes
         $key = $entity->getIdentityKey();
@@ -302,30 +326,5 @@ class ComPagesViewJson extends KViewAbstract
     protected function _getEntityRelationships(KModelEntityInterface $entity)
     {
         return array();
-    }
-
-    public function getRoute($page = null, $query = array(), $escape = false)
-    {
-        return $this->getBehavior('routable')->getRoute($page, $query, $escape);
-    }
-
-    public function getUrl($url = null)
-    {
-        if(!empty($url))
-        {
-            if($url instanceof KHttpUrlInterface)
-            {
-                $result = clone $url;
-                $result->setUrl(parent::getUrl()->toString(KHttpUrl::AUTHORITY));
-            }
-            else
-            {
-                $result = clone parent::getUrl();;
-                $result->setUrl($url);
-            }
-        }
-        else $result = parent::getUrl();
-
-        return $result;
     }
 }

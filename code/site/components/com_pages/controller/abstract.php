@@ -29,7 +29,7 @@ class ComPagesControllerAbstract extends KControllerModel
         parent::_initialize($config);
     }
 
-    public function setPage(ComPagesPageObject $page)
+    public function setPage(ComPagesPageEntity $page)
     {
         $this->__page = $page;
         return $this;

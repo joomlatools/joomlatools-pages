@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-interface ComPagesModelEntityInterface extends KModelEntityInterface
+interface ComPagesModelEntityInterface extends KModelEntityInterface, KObjectInstantiable
 {
 
 }

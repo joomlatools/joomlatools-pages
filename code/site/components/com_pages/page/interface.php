@@ -7,14 +7,15 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesDatabaseTableGroups extends KDatabaseTableAbstract
+interface ComPagesPageInterface
 {
-    protected function _initialize(KObjectConfig $config)
-    {
-        $config->append([
-            'name' => defined('JOOMLATOOLS_PLATFORM') ? 'users_groups' : 'usergroups'
-        ]);
+    public function getType();
 
-        parent::_initialize($config);
-    }
+    public function isRedirect();
+    public function isForm();
+    public function isCollection();
+    public function isDecorator();
+
+    public function isSubmittable();
+    public function isEditable();
 }
