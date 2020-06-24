@@ -100,33 +100,8 @@ class ComPagesModelPages extends ComPagesModelCollection
         }
 
         //Permissions
-        if($result)
-        {
-            //Goups
-            if(isset($page['access']['groups']))
-            {
-                $groups = $this->getObject('com://site/pages.database.table.groups')
-                    ->select($this->getObject('user')->getGroups(), KDatabase::FETCH_ARRAY_LIST);
-
-                $groups = array_map('strtolower', array_column($groups, 'title'));
-
-                if(!array_intersect($groups, $page['access']['groups'])) {
-                    $result = false;
-                }
-            }
-
-            //Roles
-            if($result && isset($page['access']['roles']))
-            {
-                $roles = $this->getObject('com://site/pages.database.table.roles')
-                    ->select($this->getObject('user')->getRoles(), KDatabase::FETCH_ARRAY_LIST);
-
-                $roles = array_map('strtolower', array_column($roles, 'title'));
-
-                if(!array_intersect($roles, $page['access']['roles'])) {
-                    $result = false;
-                }
-            }
+        if($result) {
+            $result = $this->getObject('page.registry')->isPageAccessible($page['path']);
         }
 
         //Unset reserved properties

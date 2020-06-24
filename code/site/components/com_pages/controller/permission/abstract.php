@@ -35,35 +35,8 @@ class ComPagesControllerPermissionAbstract extends ComKoowaControllerPermissionA
     {
         $result = true;
 
-        if($path)
-        {
-            $page = $this->getObject('page.registry')->getPage($path);
-
-            //Check groups
-            if(isset($page->access->groups))
-            {
-                $groups = $this->getObject('com://site/pages.database.table.groups')
-                    ->select($this->getObject('user')->getGroups(), KDatabase::FETCH_ARRAY_LIST);
-
-                $groups = array_map('strtolower', array_column($groups, 'title'));
-
-                if(!array_intersect($groups, KObjectConfig::unbox($page->access->groups))) {
-                    $result = false;
-                }
-            }
-
-            //Check roles
-            if($result && isset($page->access->roles))
-            {
-                $roles = $this->getObject('com://site/pages.database.table.roles')
-                    ->select($this->getObject('user')->getRoles(), KDatabase::FETCH_ARRAY_LIST);
-
-                $roles = array_map('strtolower', array_column($roles, 'title'));
-
-                if(!array_intersect($roles, KObjectConfig::unbox($page->access->roles))) {
-                    $result = false;
-                }
-            }
+        if($path) {
+            $result = $this->getObject('page.registry')->isPageAccessible($path);
         }
 
         return $result;

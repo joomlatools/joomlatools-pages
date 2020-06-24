@@ -12,7 +12,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     const PAGES_TREE = \RecursiveIteratorIterator::SELF_FIRST;
     const PAGES_ONLY = \RecursiveIteratorIterator::CHILD_FIRST;
 
-    private $__locator   = null;
+    private $__locator = null;
 
     private $__pages  = array();
     private $__data   = null;
@@ -272,6 +272,27 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         } else {
             $result = ($this->__pages[$path] === false) ? false : true;
         }
+
+        return $result;
+    }
+
+    public function isPageAccessible($path)
+    {
+        $result = true;
+
+        if($page = $this->getPage($path))
+        {
+            //Groups
+            if(isset($page['access']['groups'])) {
+                $result = $this->getObject('user')->hasGroup($page['access']['groups']);
+            }
+
+            //Roles
+            if($result && isset($page['access']['roles'])) {
+                $result = $this->getObject('user')->hasRole($page['access']['roles']);
+            }
+        }
+        else $result = false;
 
         return $result;
     }
