@@ -9,5 +9,9 @@
 
 return function($identifier = 'com://site/pages.config')
 {
+    if (is_string($identifier) && strpos($identifier, ':') === false) {
+        $identifier = 'com://site/pages.'.$identifier;
+    }
+
     return clone $this->getObject($identifier)->getConfig();
 };
