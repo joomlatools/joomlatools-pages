@@ -28,18 +28,19 @@ class ComPagesTemplateDefault extends KTemplate
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'filters'   => ['partial'],
-            'functions' => [
-                'date'       => [$this, '_formatDate'],
-                'data'       => [$this, '_fetchData'],
-                'slug'       => [$this, '_createSlug'],
-                'attributes' => [$this, '_createAttributes'],
-                'config'     => [$this, '_getConfig'],
-            ],
+            'filters'         => ['partial'],
             'cache'           => false,
             'cache_namespace' => 'pages',
-            'excluded_types' => ['html', 'txt', 'svg', 'css', 'js'],
+            'excluded_types'  => ['html', 'txt', 'svg', 'css', 'js'],
         ]);
+
+        //Register template functions (allows core functions to be overridden)
+        $functions = array();
+        foreach (glob(__DIR__.'/function/[!_]*.php') as $filename) {
+            $functions[basename($filename, '.php')] = $filename;
+        }
+
+        $config->append(['functions' => $functions]);
 
         parent::_initialize($config);
     }
@@ -302,14 +303,5 @@ class ComPagesTemplateDefault extends KTemplate
         }
 
         return $result;
-    }
-
-    protected function _getConfig($identifier = 'com://site/pages.config')
-    {
-        if (is_string($identifier) && strpos($identifier, ':') === false) {
-            $identifier = 'com://site/pages.'.$identifier;
-        }
-
-        return clone $this->getObject($identifier)->getConfig();
     }
 }
