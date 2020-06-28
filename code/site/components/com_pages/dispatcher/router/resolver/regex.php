@@ -71,6 +71,7 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
                 'email' => '\S+@\S+',
                 'month' => '(0?[1-9]|1[012])',
                 'year'  => '(19|20)\d{2}',
+                'lang'  => '[a-z]{2,3}(-[A-Z]{2,3}){0,1}',
                 'digit' => '[0-9]++',
                 '*digit' => '[0-9]+(,[0-9]+)*',
                 'alnum' => '[0-9A-Za-z]++',
