@@ -13,7 +13,7 @@ class ComPagesTemplateHelperBehavior extends ComKoowaTemplateHelperBehavior
     {
         $config = new KObjectConfigJson($config);
         $config->append(array(
-            'debug' =>  JDEBUG ? true : false,
+            'debug' =>  JFactory::getApplication()->getCfg('debug'),
             'options'  => array(
                 'placement' => 'right',
                 'visibale'  => 'hover',
@@ -29,7 +29,7 @@ class ComPagesTemplateHelperBehavior extends ComKoowaTemplateHelperBehavior
         if (!static::isLoaded('anchor'))
         {
             $selector = json_encode($config->selector);
-            
+
             $html .= '<ktml:script src="assets://com_pages/js/anchor-v4.2.1.'.(!$config->debug ? 'min.js' : 'js').'" defer="defer" />';
             $html .= <<<ANCHOR
 <script>
@@ -50,7 +50,8 @@ ANCHOR;
     {
         $config = new KObjectConfigJson($config);
         $config->append(array(
-            'debug'  =>  JDEBUG ? true : false,
+            'debug'    =>  JFactory::getApplication()->getCfg('debug'),
+            'selector' => '',
             'onload'   => $this->getObject('dispatcher')->isCacheable(),
             'onhover'  => $this->getObject('dispatcher')->isCacheable(),
         ));
