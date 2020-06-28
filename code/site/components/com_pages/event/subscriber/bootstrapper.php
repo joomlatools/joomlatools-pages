@@ -150,8 +150,11 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                 {
                     $identifiers = include $directory.'/config.php';
 
-                    foreach($identifiers as $identifier => $values) {
-                        $this->getConfig($identifier)->merge($values);
+                    if(is_array($identifiers))
+                    {
+                        foreach($identifiers as $identifier => $values) {
+                            $this->getConfig($identifier)->merge($values);
+                        }
                     }
                 }
             }
