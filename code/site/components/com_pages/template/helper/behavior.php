@@ -36,8 +36,8 @@ class ComPagesTemplateHelperBehavior extends ComKoowaTemplateHelperBehavior
 document.addEventListener("DOMContentLoaded", function(event) {
      anchors.options = $config->options  
      anchors.add($selector);if(document.querySelector('.no-anchor')!==null){anchors.remove('.no-anchor');}
-});
-</script>;
+})
+</script>
 ANCHOR;
 
             static::setLoaded('anchor');
@@ -67,9 +67,9 @@ document.addEventListener("DOMContentLoaded", () =>
 {
     new Prefetcher(
         $config
-    );
-});
-</script>;
+    )
+})
+</script>
 PREFETCHER;
 
             static::setLoaded('prefetcher');
