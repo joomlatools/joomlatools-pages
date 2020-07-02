@@ -7,6 +7,8 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
+JLoader::register('ContentHelperRoute', JPATH_SITE . '/components/com_content/helpers/route.php');
+
 class ExtJoomlaModelEntityArticle extends ExtJoomlaModelEntityAbstract
 {
 	protected function _initialize(KObjectConfig $config)
@@ -283,5 +285,10 @@ class ExtJoomlaModelEntityArticle extends ExtJoomlaModelEntityAbstract
 	{
 		$user = $this->getObject('user.provider')->load($this->editor);
 		return $user;
+	}
+
+        public function getJoomlaRoute()
+	{
+                return JRoute::_(ContentHelperRoute::getArticleRoute($this->slug, $this->category->id));
 	}
 }
