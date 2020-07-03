@@ -289,6 +289,6 @@ class ExtJoomlaModelEntityArticle extends ExtJoomlaModelEntityAbstract
 
         public function getJoomlaRoute()
 	{
-                return JRoute::_(ContentHelperRoute::getArticleRoute($this->slug, $this->category->id));
+                return JRoute::_(ContentHelperRoute::getArticleRoute($this->id.':'.$this->slug, $this->category->id));
 	}
 }
