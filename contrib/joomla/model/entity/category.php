@@ -107,7 +107,7 @@ class ExtJoomlaModelEntityCategory extends ExtJoomlaModelEntityAbstract
 		return $user;
 	}
 
-	public function getJoomlaRoute()
+	public function getRoute()
 	{
 		return JRoute::_(ContentHelperRoute::getCategoryRoute($this->id.':'.$this->slug));
 	}
