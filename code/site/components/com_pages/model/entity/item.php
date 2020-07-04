@@ -55,11 +55,20 @@ class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesMo
     {
         $result = $this->getProperty($property);
 
-        if(empty($result)) {
-            $result = $default;
+        if($result instanceof Traversable) {
+            $result = iterator_count($result) ? $result : $default;
+        } elseif($result instanceof Countable) {
+            $result = count($result) ?  $result : $default;
+        } else {
+            $result = !empty($result) ? $result : $default;
         }
 
         return $result;
+    }
+
+    public function has($name)
+    {
+        return parent::hasProperty($name);
     }
 
     public function save()
