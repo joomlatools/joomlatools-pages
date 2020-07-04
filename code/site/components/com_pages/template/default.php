@@ -321,7 +321,7 @@ class ComPagesTemplateDefault extends KTemplate
             if(method_exists($object, 'toArray')) {
                 $properties = $object->toArray();
             } elseif($object instanceof Traversable) {
-                $properties = iterator_to_array($object->getIterator());
+                $properties = iterator_to_array($object);
             } else {
                 $properties = get_object_vars($object);
             }
