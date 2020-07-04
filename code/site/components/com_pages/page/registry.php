@@ -97,6 +97,16 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 $result->model = 'com://site/pages.model.pages';
             }
         }
+        else
+        {
+            //Assume we are being passed a fully qualified identifier
+            if(is_string($name) && strpos($name, ':') !== false)
+            {
+                $result = new KObjectConfig([
+                    'model' => $name
+                ]);
+            }
+        }
 
         return $result;
     }
