@@ -447,7 +447,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     $pages[$file] = $page->toArray();
 
                                     //Route
-                                    if($page->route !== false && !$page->redirect)
+                                    if($page->route !== false)
                                     {
                                         $routes[$path] = (array) KObjectConfig::unbox($page->route);
                                         unset($page->route);
