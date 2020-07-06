@@ -213,6 +213,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                 'page'        => $page,
                 'collections' => $this->getCollections(),
                 'status'      => $response->getStatusCode(),
+                'format'      => $response->getFormat(),
                 'headers'     => $response->getHeaders()->toArray(),
                 'content'     => (string) $content,
             );
