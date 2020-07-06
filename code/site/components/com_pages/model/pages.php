@@ -14,6 +14,7 @@ class ComPagesModelPages extends ComPagesModelCollection
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
+
         $this->getState()
             ->insert('folder', 'url')
             ->insert('slug', 'cmd', '', true, array('folder'))
@@ -129,14 +130,22 @@ class ComPagesModelPages extends ComPagesModelCollection
             }
         }
 
-        //Unset reserved properties
-        unset($page['process']);
-        unset($page['collection']);
-        unset($page['form']);
-        unset($page['layout']);
-        unset($page['redirect']);
-
         return $result;
+    }
+
+    protected function _actionFetch(KModelContext $context)
+    {
+        foreach($context->data as $page)
+        {
+            //Unset page attributes
+            unset($page['process']);
+            unset($page['collection']);
+            unset($page['form']);
+            unset($page['layout']);
+            unset($page['redirect']);
+        }
+
+        return parent::_actionFetch($context);
     }
 
     protected function _actionReset(KModelContext $context)
