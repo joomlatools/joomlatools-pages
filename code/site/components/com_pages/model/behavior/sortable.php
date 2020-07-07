@@ -111,8 +111,13 @@ class ComPagesModelBehaviorSortable extends ComPagesModelBehaviorQueryable
     {
         if($state->sort && $state->sort != 'order')
         {
-            $order   = strtoupper($state->order);
-            $column = $this->getTable()->mapColumns($state->sort);
+            $order = strtoupper($state->order);
+
+            if(isset($query->columns[$state->sort])) {
+                $column = $query->columns[$state->sort];
+            } else {
+                $column = 'tbl.'.$this->getTable()->mapColumns($state->sort);
+            }
 
             $query->order($column, $order);
         }
