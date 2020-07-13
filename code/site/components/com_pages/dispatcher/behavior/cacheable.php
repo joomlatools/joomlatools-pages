@@ -45,8 +45,8 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         $config->append(array(
             'cache'      => false,
             'cache_path' =>  $this->getObject('com://site/pages.config')->getSitePath('cache'),
-            'cache_time'        => '15min', //15min
-            'cache_time_shared' => '2h',    //2h
+            'cache_time'        => false, //static
+            'cache_time_shared' => false, //static
             'cache_validation'  => true,
         ));
 
@@ -71,12 +71,16 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                     ->setHeaders($cache['headers'])
                     ->setContent($cache['content']);
 
-                if(!$this->isBypass() && !$response->isStale() && $this->isValid($cache['page'], $cache['collections']) === true)
+                $bypass   = $this->isBypass();
+                $valid    = $this->isValid($cache['page'], $cache['collections']);
+                $stale    = $response->isStale();
+
+                if(!$bypass && $valid !== false && !$stale)
                 {
                     $response->getHeaders()->set('Cache-Status', self::CACHE_HIT);
 
-                    //Refresh the cache
-                    if(!$response->isError() && ($response->isNotModified() || $response->isStale()))
+                    //Refresh cache if explicitly valid
+                    if($valid === true)
                     {
                         $response->setDate(new DateTime('now'));
                         $response->getHeaders()->set('Age', null);
@@ -119,15 +123,20 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             //Disable caching
             if ($page = $context->page)
             {
-                $cache = $page->process->get('cache', true);
+                $page_time = $page->process->get('cache', true);
 
-                if ($cache !== false)
+                if ($page_time !== false)
                 {
-                    //Set the max age if defined
-                    if(is_int($cache))
+                    $page_time = is_string($page_time) ? strtotime($page_time) - strtotime('now') : $page_time;
+
+                    if(is_int($page_time))
                     {
-                        $max        = $this->getConfig()->cache_time < $cache ? $this->getConfig()->cache_time : $cache;
-                        $max_shared = $cache;
+                        $cache_time = $this->getConfig()->cache_time;
+                        $cache_time = !is_numeric($cache_time) ? strtotime($cache_time) : $cache_time;
+
+                        //Set the max age if defined
+                        $max        = $cache_time < $page_time ?  $cache_time : $page_time;
+                        $max_shared = $page_time;
 
                         $response->setMaxAge($max, $max_shared);
                     }
@@ -145,8 +154,6 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                     $response->getHeaders()->set('Cache-Control', ['no-store']);
                 }
             }
-            //If the page doesn't exist don't try to store the response.
-            else $response->getHeaders()->set('Cache-Control', ['no-store']);
         }
         else $response->getHeaders()->set('Cache-Status', self::CACHE_MISS);
 
@@ -192,7 +199,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
             if($cache = $this->loadCache())
             {
-                //If the cache exists and it has not been modified to not reset the Last-Modified date
+                //If the cache exists and it has not been modified do not reset the Last-Modified date
                 if($cache['headers']['Etag'] == $response->getEtag()) {
                     $response->setLastModified(new DateTime($cache['headers']['Last-Modified']));
                 }
@@ -209,10 +216,10 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             ];
 
             $data = array(
-                'url'         => rtrim((string) $response->getRequest()->getUrl(), '/'),
+                'url'         => rtrim((string) $this->getContentLocation(), '/'),
                 'page'        => $page,
                 'collections' => $this->getCollections(),
-                'status'      => $response->getStatusCode(),
+                'status'      => !$response->isNotModified() ? $response->getStatusCode() : '200',
                 'format'      => $response->getFormat(),
                 'headers'     => $response->getHeaders()->toArray(),
                 'content'     => (string) $content,
@@ -243,8 +250,8 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
     public function getCacheKey()
     {
-        $url     = trim($this->getRequest()->getUrl()->toString(KHttpUrl::HOST + KHttpUrl::PATH + KHttpUrl::QUERY), '/');
-        $format  = $this->getRequest()->getFormat();
+        $url     = trim($this->getContentLocation()->toString(KHttpUrl::HOST + KHttpUrl::PATH + KHttpUrl::QUERY), '/');
+        $format  = $this->getRoute()->getFormat();
         $user    = $this->getUser()->getId();
 
         return 'url:'.$url.'#format:'.$format.'#user:'.$user;
@@ -347,13 +354,15 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
     public function isValid($page, $collections = array())
     {
-        $valid = true;
+        $valid = null;
 
         if($this->getConfig()->cache_validation)
         {
             //Validate the page
             if($page['hash'] == $this->getObject('page.registry')->getPage($page['path'])->hash)
             {
+                $valid = true;
+
                 foreach($collections as $collection)
                 {
                     //If the collection has a hash validate it
@@ -377,5 +386,19 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     public function isBypass()
     {
         return in_array('no-cache', $this->getRequest()->getCacheControl());
+    }
+
+    public function getContentLocation()
+    {
+        /**
+         * If Content-Location is included in a 2xx (Successful) response message and its value refers (after
+         * conversion to absolute form) to a URI that is the same as the effective request URI, then the recipient
+         * MAY consider the payload to be a current representation of that resource at the time indicated by the
+         * message origination date.  For a GET (Section 4.3.1) or HEAD (Section 4.3.2) request, this is the same
+         * as the default semantics when no Content-Location is provided by the server.
+         */
+
+        //See: https://tools.ietf.org/html/rfc7231#section-3.1.4.2
+        return $this->getResponse()->getHeaders()->get('Content-Location', $this->getResponse()->getRequest()->getUrl());
     }
 }
