@@ -25,10 +25,9 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
         //Only decorate GET requests that are not routing to com_pages
         if($this->getObject('request')->isGet() && $menu->component != 'com_pages')
         {
-            $site_path  =  $this->getObject('com://site/pages.config')->getSitePath();
             $page_route = $route = $this->getObject('com://site/pages.dispatcher.http')->getRoute();
 
-            if($page_route && $site_path)
+            if($page_route)
             {
                 $page_route = $page_route->getPath(false);
 
