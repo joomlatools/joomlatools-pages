@@ -62,7 +62,11 @@ return [
                 //See: https://github.com/scrivo/highlight.php
                 return (new \Highlight\Highlighter())->highlight($language, $source, false)->value;
             }
-        ]
+        ],
+        'com://site/pages.event.subscriber.staticcache' => [
+            'enable'     => $config['http_static_cache'],
+            'cache_path' => $config['http_static_cache_path'],
+        ],
     ],
     'extensions' => $config['extensions'] ?? array(),
 ];
