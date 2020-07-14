@@ -285,7 +285,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
             foreach([(int) $code, '500'] as $code)
             {
-                if($page = $this->getObject('page.registry')->getPage($code))
+                if($page = $this->getObject('page.registry')->getPageEntity($code))
                 {
                     //Set the controller
                     $this->setController($page->getType(), ['page' => $page]);

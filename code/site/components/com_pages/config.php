@@ -77,6 +77,11 @@ class ComPagesConfig extends KObject implements KObjectSingleton
         return $result;
     }
 
+    public function get($option, $default = null)
+    {
+        return $this->getConfig()->get($option, $default);
+    }
+
     public function getOptions()
     {
         return KObjectConfig::unbox($this->getConfig());

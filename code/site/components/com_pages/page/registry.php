@@ -97,6 +97,16 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 $result->model = 'com://site/pages.model.pages';
             }
         }
+        else
+        {
+            //Assume we are being passed a fully qualified identifier
+            if(is_string($name) && strpos($name, ':') !== false)
+            {
+                $result = new KObjectConfig([
+                    'model' => $name
+                ]);
+            }
+        }
 
         return $result;
     }
@@ -437,7 +447,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     $pages[$file] = $page->toArray();
 
                                     //Route
-                                    if($page->route !== false && !$page->redirect)
+                                    if($page->route !== false)
                                     {
                                         $routes[$path] = (array) KObjectConfig::unbox($page->route);
                                         unset($page->route);

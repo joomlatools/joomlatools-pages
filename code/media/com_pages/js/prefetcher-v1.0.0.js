@@ -35,7 +35,7 @@ class Prefetcher
             delay: 100,
             timeout: 1000,
             savedata: true,
-            elements: 'a',
+            selector: 'a',
             origins: [location.hostname],
             ignored: [uri => uri.includes('#')],
             debug: false
@@ -169,7 +169,7 @@ class Prefetcher
 
         window.requestIdleCallback(() =>
         {
-            document.querySelectorAll(this.options.elements).forEach(element =>
+            document.querySelectorAll(this.options.selector).forEach(element =>
             {
                 //Only select anchor elements
                 if(!(element instanceof HTMLAnchorElement))

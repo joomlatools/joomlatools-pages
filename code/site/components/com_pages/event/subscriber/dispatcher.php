@@ -18,6 +18,37 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         parent::_initialize($config);
     }
 
+    public function onAfterApplicationInitialise(KEventInterface $event)
+    {
+        //Turn off sh404sef for com_pages
+        if(JComponentHelper::isEnabled('com_sh404sef'))
+        {
+            //Tun route parsing
+            JFactory::getApplication()->getRouter()->attachParseRule(function($router, $url)
+            {
+                if(class_exists('Sh404sefClassRouterInternal'))
+                {
+                    $site = $this->getObject('com://site/pages.config')->getSitePath();
+                    $page = $this->getObject('com://site/pages.dispatcher.http')->getPage();
+
+                    if($page !== false && $site !== false && !$page->isDecorator()) {
+                        Sh404sefClassRouterInternal::$parsedWithJoomlaRouter = true;
+                    }
+                }
+
+            },  JRouter::PROCESS_BEFORE);
+
+            //Tun off route building
+            JFactory::getApplication()->getRouter()->attachBuildRule(function($router, $url)
+            {
+                if(class_exists('Sh404sefFactory')) {
+                    Sh404sefFactory::getConfig()->useJoomlaRouter[] = 'pages';
+                }
+
+            },  JRouter::PROCESS_BEFORE);
+        }
+    }
+
     public function onAfterApplicationRoute(KEventInterface $event)
     {
         $site = $this->getObject('com://site/pages.config')->getSitePath();
