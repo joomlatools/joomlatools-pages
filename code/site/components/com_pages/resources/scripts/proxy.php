@@ -70,7 +70,7 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', c
     $url     = trim($host.$request, '/');
 
     //Get the format
-    $format = pathinfo(parse_url('http://'.$url, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'html';
+    $format = pathinfo(parse_url('http://'.$url, PHP_URL_PATH), PATHINFO_EXTENSION) ?: '';
 
     //Get the user
     $key = 'url:' .$url. '#format:' . $format . '#user:'.$user;
@@ -122,7 +122,7 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', c
         }
 
         //Divide the max_age in half and set it in the $_SERVER global
-        if($headers['Cache-Status'] != 'EXPIRED') {
+        if($headers['Cache-Status'] != 'EXPIRED' && $max_age) {
             $_SERVER['HTTP_CACHE_CONTROL'] = 'max-age='.(int) ($max_age / 2);
         }
 
@@ -168,7 +168,7 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', c
 
         //Set response code
         http_response_code ($status);
-        header('Cache-Status: HIT');
+        //header('Cache-Status: HIT');
 
         //Do not send an Age header when using the proxy
         header_remove('Age');
