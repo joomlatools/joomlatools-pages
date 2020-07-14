@@ -36,8 +36,8 @@ return [
         'com://site/pages.dispatcher.behavior.cacheable' => [
             'cache'             => $config['http_cache'],
             'cache_path'        => $config['http_cache_path'],
-            'cache_time'        => $config['http_cache_time'],
-            'cache_time_shared' => $config['http_cache_time_proxy'],
+            'cache_time'        => !is_null($config['http_cache_time_browser']) ? $config['http_cache_time_browser'] : $config['http_cache_time'],
+            'cache_time_shared' => $config['http_cache_time'],
             'cache_validation'  => $config['http_cache_validation'],
             'cache_control'     => $config['http_cache_control'],
         ],

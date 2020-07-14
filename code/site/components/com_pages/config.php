@@ -42,7 +42,7 @@ class ComPagesConfig extends KObject implements KObjectSingleton
             'http_cache'                => false,
             'http_cache_path'           => $config->site_path ? $config->site_path.'/cache/responses': false,
             'http_cache_time'           => false,
-            'http_cache_time_proxy'     => false,
+            'http_cache_time_browser'   => null,
             'http_cache_validation'     => true,
             'http_cache_control'        => array(),
 
