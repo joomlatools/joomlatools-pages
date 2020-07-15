@@ -280,7 +280,7 @@ class ComPagesTemplateDefault extends KTemplate
                     if (!$result instanceof ComPagesDataObject) {
                         $result = $this->getObject('data.registry')->fromPath($directory);
                     } else {
-                        $result->append($this->getObject('data.registry')->formPath($directory));
+                        $result->append($this->getObject('data.registry')->fromPath($directory));
                     }
                 }
             }

@@ -59,10 +59,10 @@ ANCHOR;
         $html = '';
         if (!static::isLoaded('prefetcher'))
         {
-            $html .= '<meta http-equiv="X-UA-Compatible" content="IE=8,9,11" />';
+            $html .= '<meta http-equiv="X-UA-Compatible" content="IE=8,9" />';
             $html .= '<ktml:script src="assets://com_pages/js/prefetcher-v1.0.0.'.(!$config->debug ? 'min.js' : 'js').'" defer="defer" />';
             $html .= <<<PREFETCHER
-<script condition="!IE">
+<script>
 document.addEventListener("DOMContentLoaded", () =>
 {
     new Prefetcher(
