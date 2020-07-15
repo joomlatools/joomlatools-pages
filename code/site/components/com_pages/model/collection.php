@@ -228,21 +228,25 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
 
         $options['entity'] = $this->getIdentifier($identifier);
 
-        //Set the data
-        $data = KModelContext::unbox($context->entity);
-        if(!empty($data) && !is_numeric(key($data))) {
-            $options['data'] = array($data);
-        } else {
-            $options['data'] = $data;
-        }
-
         //Set the identitiy key
         if($identity_key = $context->getIdentityKey()) {
             $options['identity_key'] = $identity_key;
         }
 
         //Delegate entity instantiation
-        return $this->getObject('com://site/pages.model.entity.items', $options);
+        $entity = $this->getObject('com://site/pages.model.entity.items', $options);
+
+        // Insert the data
+        $data = $context->entity;
+        if(!empty($data) && !is_numeric(key($data))) {
+            $data = array($data);
+        }
+
+        foreach($data as $properties) {
+            $entity->create($properties);
+        }
+
+        return $entity;
     }
 
     protected function _actionCount(KModelContext $context)
