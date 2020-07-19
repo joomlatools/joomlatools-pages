@@ -51,7 +51,7 @@ class ComPagesEventSubscriberStaticcache extends ComPagesEventSubscriberAbstract
                 //Re-generated the static cache
                 if($regenerate && $content = $response->getContent())
                 {
-                    if(!is_dir($dir) && (false === @mkdir($dir, 0777, true) && !is_dir($dir))) {
+                    if(!is_dir($dir) && (false === @mkdir($dir, 0777, true))) {
                         throw new RuntimeException(sprintf('The cache path "%s" does not exist', $dir));
                     }
 
