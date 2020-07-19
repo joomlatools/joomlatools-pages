@@ -59,9 +59,9 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         return $this->getConfig()->cache;
     }
 
-    protected function _beforeDispatch(KDispatcherContextInterface $context)
+    protected function _actionValidate(KDispatcherContextInterface $context)
     {
-        if($this->isCacheable())
+        if($this->isCacheable() && !$context->response->getHeaders()->has('Cache-Status'))
         {
             if($cache = $this->loadCache())
             {
@@ -114,79 +114,6 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         else $context->response->getHeaders()->set('Cache-Status', self::CACHE_MISS);
     }
 
-    protected function _beforeSend(KDispatcherContextInterface $context)
-    {
-        $response = $context->getResponse();
-
-        if($this->isCacheable())
-        {
-            //Disable caching
-            if ($page = $context->page)
-            {
-                $page_time = $page->process->get('cache', true);
-
-                if ($page_time !== false)
-                {
-                    $page_time = is_string($page_time) ? strtotime($page_time) - strtotime('now') : $page_time;
-
-                    if(is_int($page_time))
-                    {
-                        $cache_time = $this->getConfig()->cache_time;
-                        $cache_time = !is_numeric($cache_time) ? strtotime($cache_time) : $cache_time;
-
-                        //Set the max age if defined
-                        $max        = $cache_time < $page_time ?  $cache_time : $page_time;
-                        $max_shared = $page_time;
-
-                        $response->setMaxAge($max, $max_shared);
-                    }
-
-                    //Set the cache tags
-                    if($collections = $this->getCollections())
-                    {
-                        $tags = array_unique(array_column($collections, 'type'));
-                        $response->getHeaders()->set('Cache-Tag', implode(',',  $tags));
-                    }
-                }
-                else
-                {
-                    $response->getHeaders()->set('Cache-Status', self::CACHE_DYNAMIC);
-                    $response->getHeaders()->set('Cache-Control', ['no-store']);
-                }
-            }
-        }
-        else $response->getHeaders()->set('Cache-Status', self::CACHE_MISS);
-
-        parent::_beforeSend($context);
-    }
-
-    protected function _beforeTerminate(KDispatcherContextInterface $context)
-    {
-        //Store the response in the cache
-        if($this->isCacheable()) {
-            $this->cache();
-        }
-    }
-
-    public function onAfterApplicationRespond(KEventInterface $event)
-    {
-        //Proxy Joomla Output
-        if($this->isCacheable())
-        {
-            $headers = array();
-            foreach (headers_list() as $header)
-            {
-                $parts = explode(':', $header, 2);
-                $headers[trim($parts[0])] = trim($parts[1]);
-            }
-
-            $this->getResponse()->setHeaders($headers);
-            $this->getResponse()->setContent($event->getTarget()->getBody());
-
-            $this->cache();
-        }
-    }
-
     protected function _actionCache(KDispatcherContextInterface $context)
     {
         $response = $context->getResponse();
@@ -231,12 +158,110 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         else $this->deleteCache($this->getCacheKey());
     }
 
+    protected function _beforeSend(KDispatcherContextInterface $context)
+    {
+        $response = $context->getResponse();
+
+        if($this->isCacheable())
+        {
+            //Disable caching
+            if ($page = $context->page)
+            {
+                $page_time = $page->process->get('cache', true);
+
+                if ($page_time !== false)
+                {
+                    $page_time = is_string($page_time) ? strtotime($page_time) - strtotime('now') : $page_time;
+
+                    if(is_int($page_time))
+                    {
+                        $cache_time = $this->getConfig()->cache_time;
+                        $cache_time = !is_numeric($cache_time) ? strtotime($cache_time) : $cache_time;
+
+                        //Set the max age if defined
+                        $max        = $cache_time < $page_time ?  $cache_time : $page_time;
+                        $max_shared = $page_time;
+
+                        $response->setMaxAge($max, $max_shared);
+                    }
+
+                    //Set the cache tags
+                    if($collections = $this->getCollections())
+                    {
+                        $tags = array_unique(array_column($collections, 'type'));
+                        $response->getHeaders()->set('Cache-Tag', implode(',',  $tags));
+                    }
+                }
+                else
+                {
+                    $response->getHeaders()->set('Cache-Status', self::CACHE_DYNAMIC);
+                    $response->getHeaders()->set('Cache-Control', ['no-store']);
+                }
+            }
+        }
+        else
+        {
+            $response->getHeaders()->set('Cache-Status', self::CACHE_DYNAMIC);
+            $response->getHeaders()->set('Cache-Control', ['no-store']);
+        }
+
+        parent::_beforeSend($context);
+    }
+
+    protected function _beforeDispatch(KDispatcherContextInterface $context)
+    {
+        //Validate the cache based on request
+        if($this->isCacheable()) {
+            $this->validate();
+        }
+    }
+
+    protected function _beforeTerminate(KDispatcherContextInterface $context)
+    {
+        //Store the response in the cache
+        if($this->isCacheable()) {
+            $this->cache();
+        }
+    }
+
+    public function onAfterApplicationRespond(KEventInterface $event)
+    {
+        //Proxy Joomla Output
+        if($this->isCacheable())
+        {
+            $headers = array();
+            foreach (headers_list() as $header)
+            {
+                $parts = explode(':', $header, 2);
+                $headers[trim($parts[0])] = trim($parts[1]);
+            }
+
+            //Remove the Expires header
+            header_register_callback( function() {
+                header_remove('Expires');
+            });
+
+            $headers = $this->_prepareHeaders($headers);
+
+            $this->getResponse()->setHeaders($headers);
+            $this->getResponse()->setContent($event->getTarget()->getBody());
+
+            $this->cache();
+        }
+    }
+
     protected function _prepareContent($content)
     {
-        //Search for a token in the content and refresh it
+        //Search for a form token in the content and refresh it
         $token       = JSession::getFormToken();
         $search      = '#<input type="hidden" name="[0-9a-f]{32}" value="1" />#';
         $replacement = '<input type="hidden" name="' . $token . '" value="1" />';
+
+        $content = preg_replace($search, $replacement, $content);
+
+        //Search for a csrf token in the content and refresh it
+        $search      = '#"csrf.token": "[0-9a-f]{32}"#';
+        $replacement = '"csrf.token": "' . $token . '"';
 
         return preg_replace($search, $replacement, $content);
     }
@@ -250,7 +275,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
     public function getCacheKey()
     {
-        $url     = trim($this->getContentLocation()->toString(KHttpUrl::HOST + KHttpUrl::PATH + KHttpUrl::QUERY), '/');
+        $url     = trim((string)$this->getContentLocation(), '/');
         $format  = $this->getRoute()->getFormat();
         $user    = $this->getUser()->getId();
 
@@ -272,6 +297,26 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         }
 
         return (array) $this->__collections;
+    }
+
+    public function getContentLocation()
+    {
+        /**
+         * If Content-Location is included in a 2xx (Successful) response message and its value refers (after
+         * conversion to absolute form) to a URI that is the same as the effective request URI, then the recipient
+         * MAY consider the payload to be a current representation of that resource at the time indicated by the
+         * message origination date.  For a GET (Section 4.3.1) or HEAD (Section 4.3.2) request, this is the same
+         * as the default semantics when no Content-Location is provided by the server.
+         */
+
+        if(!$location = $this->getResponse()->getHeaders()->get('Content-Location')) {
+            $location = $this->getRequest()->getUrl();
+        } else {
+            $location = $this->getObject('http.url', ['url' => $location]);
+        }
+
+        //See: https://tools.ietf.org/html/rfc7231#section-3.1.4.2
+        return $location;
     }
 
     public function loadCache($key = null)
@@ -386,19 +431,5 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     public function isBypass()
     {
         return in_array('no-cache', $this->getRequest()->getCacheControl());
-    }
-
-    public function getContentLocation()
-    {
-        /**
-         * If Content-Location is included in a 2xx (Successful) response message and its value refers (after
-         * conversion to absolute form) to a URI that is the same as the effective request URI, then the recipient
-         * MAY consider the payload to be a current representation of that resource at the time indicated by the
-         * message origination date.  For a GET (Section 4.3.1) or HEAD (Section 4.3.2) request, this is the same
-         * as the default semantics when no Content-Location is provided by the server.
-         */
-
-        //See: https://tools.ietf.org/html/rfc7231#section-3.1.4.2
-        return $this->getResponse()->getHeaders()->get('Content-Location', $this->getResponse()->getRequest()->getUrl());
     }
 }
