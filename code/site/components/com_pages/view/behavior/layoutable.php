@@ -22,7 +22,7 @@ class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
             $template = clone $template->setParameters($context->parameters);
 
             //Add the filters
-            $template->addFilters($page->process->filters);
+            $template->addFilters((array) KObjectConfig::unbox($page->process->filters));
 
             //Load the page
             $template->loadFile('page://pages/'.$page->path);
