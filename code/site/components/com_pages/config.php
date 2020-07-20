@@ -46,7 +46,7 @@ class ComPagesConfig extends KObject implements KObjectSingleton
             'http_cache_validation'     => true,
             'http_cache_control'        => array(),
 
-            'http_static_cache'         => false,
+            'http_static_cache'         => getenv('KPATH_STATIC') ? true : false,
             'http_static_cache_path'    => getenv('KPATH_STATIC') ? $_SERVER['DOCUMENT_ROOT'].getenv('KPATH_STATIC') : false,
 
             'http_resource_cache'       => JFactory::getConfig()->get('caching'),
