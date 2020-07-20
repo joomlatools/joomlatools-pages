@@ -84,12 +84,12 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     {
         $result = false;
 
-        if(!isset($this->__route))
+        if(!isset($this->__route) && $this->getObject('com://site/pages.config')->getSitePath() !== false)
         {
             $base  = $this->getRequest()->getBasePath();
             $url   = urldecode($this->getRequest()->getUrl()->getPath());
             $path  = trim(str_replace(array($base, '/index.php'), '', $url), '/');
-            $query = $this->getRequest()->getUrl()->getQuery(true);
+            $query = $this->getRequest()->query->toArray();
 
             $this->__route = $this->getRouter()->resolve('pages:'.$path,  $query);
         }

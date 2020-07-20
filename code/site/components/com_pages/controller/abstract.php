@@ -82,6 +82,25 @@ class ComPagesControllerAbstract extends KControllerModel
         return $context;
     }
 
+    protected function _actionRender(KControllerContextInterface $context)
+    {
+        $route    = $context->router->generate($context->route);
+        $location = $context->router->qualify($route);
+
+        /**
+         * If Content-Location is included in a 2xx (Successful) response message and its value refers (after
+         * conversion to absolute form) to a URI that is the same as the effective request URI, then the recipient
+         * MAY consider the payload to be a current representation of that resource at the time indicated by the
+         * message origination date
+         *
+         * See: https://tools.ietf.org/html/rfc7231#section-3.1.4.2
+         */
+        $context->response->headers->set('Content-Location', $location);
+
+        return parent::_actionRender($context);
+    }
+
+
     protected function _actionBrowse(KControllerContextInterface $context)
     {
         $entity = $this->getModel()->fetch();

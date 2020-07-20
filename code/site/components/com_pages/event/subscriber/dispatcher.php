@@ -28,10 +28,9 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
             {
                 if(class_exists('Sh404sefClassRouterInternal'))
                 {
-                    $site = $this->getObject('com://site/pages.config')->getSitePath();
                     $page = $this->getObject('com://site/pages.dispatcher.http')->getPage();
 
-                    if($page !== false && $site !== false && !$page->isDecorator()) {
+                    if($page !== false && !$page->isDecorator()) {
                         Sh404sefClassRouterInternal::$parsedWithJoomlaRouter = true;
                     }
                 }
@@ -51,10 +50,9 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
 
     public function onAfterApplicationRoute(KEventInterface $event)
     {
-        $site = $this->getObject('com://site/pages.config')->getSitePath();
         $page = $this->getObject('com://site/pages.dispatcher.http')->getPage();
 
-        if($page !== false && $site !== false)
+        if($page !== false)
         {
             $request = $this->getObject('request');
 
