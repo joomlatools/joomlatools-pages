@@ -226,8 +226,8 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
     public function onAfterApplicationRespond(KEventInterface $event)
     {
-        //Proxy Joomla Output
-        if($this->isCacheable())
+        //Cache and cleanup Joomla output if routing to a page
+        if($this->getRoute() && $this->isCacheable())
         {
             $headers = array();
             foreach (headers_list() as $header)
@@ -309,14 +309,14 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
          * as the default semantics when no Content-Location is provided by the server.
          */
 
-        if(!$location = $this->getResponse()->getHeaders()->get('Content-Location')) {
-            $location = $this->getRequest()->getUrl();
-        } else {
-            $location = $this->getObject('http.url', ['url' => $location]);
+        if(!$location = $this->getResponse()->getHeaders()->get('Content-Location'))
+        {
+            $location = $this->getRequest()->getUrl()
+                ->toString(KHttpUrl::SCHEME + KHttpUrl::HOST + KHttpUrl::PATH + KHttpUrl::QUERY);
         }
 
         //See: https://tools.ietf.org/html/rfc7231#section-3.1.4.2
-        return $location;
+        return  $this->getObject('http.url', ['url' => $location]);
     }
 
     public function loadCache($key = null)
