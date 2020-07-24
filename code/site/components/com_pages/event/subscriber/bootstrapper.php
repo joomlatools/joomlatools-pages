@@ -25,7 +25,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
         if(false !== $route = $router->resolve())
         {
-            define('JPATH_PAGES', $route->getPath());
+            define('KPATH_PAGES', $route->getPath());
 
             //Set the site path in the config
             $config = $this->getObject('com://site/pages.config', ['site_path' => $route->getPath()]);
