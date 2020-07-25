@@ -12,12 +12,8 @@
 # Define the filesystem location of the static cache
 SetEnvIf Request_URI "^.*" KPATH_PAGES_STATIC=/joomlatools-pages/cache/static
 
-# Define the base folder
-SetEnvIf Request_URI "^.*" BASE=/
-
 # Prevent direct access to the static cache
-RewriteCond "expr=%{REQUEST_URI} =~ %{ENV:KPATH_PAGES_STATIC}"
-RewriteRule .* - [END,R=404]
+RewriteRule ^/joomlatools-pages/cache/static - [R=404]
 
 # Condition - Do not serve from cache on browser refresh
 RewriteCond %{HTTP:Cache-Control} ^(no-cache)$ [OR]
@@ -30,7 +26,8 @@ RewriteCond %{HTTP_COOKIE} /^(.*;)?joomla_user_state=logged_in(;.*)?$/
 RewriteRule .* - [S=3]
 
 # Rewrite - /
-RewriteCond "expr=%{REQUEST_URI} =~ %{ENV:BASE}"
+# Edit when running in a subfolder
+RewriteCond "expr=%{REQUEST_URI} =~ /"
 RewriteCond %{DOCUMENT_ROOT}/%{ENV:KPATH_PAGES_STATIC}/%{REQUEST_URI}/index\.html -s
 RewriteRule .* %{ENV:KPATH_PAGES_STATIC}/%{REQUEST_URI}/index\.html [T=text/html,END,E=STATIC]
 
