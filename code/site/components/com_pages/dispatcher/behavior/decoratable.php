@@ -16,8 +16,10 @@ class ComPagesDispatcherBehaviorDecoratable extends ComKoowaDispatcherBehaviorDe
 
         if(!$response->isDownloadable() && !$response->isRedirect() && $request->getFormat() == 'html')
         {
+            $decorator = $this->getDecorator();
+
             //Set metadata in Joomla document
-            if($this->isDecorated())
+            if($decorator == 'joomla')
             {
                 //Set the title
                 if($title = $this->getController()->getView()->getTitle()) {
@@ -48,7 +50,8 @@ class ComPagesDispatcherBehaviorDecoratable extends ComKoowaDispatcherBehaviorDe
                 ];
             }
 
-            $view->setDecorator('joomla')->setLayout($this->getLayout());
+            $view->setDecorator($decorator)
+                ->setLayout($this->getLayout());
 
             //Set the result in the response
             $response->setContent($controller->render());
@@ -94,7 +97,7 @@ class ComPagesDispatcherBehaviorDecoratable extends ComKoowaDispatcherBehaviorDe
 
     public function isDecorated()
     {
-        return (bool) $this->getDecorator() == 'joomla';
+        return (bool) ($this->getDecorator() == 'joomla');
     }
 
     public function isSupported()
