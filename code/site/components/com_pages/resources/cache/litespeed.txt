@@ -13,7 +13,7 @@
 SetEnvIf Request_URI "^.*" KPATH_PAGES_STATIC=/joomlatools-pages/cache/static
 
 # Prevent direct access to the static cache
-RewriteRule ^/joomlatools-pages/cache/static - [R=404]
+RewriteRule ^joomlatools-pages/cache/static - [END,R=404]
 
 # Condition - Do not serve from cache on browser refresh or when caching is not allowed
 RewriteCond %{HTTP:Cache-Control} ^(no-store)$ [OR]

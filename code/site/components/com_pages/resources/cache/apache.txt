@@ -13,66 +13,59 @@
 SetEnvIf Request_URI "^.*" KPATH_PAGES_STATIC=/joomlatools-pages/cache/static
 
 # Prevent direct access to the static cache
-RewriteRule ^/joomlatools-pages/cache/static - [R=404]
+RewriteRule ^joomlatools-pages/cache/static - [END,R=404]
 
-    ## Begin - Try to find a cached page
-    #
-    # - Condition: Only return cache for GET request
-    # - Condition: Do not serve from cache on normal browser refresh
-    # - Condition: Do not serve from cache on hard browser refresh
-    # - Condition: Do not serve from cache when caching is not allowed
-    # - Condition: Only return cache for none logged in GET request
-    #
-    <If "req('Cache-Control') != 'no-store' && req('Cache-Control') != 'no-cache' && req('Cache-Control') != 'max-age=0'">
+# Condition - Do not serve from cache on browser refresh or when caching is not allowed
+RewriteCond %{HTTP:Cache-Control} ^(no-store)$ [OR]
+RewriteCond %{HTTP:Cache-Control} ^(no-cache)$ [OR]
+RewriteCond %{HTTP:Cache-Control} ^(max-age=0)$
+RewriteRule .* - [S=4]
 
-        # Condition - Only return cache for none logged in GET request
-        RewriteCond %{REQUEST_METHOD} !GET [OR]
-        RewriteCond %{HTTP_COOKIE} ^.*joomla_user_state=logged_in.*$
-        RewriteRule .* - [S=3]
+# Condition - Only return cache for none logged in GET request
+RewriteCond %{REQUEST_METHOD} !GET [OR]
+RewriteCond %{HTTP_COOKIE} ^.*joomla_user_state=logged_in.*$
+RewriteRule .* - [S=3]
 
-        # Rewrite - /path/to/page.[format]
-        RewriteCond %{DOCUMENT_ROOT}/%{ENV:KPATH_PAGES_STATIC}/%{REQUEST_URI} -s
-        RewriteRule .* %{ENV:KPATH_PAGES_STATIC}/%{REQUEST_URI} [S=2]
+# Rewrite - /
+# Edit when running in a subfolder
+RewriteCond "expr=%{REQUEST_URI} =~  m#/#"
+RewriteCond %{DOCUMENT_ROOT}/%{ENV:KPATH_PAGES_STATIC}/%{REQUEST_URI}/index\.html -s
+RewriteRule .* %{ENV:KPATH_PAGES_STATIC}/%{REQUEST_URI}/index\.html [T=text/html,END]
 
-        # Rewrite - /path/to/page.html
-        RewriteCond %{DOCUMENT_ROOT}/%{ENV:KPATH_PAGES_STATIC}/%{REQUEST_URI}\.html -s
-        RewriteRule .* %{ENV:KPATH_PAGES_STATIC}/%{REQUEST_URI}\.html [T=text/html,S=1]
+# Rewrite - /path/to/page.html
+RewriteCond %{DOCUMENT_ROOT}/%{ENV:KPATH_PAGES_STATIC}/%{REQUEST_URI}\.html -s
+RewriteRule .* %{ENV:KPATH_PAGES_STATIC}/%{REQUEST_URI}\.html [T=text/html,END]
 
-        # Rewrite - /
-        # Edit when running in a subfolder
-        RewriteCond "expr=%{REQUEST_URI} =~ m#/#"
-        RewriteCond %{DOCUMENT_ROOT}/%{ENV:KPATH_PAGES_STATIC}/%{REQUEST_URI}/index\.html -s
-        RewriteRule .* %{ENV:KPATH_PAGES_STATIC}/%{REQUEST_URI}/index\.html [T=text/html]
+# Rewrite - /path/to/page.[format]
+RewriteCond %{DOCUMENT_ROOT}/%{ENV:KPATH_PAGES_STATIC}/%{REQUEST_URI} -s
+RewriteRule .* %{ENV:KPATH_PAGES_STATIC}/%{REQUEST_URI} [END]
 
-    </If>
-    #
-    ## End - Try to find a cached page
 
-    ## Begin - Handle cache control for responses from static cache
-    #
-    <If "%{REQUEST_URI} =~ m#/joomlatools-pages/cache/static#">
+## Begin - Handle cache control for responses from static cache
+#
+<If "%{REQUEST_URI} =~ m#/joomlatools-pages/cache/static#">
 
-        # Allow browser content sniffing
-        Header always unset X-Content-Type-Options
+    # Allow browser content sniffing
+    Header always unset X-Content-Type-Options
 
-        # Use the sendfile support from the kernel to transmit file contents to the client
-        # See: https://httpd.apache.org/docs/2.4/mod/core.html#EnableSendfile
-        EnableSendfile On
+    # Use the sendfile support from the kernel to transmit file contents to the client
+    # See: https://httpd.apache.org/docs/2.4/mod/core.html#EnableSendfile
+    EnableSendfile On
 
-        # Mark response as STATIC
-        Header set Cache-Status "HIT, STATIC"
+    # Mark response as STATIC
+    Header set Cache-Status "HIT, STATIC"
 
-        # Follwoing rules can be uncommented if required
+    # Follwoing rules can be uncommented if required
 
-        # Force explicit browser and proxy cache expiration
-        #Header set Cache-Control "max-age=86400"
+    # Force explicit browser and proxy cache expiration
+    #Header set Cache-Control "max-age=86400"
 
-        # Force cache revaliation
-        #Header set Cache-Control "no-cache"
+    # Force cache revaliation
+    #Header set Cache-Control "no-cache"
 
-    </If>
-    #
-    ## End -  Handle cache control for responses from static cache
+</If>
+#
+## End -  Handle cache control for responses from static cache
 
 #
 ## End - Joomlatools Pages - static cache
