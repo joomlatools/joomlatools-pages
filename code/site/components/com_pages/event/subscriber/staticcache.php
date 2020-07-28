@@ -14,36 +14,17 @@ class ComPagesEventSubscriberStaticcache extends ComPagesEventSubscriberAbstract
 
     public function onAfterDispatcherCache(KEventInterface $event)
     {
-        $response = $event->getTarget()->getResponse();
-        $request  = $response->getRequest();
+        $dispatcher = $event->getTarget();
+        $response   = $dispatcher->getResponse();
 
         //Only cache static pages without a query string
-        if(!$event->getTarget()->getContentLocation()->getQuery() && $this->getConfig()->cache_path)
+        if(!$dispatcher->getContentLocation()->getQuery() && $this->getConfig()->cache_path)
         {
-            $path     = $event->getTarget()->getContentLocation()->getPath(true);
-            $filename = array_pop($path);
-            $format   = pathinfo($filename, PATHINFO_EXTENSION);
-
-            //Create the filename
-            if(empty($filename)) {
-                $filename = 'index';
-            }
-
-            if(empty($format)) {
-                $filename .= '.'.$request->getFormat();
-            }
-
-            //Create the directory
-            if($dir = trim(implode('/', $path), '/')) {
-                $dir  = $this->getConfig()->cache_path.'/'.$dir;
-            } else {
-                $dir  = $this->getConfig()->cache_path;
-            }
-
-            $file = $dir.'/'.$filename;
+            $file = $this->getFilePath($dispatcher);
+            $dir  = dirname($file);
 
             //Only cache statically if no max-age is defined
-            if($response->isCacheable() && $response->getMaxAge() === NULL)
+            if($response->getMaxAge() === NULL)
             {
                 // Cache needs to be regenerated OR cache doesn't exist yet
                 $regenerate = !$response->isNotModified() || !file_exists($file);
@@ -67,13 +48,48 @@ class ComPagesEventSubscriberStaticcache extends ComPagesEventSubscriberAbstract
                     @chmod($file, 0666 & ~umask());
                 }
             }
-            else
-            {
-                //Purge the static cache
-                if(file_exists($file)) {
-                    unlink($file);
-                }
-            }
         }
+    }
+
+    public function onAfterDispatcherPurge(KEventInterface $event)
+    {
+        $file = $this->getFilePath($event->getTarget());
+
+        //Purge the static cache
+        if(file_exists($file)) {
+            unlink($file);
+        }
+    }
+
+    public function getCachePath()
+    {
+        return $this->getConfig()->cache_path;
+    }
+
+    public function getFilePath(ComPagesDispatcherHttp  $dispatcher)
+    {
+        $path     = $dispatcher->getContentLocation()->getPath(true);
+        $filename = array_pop($path);
+        $format   = pathinfo($filename, PATHINFO_EXTENSION);
+
+        //Create the filename
+        if(empty($filename)) {
+            $filename = 'index';
+        }
+
+        if(empty($format)) {
+            $filename .= '.'. $dispatcher->getRequest()->getFormat();
+        }
+
+        //Create the directory
+        if($dir = trim(implode('/', $path), '/')) {
+            $dir  = $this->getCachePath().'/'.$dir;
+        } else {
+            $dir  = $this->getCachePath();
+        }
+
+        $file = $dir.'/'.$filename;
+
+        return $file;
     }
 }
