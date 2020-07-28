@@ -45,16 +45,11 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         parent::_initialize($config);
     }
 
-    public function isSupported()
-    {
-        //Always enabled if caching is enabled
-        return $this->getConfig()->cache;
-    }
-
     protected function _actionValidate(KDispatcherContextInterface $context)
     {
-        if($cache = $this->loadCache())
+        if($this->isValidatable())
         {
+            $cache    = $this->loadCache();
             $response = clone $this->getResponse();
             $response
                 ->setStatus($cache['status'])
@@ -98,10 +93,12 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                 }
              }
         }
+        else $context->getResponse()->getHeaders()->set('Cache-Status', self::CACHE_MISS);
     }
 
     protected function _actionCache(KDispatcherContextInterface $context)
     {
+        $result   = false;
         $response = $context->getResponse();
 
         if($response->isCacheable())
@@ -136,47 +133,32 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                 'content'     => (string) $response->getContent(),
             );
 
-            $this->storeCache($data);
+            $result  = $this->storeCache($data);
         }
-        //In case cache exists delete it
-        else $this->deleteCache();
+
+        return $result;
     }
 
     protected function _actionPurge(KDispatcherContextInterface $context)
     {
-        if($this->loadCache())
-        {
-            $context->response->getHeaders()->set('Cache-Status', self::CACHE_HIT);
+        $result = false;
 
-            if($this->deleteCache()) {
-                $context->response->getHeaders()->set('Cache-Status', self::CACHE_PURGED, false);
-            }
+        $context->getResponse()->getHeaders()->set('Cache-Status', self::CACHE_DYNAMIC);
+
+        if($result = $this->deleteCache()) {
+            $context->getResponse()->getHeaders()->set('Cache-Status', self::CACHE_PURGED, false);
         }
+
+        return $result;
     }
 
     protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
         //Validate the cache
-        if($this->getConfig()->cache)
-        {
-            $context->getResponse()->getHeaders()->set('Cache-Status', self::CACHE_MISS);
-
-            if($this->isCacheable())
-            {
-                //Validate the cache
-                if(!in_array('no-cache', $context->getRequest()->getCacheControl())) {
-                    $this->validate();
-                }
-            }
-            else
-            {
-                $context->getResponse()->getHeaders()->set('Cache-Status', self::CACHE_DYNAMIC);
-
-                //Purge the cache
-                if(in_array('no-store', $context->getRequest()->getCacheControl())) {
-                    $this->purge();
-                }
-            }
+        if($this->isCacheable()) {
+            $this->validate();
+        } else {
+            $this->purge();
         }
     }
 
@@ -186,45 +168,27 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
         if($this->isCacheable())
         {
-            //Disable caching
-            if ($page = $context->page)
+            $page_time = $this->getPage()->process->get('cache', true);
+            $page_time = is_string($page_time) ? strtotime($page_time) - strtotime('now') : $page_time;
+
+            if(is_int($page_time))
             {
-                $page_time = $page->process->get('cache', true);
+                $cache_time = $this->getConfig()->cache_time;
+                $cache_time = !is_numeric($cache_time) ? strtotime($cache_time) : $cache_time;
 
-                if ($page_time !== false)
-                {
-                    $page_time = is_string($page_time) ? strtotime($page_time) - strtotime('now') : $page_time;
+                //Set the max age if defined
+                $max        = $cache_time < $page_time ?  $cache_time : $page_time;
+                $max_shared = $page_time;
 
-                    if(is_int($page_time))
-                    {
-                        $cache_time = $this->getConfig()->cache_time;
-                        $cache_time = !is_numeric($cache_time) ? strtotime($cache_time) : $cache_time;
-
-                        //Set the max age if defined
-                        $max        = $cache_time < $page_time ?  $cache_time : $page_time;
-                        $max_shared = $page_time;
-
-                        $response->setMaxAge($max, $max_shared);
-                    }
-
-                    //Set the cache tags
-                    if($collections = $this->getCollections())
-                    {
-                        $tags = array_unique(array_column($collections, 'type'));
-                        $response->getHeaders()->set('Cache-Tag', implode(',',  $tags));
-                    }
-                }
-                else
-                {
-                    $response->getHeaders()->set('Cache-Status', self::CACHE_DYNAMIC);
-                    $response->getHeaders()->set('Cache-Control', ['no-store']);
-                }
+                $response->setMaxAge($max, $max_shared);
             }
-        }
-        else
-        {
-            $response->getHeaders()->set('Cache-Status', self::CACHE_DYNAMIC);
-            $response->getHeaders()->set('Cache-Control', ['no-store']);
+
+            //Set the cache tags
+            if($collections = $this->getCollections())
+            {
+                $tags = array_unique(array_column($collections, 'type'));
+                $response->getHeaders()->set('Cache-Tag', implode(',',  $tags));
+            }
         }
 
         parent::_beforeSend($context);
@@ -363,6 +327,26 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         }
 
         return $result;
+    }
+
+    public function isCacheable()
+    {
+        if($result = parent::isCacheable())
+        {
+            if($page = $this->getPage()) {
+                $result = (bool)$page->process->get('cache', true);
+            } else {
+                $result = false;
+            }
+        }
+
+        return $result;
+    }
+
+    public function isValidatable()
+    {
+        //Can only validate the cache if it exists and the request allows for cache validation
+        return $this->loadCache() && !in_array('no-cache', $this->getRequest()->getCacheControl());
     }
 
     public function isValid($page, $collections = array())
