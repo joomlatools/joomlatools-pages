@@ -20,9 +20,10 @@ RewriteRule ^/joomlatools-pages/cache/static - [R=404]
     # - Condition: Only return cache for GET request
     # - Condition: Do not serve from cache on normal browser refresh
     # - Condition: Do not serve from cache on hard browser refresh
+    # - Condition: Do not serve from cache when caching is not allowed
     # - Condition: Only return cache for none logged in GET request
     #
-    <If "req('Cache-Control') != 'no-cache' && req('Cache-Control') != 'max-age=0'">
+    <If "req('Cache-Control') != 'no-store' && req('Cache-Control') != 'no-cache' && req('Cache-Control') != 'max-age=0'">
 
         # Condition - Only return cache for none logged in GET request
         RewriteCond %{REQUEST_METHOD} !GET [OR]
