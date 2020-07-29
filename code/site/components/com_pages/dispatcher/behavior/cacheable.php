@@ -190,6 +190,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                 $response->getHeaders()->set('Cache-Tag', implode(',',  $tags));
             }
         }
+        else $response->getHeaders()->set('Cache-Control', ['no-store']);
 
         parent::_beforeSend($context);
     }
@@ -345,8 +346,8 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
     public function isValidatable()
     {
-        //Can only validate the cache if it exists and the request allows for cache validation
-        return $this->loadCache() && !in_array('no-cache', $this->getRequest()->getCacheControl());
+        //Can only validate if cacheable, cache exists and the request allows for cache validation
+        return $this->isCacheable() && $this->loadCache() && !in_array('no-cache', $this->getRequest()->getCacheControl());
     }
 
     public function isValid($page, $collections = array())
