@@ -124,6 +124,16 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         }
     }
 
+    public function onBeforeDispatcherSend(KEventInterface $event)
+    {
+        if(JDEBUG)
+        {
+            $event->getTarget()->getResponse()->getHeaders()
+                ->set('Cache-Control', ['no-store'])
+                ->set('Cache-Status' , ['DYNAMIC','DEBUG']);
+        }
+    }
+
     public function onAfterApplicationRender(KEventInterface $event)
     {
         if(!headers_sent())
