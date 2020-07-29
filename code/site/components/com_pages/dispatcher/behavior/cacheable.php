@@ -22,7 +22,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     const CACHE_VALIDATED = 'VALIDATED';
 
     //The page was served from the static cache, eg HIT, STATIC
-    const CACHE_PURGED = 'STATIC';
+    const CACHE_STATIC = 'STATIC';
 
     /**
      * Cache MISS status codes
