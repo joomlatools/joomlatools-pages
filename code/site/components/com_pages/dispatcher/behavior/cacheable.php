@@ -11,17 +11,25 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 {
     private $__collections;
 
-    //The page was found in the cache. It has been served from the cache
+    /**
+     * Cache HIT status codes
+     *
+     * The page was found in the cache. It has been served from the cache
+     */
     const CACHE_HIT = 'HIT';
 
-    //The page has been (re-)generated
-    const CACHE_MISS = 'MISS';
-
-    //The page settings don't allow the resource to be cached.
-    const CACHE_DYNAMIC  = 'DYNAMIC';
-
-    //The page was found in cache and was validated.
+    //The page was validated, eg HIT, VALIDATED
     const CACHE_VALIDATED = 'VALIDATED';
+
+    //The page was served from the static cache, eg HIT, STATIC
+    const CACHE_PURGED = 'STATIC';
+
+    /**
+     * Cache MISS status codes
+     *
+     * The page has been (re-)generated
+     */
+    const CACHE_MISS = 'MISS';
 
     //The page was found in cache but has since expired.
     const CACHE_EXPIRED = 'EXPIRED';
@@ -29,8 +37,18 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     //The page was found in cache but has since been modified.
     const CACHE_MODIFIED = 'MODIFIED';
 
-    //The page was removed from the cache
+    /**
+     * Cache Dynamic status codes
+     *
+     * The page settings don't allow the resource to be cached.
+     */
+    const CACHE_DYNAMIC  = 'DYNAMIC';
+
+    //The page was removed from the cache, eg DYNAMIC, PURGED
     const CACHE_PURGED = 'PURGED';
+
+    //Application debug mode is enabled, eg DYNAMIC, DEBUG
+    const CACHE_DEBUG = 'DEBUG';
 
     protected function _initialize(KObjectConfig $config)
     {
