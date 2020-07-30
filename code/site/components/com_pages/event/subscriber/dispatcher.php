@@ -122,6 +122,17 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
                 JFactory::getApplication()->setTemplate($template, $params);
             }
         }
+        else
+        {
+            //Purge the cache if it exists
+            if($dispatcher->loadCache())
+            {
+                $dispatcher->purge();
+
+                //Manually set the cache status
+                JFactory::getApplication()->setHeader('Cache-Status', 'DYNAMIC, PURGED');
+            }
+        }
     }
 
     public function onBeforeDispatcherSend(KEventInterface $event)
