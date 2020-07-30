@@ -235,7 +235,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     public function getCacheKey()
     {
         $url     = trim((string)$this->getContentLocation(), '/');
-        $format  = $this->getRoute()->getFormat();
+        $format  = $this->getRequest()->getFormat();
         $user    = $this->getUser()->getId();
 
         return 'url:'.$url.'#format:'.$format.'#user:'.$user;
