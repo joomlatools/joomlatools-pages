@@ -66,7 +66,7 @@ class Prefetcher
      */
     initalize(options)
     {
-        if(this.dispatchEvent('initialize', {'options': options}, true))
+        if(this.dispatchEvent('initialize', options, true))
         {
             this.options = options;
 
