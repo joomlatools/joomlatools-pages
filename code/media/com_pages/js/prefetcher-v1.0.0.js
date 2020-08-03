@@ -25,10 +25,10 @@ class Prefetcher
         this._hoverTimer;
         this._hoverTimestamp;
 
-        //Config
+        //Load the runtime configuration
         this.config = this.getSessionStorage().get('config') ?? { };
 
-        //Options
+        //Initialize the prefetcher
         var defaults = {
             onload: false,
             onhover: true,
@@ -44,16 +44,18 @@ class Prefetcher
             debug: false
         };
 
-        options = {...defaults, ...options, ...this.config }
+        this.initalize({...defaults, ...options, ...this.config })
 
+        //Attach the prefetcher to the window
+        window.Prefetcher = this;
+
+        //Store the config in the sessionStorage on unload
         window.addEventListener('beforeunload', (event) =>
         {
             if(this.config) {
                 this.getSessionStorage().set('config', this.config);
             }
         });
-
-        this.initalize(options)
     }
 
     /**
@@ -64,7 +66,7 @@ class Prefetcher
      */
     initalize(options)
     {
-        if(this.dispatchEvent('initialize', options, true))
+        if(this.dispatchEvent('initialize', {'options': options}, true))
         {
             this.options = options;
 
@@ -234,7 +236,7 @@ class Prefetcher
             }
         }
 
-        const[toAdd, isDone] = this.throttle(this.options.throttle);
+        const[toAdd, isDone] = this._throttle(this.options.throttle);
 
         var observer = new IntersectionObserver(entries =>
         {
@@ -477,39 +479,6 @@ class Prefetcher
     }
 
     /**
-     * Utility to regulate the execution rate of your functions
-     *
-     * @param {Number} limit The throttle's concurrency limit. By default, runs your functions one at a time.
-     * @returns {Array} Returns a tuple of [toAdd, isDone] actions.
-     */
-    throttle(limit)
-    {
-        limit = limit || 1;
-        var queue = [], wip = 0;
-
-        function toAdd(fn) {
-            queue.push(fn) > 1 || run(); // initializes if 1st
-        }
-
-        function isDone()
-        {
-            wip--; // make room for next
-            run();
-        }
-
-        function run()
-        {
-            if (wip < limit && queue.length > 0)
-            {
-                queue.shift()();
-                wip++; // is now WIP
-            }
-        }
-
-        return [toAdd, isDone];
-    }
-
-    /**
      * Simple wrapper for sessionStorage
      *
      * @returns {Array} Returns an array of named methods
@@ -550,6 +519,40 @@ class Prefetcher
 
         return {'get': get, 'set': set, 'remove': remove};
     };
+
+    /**
+     * Utility to regulate the execution rate of your functions
+     *
+     * @param {Number} limit The throttle's concurrency limit. By default, runs your functions one at a time.
+     * @returns {Array} Returns a tuple of [toAdd, isDone] actions.
+     */
+    _throttle(limit)
+    {
+        limit = limit || 1;
+        var queue = [], wip = 0;
+
+        function toAdd(fn) {
+            queue.push(fn) > 1 || run(); // initializes if 1st
+        }
+
+        function isDone()
+        {
+            wip--; // make room for next
+            run();
+        }
+
+        function run()
+        {
+            if (wip < limit && queue.length > 0)
+            {
+                queue.shift()();
+                wip++; // is now WIP
+            }
+        }
+
+        return [toAdd, isDone];
+    }
+
 }
 
 // Polyfill for requestIdleCallback
