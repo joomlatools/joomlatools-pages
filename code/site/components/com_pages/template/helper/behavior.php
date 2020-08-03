@@ -63,11 +63,8 @@ ANCHOR;
             $html .= '<ktml:script src="assets://com_pages/js/prefetcher-v1.0.0.'.(!$config->debug ? 'min.js' : 'js').'" defer="defer" />';
             $html .= <<<PREFETCHER
 <script>
-document.addEventListener("DOMContentLoaded", () =>
-{
-    new Prefetcher(
-        $config
-    )
+document.addEventListener("DOMContentLoaded", () => {
+    new Prefetcher($config)
 })
 </script>
 PREFETCHER;
