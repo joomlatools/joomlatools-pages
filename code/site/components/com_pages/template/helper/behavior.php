@@ -65,7 +65,7 @@ ANCHOR;
 <script>
 document.addEventListener("DOMContentLoaded", () =>
 {
-    new Prefetcher(
+    window.Prefetcher = new Prefetcher(
         $config
     )
 })
