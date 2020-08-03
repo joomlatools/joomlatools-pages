@@ -26,7 +26,7 @@ class Prefetcher
         this._hoverTimestamp;
 
         //Load the runtime configuration
-        this.config = this.getSessionStorage().get('config') ?? { };
+        this.config = this.getSessionStorage().get('config') ? this.getSessionStorage().get('config') : { };
 
         //Initialize the prefetcher
         var defaults = {
