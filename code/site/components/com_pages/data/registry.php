@@ -12,7 +12,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
     private $__data    = array();
     private $__locator = null;
     private $__namespaces = array();
-    private $__cache_keys  = array();
+    private $__hashes     = array();
 
     public function __construct(KObjectConfig $config)
     {
@@ -45,6 +45,44 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
     public function getNamespaces()
     {
         return $this->__namespaces;
+    }
+
+    public function getHash($path = null)
+    {
+        $path = $path ?? $this->getLocator()->getBasePath();
+
+        $size = function($path) use(&$size)
+        {
+            $result = array();
+
+            if (is_dir($path))
+            {
+                $files = array_diff(scandir($path), array('.', '..', '.DS_Store'));
+
+                foreach ($files as $file)
+                {
+                    if (is_dir($path.'/'.$file)) {
+                        $result[$file] =  $size($path .'/'.$file);
+                    } else {
+                        $result[$file] = sprintf('%u', filesize($path .'/'.$file));
+                    }
+                }
+            }
+            else $result[basename($path)] = sprintf('%u', filesize($path));
+
+            return $result;
+        };
+
+        if(!isset($this->__hashes[$path]))
+        {
+            if($file = $this->getLocator()->locate($path)) {
+                $this->__hashes[$path] =  hash('crc32b', serialize( $size($file)));
+            }  else {
+                $this->__hashes[$path] = false;
+            }
+        }
+
+        return $this->__hashes[$path];
     }
 
     public function fromUrl($url)
@@ -84,7 +122,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
             //Load the data and cache it
             $segments  = explode('/', $file_path);
             $root_path = array_shift($segments);
-            $key = crc32($base_path . $root_path);
+            $key       = crc32($base_path . $root_path);
 
             if (!isset($this->__data[$key]))
             {
@@ -215,9 +253,9 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
             $result = array();
             $result['data'] = $data;
 
-            //Calculate the key
+            //Calculate the hash
             if($this->getConfig()->cache && $this->getConfig()->cache_validation) {
-                $result['key'] = $this->getCacheKey($path);
+                $result['hash'] = $this->getHash($path);
             }
 
             $this->storeCache($file, $result);
@@ -229,7 +267,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
             }
 
             //Check if the cache is still valid, if not refresh it
-            if($this->getConfig()->cache_validation && $result['key'] != $this->getCacheKey($path)) {
+            if($this->getConfig()->cache_validation && $result['hash'] != $this->getHash($path)) {
                 $this->loadCache($path, true);
             }
 
@@ -287,41 +325,5 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         }
 
         return $result;
-    }
-
-    public function getCacheKey($path)
-    {
-        $size = function($path) use(&$size)
-        {
-            $result = array();
-
-            if (is_dir($path))
-            {
-                $files = array_diff(scandir($path), array('.', '..', '.DS_Store'));
-
-                foreach ($files as $file)
-                {
-                    if (is_dir($path.'/'.$file)) {
-                        $result[$file] =  $size($path .'/'.$file);
-                    } else {
-                        $result[$file] = sprintf('%u', filesize($path .'/'.$file));
-                    }
-                }
-            }
-            else $result[basename($path)] = sprintf('%u', filesize($path));
-
-            return $result;
-        };
-
-        if(!isset($this->__cache_keys[$path]))
-        {
-            if($file = $this->getLocator()->locate($path)) {
-                $this->__cache_keys[$path] =  hash('crc32b', serialize( $size($file)));
-            }  else {
-                $this->__cache_keys[$path] = false;
-            }
-        }
-
-        return $this->__cache_keys[$path];
     }
 }
