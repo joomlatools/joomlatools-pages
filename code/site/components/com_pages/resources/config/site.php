@@ -41,11 +41,10 @@ return [
             'cache_validation'  => $config['http_cache_validation'],
             'cache_control'     => $config['http_cache_control'],
         ],
-        'com://site/pages.http.client' => [
+        'com://site/pages.http.cache' => [
             'cache'       => $config['http_resource_cache'],
             'cache_time'  => $config['http_resource_cache_time'],
             'cache_path'  => $config['http_resource_cache_path'],
-            'cache_force' => $config['http_resource_cache_force'],
             'debug'       => $config['http_resource_cache_debug'],
         ],
         'com://site/pages.model.cache' => [
