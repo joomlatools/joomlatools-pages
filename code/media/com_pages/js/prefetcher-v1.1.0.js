@@ -236,7 +236,7 @@ class Prefetcher
             }
         }
 
-        const[toAdd, isDone] = this._throttle(this.options.throttle);
+        const[enqueue, dequeue] = this.getThrottledQueue(this.options.concurrency);
 
         var observer = new IntersectionObserver(entries =>
         {
@@ -249,11 +249,11 @@ class Prefetcher
                     // Do not prefetch if will match/exceed limit
                     if (this.cache.size < this.options.limit)
                     {
-                        toAdd(() =>
+                        enqueue(() =>
                         {
                             this.prefetch(entry.href, 'load')
-                                .then(isDone)
-                                .catch(err => {isDone();});
+                                .then(dequeue())
+                                .catch(err => {dequeue();});
                         });
                     }
                 }
@@ -289,8 +289,6 @@ class Prefetcher
             observer.disconnect();
         };
     }
-
-
 
     /**
      * Renders a given URL using `<link rel=prerender>`
@@ -521,38 +519,37 @@ class Prefetcher
     };
 
     /**
-     * Utility to regulate the execution rate of your functions
+     * Throttled queue to regulate the execution rate of your functions
      *
      * @param {Number} limit The throttle's concurrency limit. By default, runs your functions one at a time.
-     * @returns {Array} Returns a tuple of [toAdd, isDone] actions.
+     * @returns {Array} Returns a tuple of [enqueue, dequeue] actions.
      */
-    _throttle(limit)
+    getThrottledQueue(limit)
     {
         limit = limit || 1;
-        var queue = [], wip = 0;
+        var queue = [], size = 0;
 
-        function toAdd(fn) {
+        function enqueue(fn) {
             queue.push(fn) > 1 || run(); // initializes if 1st
         }
 
-        function isDone()
+        function dequeue()
         {
-            wip--; // make room for next
+            size--;
             run();
         }
 
         function run()
         {
-            if (wip < limit && queue.length > 0)
+            if (size < limit && queue.length > 0)
             {
                 queue.shift()();
-                wip++; // is now WIP
+                size++;
             }
         }
 
-        return [toAdd, isDone];
+        return [enqueue, dequeue];
     }
-
 }
 
 // Polyfill for requestIdleCallback
