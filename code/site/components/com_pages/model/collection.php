@@ -126,7 +126,7 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         return (array) $keys;
     }
 
-    public function getHash()
+    public function getHash($refresh = false)
     {
         return null;
     }

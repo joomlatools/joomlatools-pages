@@ -136,7 +136,7 @@ class ComPagesModelDecorator extends KModelAbstract implements ComPagesModelInte
         return (array) $key;
     }
 
-    public function getHash()
+    public function getHash($refresh = false)
     {
         $hash     = null;
         $delegate = $this->getDelegate();
@@ -155,7 +155,7 @@ class ComPagesModelDecorator extends KModelAbstract implements ComPagesModelInte
         }
 
         if($model instanceof ComPagesModelInterface) {
-            $hash = $model->getHash();
+            $hash = $model->getHash($refresh);
         }
 
         return $hash;

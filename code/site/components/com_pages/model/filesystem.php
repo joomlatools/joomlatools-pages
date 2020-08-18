@@ -50,7 +50,7 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
         return bin2hex(random_bytes($this->_identity_key_length));
     }
 
-    public function getHash()
+    public function getHash($refresh = false)
     {
         $hahs = null;
         $path = $this->getPath($this->getState()->getValues());
