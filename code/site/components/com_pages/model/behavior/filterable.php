@@ -181,12 +181,18 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                         return true;
                     }
                     //In
-                    elseif ($filter['operation'] == 'in' &&  is_array($item_value) && in_array($value, $item_value)) {
-                        return true;
+                    elseif ($filter['operation'] == 'in')
+                    {
+                        if(is_array($item_value) && in_array($value, $item_value)) {
+                            return true;
+                        }
                     }
                     //Not In
-                    elseif ($filter['operation'] == 'nin' && !is_array($item_value) || !in_array($value, $item_value)) {
-                        return true;
+                    elseif ($filter['operation'] == 'nin')
+                    {
+                        if(!is_array($item_value) || !in_array($value, $item_value)) {
+                            return true;
+                        };
                     }
                 }
             });
@@ -202,7 +208,6 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                 $items  = $data;
                 $result = $result + $filtered;
             }
-
         }
 
         return $result;
