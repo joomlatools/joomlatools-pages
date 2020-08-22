@@ -59,8 +59,8 @@ class ComPagesModelCache extends ComPagesModelCollection
                     'hash'        => $data['headers']['Etag'],
                     'token'       => $data['token'],
                     'format'      => $data['format'],
-                    'language'    => $data['page']['language'],
-                    'collections' => array_unique(array_column($data['collections'], 'type')),
+                    'language'    => $data['language'],
+                    'collections' => $data['headers']['Content-Collections'] ?? array(),
                     'robots'      => isset($data['headers']['X-Robots-Tag']) ? array_map('trim', explode(',', $data['headers']['X-Robots-Tag'])) : array(),
                     'status'      => $data['status'],
                     'valid'       => $this->getObject('com://site/pages.dispatcher.http')->validateCache($data, true)
