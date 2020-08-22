@@ -318,17 +318,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $result;
     }
 
-    public function buildCache()
-    {
-        if($this->getConfig()->cache)
-        {
-            $basedir = $this->getLocator()->getBasePath().'/pages';
-            $this->loadCache($basedir, true);
-        }
-
-        return false;
-    }
-
     public function loadCache($basedir, $refresh = true)
     {
         if ($refresh || (!$cache = $this->isCached($basedir)))

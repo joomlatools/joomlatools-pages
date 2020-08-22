@@ -225,23 +225,6 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         return $data;
     }
 
-    public function buildCache()
-    {
-        if($this->getConfig()->cache)
-        {
-            $basedir = $this->getLocator()->getBasePath();
-
-            foreach (new DirectoryIterator($basedir) as $node)
-            {
-                if (!in_array($node->getFilename()[0], array('.', '_'))) {
-                    $this->loadCache(pathinfo($node, PATHINFO_FILENAME), true);
-                }
-            }
-        }
-
-        return false;
-    }
-
     public function loadCache($path, $refresh = true)
     {
         $file = $this->getLocator()->getBasePath().'/'.$path;
