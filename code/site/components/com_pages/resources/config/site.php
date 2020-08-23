@@ -34,11 +34,14 @@ return [
             'cache_reload'  => $config['template_cache_validation'],
         ],
         'com://site/pages.dispatcher.behavior.cacheable' => [
-            'cache'             => $config['http_cache'],
-            'cache_path'        => $config['http_cache_path'],
-            'cache_time'        => !is_null($config['http_cache_time_browser']) ? $config['http_cache_time_browser'] : $config['http_cache_time'],
-            'cache_time_shared' => $config['http_cache_time'],
-            'cache_control'     => $config['http_cache_control'],
+            'cache'       => $config['http_cache'],
+            'cache_path'  => $config['http_cache_path'],
+            'cache_time'         => !is_null($config['http_cache_time_browser']) ? $config['http_cache_time_browser'] : $config['http_cache_time'],
+            'cache_time_shared'  => $config['http_cache_time'],
+            'cache_time_private' => $config['http_cache_time_private'],
+            'cache_control'         => $config['http_cache_control'],
+            'cache_control_private' => $config['http_cache_control_private'],
+
         ],
         'com://site/pages.http.cache' => [
             'cache'       => $config['http_resource_cache'],
