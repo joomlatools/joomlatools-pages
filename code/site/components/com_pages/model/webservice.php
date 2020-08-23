@@ -49,7 +49,9 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         if($url = $this->getUrl($this->getState()->getValues()))
         {
             $http    = $this->_getHttpClient();
-            $headers = ['Cache-Control' => $this->_getCacheControl()];
+
+            $max_age = $refresh ? 0 : $this->getConfig()->cache;
+            $headers = ['Cache-Control' => $this->_getCacheControl($max_age)];
 
             try
             {
@@ -79,7 +81,9 @@ class ComPagesModelWebservice extends ComPagesModelCollection
             if($url = $this->getUrl($this->getState()->getValues()))
             {
                 $http    = $this->_getHttpClient();
-                $headers = ['Cache-Control' => $this->_getCacheControl()];
+
+                $max_age = $this->getConfig()->cache;
+                $headers = ['Cache-Control' => $this->_getCacheControl($max_age)];
 
                 try {
                     $this->__data = $http->get($url, $headers);
@@ -213,11 +217,9 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         return $this->__http;
     }
 
-    protected function _getCacheControl()
+    protected function _getCacheControl($max_age = null)
     {
         $cache_control = array();
-
-        $max_age = $this->getConfig()->cache;
 
         if($max_age !== null)
         {
