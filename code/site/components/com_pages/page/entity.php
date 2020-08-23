@@ -40,13 +40,21 @@ class ComPagesPageEntity extends ComPagesModelEntityPage
         return $value;
     }
 
-    public function setPropertyForm($value)
+    public function getPropertyForm()
     {
-        if($value) {
-            $value = new KObjectConfig($value);
+        if($form = $this->getConfig()->data->get('form'))
+        {
+            $name = $form->honeypot ?? 'name';
+
+            if($form->schema->has($name))
+            {
+                $hash = $this->hash;
+                $form->honeypot = sprintf('%s_%s', $name, $hash);
+            }
+            else $form->honeypot = $name;
         }
 
-        return $value;
+        return $form;
     }
 
     public function getType()
