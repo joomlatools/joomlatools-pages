@@ -51,6 +51,7 @@ class ComPagesModelCache extends ComPagesModelCollection
             foreach ($files as $file)
             {
                 $data = require $file;
+                $valid = $this->getObject('com://site/pages.dispatcher.http')->validateCache($data['validators'], true);
 
                 $this->__data[] = array(
                     'id'          => $data['id'],
@@ -63,7 +64,7 @@ class ComPagesModelCache extends ComPagesModelCollection
                     'collections' => $data['headers']['Content-Collections'] ?? array(),
                     'robots'      => isset($data['headers']['X-Robots-Tag']) ? array_map('trim', explode(',', $data['headers']['X-Robots-Tag'])) : array(),
                     'status'      => $data['status'],
-                    'valid'       => $this->getObject('com://site/pages.dispatcher.http')->validateCache($data, true)
+                    'valid'       => $valid
                 );
             }
         }
