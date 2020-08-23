@@ -12,4 +12,6 @@ interface ComPagesDispatcherContextInterface extends KDispatcherContextInterface
     public function getRouter();
 
     public function getPage();
+
+    public function getValidators();
 }

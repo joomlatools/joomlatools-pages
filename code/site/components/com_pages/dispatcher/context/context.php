@@ -9,6 +9,8 @@
 
 class ComPagesDispatcherContext extends KDispatcherContext implements ComPagesDispatcherContextInterface
 {
+    private $__validators;
+
     public function getRouter()
     {
         return KObjectConfig::get('router');
@@ -27,5 +29,15 @@ class ComPagesDispatcherContext extends KDispatcherContext implements ComPagesDi
     public function setPage(ComPagesPageEntity $page)
     {
         return KObjectConfig::set('page', $page);
+    }
+
+    public function setValidators(array $validators)
+    {
+        return $this->__validators = $validators;
+    }
+
+    public function getValidators()
+    {
+        return (array) $this->__validators;
     }
 }
