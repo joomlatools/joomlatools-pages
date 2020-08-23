@@ -20,12 +20,12 @@ class ComPagesTemplateHelperForm extends ComPagesTemplateHelperAbstract
         );
     }
 
-    public function honeypot(string $name)
+    public function honeypot()
     {
         $config = new KObjectConfigJson();
         $config->append(array(
-            'name'     => $name,
-            'snippet'  => 'form.honeypot',
+            'name'    => $this->getTemplate()->page()->form->honeypot,
+            'snippet' => 'form.honeypot',
         ));
 
         return $this->getTemplate()->helper('snippet.expand', $config->snippet, $config->toArray());
