@@ -23,8 +23,11 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
     public function onAfterApplicationRoute(KEventInterface $event)
     {
         //Try to validate the cache
-        if($dispatcher = $this->getDispatcher()) {
-            $dispatcher->validate();
+        if($dispatcher = $this->getDispatcher())
+        {
+            if($dispatcher->isCacheable()) {
+                $dispatcher->validate();
+            }
         }
     }
 
