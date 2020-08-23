@@ -51,7 +51,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         }
 
         //Authenticate anonymous requests and inject form token dynamically
-        if($dispatcher->getRequest()->isPost())
+        if($dispatcher->getRequest()->isPost() && $dispatcher->isCacheable())
         {
             if($cache = $dispatcher->loadCache())
             {
@@ -125,7 +125,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         else
         {
             //Purge the cache if it exists
-            if($dispatcher->loadCache())
+            if($dispatcher->isCacheable() && $dispatcher->loadCache())
             {
                 $dispatcher->purge();
 
