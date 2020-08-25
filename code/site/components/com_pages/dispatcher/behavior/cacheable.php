@@ -66,7 +66,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     {
         if($this->isValidatable())
         {
-            $response   = clone $this->getResponse();
+            $response = clone $this->getResponse();
 
             //Get validators from response
             $etag       = $context->request->getEtag();
@@ -92,7 +92,14 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             //Check if response is stale
             $stale = $response->isStale();
 
-            if($valid !== false && $stale !== true)
+            //Check the if the cache is fresh
+            if($this->isRefreshable() && !in_array('must-revalidate', $response->getCacheControl())) {
+                $fresh = ($valid === true || $stale !== true);
+            } else {
+                $fresh = ($valid !== false && $stale !== true);
+            }
+
+            if($fresh)
             {
                 //Refresh response if valid
                 if($valid === true)
@@ -169,7 +176,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             $data = array(
                 'id'          => $this->getContentLocation()->toString(KHttpUrl::PATH + KHttpUrl::QUERY),
                 'url'         => rtrim((string) $this->getContentLocation(), '/'),
-                'validators'  => $context->validators,
+                'validators'  => $this->getCacheValidators(),
                 'status'      => !$response->isNotModified() ? $response->getStatusCode() : '200',
                 'token'       => $this->getCacheToken(),
                 'format'      => $response->getFormat(),
@@ -199,24 +206,8 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
     protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
-        //Validate the cache
-        if($this->isCacheable()) {
-            $this->validate();
-        } else {
-            $this->purge();
-        }
-    }
-
-    protected function _beforeSend(KDispatcherContextInterface $context)
-    {
-        //Get the response from the context
-        $response  = $context->getResponse();
-
         if($this->isCacheable())
         {
-            //Add the validators to the context
-            $context->validators = $this->getCacheValidators();
-
             //Set the max age if defined in for the page
             $page_time = $this->getPage()->process->get('cache', true);
             $page_time = is_string($page_time) ? strtotime($page_time) - strtotime('now') : $page_time;
@@ -224,15 +215,31 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             if(is_int($page_time))
             {
                 $cache_time = $this->getConfig()->cache_time;
-                $cache_time = !is_numeric($cache_time) ? strtotime($cache_time) : $cache_time;
 
-                //Set the max age if defined
-                $max        = $cache_time < $page_time ?  $cache_time : $page_time;
-                $max_shared = $page_time;
+                if($cache_time !== false)
+                {
+                    $cache_time = !is_numeric($cache_time) ? strtotime($cache_time) : $cache_time;
+                    $max        = $cache_time < $page_time ?  $cache_time : $page_time;
 
-                $response->setMaxAge($max, $max_shared);
+                    $context->response->setMaxAge($max, $page_time);
+                }
+                else $context->response->setMaxAge($page_time);
+
+                $context->response->headers->set('Cache-Control', ['must-revalidate'], false);
             }
 
+            $this->validate();
+        }
+        else $this->purge();
+    }
+
+    protected function _beforeSend(KDispatcherContextInterface $context)
+    {
+        //Get the response from the context
+        $response = $context->getResponse();
+
+        if($this->isCacheable())
+        {
             //Set the content collections
             if($models = $this->getObject('model.factory')->getModels())
             {
@@ -246,7 +253,8 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             }
 
             //Set the weak etag
-            $response->setEtag($this->_encodeEtag($context->validators), false);
+            $validators = $this->getCacheValidators();
+            $response->setEtag($this->_encodeEtag($validators), false);
         }
         else $response->headers->set('Cache-Control', ['no-store']);
     }
@@ -259,28 +267,33 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         }
     }
 
-    public function getCacheValidators()
+    public function getCacheValidators($refresh = false)
     {
-        $validators = array();
+        if(!isset($this->__validators) || $refresh)
+        {
+            $validators = array();
 
-        //Add hash
-        $validators['hash'] = $this->getHash();
+            //Add hash (ensure the etag is unique)
+            $validators['hash'] = $this->getHash();
 
-        //Add user
-        $validators['user'] = $this->getUser()->getId();
+            //Add user
+            $validators['user'] = $this->getUser()->getId();
 
-        //Add page
-        $validators['page'] = [
-            'path' => $this->getRoute()->getPage()->path,
-            'hash' => $this->getRoute()->getPage()->hash
-        ];
+            //Add page
+            $validators['page'] = [
+                'path' => $this->getRoute()->getPage()->path,
+                'hash' => $this->getRoute()->getPage()->hash
+            ];
 
-        //Add collections
-        foreach($this->getObject('model.factory')->getModels() as $name => $model) {
-            $validators['collections'][$name] = $model->getHash();
+            //Add collections
+            foreach($this->getObject('model.factory')->getModels() as $name => $model) {
+                $validators['collections'][$name] = $model->getHash();
+            }
+
+            $this->__validators = $validators;
         }
 
-        return (array) $validators;
+        return $this->__validators;
     }
 
     public function getCacheToken()
@@ -462,8 +475,14 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
     public function isValidatable()
     {
-        //Can only validate if cacheable and the request allows for cache re-use
+        //Can only validate cache if cacheable and the request allows for cache re-use
         return $this->isCacheable() && !in_array('no-cache', $this->getRequest()->getCacheControl());
+    }
+
+    public function isRefreshable()
+    {
+        //Can only refresh cache if cacheable and the request allows for cache re-refreshing
+        return $this->isCacheable() && !in_array('must-revalidate', $this->getRequest()->getCacheControl());
     }
 
     protected function _encodeEtag(array $validators)
@@ -477,7 +496,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     protected function _decodeEtag($etag)
     {
         $validators = array();
-        if($data = base64_decode($etag)) {
+        if($etag && $data = base64_decode($etag)) {
             $validators = json_decode(gzinflate($data), true);
         }
 

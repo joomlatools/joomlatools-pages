@@ -30,14 +30,4 @@ class ComPagesDispatcherContext extends KDispatcherContext implements ComPagesDi
     {
         return KObjectConfig::set('page', $page);
     }
-
-    public function setValidators(array $validators)
-    {
-        return $this->__validators = $validators;
-    }
-
-    public function getValidators()
-    {
-        return (array) $this->__validators;
-    }
 }
