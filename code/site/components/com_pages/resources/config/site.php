@@ -38,7 +38,6 @@ return [
             'cache_path'  => $config['http_cache_path'],
             'cache_time'         => !is_null($config['http_cache_time_browser']) ? $config['http_cache_time_browser'] : $config['http_cache_time'],
             'cache_time_shared'  => $config['http_cache_time'],
-            'cache_time_private' => $config['http_cache_time_private'],
             'cache_control'         => $config['http_cache_control'],
             'cache_control_private' => $config['http_cache_control_private'],
 
