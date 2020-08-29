@@ -109,21 +109,25 @@ class ComPagesModelBehaviorSortable extends ComPagesModelBehaviorQueryable
 
     protected function _queryDatabase(KDatabaseQuerySelect $query, KModelStateInterface $state)
     {
-        if($state->sort && $state->sort != 'order')
+        if(!$query->isCountQuery())
         {
-            $order = strtoupper($state->order);
+            if($state->sort && $state->sort != 'order')
+            {
+                $order = strtoupper($state->order);
 
-            if(isset($query->columns[$state->sort])) {
-                $column = $query->columns[$state->sort];
-            } else {
-                $column = 'tbl.'.$this->getTable()->mapColumns($state->sort);
+                if(isset($query->columns[$state->sort])) {
+                    $column = $query->columns[$state->sort];
+                } else {
+                    $column = 'tbl.'.$this->getTable()->mapColumns($state->sort);
+                }
+
+                $query->order($column, $order);
             }
 
-            $query->order($column, $order);
-        }
+            if($state->order && in_array($state->order, ['shuffle', 'random'])) {
+                $query->shuffle();
+            }
 
-        if($state->order && in_array($state->order, ['shuffle', 'random'])) {
-            $query->shuffle();
         }
 
         return $query;
