@@ -54,19 +54,20 @@ class ExtK2ModelArticles extends ComPagesModelDatabase
         $query = $this->getObject('database.query.select')
             ->table(array('tbl' => $this->getTable()->getName()));
 
-        //#__tags
-        $query->columns([
-            'tags'	=> $this->getObject('database.query.select')
-                ->table(array('t' => 'k2_tags'))
-                ->columns('GROUP_CONCAT(t.name)')
-                ->join(['m' => 'k2_tags_xref'], 'm.tagID = t.id')
-                ->where('m.itemID = tbl.id')
-                ->where('(t.published = :published)')->bind(['published' => 1])
-        ]);
-
         //#__content
         if(!$count)
         {
+            //#__tags
+            $query->columns([
+                'tags'	=> $this->getObject('database.query.select')
+                    ->table(array('t' => 'k2_tags'))
+                    ->columns('GROUP_CONCAT(t.name)')
+                    ->join(['m' => 'k2_tags_xref'], 'm.tagID = t.id')
+                    ->where('m.itemID = tbl.id')
+                    ->where('(t.published = :published)')->bind(['published' => 1])
+            ]);
+
+
             $query->columns([
                 'id'       => 'tbl.id',
                 'title'    => 'tbl.title',
