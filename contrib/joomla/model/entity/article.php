@@ -210,7 +210,7 @@ class ExtJoomlaModelEntityArticle extends ExtJoomlaModelEntityAbstract
 		//Normalize images
 		$image = array();
 
-		if(isset($value['image_fulltext']))
+		if(isset($value['image_fulltext']) && $value['image_fulltext'])
 		{
 			$url = $value['image_fulltext'];
 
@@ -226,7 +226,7 @@ class ExtJoomlaModelEntityArticle extends ExtJoomlaModelEntityAbstract
 				'caption'  => $value['image_fulltext_caption'] ?? '',
 			];
 		}
-		elseif(isset($value['image_intro']))
+		elseif(isset($value['image_intro']) && $value['image_intro'])
 		{
 			$url = $value['image_intro'];
 
