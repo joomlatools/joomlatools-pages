@@ -55,18 +55,19 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
         $query = $this->getObject('database.query.select')
             ->table(array('tbl' => $this->getTable()->getName()));
 
-        //#__tags
-        $query->columns([
-            'tags'	=> $this->getObject('database.query.select')
-                ->table(array('t' => 'tags'))
-                ->columns('GROUP_CONCAT(t.title)')
-                ->join(['m' => 'contentitem_tag_map'], 'm.tag_id = t.id')
-                ->where('m.content_item_id = tbl .id')
-        ]);
 
         //#__content
         if(!$count)
         {
+            //#__tags
+            $query->columns([
+               'tags'	=> $this->getObject('database.query.select')
+                    ->table(array('t' => 'tags'))
+                    ->columns('GROUP_CONCAT(t.title)')
+                    ->join(['m' => 'contentitem_tag_map'], 'm.tag_id = t.id')
+                    ->where('m.content_item_id = tbl .id')
+            ]);
+
             $query->columns([
                 'id'       => 'tbl.id',
                 'title'    => 'tbl.title',
