@@ -51,7 +51,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         }
 
         //Authenticate anonymous requests and inject form token dynamically
-        if($dispatcher->getRequest()->isPost())
+        if($dispatcher->getRequest()->isPost() && $dispatcher->isCacheable())
         {
             if($cache = $dispatcher->loadCache())
             {
@@ -125,23 +125,13 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         else
         {
             //Purge the cache if it exists
-            if($dispatcher->loadCache())
+            if($dispatcher->isCacheable() && $dispatcher->loadCache())
             {
                 $dispatcher->purge();
 
                 //Manually set the cache status
                 JFactory::getApplication()->setHeader('Cache-Status', 'DYNAMIC, PURGED');
             }
-        }
-    }
-
-    public function onBeforeDispatcherSend(KEventInterface $event)
-    {
-        if(JDEBUG)
-        {
-            $event->getTarget()->getResponse()->getHeaders()
-                ->set('Cache-Control', ['no-store'])
-                ->set('Cache-Status' , ['DYNAMIC','DEBUG']);
         }
     }
 

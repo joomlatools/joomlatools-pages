@@ -18,7 +18,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     private $__data   = null;
     private $__collections = array();
     private $__redirects   = array();
-    private $__cache_keys  = array();
+    private $__hashes      = array();
     private $__entities    = array();
 
     public function __construct(KObjectConfig $config)
@@ -53,9 +53,41 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         parent::_initialize($config);
     }
 
-    public function getHash()
+    public function getHash($path = null)
     {
-        return $this->__data['hash'];
+        if($path)
+        {
+            $size = function($path) use(&$size)
+            {
+                $result = array();
+
+                if (is_dir($path))
+                {
+                    $files = array_diff(scandir($path), array('.', '..', '.DS_Store'));
+
+                    foreach ($files as $file)
+                    {
+                        if (is_dir($path.'/'.$file)) {
+                            $result[$file] =  $size($path .'/'.$file);
+                        } else {
+                            $result[$file] = sprintf('%u', filemtime($path .'/'.$file));
+                        }
+                    }
+                }
+                else $result[basename($path)] = sprintf('%u', filemtime($path));
+
+                return $result;
+            };
+
+            if(!isset($this->__hashes[$path])) {
+                $this->__hashes[$path] =  hash('crc32b', serialize($size($path)));
+            }
+
+            $result = $this->__hashes[$path];
+        }
+        else $result = $this->__data['hash'];
+
+        return $result;
     }
 
     public function getLocator()
@@ -286,17 +318,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $result;
     }
 
-    public function buildCache()
-    {
-        if($this->getConfig()->cache)
-        {
-            $basedir = $this->getLocator()->getBasePath().'/pages';
-            $this->loadCache($basedir, true);
-        }
-
-        return false;
-    }
-
     public function loadCache($basedir, $refresh = true)
     {
         if ($refresh || (!$cache = $this->isCached($basedir)))
@@ -492,12 +513,9 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             $result['collections'] = $collections;
             $result['redirects']   = array_flip($redirects);
 
-            //Generate a checksum
-            $result['hash'] = hash('crc32b', serialize($result));
-
-            //Calculate the key
+            //Calculate the hash
             if($this->getConfig()->cache && $this->getConfig()->cache_validation) {
-                $result['key'] = $this->getCacheKey($basedir);
+                $result['hash'] = $this->getHash($basedir);
             }
 
             $this->storeCache($basedir, $result);
@@ -509,7 +527,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             }
 
             //Check if the cache is still valid, if not refresh it
-            if($this->getConfig()->cache_validation && $result['key'] != $this->getCacheKey($basedir)) {
+            if($this->getConfig()->cache_validation && $result['hash'] != $this->getHash($basedir)) {
                 $this->loadCache($basedir, true);
             }
         }
@@ -567,34 +585,5 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $result;
     }
 
-    public function getCacheKey($path)
-    {
-        $size = function($path) use(&$size)
-        {
-            $result = array();
 
-            if (is_dir($path))
-            {
-                $files = array_diff(scandir($path), array('.', '..', '.DS_Store'));
-
-                foreach ($files as $file)
-                {
-                    if (is_dir($path.'/'.$file)) {
-                        $result[$file] =  $size($path .'/'.$file);
-                    } else {
-                        $result[$file] = sprintf('%u', filemtime($path .'/'.$file));
-                    }
-                }
-            }
-            else $result[basename($path)] = sprintf('%u', filemtime($path));
-
-            return $result;
-        };
-
-        if(!isset($this->__cache_keys[$path])) {
-            $this->__cache_keys[$path] =  hash('crc32b', serialize( $size($path)));
-        }
-
-        return $this->__cache_keys[$path];
-    }
 }

@@ -48,6 +48,13 @@ class ComPagesEventSubscriberStaticcache extends ComPagesEventSubscriberAbstract
                     @chmod($file, 0666 & ~umask());
                 }
             }
+            else
+            {
+                //Purge the static cache
+                if(file_exists($file)) {
+                    unlink($file);
+                }
+            }
         }
     }
 

@@ -34,7 +34,7 @@ class ComPagesModelPages extends ComPagesModelCollection
         parent::_initialize($config);
     }
 
-    public function getHash()
+    public function getHash($refresh = false)
     {
         return $this->getObject('page.registry')->getHash();
     }

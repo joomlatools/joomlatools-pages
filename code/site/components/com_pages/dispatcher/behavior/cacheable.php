@@ -9,7 +9,7 @@
 
 class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 {
-    private $__collections;
+    private $__validators;
 
     /**
      * Cache HIT status codes
@@ -18,8 +18,8 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
      */
     const CACHE_HIT = 'HIT';
 
-    //The page was validated, eg HIT, VALIDATED
-    const CACHE_VALIDATED = 'VALIDATED';
+    //The page was validated, eg HIT, REVALIDATED
+    const CACHE_REVALIDATED = 'REVALIDATED';
 
     //The page was served from the static cache, eg HIT, STATIC
     const CACHE_STATIC = 'STATIC';
@@ -27,7 +27,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     /**
      * Cache MISS status codes
      *
-     * The page has been (re-)generated
+     * The page has been generated
      */
     const CACHE_MISS = 'MISS';
 
@@ -36,6 +36,9 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
     //The page was found in cache but has since been modified.
     const CACHE_MODIFIED = 'MODIFIED';
+
+    //The cache was regenerated
+    const CACHE_REGENERATED = 'REGENERATED';
 
     /**
      * Cache Dynamic status codes
@@ -47,9 +50,6 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     //The page was removed from the cache, eg DYNAMIC, PURGED
     const CACHE_PURGED = 'PURGED';
 
-    //Application debug mode is enabled, eg DYNAMIC, DEBUG
-    const CACHE_DEBUG = 'DEBUG';
-
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
@@ -57,7 +57,6 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             'cache_path' =>  $this->getObject('com://site/pages.config')->getSitePath('cache'),
             'cache_time'        => false, //static
             'cache_time_shared' => false, //static
-            'cache_validation'  => true,
         ));
 
         parent::_initialize($config);
@@ -67,31 +66,67 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     {
         if($this->isValidatable())
         {
-            $cache    = $this->loadCache();
-            $response = clone $this->getResponse();
-            $response
-                ->setStatus($cache['status'])
-                ->setHeaders($cache['headers'])
-                ->setContent($cache['content']);
+            $fresh      = false;
+            $validators = array();
 
-            $valid    = $this->isValid($cache['page'], $cache['collections']);
-            $stale    = $response->isStale();
+            $response   = clone $this->getResponse();
 
-            if($valid !== false && !$stale)
+            //Initialise the response object
+            if($this->loadCache() && $response->isCacheable())
             {
-                $response->getHeaders()->set('Cache-Status', self::CACHE_HIT);
+                $cache = $this->loadCache();
 
-                //Refresh cache if explicitly valid
+                //Get the validators from the cache
+                $validators = $cache['validators'];
+
+                $response
+                    ->setStatus($cache['status'])
+                    ->setHeaders($cache['headers'])
+                    ->setContent($cache['content']);
+
+                $response->headers->set('Cache-Status', self::CACHE_HIT);
+            }
+            else
+            {
+                //Get validators from request
+                if($etag = $context->request->getEtag())
+                {
+                    $validators = $this->_decodeEtag($etag);
+                    $response->setEtag($etag);
+                }
+            }
+
+            //Check if the cache is valid
+            $valid = $this->validateCache($validators);
+
+            //Check if response is stale
+            $stale = $response->isStale();
+
+            //Check the if the cache is fresh
+            if($this->isRefreshable() && !in_array('must-revalidate', $response->getCacheControl())) {
+                $fresh = ($valid === true || $stale !== true);
+            } else {
+                $fresh = ($valid !== false && $stale !== true);
+            }
+
+            if($validators && $fresh)
+            {
+                //Refresh response if valid
                 if($valid === true)
                 {
                     $response->setDate(new DateTime('now'));
-                    $response->getHeaders()->set('Age', null);
-                    $response->getHeaders()->set('Cache-Status', self::CACHE_VALIDATED, false);
+                    $response->headers->set('Age', null);
+                    $response->headers->set('Cache-Status', self::CACHE_REVALIDATED, false);
+                    $response->headers->set('Content-Location', (string) $this->getContentLocation());
                 }
-                else $response->getHeaders()->set('Age', max(time() - $response->getDate()->format('U'), 0));
+                else $response->headers->set('Age', max(time() - $response->getDate()->format('U'), 0));
 
-                $cache['headers'] = $response->getHeaders()->toArray();
-                $this->storeCache($cache);
+                //Refresh cache if cacheable
+                if($this->loadCache() && $response->isCacheable())
+                {
+                    $cache['headers'] = $response->headers->toArray();
+                    $this->storeCache($cache);
+                }
 
                 // Send the request if nothing has been send yet, or terminate otherwise
                 if(!headers_sent()) {
@@ -102,16 +137,36 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             }
             else
             {
-                $context->response->getHeaders()->set('Cache-Status', self::CACHE_MISS);
+                $context->response->headers->set('Cache-Status', self::CACHE_MISS);
 
-                if($response->isStale()) {
-                    $context->response->getHeaders()->set('Cache-Status', self::CACHE_EXPIRED, false);
-                } else {
-                    $context->response->getHeaders()->set('Cache-Status', self::CACHE_MODIFIED, false);
+                if($this->loadCache())
+                {
+                    if($valid === false) {
+                        $context->response->headers->set('Cache-Status', self::CACHE_MODIFIED, false);
+                    } elseif($stale) {
+                        $context->response->headers->set('Cache-Status', self::CACHE_EXPIRED, false);
+                    }
                 }
              }
         }
-        else $context->getResponse()->getHeaders()->set('Cache-Status', self::CACHE_MISS);
+        else
+        {
+            $context->response->headers->set('Cache-Status', self::CACHE_MISS);
+
+            /*
+             * Force refresh validators (in case they are calculated from cache)
+             *
+             * The "no-cache" request directive indicates that a cache MUST NOT use a stored response to
+             * satisfy the request without successful validation on the origin server.
+             *
+             * See: https://tools.ietf.org/html/rfc7234#section-5.2.1.4
+             */
+            if($cache = $this->loadCache())
+            {
+                $this->validateCache($cache['validators'], true);
+                $context->response->headers->set('Cache-Status', self::CACHE_REGENERATED, false);
+            }
+        }
     }
 
     protected function _actionCache(KDispatcherContextInterface $context)
@@ -133,22 +188,16 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                 }
             }
 
-            //Get the page data
-            $page = [
-                'path'     => $this->getRoute()->getPage()->path,
-                'hash'     => $this->getRoute()->getPage()->hash,
-                'language' => $this->getRoute()->getPage()->language,
-            ];
-
             $data = array(
+                'id'          => $this->getContentLocation()->toString(KHttpUrl::PATH + KHttpUrl::QUERY),
                 'url'         => rtrim((string) $this->getContentLocation(), '/'),
-                'page'        => $page,
-                'collections' => $this->getCollections(),
+                'validators'  => $this->getCacheValidators(),
                 'status'      => !$response->isNotModified() ? $response->getStatusCode() : '200',
                 'token'       => $this->getCacheToken(),
                 'format'      => $response->getFormat(),
-                'headers'     => $response->getHeaders()->toArray(),
+                'headers'     => $response->headers->toArray(),
                 'content'     => (string) $response->getContent(),
+                'language'    => $this->getRoute()->getPage()->language,
             );
 
             $result  = $this->storeCache($data);
@@ -161,10 +210,10 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     {
         $result = false;
 
-        $context->getResponse()->getHeaders()->set('Cache-Status', self::CACHE_DYNAMIC);
+        $context->getResponse()->headers->set('Cache-Status', self::CACHE_DYNAMIC);
 
         if($result = $this->deleteCache()) {
-            $context->getResponse()->getHeaders()->set('Cache-Status', self::CACHE_PURGED, false);
+            $context->getResponse()->headers->set('Cache-Status', self::CACHE_PURGED, false);
         }
 
         return $result;
@@ -172,53 +221,94 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
     protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
-        //Validate the cache
-        if($this->isCacheable()) {
-            $this->validate();
-        } else {
-            $this->purge();
-        }
-    }
-
-    protected function _beforeSend(KDispatcherContextInterface $context)
-    {
-        $response = $context->getResponse();
-
         if($this->isCacheable())
         {
+            //Set the max age if defined in for the page
             $page_time = $this->getPage()->process->get('cache', true);
             $page_time = is_string($page_time) ? strtotime($page_time) - strtotime('now') : $page_time;
 
             if(is_int($page_time))
             {
                 $cache_time = $this->getConfig()->cache_time;
-                $cache_time = !is_numeric($cache_time) ? strtotime($cache_time) : $cache_time;
 
-                //Set the max age if defined
-                $max        = $cache_time < $page_time ?  $cache_time : $page_time;
-                $max_shared = $page_time;
+                if($cache_time !== false)
+                {
+                    $cache_time = !is_numeric($cache_time) ? strtotime($cache_time) : $cache_time;
+                    $max        = $cache_time < $page_time ?  $cache_time : $page_time;
 
-                $response->setMaxAge($max, $max_shared);
+                    $context->response->setMaxAge($max, $page_time);
+                }
+                else $context->response->setMaxAge($page_time);
+
+                $context->response->headers->set('Cache-Control', ['must-revalidate'], false);
             }
 
-            //Set the cache tags
-            if($collections = $this->getCollections())
-            {
-                $tags = array_unique(array_column($collections, 'type'));
-                $response->getHeaders()->set('Cache-Tag', implode(',',  $tags));
-            }
+            $this->validate();
         }
-        else $response->getHeaders()->set('Cache-Control', ['no-store']);
+        else $this->purge();
+    }
 
-        parent::_beforeSend($context);
+    protected function _beforeSend(KDispatcherContextInterface $context)
+    {
+        //Get the response from the context
+        $response = $context->getResponse();
+
+        if($this->isCacheable())
+        {
+            //Set the content collections
+            if($models = $this->getObject('model.factory')->getModels())
+            {
+                $collections = array();
+                foreach($models as $model) {
+                    $collections[] = $model->getType();
+                }
+
+                $collections = array_unique($collections);
+                $response->headers->set('Content-Collections', implode(',',  $collections));
+            }
+
+            //Set the weak etag
+            $validators = $this->getCacheValidators();
+            $response->setEtag($this->_encodeEtag($validators), false);
+        }
+        else $response->headers->set('Cache-Control', ['no-store']);
     }
 
     protected function _beforeTerminate(KDispatcherContextInterface $context)
     {
         //Store the response in the cache, only is the dispatcher is not being decorated
-        if($this->isCacheable() && !$this->isDecorated()) {
+        if($this->isCacheable() && $context->response->isCacheable() && !$this->isDecorated()) {
             $this->cache();
         }
+    }
+
+    public function getCacheValidators($refresh = false)
+    {
+        if(!isset($this->__validators) || $refresh)
+        {
+            $validators = array();
+
+            //Add hash (ensure the etag is unique)
+            $validators['hash'] = $this->getHash();
+
+            //Add user
+            $validators['user'] = $this->getUser()->getId();
+
+            //Add page
+            $validators['page'] = [
+                'path' => $this->getRoute()->getPage()->path,
+                'hash' => $this->getRoute()->getPage()->hash
+            ];
+
+            //Add collections
+            foreach($this->getObject('model.factory')->getModels() as $name => $model) {
+                $validators['collections'][$name] = $model->getHash();
+            }
+
+            $this->__validators = $validators;
+        }
+
+        return $this->__validators;
     }
 
     public function getCacheToken()
@@ -232,50 +322,35 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         return $token;
     }
 
-    public function getCacheKey()
-    {
-        $url     = trim((string)$this->getContentLocation(), '/');
-        $format  = $this->getRequest()->getFormat();
-        $user    = $this->getUser()->getId();
-
-        return 'url:'.$url.'#format:'.$format.'#user:'.$user;
-    }
-
-    public function getCollections()
-    {
-        if(!isset($this->__collections))
-        {
-            foreach($this->getObject('model.factory')->getModels() as $name => $model)
-            {
-                $this->__collections[] = [
-                    'name' => $name,
-                    'type' => $model->getType(),
-                    'hash' => $model->getHash()
-                ];
-            }
-        }
-
-        return (array) $this->__collections;
-    }
-
     public function getContentLocation()
     {
         /**
+         * Get content location
+         *
          * If Content-Location is included in a 2xx (Successful) response message and its value refers (after
          * conversion to absolute form) to a URI that is the same as the effective request URI, then the recipient
          * MAY consider the payload to be a current representation of that resource at the time indicated by the
          * message origination date.  For a GET (Section 4.3.1) or HEAD (Section 4.3.2) request, this is the same
          * as the default semantics when no Content-Location is provided by the server.
+         *
+         * See: https://tools.ietf.org/html/rfc7231#section-3.1.4.2
          */
-
-        if(!$location = $this->getResponse()->getHeaders()->get('Content-Location'))
+        if(!$location = $this->getResponse()->headers->get('Content-Location'))
         {
             $location = $this->getRequest()->getUrl()
                 ->toString(KHttpUrl::SCHEME + KHttpUrl::HOST + KHttpUrl::PATH + KHttpUrl::QUERY);
         }
 
-        //See: https://tools.ietf.org/html/rfc7231#section-3.1.4.2
+
         return  $this->getObject('http.url', ['url' => $location]);
+    }
+
+    public function locateCache($url = null)
+    {
+        $key  = $url ?? $this->getContentLocation()->toString(KHttpUrl::PATH + KHttpUrl::QUERY);
+        $file = $this->getConfig()->cache_path . '/response_' . crc32($key) . '.php';
+
+        return $file;
     }
 
     public function loadCache()
@@ -284,23 +359,77 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
         if(!isset($data) && $this->getConfig()->cache)
         {
-            $key  = $this->getCacheKey();
-            $hash = crc32($key . PHP_VERSION);
-            $file = $this->getConfig()->cache_path . '/response_' . $hash . '.php';
-
-            if (is_file($file)) {
-                $data = require $file;
+            $file = $this->locateCache();
+            if (is_file($file))
+            {
+                if (!$data = include($file)) {
+                    unlink($file);
+                }
             }
         }
 
         return $data ?? array();
     }
 
+    public function validateCache($validators, $refresh = false)
+    {
+        static $collections;
+
+        $valid = false;
+
+        if(is_array($validators) && !empty($validators))
+        {
+            $valid = true;
+
+            //Validate page
+            $page = $this->getObject('page.registry')->getPage($validators['page']['path']);
+            if($validators['page']['hash'] != $page->hash) {
+                $valid = false;
+            }
+
+            //Validate user
+            $user = $this->getUser();
+            if($valid && $validators['user'] != $user->getId()) {
+               $valid = false;
+            }
+
+            //Validate collections
+            if($valid && isset($validators['collections']))
+            {
+                foreach($validators['collections'] as $name => $hash)
+                {
+                    if(!isset($collections[$name]))
+                    {
+                        //If the collection has a hash validate it
+                        if($hash)
+                        {
+                            $model = $this->getObject('model.factory')->createModel($name);
+
+                            if($hash != $model->getHash($refresh)) {
+                                $valid = false;
+                            }
+                        }
+                        else $valid = null;
+
+                        $collections[$name] = $valid;
+                    }
+                    else $valid =  $collections[$name];
+
+                    if($valid !== true) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        return $valid;
+    }
+
     public function storeCache($data)
     {
         if($this->getConfig()->cache)
         {
-            $key  = $this->getCacheKey();
+            $url  = (string) $this->getContentLocation();
             $path = $this->getConfig()->cache_path;
 
             if(!is_dir($path) && (false === @mkdir($path, 0777, true) && !is_dir($path))) {
@@ -313,12 +442,11 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
             if(!is_string($data))
             {
-                $result = '<?php /*//request:'.$key.'*/'."\n";
+                $result = '<?php /*//url='.$url.'*/'."\n";
                 $result .= 'return '.var_export($data, true).';';
             }
 
-            $hash = crc32($key.PHP_VERSION);
-            $file  = $path.'/response_'.$hash.'.php';
+            $file = $this->locateCache();
 
             if(@file_put_contents($file, $result) === false) {
                 throw new RuntimeException(sprintf('The document cannot be cached in "%s"', $file));
@@ -337,9 +465,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     {
         $result = false;
 
-        $key  = $this->getCacheKey();
-        $hash = crc32($key . PHP_VERSION);
-        $file = $this->getConfig()->cache_path . '/response_' . $hash . '.php';
+        $file = $this->locateCache();
 
         if (is_file($file)) {
             $result = unlink($file);
@@ -364,38 +490,31 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
     public function isValidatable()
     {
-        //Can only validate if cacheable, cache exists and the request allows for cache validation
-        return $this->isCacheable() && $this->loadCache() && !in_array('no-cache', $this->getRequest()->getCacheControl());
+        //Can only validate cache if cacheable and the request allows for cache re-use
+        return $this->isCacheable() && !in_array('no-cache', $this->getRequest()->getCacheControl());
     }
 
-    public function isValid($page, $collections = array())
+    public function isRefreshable()
     {
-        $valid = null;
+        //Can only refresh cache if cacheable and the request allows for cache re-refreshing
+        return $this->isCacheable() && !in_array('must-revalidate', $this->getRequest()->getCacheControl());
+    }
 
-        if($this->getConfig()->cache_validation)
-        {
-            //Validate the page
-            if($page['hash'] == $this->getObject('page.registry')->getPage($page['path'])->hash)
-            {
-                $valid = true;
+    protected function _encodeEtag(array $validators)
+    {
+        $data = json_encode($validators);
+        $etag = base64_encode(gzdeflate($data));
 
-                foreach($collections as $collection)
-                {
-                    //If the collection has a hash validate it
-                    if($collection['hash'])
-                    {
-                        $model = $this->getObject('model.factory')->createModel($collection['name']);
+        return $etag;
+    }
 
-                        if($collection['hash'] != $model->getHash()) {
-                            $valid = false; break;
-                        }
-                    }
-                    else $valid = null; break;
-                }
-            }
-            else $valid = false;
+    protected function _decodeEtag($etag)
+    {
+        $validators = array();
+        if($etag && $data = base64_decode($etag)) {
+            $validators = json_decode(gzinflate($data), true);
         }
 
-        return $valid;
+        return $validators;
     }
 }
