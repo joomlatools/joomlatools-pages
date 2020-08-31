@@ -18,8 +18,8 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
      */
     const CACHE_HIT = 'HIT';
 
-    //The page was validated, eg HIT, VALIDATED
-    const CACHE_VALIDATED = 'VALIDATED';
+    //The page was validated, eg HIT, REVALIDATED
+    const CACHE_REVALIDATED = 'REVALIDATED';
 
     //The page was served from the static cache, eg HIT, STATIC
     const CACHE_STATIC = 'STATIC';
@@ -27,7 +27,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     /**
      * Cache MISS status codes
      *
-     * The page has been (re-)generated
+     * The page has been generated
      */
     const CACHE_MISS = 'MISS';
 
@@ -36,6 +36,9 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
     //The page was found in cache but has since been modified.
     const CACHE_MODIFIED = 'MODIFIED';
+
+    //The cache was regenerated
+    const CACHE_REGENERATED = 'REGENERATED';
 
     /**
      * Cache Dynamic status codes
@@ -46,9 +49,6 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
     //The page was removed from the cache, eg DYNAMIC, PURGED
     const CACHE_PURGED = 'PURGED';
-
-    //Application debug mode is enabled, eg DYNAMIC, DEBUG
-    const CACHE_DEBUG = 'DEBUG';
 
     protected function _initialize(KObjectConfig $config)
     {
@@ -66,16 +66,18 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     {
         if($this->isValidatable())
         {
-            $response = clone $this->getResponse();
+            $fresh      = false;
+            $validators = array();
 
-            //Get validators from response
-            $etag       = $context->request->getEtag();
-            $validators = $this->_decodeEtag($etag);
+            $response   = clone $this->getResponse();
 
             //Initialise the response object
-            if($response->isCacheable() && $this->loadCache())
+            if($this->loadCache() && $response->isCacheable())
             {
                 $cache = $this->loadCache();
+
+                //Get the validators from the cache
+                $validators = $cache['validators'];
 
                 $response
                     ->setStatus($cache['status'])
@@ -84,7 +86,15 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
                 $response->headers->set('Cache-Status', self::CACHE_HIT);
             }
-            else $response->setEtag($etag);
+            else
+            {
+                //Get validators from request
+                if($etag = $context->request->getEtag())
+                {
+                    $validators = $this->_decodeEtag($etag);
+                    $response->setEtag($etag);
+                }
+            }
 
             //Check if the cache is valid
             $valid = $this->validateCache($validators);
@@ -99,20 +109,20 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                 $fresh = ($valid !== false && $stale !== true);
             }
 
-            if($fresh)
+            if($validators && $fresh)
             {
                 //Refresh response if valid
                 if($valid === true)
                 {
                     $response->setDate(new DateTime('now'));
                     $response->headers->set('Age', null);
-                    $response->headers->set('Cache-Status', self::CACHE_VALIDATED, false);
+                    $response->headers->set('Cache-Status', self::CACHE_REVALIDATED, false);
                     $response->headers->set('Content-Location', (string) $this->getContentLocation());
                 }
                 else $response->headers->set('Age', max(time() - $response->getDate()->format('U'), 0));
 
                 //Refresh cache if cacheable
-                if($response->isCacheable())
+                if($this->loadCache() && $response->isCacheable())
                 {
                     $cache['headers'] = $response->headers->toArray();
                     $this->storeCache($cache);
@@ -129,15 +139,20 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             {
                 $context->response->headers->set('Cache-Status', self::CACHE_MISS);
 
-                if($stale) {
-                    $context->response->headers->set('Cache-Status', self::CACHE_EXPIRED, false);
-                } else {
-                    $context->response->headers->set('Cache-Status', self::CACHE_MODIFIED, false);
+                if($this->loadCache())
+                {
+                    if($valid === false) {
+                        $context->response->headers->set('Cache-Status', self::CACHE_MODIFIED, false);
+                    } elseif($stale) {
+                        $context->response->headers->set('Cache-Status', self::CACHE_EXPIRED, false);
+                    }
                 }
              }
         }
         else
         {
+            $context->response->headers->set('Cache-Status', self::CACHE_MISS);
+
             /*
              * Force refresh validators (in case they are calculated from cache)
              *
@@ -146,11 +161,11 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
              *
              * See: https://tools.ietf.org/html/rfc7234#section-5.2.1.4
              */
-            if($cache = $this->loadCache()) {
+            if($cache = $this->loadCache())
+            {
                 $this->validateCache($cache['validators'], true);
+                $context->response->headers->set('Cache-Status', self::CACHE_REGENERATED, false);
             }
-
-            $context->response->headers->set('Cache-Status', self::CACHE_MISS);
         }
     }
 
