@@ -233,9 +233,9 @@ class ComPagesModelWebservice extends ComPagesModelCollection
                     }
                 }
 
-                $headers = ['max-age' => (int) $max_age];
+                $cache_control = ['max-age' => (int) $max_age];
             }
-            else $headers = ['no-store'];
+            else $cache_control = ['no-store'];
         }
 
         return $cache_control;
