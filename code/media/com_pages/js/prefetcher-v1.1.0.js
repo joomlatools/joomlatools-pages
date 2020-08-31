@@ -209,7 +209,7 @@ class Prefetcher
     /**
      * Prefetch an array of URLs if the user's effective connection type and data-saver preferences suggests
      * it would be useful. By default, looks at in-viewport links for `document`. Can also work off one or
-     * more supplied DOM elements.
+     * more supplied DOM elements. Prefetching is automatically disabled for reload and history traversals.
      */
     onLoad()
     {
@@ -234,6 +234,26 @@ class Prefetcher
                 this.log('Cannot load: network conditions are poor');
                 return;
             }
+        }
+
+        // Don't prefetch when reloading or history traversal
+        const performance = window.performance.navigation;
+
+        if(performance)
+        {
+            if(performance.type == PerformanceNavigation.TYPE_RELOAD)
+            {
+                this.log('Prefetching disabled: browser reloading');
+                return;
+            }
+
+            if(performance.type == PerformanceNavigation.TYPE_BACK_FORWARD)
+            {
+                this.log('Prefetching disabled: history traversal');
+                return;
+            }
+
+            this.log('Prefetching enabled: user navigation');
         }
 
         const[enqueue, dequeue] = this.getThrottledQueue(this.options.concurrency);
@@ -433,14 +453,12 @@ class Prefetcher
     /**
      * Checks if prerender is supported
      *
-     * Do not support prerender on Chrome. `NoStatePrefetch` is not caching the page in the browser cache.
-     *
      * @return {Boolean} whether the feature is supported
      */
     canPrerender()
     {
         var link = document.createElement('link');
-        return !window.chrome && link.relList && link.relList.supports && link.relList.supports('prerender');
+        return link.relList && link.relList.supports && link.relList.supports('prerender');
     }
 
     /**
