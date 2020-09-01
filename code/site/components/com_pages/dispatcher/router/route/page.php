@@ -59,4 +59,17 @@ class ComPagesDispatcherRouterRoutePage extends ComPagesDispatcherRouterRouteAbs
 
         return $this;
     }
+
+    /**
+     * Generate debug info
+     *
+     * @return array
+     */
+    public function __debugInfo()
+    {
+        $result = parent::__debugInfo();
+        $result['page'] = $this->_page_path;
+
+        return $result;
+    }
 }

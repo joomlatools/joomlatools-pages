@@ -7,29 +7,18 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesDispatcherRouterPages extends ComPagesDispatcherRouterAbstract
+class ComPagesDispatcherRouterUrl extends ComPagesDispatcherRouterAbstract
 {
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'route'  => 'page',
-            'routes' => $this->getObject('page.registry')->getRoutes(),
-        ])->append(([
+            'routes' => []
+        ])->append([
             'resolvers' => [
-                'pagination',
                 'regex' => ['routes' => $config->routes],
             ]
-        ]));
+        ]);
 
         parent::_initialize($config);
-    }
-
-    public function getRoute($route, array $parameters = array())
-    {
-        if($route instanceof ComPagesModelEntityPage) {
-            $route = 'page:'.$route->path;
-        }
-
-        return parent::getRoute($route, $parameters);
     }
 }

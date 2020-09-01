@@ -68,18 +68,20 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
         $config->append(array(
             'routes'   => array(),
             'types' =>  [
-                'email' => '\S+@\S+',
-                'month' => '(0?[1-9]|1[012])',
-                'year'  => '(19|20)\d{2}',
-                'digit' => '[0-9]++',
+                'email'  => '\S+@\S+',
+                'month'  => '(0?[1-9]|1[012])',
+                'year'   => '(19|20)\d{2}',
+                'digit'  => '[0-9]++',
                 '*digit' => '[0-9]+(,[0-9]+)*',
-                'alnum' => '[0-9A-Za-z]++',
+                'alnum'  => '[0-9A-Za-z]++',
                 '*alnum' => '[0-9A-Za-z]+(,[0-9A-Za-z]+)*',
-                'alpha' => '[A-Za-z]++',
+                'alpha'  => '[A-Za-z]++',
                 '*alpha' => '[A-Za-z]+(,[A-Za-z]+)*',
-                '*'     => '.+?',
-                '**'    => '.++',
-                ''      => '[^/\.]++',
+                'id'     => '[0-9]++[-]++[\S]++',
+                'slug'   => '(?![0-9]++-)[^-][\S]++',
+                '*'      => '.+?',
+                '**'     => '.++',
+                ''       => '[^/\.]++',
             ],
         ));
 
@@ -90,18 +92,21 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
      * Add a route for matching
      *
      * @param string $regex The route regex You can use multiple pre-set regex filters, like [digit:id]
-     * @param string $path The path this route should point to.
+     * @param string|callable $target The target this route points to
      * @return ComPagesDispatcherRouterResolverInterface
      */
-    public function addRoute($regex, $path)
+    public function addRoute($regex, $target)
     {
         $regex = trim($regex, '/');
-        $path  = rtrim($path, '/');
+
+        if(is_string($target)) {
+            $path = rtrim($target, '/');
+        }
 
         if(strpos($regex, '[') !== false) {
-            $this->__dynamic_routes[$regex] = $path;
+            $this->__dynamic_routes[$regex] = $target;
         } else {
-            $this->__static_routes[$regex] = $path;
+            $this->__static_routes[$regex] = $target;
         }
 
         return $this;
@@ -115,16 +120,8 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
      */
     public function addRoutes($routes)
     {
-        foreach((array)KObjectConfig::unbox($routes) as $path => $routes)
-        {
-            foreach((array) $routes as $regex)
-            {
-                if (is_numeric($path)) {
-                    $this->addRoute($regex, $regex);
-                } else {
-                    $this->addRoute($regex, $path);
-                }
-            }
+        foreach((array)KObjectConfig::unbox($routes) as $regex => $target) {
+            $this->addRoute($regex, $target);
         }
 
         return $this;
@@ -173,8 +170,13 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
             $this->__static_routes = array($path => $result) + $this->__static_routes;
         }
 
-        if($result !== false) {
-            $this->_buildRoute($result, $route);
+        if($result !== false)
+        {
+            if(isset($result['resolve']) && is_callable($result['resolve'])) {
+                $result = (bool) call_user_func($result['resolve'], $route);
+            } else {
+                $result = $this->_buildRoute($result, $route);
+            }
         }
 
         return $result !== false ? parent::resolve($route) : false;
@@ -194,12 +196,21 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
         $path      = ltrim($route->getPath(), '/');
 
         //Dynamic routes
-        if($routes = array_keys($this->__dynamic_routes, $path))
+        $routes = $this->__dynamic_routes;
+
+        foreach($routes as $regex => $target)
         {
-            foreach($routes as $regex)
+            if(isset($target['generate']) && is_callable($target['generate']))
             {
-                //Generate the dynamic route
-                if($this->_buildRoute($regex, $route)) {
+                //Parse the route to match it
+                if($this->_parseRoute($regex, $route) && (bool) call_user_func($target['generate'], $route) == true) {
+                    $generated = true; break;
+                }
+            }
+            else
+            {
+                //Parse the route to match it
+                if($this->_parseRoute($regex, $route) && $this->_buildRoute($target, $route)) {
                     $generated = true; break;
                 }
             }
@@ -208,12 +219,23 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
         //Static routes
         if(!$generated)
         {
-            $routes = array_flip(array_reverse($this->__static_routes, true));
+            $routes = array_reverse($this->__static_routes, true);
 
-            if(isset($routes[$path]))
+            foreach($routes as $regex => $target)
             {
-                if($this->_buildRoute($routes[$path], $route)) {
-                    $generated = true;
+                if(isset($target['generate']) && is_callable($target['generate']))
+                {
+                    //Compare the path to match it
+                    if($regex == $path && (bool) call_user_func($target['generate'], $route) == true) {
+                        $generated = true; break;
+                    }
+                }
+                else
+                {
+                    //Compare the path to match it
+                    if($target == $path && $this->_buildRoute($regex, $route)) {
+                        $generated = true; break;
+                    }
                 }
             }
         }
@@ -321,9 +343,19 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
                     if(isset($route->query[$param]))
                     {
                         if(is_array($route->query[$param])) {
-                            $value= implode(',', $route->query[$param]);
+                            $value = implode(',', $route->query[$param]);
                         } else {
                             $value = $route->query[$param];
+                        }
+
+                        if ($type && isset($this->_match_types[$type]))
+                        {
+                            $type = $this->_match_types[$type];
+
+                            //Get first capturing group if it exists, if not use full match
+                            if(preg_match('/'.$type.'/', $value, $matches)) {
+                                $value = $matches[0] ?? $value;
+                            }
                         }
 
                         //Part is found, replace for param value
@@ -338,7 +370,7 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
                         if($optional) {
                             $regex = str_replace($pre . $block, '', $regex);
                         } else {
-                           $result = false; break;
+                            $result = false; break;
                         }
                     }
                 }

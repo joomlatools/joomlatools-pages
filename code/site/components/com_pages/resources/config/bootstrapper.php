@@ -54,13 +54,14 @@ return [
         'event.subscriber.factory' => [
             'subscribers' => [
                 'com://site/pages.event.subscriber.bootstrapper',
+                'com://site/pages.event.subscriber.redirector',
                 'com://site/pages.event.subscriber.dispatcher',
                 'com://site/pages.event.subscriber.pagedecorator',
                 'com://site/pages.event.subscriber.errorhandler',
             ]
         ],
         'com://site/pages.dispatcher.router.site' => [
-            'routes'  => isset($config['sites']) ? array_flip($config['sites']) : array(JPATH_ROOT.'/joomlatools-pages' => '[*]'),
+            'routes'  => isset($config['sites']) ? $config['sites'] : array('[*]' => JPATH_ROOT.'/joomlatools-pages'),
         ],
     ]
 ];

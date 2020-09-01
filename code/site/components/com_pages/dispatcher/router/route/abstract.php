@@ -125,4 +125,21 @@ abstract class ComPagesDispatcherRouterRouteAbstract extends KHttpUrl implements
     {
         return (bool) ($this->scheme && $this->host);
     }
+
+    /**
+     * Generate debug info
+     *
+     * @return array
+     */
+    public function __debugInfo()
+    {
+        $result = [
+            'route'  => $this->toString(),
+            'state'  => $this->getState(),
+            'format' => $this->getFormat(),
+            'status' => $this->isResolved() ? 'resolved' : $this->isGenerated() ? 'generated' : ''
+        ];
+
+        return $result;
+    }
 }

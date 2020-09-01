@@ -27,7 +27,7 @@ class ComPagesControllerBehaviorBreadcrumbable extends KControllerBehaviorAbstra
                 {
                     $segments[] = $segment;
 
-                    if($route = $router->generate('pages:'.implode('/', $segments)))
+                    if($route = $router->generate('page:'.implode('/', $segments)))
                     {
                         $page = $route->getPage();
 

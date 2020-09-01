@@ -62,7 +62,10 @@ return [
                 //See: https://github.com/scrivo/highlight.php
                 return (new \Highlight\Highlighter())->highlight($language, $source, false)->value;
             }
-        ]
+        ],
+        'com://site/pages.dispatcher.router.url' => [
+            'routes'  => $config['rewrites'],
+        ],
     ],
     'extensions' => $config['extensions'] ?? array(),
 ];

@@ -54,6 +54,7 @@ class ComPagesConfig extends KObject implements KObjectSingleton
 
             'collections' => array(),
             'redirects'   => array(),
+            'rewrites'    => array(),
             'page'        => array(),
             'sites'       => array('[*]' => JPATH_ROOT.'/joomlatools-pages'),
             'headers'     => array(),
