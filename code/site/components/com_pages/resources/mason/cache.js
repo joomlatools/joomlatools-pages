@@ -6,47 +6,50 @@ const chalk  = require('chalk');
 class masonCache
 {
     options = {
-        origin      : null, //required
+        origin      : null,
         endpoint    : '/cache.json',
         concurrency : 10,
         force       : false,
         unauthorized: false,
-        config      : 'mason.json',
     }
 
-    constructor(options)
+    constructor(options = {})
     {
         this.options = {...this.options, ...options }
-        this.config  = this.getConfig()
 
         //Turn off certificate validation for TLS connections (only needed for self-signed certs)
         if(this.options.unauthorized) {
             process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
         }
 
-        //Check if the endpoint has been defined
-        if(!this.options.origin) {
-            throw new Error(`Origin config option is required`)
-        }
     }
 
     async revalidate(url, collections)
     {
-        //Cache origin url
-        const origin = new URL(this.options.origin)
         const time = Date.now()
 
-        // Sanitize the url
-        if (url && url.indexOf('/') == 0) {
-            url = origin.origin + url
-        }
+        //Cache origin url
+        if(this.options.origin)
+        {
+            const origin = new URL(this.options.origin)
 
-        if (url && !/^https?:\/\//i.test(url)) {
-            url = origin.protocol + '//' + url
+            if(url)
+            {
+                // Sanitize the url
+                if (url.indexOf('/') == 0) {
+                    url = origin.origin + url
+                }
+
+                if (!/^https?:\/\//i.test(url)) {
+                    url = origin.protocol + '//' + url
+                }
+            }
+            else url = this.options.origin
+
         }
 
         //Cache endpoint url
-        const cache = new URL(this.options.endpoint, this.options.origin)
+        const cache = new URL(this.options.endpoint, url)
 
         //Filter:id
         if (url)
@@ -266,28 +269,26 @@ class masonCache
 
         return promise
     }
+}
 
-    async getConfig()
-    {
-        var config
+async function revalidateCache(config = {})
+{
+    const argv = require('yargs').argv
 
-        if(config == null)
-        {
-            const fs   = require('fs')
-            const path = `${process.cwd()}/${this.options.config}`
+    config = mason.config.merge({
+        force       : argv.force,
+        unauthorized: argv.u,
+        concurrency : argv.concurrency != null ? argv.concurrency : 10,
+    }, config)
 
-            if (fs.existsSync(path)) {
-                config = require(path)
-            } else {
-                config = {}
-            }
-        }
+    //Revaliate cache
+    const cache = new masonCache(config)
 
-        return config
-    }
+    await cache.revalidate(argv._[1], argv.collections)
 }
 
 module.exports = {
     version: 1.0,
-    masonCache
+    masonCache,
+    revalidateCache
 }
