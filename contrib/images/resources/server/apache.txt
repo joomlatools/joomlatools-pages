@@ -1,0 +1,46 @@
+##
+# Joomlatools Pages
+#
+# @copyright   Copyright (C) 2018 Johan Janssens and Timble CVBA. (http://www.timble.net)
+# @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl.html>
+# @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
+##
+
+## Begin - Joomlatools Pages - image cache
+#
+
+  # Define the filesystem location of the cache
+  SetEnvIf Request_URI ^.* KPATH_PAGES_CACHE=/cache
+
+  # Condition - Do not serve from cache on browser refresh or when caching is not allowed
+  #RewriteCond %{HTTP:Cache-Control} ^(no-cache)$ [OR]
+  RewriteCond %{QUERY_STRING} ^$ [OR]
+  RewriteCond %{REQUEST_URI} !(?i)(.+)\.(jpe?g|png|gif).*$
+  RewriteRule .* - [S=2]
+
+  # Find WebP image (if browser supports it)
+  RewriteCond %{HTTP_ACCEPT} image/webp [OR]
+  RewriteCond %{HTTP_USER_AGENT} "Google Page Speed Insights"
+  RewriteCond %{DOCUMENT_ROOT}%{ENV:KPATH_PAGES_CACHE}/$1\.webp_%{QUERY_STRING} -f
+  RewriteRule (.+)\.(jpe?g|png|gif).*$ %{ENV:KPATH_PAGES_CACHE}/$1.webp_%{QUERY_STRING} [NC,T=image/webp,E=IMAGE:1,L]
+
+  # Find other image
+  RewriteCond %{DOCUMENT_ROOT}/%{ENV:KPATH_PAGES_CACHE}/$1\.$2_%{QUERY_STRING} -f
+  RewriteRule (.+)\.(jpe?g|png|gif).*$ %{ENV:KPATH_PAGES_CACHE}/$1.$2_%{QUERY_STRING} [NC,E=IMAGE:1,L]
+
+  # Generate image
+  RewriteCond %{ENV:REDIRECT_IMAGE} !=1
+  RewriteCond %{QUERY_STRING} !^$
+  RewriteRule (.+)\.(jpe?g|png|gif).*$ image.php [NC,E=IMAGE,L]
+
+  # Set cache to 1 year
+  Header set Cache-Control public,max-age=315360000 env=REDIRECT_IMAGE
+
+  # Add Accept to the Vary header
+  Header append Vary Accept,User-Agent env=REDIRECT_IMAGE
+
+  # Remove Etag header (use Last-Modified to validate)
+  Header unset ETag env=REDIRECT_IMAGE
+
+#
+## End - Joomlatool Pages - image cache
