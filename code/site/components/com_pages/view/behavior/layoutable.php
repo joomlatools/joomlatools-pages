@@ -17,7 +17,6 @@ class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
             //Register template functions
             $template = $context->subject->getTemplate();
 
-
             //Create template (add parameters BEFORE cloning)
             $template = clone $template->setParameters($context->parameters);
 
