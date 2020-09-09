@@ -77,7 +77,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         include $directory.'/resources/vendor/autoload.php';
 
         //Set config options
-        $options   = include $directory.'/resources/config/site.php';
+        $options = include $directory.'/resources/config/site.php';
 
         //Set config options
         foreach($options['identifiers'] as $identifier => $values) {
