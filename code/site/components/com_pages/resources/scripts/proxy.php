@@ -29,8 +29,7 @@
  *    - Not GET or HEAD
  *    - Contain Cache-Control directives
  *
- * The proxy offers Cache Validation using ETag and will generate a Warning: 110 Joomlatools/Pages "Response is Stale"
- * header if the response is stale.
+ * The proxy offers Cache Validation using ETag
  *
  * @author  Johan Janssens <https://github.com/johanjanssens>
  *
@@ -168,16 +167,6 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', c
         //Set response code
         http_response_code ($status);
         //header('Cache-Status: HIT');
-
-        //Do not send an Age header when using the proxy
-        header_remove('Age');
-
-        //Check the cache is stale
-        if($max_age !== false && $age > $max_age)
-        {
-            //Se: https://tools.ietf.org/html/rfc7234#section-5.5.1
-            header('Warning: 110 Joomlatools/Pages "Response is Stale"');
-        }
 
         //Send the content
         if($_SERVER['REQUEST_METHOD'] == 'GET') {
