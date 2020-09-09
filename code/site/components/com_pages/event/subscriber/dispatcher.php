@@ -89,9 +89,10 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
                 /**
                  * Route none-safe requests to pages under the following conditions:
                  *
-                 * 	- Joomla fell back to the default menu item because the page route couldn't be resolved
+                 * 	- Page is a form
+                 *  - Joomla fell back to the default menu item because the page route couldn't be resolved
                  */
-                if(JFactory::getApplication()->getMenu()->getActive()->home && !empty($page->path)) {
+                if($page->isForm() || (JFactory::getApplication()->getMenu()->getActive()->home && !empty($page->path))) {
                     $event->getTarget()->input->set('option', 'com_pages');
                 }
             }
