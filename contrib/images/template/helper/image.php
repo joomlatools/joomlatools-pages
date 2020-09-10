@@ -19,7 +19,8 @@ class ExtImagesTemplateHelperImage extends ComPagesTemplateHelperAbstract
             'base_path' => $this->getObject('com://site/pages.config')->getSitePath(),
             'exclude'    => ['svg'],
             'suffix'     => '',
-            'parameters' => ['auto' => 'true']
+            'parameters' => ['auto' => 'true'],
+            'parameters_lqi' => ['bl' => 75, 'q' => 40]
         ));
 
         parent::_initialize($config);
@@ -66,7 +67,7 @@ class ExtImagesTemplateHelperImage extends ComPagesTemplateHelperAbstract
             $hqi_url = $this->url($config->image);
 
             //Build the path for the low quality image
-            $lqi_url = $this->url($config->image, ['bl' => 75, 'q' => 40]);
+            $lqi_url = $this->url($config->image, $this->getConfig()->paramaters_lqi);
 
             //Responsive image with auto sizing through lazysizes
             $html = '';
@@ -252,8 +253,8 @@ class ExtImagesTemplateHelperImage extends ComPagesTemplateHelperAbstract
                             }
                         }
 
-                        //Merge config and attribs
-                        $config = array_merge_recursive($options, $attribs);
+                        //Replace config and attribs
+                        $config = array_replace_recursive($options, $attribs);
                         $html   = str_replace($matches[0][$key], $this->__invoke($config), $html);
                     }
                 }
