@@ -31,15 +31,21 @@ class ExtImagesTemplateHelperImage extends ComPagesTemplateHelperAbstract
         $config->append(array(
             'image'   => '',
             'alt'     => '',
-            'class'   => array('lazyload'),
+            'class'   =>[],
             'width'   => null,
             'height'  => null,
             'max_width' => $this->getConfig()->max_width,
             'min_width' => $this->getConfig()->min_width,
             'preload'   => false,
+            'lazyload'  => true,
         ))->append(array(
             'attributes' => array('class' => $config->class),
         ));
+
+        //Set lazyload class for lazysizes
+        if($config->lazyload) {
+            $config->attributes->class[] = 'lazyload';
+        }
 
         //Get the image format
         $format  = strtolower(pathinfo($config->image, PATHINFO_EXTENSION));
@@ -68,7 +74,7 @@ class ExtImagesTemplateHelperImage extends ComPagesTemplateHelperAbstract
             {
                 $breakpoints = $this->_calculateBreakpoints($config->image, $config->max_width, $config->min_width);
 
-                $srcset = sprintf($lqi_url.'&fm=jpg&w=%1$s', $breakpoints[0]);
+                $lqi_srcset = sprintf($lqi_url.'&fm=jpg&w=%1$s', $breakpoints[0]);
 
                 //Generate data url for low quality image and preload it inline
                 if($config['preload'])
@@ -80,26 +86,35 @@ class ExtImagesTemplateHelperImage extends ComPagesTemplateHelperAbstract
                         ],
                     ]);
 
-                    if($data = @file_get_contents($this->getConfig()->base_url.$srcset, false, $context)) {
+                    if($data = @file_get_contents($this->getConfig()->base_url.$lqi_srcset, false, $context)) {
                         $srcset = 'data:image/jpg;base64,'.base64_encode($data);
                     }
                 }
 
-                $data_srcset = array();
+                $hqi_srcset = [];
                 foreach($breakpoints as $breakpoint) {
-                    $data_srcset[] = sprintf($hqi_url.'&w=%1$s %1$sw', $breakpoint);
+                    $hqi_srcset[] = sprintf($hqi_url.'&w=%1$s %1$sw', $breakpoint);
                 }
 
-                //Combine a normal src attribute with a low quality image as srcset value and a data-srcset attribute.
-                //Modern browsers will lazy load without loading the src attribute and all others will simply fallback
-                //to the initial src attribute (without lazyload).
-                //
-                //Set data-expaned to -10 to only load the image when it becomes visible in the viewport
-                $html .='<img width="'.$breakpoints[0].'" src="'.$hqi_url.'&w='.$breakpoints[0].'"
-                srcset="'.$srcset.'"
-                data-sizes="auto"
-                data-srcset="'. implode(', ', $data_srcset).'" 
-                alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).'  data-expand="-10"  />';
+                if($config->lazyload)
+                {
+                    //Combine a normal src attribute with a low quality image as srcset value and a data-srcset attribute.
+                    //Modern browsers will lazy load without loading the src attribute and all others will simply fallback
+                    //to the initial src attribute (without lazyload).
+                    //
+                    //Set data-expaned to -10 to only load the image when it becomes visible in the viewport
+                    $html .='<img width="'.$breakpoints[0].'" src="'.$hqi_url.'&w='.$breakpoints[0].'"
+                        srcset="'. $lqi_srcset.'"
+                        data-sizes="auto"
+                        data-srcset="'. implode(', ', $hqi_srcset).'"
+                        alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).'  data-expand="-10"  />';
+                }
+                else
+                {
+                    $html .='<img width="'.$breakpoints[0].'" src="'.$hqi_url.'&w='.$breakpoints[0].'"
+                        srcset="'. implode(', ', $hqi_srcset).'"
+                        alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).' />';
+                }
             }
             //Fixed image with display density description
             else
@@ -142,8 +157,8 @@ class ExtImagesTemplateHelperImage extends ComPagesTemplateHelperAbstract
                 $html .=    '<img '.$size.' src="'.$hqi_url.'&w='.$width.'" alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).' />';
                 $html .= '</noscript>';
                 $html .='<img '.$size.'
-                srcset="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" 
-                data-srcset="'. implode(',', $srcset).'"  
+                srcset="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
+                data-srcset="'. implode(',', $srcset).'"
                 alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).' data-expand="300" />';
             }
         }
@@ -176,7 +191,6 @@ class ExtImagesTemplateHelperImage extends ComPagesTemplateHelperAbstract
         $config->append($this->getConfig()->parameters);
 
         $parts = parse_url($image);
-
         $query = array();
 
         if(isset($parts['query'])) {
@@ -205,17 +219,16 @@ class ExtImagesTemplateHelperImage extends ComPagesTemplateHelperAbstract
                 {
                     $attribs = $this->parseAttributes($match);
                     $src     = $attribs['src'] ?? null;
-                    $srcset  = $attribs['srcset'] ?? null;
+                    $valid   = !isset($attribs['srcset']) && !isset($atrribs['data-srcset']) && !isset($attribs['data-src']);
 
-                    //Only handle none responsive, local none gif-images
-                    if($src && !$srcset && $this->supported($src))
+                    //Only handle none responsive supported images
+                    if($src && $valid && $this->supported($src))
                     {
                         //Convert class to array
                         if(isset($attribs['class'])) {
                             $attribs['class'] = explode(' ', $attribs['class']);
                         }
 
-                        //Ensure image is absolute
                         $attribs['image'] = '/'.ltrim($src, '/');
                         unset($attribs['src']);
 
@@ -226,6 +239,15 @@ class ExtImagesTemplateHelperImage extends ComPagesTemplateHelperAbstract
                                 unset($attribs[$name]);
 
                                 $name = str_replace('data-', '', $name);
+
+                                if($value === 'true') {
+                                    $value = true;
+                                }
+
+                                if($value === 'false') {
+                                    $value = false;
+                                }
+
                                 $attribs[$name] = $value;
                             }
                         }
