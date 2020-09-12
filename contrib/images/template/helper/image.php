@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ExtImagesTemplateHelperImage extends ComPagesTemplateHelperAbstract
+class ExtImagesTemplateHelperImage extends ComPagesTemplateHelperBehavior
 {
     protected function _initialize(KObjectConfig $config)
     {
@@ -54,6 +54,13 @@ class ExtImagesTemplateHelperImage extends ComPagesTemplateHelperAbstract
 
         if($this->supported($config->image))
         {
+            $html = '';
+            if (!static::isLoaded('lazysizes'))
+            {
+                $html .= '<ktml:script src=" https://unpkg.com/lazysizes@5.2.2/lazysizes.'.(!$config->debug ? 'min.js' : 'js').'" defer="defer" />';
+                static::setLoaded('lazysizes');
+            }
+
             //Calculate the max width
             if(stripos($config->max_width, '%') !== false) {
                 $config->max_width = ceil($this->getConfig()->max_width / 100 * (int) $config->max_width);
@@ -70,7 +77,6 @@ class ExtImagesTemplateHelperImage extends ComPagesTemplateHelperAbstract
             $lqi_url = $this->url_lqi($config->image);
 
             //Responsive image with auto sizing through lazysizes
-            $html = '';
             if(!isset($config['width']) && !isset($config['height']))
             {
                 $breakpoints = $this->_calculateBreakpoints($config->image, $config->max_width, $config->min_width);
@@ -108,13 +114,13 @@ class ExtImagesTemplateHelperImage extends ComPagesTemplateHelperAbstract
                         srcset="'. $lqi_srcset.'"
                         data-sizes="auto"
                         data-srcset="'. implode(', ', $hqi_srcset).'"
-                        alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).'  data-expand="-10"  />';
+                        alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).'  data-expand="-10">';
                 }
                 else
                 {
                     $html .='<img width="'.$breakpoints[0].'" src="'.$hqi_url.'&w='.$breakpoints[0].'"
                         srcset="'. implode(', ', $hqi_srcset).'"
-                        alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).' />';
+                        alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).'>';
                 }
             }
             //Fixed image with display density description
@@ -154,13 +160,13 @@ class ExtImagesTemplateHelperImage extends ComPagesTemplateHelperAbstract
                 //disabled, fallback on the noscript element.
                 //
                 //Set data-expand to 300 to delay loading the image
-                $html = '<noscript>';
-                $html .=    '<img '.$size.' src="'.$hqi_url.'&w='.$width.'" alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).' />';
+                $html .= '<noscript>';
+                $html .=    '<img '.$size.' src="'.$hqi_url.'&w='.$width.'" alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).'>';
                 $html .= '</noscript>';
                 $html .='<img '.$size.'
                 srcset="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
                 data-srcset="'. implode(',', $srcset).'"
-                alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).' data-expand="300" />';
+                alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).' data-expand="300">';
             }
         }
         else
@@ -180,41 +186,55 @@ class ExtImagesTemplateHelperImage extends ComPagesTemplateHelperAbstract
                 $size = 'width="'.$width.'"';
             }
 
-            $html ='<img '.$size.'src="'.$config->image.'" alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).' />';
+            $html ='<img '.$size.'src="'.$config->image.'" alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).'>';
         }
 
         return $html;
     }
 
-    public function url($image, $parameters = array())
+    public function url($url, $parameters = array())
     {
         $config = new KObjectConfigJson($parameters);
         $config->append($this->getConfig()->parameters);
 
-        $parts = parse_url($image);
-        $query = array();
+        if($this->supported($url))
+        {
+            $parts = parse_url($url);
+            $query = array();
 
-        if(isset($parts['query'])) {
-            parse_str($parts['query'], $query);
+            if(isset($parts['query'])) {
+                parse_str($parts['query'], $query);
+            }
+
+            $query = array_merge(array_filter(KObjectConfig::unbox($config)), $query);
+
+            if($this->getConfig()->suffix) {
+                $parts['path'] = $parts['path'].'.'.$this->getConfig()->suffix;
+            }
+
+            if(isset($parts['scheme']))
+            {
+                $url = $parts['scheme'].'://';
+
+                if(isset($parts['host'])) {
+                    $url .= $parts['host'].'/';
+                }
+            }
+            else $url = '/';
+
+            $url .= trim($parts['path'], '/').'?'.urldecode(http_build_query($query));
+
         }
-
-        $query = array_merge(array_filter(KObjectConfig::unbox($config)), $query);
-
-        if($this->getConfig()->suffix) {
-            $parts['path'] = $parts['path'].'.'.$this->getConfig()->suffix;
-        }
-
-        $url = $parts['path'].'?'.urldecode(http_build_query($query));
 
         return $url;
     }
 
-    public function url_lqi($image, $parameters = array())
+    public function url_lqi($url, $parameters = array())
     {
         $config = new KObjectConfigJson($parameters);
         $config->append($this->getConfig()->parameters_lqi);
 
-        return $this->url($image, $config);
+        return $this->url($url, $config);
     }
 
     public function filter($html, $options = array())
