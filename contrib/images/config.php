@@ -9,10 +9,12 @@
 
 return [
     'ext:images.template.helper.image'   => [
-        'enable'    => JDEBUG ? false : true,
         'exclude'   => ['gif'],
         'suffix'    => '',
         'max_width' => 1920,
         'base_path' => KPATH_PAGES,
+    ],
+    'ext:pages.template.filter.image'   => [
+        'enable'    => JDEBUG ? false : true,
     ],
 ];
