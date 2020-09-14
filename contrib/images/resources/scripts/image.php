@@ -115,15 +115,15 @@ if($parts['query'] && $parts['path'])
     {
         case 'jpeg' :
         case 'pjpg' :
-        case 'jpg'  : $type = IMAGETYPE_JPEG; break;
-        case 'jp2'  : $type = IMAGETYPE_JP2; break;
-        case 'gif'  : $type = IMAGETYPE_GIF; break;
-        case 'webp' : $type = IMAGETYPE_WEBP; break;
-        case 'png'  : $type = IMAGETYPE_PNG; break;
+        case 'jpg'  : $type = 'jpeg'; break;
+        case 'jp2'  : $type = 'jp2'; break;
+        case 'gif'  : $type = 'gif'; break;
+        case 'webp' : $type = 'webp'; break;
+        case 'png'  : $type = 'png'; break;
     }
 
     //Create the filename
-    if($cache_dir)
+    if($type && $cache_dir)
     {
         $path  = $filepath;
         $query = $parameters;
@@ -131,8 +131,7 @@ if($parts['query'] && $parts['path'])
         if($type && !$parameters['fm'])
         {
             $search  = pathinfo($filepath, PATHINFO_EXTENSION);
-            $replace = image_type_to_extension($type, false);
-            $path    = str_replace($search, $replace, $filepath);
+            $path    = str_replace($search, $type, $filepath);
         }
 
         $destination = $cache_dir.'/'.$path.'_'.http_build_query($query, '', '&');
@@ -145,7 +144,7 @@ if($parts['query'] && $parts['path'])
         try
         {
             //Load the original
-            $image = (new Image())->read($source, $type);
+            $image = (new Image())->read($source, $format);
 
             //Resize
             if(isset($parameters['w']) || isset($parameters['h']))
@@ -218,7 +217,7 @@ if($parts['query'] && $parts['path'])
         $file = $source;
     }
 
-    header('Content-Type: '. image_type_to_mime_type($type));
+    header('Content-Type: '. mime_content_type($file));
     header('Content-Length: '.filesize($file));
     header('Date: '.date('D, d M Y H:i:s', strtotime('now')).' GMT');
     header('Last-Modified: '.date('D, d M Y H:i:s', filemtime($file)).' GMT');
@@ -266,32 +265,29 @@ Class Image
             throw new Exception('Image not found');
         }
 
-        if($size = getimagesize($file))
+        $this->_file = $file;
+        $this->_type = $type;
+
+        //Use Imagick if supported
+        if(class_exists('Imagick'))
         {
-            $this->_file = $file;
-            $this->_type = $type ?? $size['2'];
+            $input =  strtoupper(pathinfo($file, PATHINFO_EXTENSION));
+            $output = strtoupper($this->_type);
 
-            //Use Imagick if supported
-            if(class_exists('Imagick'))
-            {
-                $input =  strtoupper(pathinfo($file, PATHINFO_EXTENSION));
-                $output = strtoupper(image_type_to_extension($this->_type, false));
-
-                if(Imagick::queryFormats($input) && Imagick::queryFormats($output)) {
-                    $this->_image = new Imagick($file);
-                }
+            if(Imagick::queryFormats($input) && Imagick::queryFormats($output)) {
+                $this->_image = new Imagick($file);
             }
+        }
 
-            //Fallback to GD
-            if(!$this->_image)
+        //Fallback to GD
+        if(!$this->_image)
+        {
+            switch($type)
             {
-                switch($size['2'])
-                {
-                    case IMAGETYPE_JPEG : $this->_image = @imagecreatefromjpeg($file); break;
-                    case IMAGETYPE_GIF  : $this->_image = @imagecreatefromgif($file); break;
-                    case IMAGETYPE_PNG  : $this->_image = @imagecreatefrompng($file); break;
-                    case IMAGETYPE_WEBP : $this->_image = @imagecreatefromwebp($file); break;
-                }
+                case 'jpeg' : $this->_image = @imagecreatefromjpeg($file); break;
+                case 'gif'  : $this->_image = @imagecreatefromgif($file); break;
+                case 'png'  : $this->_image = @imagecreatefrompng($file); break;
+                case 'webp' : $this->_image = @imagecreatefromwebp($file); break;
             }
         }
 
@@ -312,25 +308,23 @@ Class Image
         {
             switch($type)
             {
-                case IMAGETYPE_JP2 :
-                case IMAGETYPE_JPEG: imagejpeg($this->_image, $file, $quality); break;
-                case IMAGETYPE_GIF : imagegif($this->_image, $file); break;
-                case IMAGETYPE_PNG : imagepng($this->_image, $file,  (int)(9 - round(($quality/100) * 9))); break;
-                case IMAGETYPE_WEBP: imagewebp($this->_image, $file,  $quality); break;
+                case 'jp2' :
+                case 'jpeg': imagejpeg($this->_image, $file, $quality); break;
+                case 'gif' : imagegif($this->_image, $file); break;
+                case 'png' : imagepng($this->_image, $file,  (int)(9 - round(($quality/100) * 9))); break;
+                case 'webp': imagewebp($this->_image, $file,  $quality); break;
             }
         }
         //Imagick
         else
         {
-            $format = image_type_to_extension($type, false);
-
-            if($type == IMAGETYPE_PNG) {
+            if($type == 'png') {
                 $this->_image->setOption('png:compression-level', (int)(9 - round(($quality/100) * 9)));
             } else {
                 $this->_image->setImageCompressionQuality($quality);
             }
 
-            $this->_image->setImageFormat($format);
+            $this->_image->setImageFormat($type);
 
             if($file) {
                 $this->_image->writeImage($file);
