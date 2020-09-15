@@ -173,7 +173,12 @@ class ExtPagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
                     {
                         $attribs['data-sizes'] = 'auto';
                         $attribs['data-bgset'] = implode(',', $srcset);
-                        $attribs['class']      = $attribs['class'].' lazyload';
+
+                        if(isset($attribs['class'])) {
+                            $attribs['class'] = $attribs['class'].' lazyload';
+                        } else {
+                            $attribs['class'] = 'lazyload';
+                        }
 
                         $attribs['style'] = str_replace($matches[2][$key], '', $attribs['style']);
 
