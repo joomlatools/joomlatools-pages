@@ -389,10 +389,14 @@ Class Image
     {
         //Calculate the width
         if($height) {
-            $width = (int) (($this->getWidth() / $this->getHeight()) * $height * $density);
+            $width = (int) (($this->getWidth() / $this->getHeight()) * $height);
         } else {
-            $height = (int) (($this->getHeight() / $this->getWidth()) * $width * $density);
+            $height = (int) (($this->getHeight() / $this->getWidth()) * $width);
         }
+
+        //Calculate total size based on density
+        $width  = $width  * $density;
+        $height = $height * $density;
 
         //Default: GD
         if(!$this->_image instanceof Imagick)
