@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ExtPagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
+class ExtImagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
 {
     protected function _initialize(KObjectConfig $config)
     {
@@ -46,7 +46,7 @@ class ExtPagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
                     $result = $this->filterImages($matches[2][$key], $attribs);
 
                     //Filter background images
-                    $result = $this->filterBackgroundImages($result);
+                    $result = $this->filterBackgroundImages($result, $attribs);
 
                     $text = str_replace($match, $result, $text);
                 }
@@ -104,12 +104,9 @@ class ExtPagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
                             }
                         }
 
-                        //Replace config and attribs
-                        $attribs = array_replace_recursive($config, $attribs);
-
                         //Rename hyphen to underscore
                         $options = array();
-                        foreach($attribs as $name => $value)
+                        foreach(array_replace_recursive($config, $attribs) as $name => $value)
                         {
                             $name = str_replace('-', '_', $name);
                             $options[$name] = $value;
@@ -158,12 +155,10 @@ class ExtPagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
                         }
                     }
 
-                    //Replace config and attribs
-                    $attribs = array_replace_recursive($config, $attribs);
 
                     //Rename hyphen to underscore
                     $options = array();
-                    foreach($attribs as $name => $value)
+                    foreach(array_replace_recursive($config, $attribs) as $name => $value)
                     {
                         $name = str_replace('-', '_', $name);
                         $options[$name] = $value;
