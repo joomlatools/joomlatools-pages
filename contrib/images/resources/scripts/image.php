@@ -106,32 +106,22 @@ if($parts['query'] && $parts['path'])
     }
 
     //Set the format
-    if(isset($parameters['fm'])) {
+    if(isset($parameters['fm']) && $format != $parameters['fm']) {
         $format = $parameters['fm'];
-    }
-
-    //Set the type
-    switch($format)
-    {
-        case 'jpeg' :
-        case 'pjpg' :
-        case 'jpg'  : $type = 'jpeg'; break;
-        case 'jp2'  : $type = 'jp2'; break;
-        case 'gif'  : $type = 'gif'; break;
-        case 'webp' : $type = 'webp'; break;
-        case 'png'  : $type = 'png'; break;
+    } else {
+        unset($parameters['fm']);
     }
 
     //Create the filename
-    if($type && $cache_dir)
+    if($cache_dir)
     {
         $path  = $filepath;
         $query = $parameters;
 
-        if($type && !$parameters['fm'])
+        if(!$parameters['fm'])
         {
             $search  = pathinfo($filepath, PATHINFO_EXTENSION);
-            $path    = str_replace($search, $type, $filepath);
+            $path    = str_replace($search, $format, $filepath);
         }
 
         $destination = $cache_dir.'/'.$path.'_'.http_build_query($query, '', '&');
@@ -250,7 +240,7 @@ Class Image
 {
     protected $_image;
     protected $_path;
-    protected $_type;
+    protected $_format;
 
     public function __destruct()
     {
@@ -259,20 +249,22 @@ Class Image
         }
     }
 
-    public function read($file, $type = null)
+    public function read($file, $format = null)
     {
         if (!is_file($file)){
             throw new Exception('Image not found');
         }
 
+        $file_format = pathinfo($file, PATHINFO_EXTENSION);
+
         $this->_file = $file;
-        $this->_type = $type;
+        $this->_format = $format ?? $file_format;
 
         //Use Imagick if supported
         if(class_exists('Imagick'))
         {
-            $input =  strtoupper(pathinfo($file, PATHINFO_EXTENSION));
-            $output = strtoupper($this->_type);
+            $output = strtoupper($this->_format);
+            $input  = strtoupper($file_format);
 
             if(Imagick::queryFormats($input) && Imagick::queryFormats($output)) {
                 $this->_image = new Imagick($file);
@@ -282,8 +274,9 @@ Class Image
         //Fallback to GD
         if(!$this->_image)
         {
-            switch($type)
+            switch($file_format)
             {
+                case 'jpg'  :
                 case 'jpeg' : $this->_image = @imagecreatefromjpeg($file); break;
                 case 'gif'  : $this->_image = @imagecreatefromgif($file); break;
                 case 'png'  : $this->_image = @imagecreatefrompng($file); break;
@@ -300,15 +293,16 @@ Class Image
 
     public function write($quality = 100, $file = null)
     {
-        $type    = $this->_type;
+        $format  = $this->_format;
         $quality = (int) round($quality);
 
         //Default: GD
         if(!$this->_image instanceof Imagick)
         {
-            switch($type)
+            switch($format)
             {
                 case 'jp2' :
+                case 'jpg' :
                 case 'jpeg': imagejpeg($this->_image, $file, $quality); break;
                 case 'gif' : imagegif($this->_image, $file); break;
                 case 'png' : imagepng($this->_image, $file,  (int)(9 - round(($quality/100) * 9))); break;
@@ -318,13 +312,13 @@ Class Image
         //Imagick
         else
         {
-            if($type == 'png') {
+            if($format == 'png') {
                 $this->_image->setOption('png:compression-level', (int)(9 - round(($quality/100) * 9)));
             } else {
                 $this->_image->setImageCompressionQuality($quality);
             }
 
-            $this->_image->setImageFormat($type);
+            $this->_image->setImageFormat($format);
 
             if($file) {
                 $this->_image->writeImage($file);
