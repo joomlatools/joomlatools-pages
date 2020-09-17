@@ -127,7 +127,7 @@ class ExtImagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
         if($this->enabled())
         {
             $matches = array();
-            if(preg_match_all('#<\S+(\s[^>]*?(background-image\s*:\s*url\((.+)\);).*)>#iU', $html, $matches))
+            if(preg_match_all('#<[a-zA-Z0-9+\#.-]+(\s[^>]*?(background-image\s*:\s*url\((.+)\);).*)>iU', $html, $matches))
             {
                 foreach($matches[1] as $key => $match)
                 {
