@@ -75,23 +75,25 @@ class ExtImagesTemplateHelperImage extends ComPagesTemplateHelperBehavior
                 //Build path for the high quality image
                 $lqi_url = $this->url($config->url, $parameters);
 
-                //Generate data url for low quality image and preload it inline
-                if($config['preload'])
-                {
-                    $context = stream_context_create([
-                        "ssl" => [
-                            "verify_peer"      =>false,
-                            "verify_peer_name" =>false,
-                        ],
-                    ]);
-
-                    if($data = @file_get_contents($this->getConfig()->base_url.'/'.trim($lqi_url, '/'), false, $context)) {
-                        $lqi_url = 'data:image/jpg;base64,'.base64_encode($data);
-                    }
-                }
-
                 if($config->lazyload)
                 {
+                    //Generate data url for low quality image and preload it inline
+                    if($config->preload)
+                    {
+                        $context = stream_context_create([
+                            "ssl" => [
+                                "verify_peer"      =>false,
+                                "verify_peer_name" =>false,
+                            ],
+                        ]);
+                        
+                        $base = $this->getConfig()->base_url->toString(KHttpUrl::AUTHORITY) ;
+
+                        if($data = @file_get_contents($this->getConfig()->base_url.'/'.trim($lqi_url, '/'), false, $context)) {
+                            $lqi_url = 'data:image/jpg;base64,'.base64_encode($data);
+                        }
+                    }
+
                     //Combine a normal src attribute with a low quality image as srcset value and a data-srcset attribute.
                     //Modern browsers will lazy load without loading the src attribute and all others will simply fallback
                     //to the initial src attribute (without lazyload).
