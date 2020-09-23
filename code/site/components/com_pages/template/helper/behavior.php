@@ -33,7 +33,7 @@ class ComPagesTemplateHelperBehavior extends ComKoowaTemplateHelperBehavior
             $html .= '<ktml:script src="assets://com_pages/js/anchor-v4.2.1.'.(!$config->debug ? 'min.js' : 'js').'" defer="defer" />';
             $html .= <<<ANCHOR
 <script>
-document.addEventListener("DOMContentLoaded", function(event) {
+document.addEventListener("DOMContentLoaded", () => {
      anchors.options = $config->options  
      anchors.add($selector);if(document.querySelector('.no-anchor')!==null){anchors.remove('.no-anchor');}
 })
