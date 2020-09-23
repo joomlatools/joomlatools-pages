@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ExtImagesTemplateHelperImage extends ComPagesTemplateHelperBehavior
+class ExtMediaTemplateHelperImage extends ComPagesTemplateHelperBehavior
 {
     protected function _initialize(KObjectConfig $config)
     {

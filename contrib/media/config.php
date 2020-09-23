@@ -8,13 +8,16 @@
  */
 
 return [
-    'ext:images.template.helper.image'   => [
+    'ext:media.template.helper.image'   => [
         'exclude'   => ['gif'],
         'suffix'    => '',
         'max_width' => 1920,
         'base_path' => KPATH_PAGES,
     ],
-    'ext:pages.template.filter.image'   => [
-        'enable'    => JDEBUG ? false : true,
+    'ext:media.template.filter.image'   => [
+        'enable' => JDEBUG ? false : true,
+    ],
+    'ext:media.template.filter.video'   => [
+        'enable' => true
     ],
 ];
