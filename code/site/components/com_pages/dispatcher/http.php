@@ -91,6 +91,16 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             $path  = trim(str_replace(array($base, '/index.php'), '', $url), '/');
             $query = $this->getRequest()->getUrl()->getQuery(true);
 
+            // Fixes https://github.com/joomlatools/textman/issues/815#issuecomment-703787076
+            // Get the correct path from non-SEF URL
+            if (empty($path))
+            {
+                $path = JFactory::getApplication()
+                    ->getRouter()
+                    ->build($query)
+                    ->getPath();
+            }
+
             $this->__route = $this->getRouter()->resolve('pages:'.$path,  $query);
         }
 
