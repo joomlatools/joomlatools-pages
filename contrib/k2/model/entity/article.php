@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ExtK2ModelEntityArticle extends ExtJoomlaModelEntityAbstract
+class ExtK2ModelEntityArticle extends ExtK2ModelEntityAbstract
 {
 	protected function _initialize(KObjectConfig $config)
 	{
