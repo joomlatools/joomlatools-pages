@@ -12,7 +12,7 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'priority' => self::PRIORITY_LOWEST,
+            'priority' => self::PRIORITY_LOW,
             'enable'   => JDEBUG ? false : true,
         ));
 
@@ -26,8 +26,8 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
 
     public function filter(&$text)
     {
-        //Do not filter the images if we are rendering the page
-        if($this->getTemplate()->getLayout() !== NULL && $this->enabled())
+        //Filter the images only at the end of the rendering cycle
+        if($this->getTemplate()->getLayout() === false && $this->enabled())
         {
             $matches = array();
             //First pass - Find images between <ktml:images></ktml:images>
@@ -57,6 +57,10 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
 
             //Second pass- Filter the background images
             $text = $this->filterBackgroundImages($text);
+
+            //Add client hints
+            $text .= '<meta http-equiv="Accept-CH" content="dpr, width, viewport-width, downlink" />';
+            $text .= '<meta http-equiv="Accept-CH-Lifetime" content="86400" />';
         }
     }
 
