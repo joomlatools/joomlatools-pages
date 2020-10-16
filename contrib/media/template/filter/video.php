@@ -73,7 +73,7 @@ class ExtMediaTemplateFilterVideo extends ComPagesTemplateFilterAbstract
                         $text = str_replace($matches[1][$key], $this->buildAttributes($attribs), $text);
 
                         //Import lazysizes
-                        $text .= $this->getTemplate()->helper('video.import', 'unveilhooks');
+                        $text .= $this->getTemplate()->helper('ext:media.video.import', 'unveilhooks');
                     }
                 }
             }
