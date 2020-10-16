@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ExtMediaTemplateHelperImage extends ComPagesTemplateHelperBehavior
+class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
 {
     protected function _initialize(KObjectConfig $config)
     {
@@ -19,9 +19,8 @@ class ExtMediaTemplateHelperImage extends ComPagesTemplateHelperBehavior
             'base_path' => $this->getObject('com://site/pages.config')->getSitePath(),
             'exclude'    => ['svg'],
             'suffix'     => '',
-            'expand'     => -10,
             'parameters'     => ['auto' => 'true'],
-            'parameters_lqi' => ['bl' => 75, 'q' => 40]
+            'parameters_lqi' => ['auto' => 'compress', 'fm' => 'jpg', 'q' => 50]
         ));
 
         parent::_initialize($config);
@@ -39,16 +38,14 @@ class ExtMediaTemplateHelperImage extends ComPagesTemplateHelperBehavior
             'max_width' => $this->getConfig()->max_width,
             'min_width' => $this->getConfig()->min_width,
             'max_dpr'   => $this->getConfig()->max_dpr,
-            'preload'   => false,
-            'lazyload'  => true,
-            'expand'    => $this->getConfig()->expand,
+            'lazyload'  => true, //progressive, inline
         ))->append(array(
             'attributes' => array('class' => $config->class),
         ));
 
         //Set lazyload class for lazysizes
         if($config->lazyload) {
-            $config->attributes->class[] = 'lazyload';
+            $config->attributes->class->append(['lazyload']);
         }
 
         //Get the image format
@@ -57,7 +54,7 @@ class ExtMediaTemplateHelperImage extends ComPagesTemplateHelperBehavior
 
         if($this->supported($config->url))
         {
-            $html = $this->import();
+            $html = $this->import(); //import lazysizes script
 
             //Build path for the high quality image
             $hqi_url = $this->url($config->url);
@@ -67,48 +64,48 @@ class ExtMediaTemplateHelperImage extends ComPagesTemplateHelperBehavior
             {
                 $srcset = $this->srcset($config->url, $config);
 
-                //Build the path for the low quality image
-                $parameters = $this->getConfig()->parameters_lqi;
-                $parameters['fm'] = 'jpg';
-                $parameters['w']  = key($srcset);
+                //Find the width for the none-responsive image
+                if (stripos($config->max_width, '%') !== false) {
+                    $width = ceil($this->getConfig()->max_width / 100 * (int)$config->max_width);
+                } else {
+                    $width = $config->max_width;
+                }
 
-                //Build path for the high quality image
-                $lqi_url = $this->url($config->url, $parameters);
-
-                if($config->lazyload)
+                foreach(array_reverse(array_keys($srcset)) as $size)
                 {
-                    //Generate data url for low quality image and preload it inline
-                    if($config->preload)
-                    {
-                        //Set data-expaned to -10 (default) to only load the image when it becomes visible in the viewport
-                        //This will generate a blur up effect
-                        $config->attributes['data-expand'] = $config->expand;
-
-                        $context = stream_context_create([
-                            "ssl" => [
-                                "verify_peer"      =>false,
-                                "verify_peer_name" =>false,
-                            ],
-                        ]);
-
-                        if($data = @file_get_contents($this->getConfig()->base_url.'/'.trim($lqi_url, '/'), false, $context)) {
-                            $lqi_url = 'data:image/jpg;base64,'.base64_encode($data);
-                        }
+                    if($size > $width) {
+                        $width = $size; break;
                     }
+                }
 
-                    //Combine a normal src attribute with a low quality image as srcset value and a data-srcset attribute.
-                    //Modern browsers will lazy load without loading the src attribute and all others will simply fallback
-                    //to the initial src attribute (without lazyload).
-                    //
-                    $html .='<img width="'.key($srcset).'" src="'.$hqi_url.'&w='.key($srcset).'"
-                        srcset="'. $lqi_url.'"
+                if($config->lazyload !== false)
+                {
+                    $lazyload = array_map('trim', explode(',', $config->lazyload));
+
+                    if(in_array('progressive', $lazyload))
+                    {
+                        $config->attributes->class->append(['progressive']);
+
+                        $parameters = array();
+                        $parameters['w'] = (int) ($width / 8);
+
+                        $lqi_url = $this->url_lqi($config->url, $parameters, in_array('inline', $lazyload));
+                    }
+                    else $lqi_url = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+
+                    //Combine low quality image as srcset value and a data-srcset attribute and
+                    //provide a fallback if javascript is disabled
+                    $html .= '<noscript>';
+                    $html .=    '<img width="'.$width.'" src="'.$hqi_url.'&w='.$width.'" alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).'>';
+                    $html .= '</noscript>';
+                    $html .='<img width="'.$width.'" data-srclow="'. $lqi_url.'"
                         data-sizes="auto"
                         data-srcset="'. implode(', ', $srcset).'"
                         alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).'>';
                 }
                 else
                 {
-                    $html .='<img width="'.key($srcset).'" src="'.$hqi_url.'&w='.key($srcset).'"
+                    $html .='<img width="'.$width.'" src="'.$hqi_url.'&w='.$width.'"
                         srcset="'. implode(', ', $srcset).'"
                         alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).'>';
                 }
@@ -132,7 +129,8 @@ class ExtMediaTemplateHelperImage extends ComPagesTemplateHelperBehavior
                         $srcset[] = sprintf($hqi_url.'&h=%1$s&dpr=%2$d %2$dx', $height, $i);
                     }
 
-                    $size = 'height="'.$height.'"';
+                    $size    = 'height="'.$height.'"';
+                    $hqi_url = $hqi_url.'&h='.$height;
                 }
                 else
                 {
@@ -140,19 +138,44 @@ class ExtMediaTemplateHelperImage extends ComPagesTemplateHelperBehavior
                         $srcset[] = sprintf($hqi_url.'&w=%1$s&dpr=%2$d %2$dx', $width, $i);
                     }
 
-                    $size = 'width="'.$width.'"';
+                    $size    = 'width="'.$width.'"';
+                    $hqi_url = $hqi_url.'&w='.$width;
                 }
 
-                //Combine transparent image as srcset value and a data-srcset attribute. In case disabled JavaScript is
-                //disabled, fallback on the noscript element.
-                //
-                $html .= '<noscript>';
-                $html .=    '<img '.$size.' src="'.$hqi_url.'&w='.$width.'" alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).'>';
-                $html .= '</noscript>';
-                $html .='<img '.$size.'
-                srcset="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
-                data-srcset="'. implode(',', $srcset).'"
-                alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).'>';
+                if($config->lazyload !== false)
+                {
+                    $lazyload =  array_map('trim', explode(',', $config->lazyload));
+
+                    if(in_array('progressive', $lazyload))
+                    {
+                        $parameters = array();
+
+                        if($height) {
+                            $parameters['h'] = (int) ($height / 8);
+                        } else {
+                            $parameters['w'] = (int) ($width / 8);
+                        }
+
+                        $lqi_url = $this->url_lqi($config->url, $parameters, in_array('inline', $lazyload));
+                    }
+                    else $lqi_url = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+
+                    //Combine low quality image as srcset value and a data-srcset attribute and
+                    //provide a fallback if javascript is disabled
+                    $html .= '<noscript>';
+                    $html .=    '<img '.$size.' src="'.$hqi_url.'" alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).'>';
+                    $html .= '</noscript>';
+                    $html .='<img '.$size.' data-srclow="'. $lqi_url.'"
+                      data-srcset="'. implode(',', $srcset).'"
+                      alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).'>';
+
+                }
+                else
+                {
+                    $html .='<img '.$size.' src="'.$hqi_url.'"
+                        srcset="'. implode(', ', $srcset).'"
+                        alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).'>';
+                }
             }
         }
         else
@@ -185,8 +208,11 @@ class ExtMediaTemplateHelperImage extends ComPagesTemplateHelperBehavior
 
         if($this->supported($url))
         {
-            $url = KHttpUrl::fromString($url);
-            $url->query = array_merge(array_filter(KObjectConfig::unbox($config)), $url->query);
+            $url   = KHttpUrl::fromString($url);
+            $query = array_merge(array_filter(KObjectConfig::unbox($config)), $url->query);
+
+            ksort($query); //sort alphabetically
+            $url->query = $query;
 
             if($this->getConfig()->suffix) {
                 $url->setPath($url->getPath().'.'.$this->getConfig()->suffix);
@@ -194,6 +220,38 @@ class ExtMediaTemplateHelperImage extends ComPagesTemplateHelperBehavior
         }
 
         return $url;
+    }
+
+    public function url_lqi($url, $parameters = array(), $data_url = false)
+    {
+        $config = new KObjectConfigJson($parameters);
+        $config->append($this->getConfig()->parameters_lqi);
+        $config->append(array(
+            'fm' => 'jpg'
+        ));
+
+        if($this->supported($url))
+        {
+            $result = (string) $this->url($url, $config);
+
+            //Generate data url for low quality image
+            if($data_url)
+            {
+                $context = stream_context_create([
+                    "ssl" => [
+                        "verify_peer"      =>false,
+                        "verify_peer_name" =>false,
+                    ],
+                ]);
+
+                if($data = @file_get_contents($this->getConfig()->base_url.'/'.trim($result, '/'), false, $context)) {
+                    $result = 'data:image/jpg;base64,'.base64_encode($data);
+                }
+            }
+        }
+        else $result = $url;
+
+        return $result;
     }
 
     public function srcset($url, $parameters = array())
@@ -220,17 +278,16 @@ class ExtMediaTemplateHelperImage extends ComPagesTemplateHelperBehavior
                 $config->min_width = ceil($this->getConfig()->min_width / 100 * (int)$config->min_width);
             }
 
-            $file = $this->getConfig()->base_path . '/' . trim($url->getPath(), '/');
-            $breakpoints = $this->_calculateBreakpoints($file, $config->max_width * $config->max_dpr, $config->min_width);
+            $file  = $this->getConfig()->base_path . '/' . trim($url->getPath(), '/');
+            $sizes = $this->_calculateSizes($file, $config->max_width * $config->max_dpr, $config->min_width);
 
             //Build path for the high quality image
             $hqi_url = $this->url($url);
 
-            foreach ($breakpoints as $breakpoint)
+            foreach ($sizes as $size)
             {
-                $hqi_url->query['w'] = $breakpoint;
-
-                $srcset[$breakpoint] = sprintf((string)$hqi_url . ' %1$sw', $breakpoint);
+                $hqi_url->query['w'] = $size;
+                $srcset[$size] = sprintf((string)$hqi_url . ' %1$sw', $size);
             }
         }
 
@@ -253,33 +310,6 @@ class ExtMediaTemplateHelperImage extends ComPagesTemplateHelperBehavior
         }
 
         return $result;
-    }
-
-    public function import($plugin = '', $config = array())
-    {
-        $config = new KObjectConfigJson($config);
-        $config->append(array(
-            'debug' =>  JFactory::getApplication()->getCfg('debug'),
-        ));
-
-        $html   = '';
-        $script = $plugin ? 'lazysizes-'.$plugin : 'lazysizes';
-        if (!static::isLoaded($script))
-        {
-            if($script == 'lazysizes') {
-                $html .= '<ktml:script src="https://unpkg.com/lazysizes@5.2.2/lazysizes.'.(!$config->debug ? 'min.js' : 'js').'" defer="defer" />';
-            }
-
-            if($script == 'lazysizes-bgset')
-            {
-                $html .= $this->import();
-                $html .= '<ktml:script src="https://unpkg.com/lazysizes@5.2.2/plugins/bgset/ls.bgset.' . (!$config->debug ? 'min.js' : 'js') . '" defer="defer" />';
-            }
-
-            static::setLoaded($script);
-        }
-
-        return $html;
     }
 
     public function parseAttributes($string)
@@ -314,7 +344,7 @@ class ExtMediaTemplateHelperImage extends ComPagesTemplateHelperBehavior
      *
      * Inspired by https://stitcher.io/blog/tackling_responsive_images-part_2
      */
-    protected function _calculateBreakpoints($file, $max_width, $min_width)
+    protected function _calculateSizes($file, $max_width, $min_width = 320)
     {
         $min_filesize = 1024 * 10; //10kb
         $modifier     = 0.7;       //70% (each image should be +/- 30% smaller in expected size)
@@ -325,7 +355,7 @@ class ExtMediaTemplateHelperImage extends ComPagesTemplateHelperBehavior
         //Get filesize
         $filesize = @filesize($file);
 
-        $breakpoints = array();
+        $sizes = array();
         if ($width < $max_width) {
             $breakpoints[] = $width;
         }
@@ -351,19 +381,19 @@ class ExtMediaTemplateHelperImage extends ComPagesTemplateHelperBehavior
 
             //Add the width
             if ($width < $max_width) {
-                $breakpoints[] = $width;
+                $sizes[] = $width;
             }
         }
 
-        if(empty($breakpoints))
+        if(empty($sizes))
         {
             if(is_int($max_width) && $max_width < $width) {
-                $breakpoints[] = $max_width;
+                $sizes[] = $max_width;
             } else {
-                $breakpoints[] = $width;
+                $sizes[] = $width;
             }
         }
 
-        return $breakpoints;
+        return $sizes;
     }
 }
