@@ -88,16 +88,6 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         foreach($options['extensions'] as $identifier => $values) {
             $this->getConfig($identifier)->merge($values);
         }
-
-        //Register the composer class locator
-        if(isset($options['composer_path']) && file_exists($options['composer_path']))
-        {
-            $this->getObject('manager')->getClassLoader()->registerLocator(
-                new KClassLocatorComposer(array(
-                        'vendor_path' => $options['composer_path']
-                    )
-                ));
-        }
     }
 
     protected function _bootstrapExtensions($path, $config = array())

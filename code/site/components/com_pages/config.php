@@ -105,6 +105,16 @@ class ComPagesConfig extends KObject implements KObjectSingleton
                 $options = array_replace_recursive($options, $config);
             }
 
+            //Register the composer class locator
+            if(isset($options['composer_path']) && file_exists($options['composer_path']))
+            {
+                $this->getObject('manager')->getClassLoader()->registerLocator(
+                    new KClassLocatorComposer(array(
+                            'vendor_path' => $options['composer_path']
+                        )
+                    ));
+            }
+
             //Load site config options
             if(file_exists($path.'/config.php'))
             {
