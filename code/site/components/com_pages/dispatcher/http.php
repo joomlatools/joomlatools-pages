@@ -89,7 +89,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             $base  = $this->getRequest()->getBasePath();
             $url   = urldecode($this->getRequest()->getUrl()->getPath());
             $path  = trim(str_replace(array($base, '/index.php'), '', $url), '/');
-            $query = $this->getRequest()->query->toArray();
+            $query = $this->getRequest()->getUrl()->getQuery(true);
 
             $this->__route = $this->getRouter()->resolve('pages:'.$path,  $query);
         }
