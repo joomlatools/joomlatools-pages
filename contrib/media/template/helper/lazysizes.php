@@ -26,6 +26,18 @@ class ExtMediaTemplateHelperLazysizes extends ComPagesTemplateHelperBehavior
                 $html .= <<<LAZYSIZES
 <script>
 window.lazySizesConfig = window.lazySizesConfig || {};
+
+const lazySizesCache = 'lazySizesCache:'+location.pathname
+if(sessionStorage.getItem(lazySizesCache) && performance.navigation.type != PerformanceNavigation.TYPE_RELOAD){
+  window.lazySizesCache = JSON.parse(sessionStorage.getItem(lazySizesCache))
+} else {
+  window.lazySizesCache  = []
+}
+
+window.addEventListener('beforeunload', (event) => {
+    sessionStorage.setItem(lazySizesCache, JSON.stringify(window.lazySizesCache))
+})
+
 if ('connection' in navigator)
 {
     //Only load nearby elements
@@ -39,25 +51,38 @@ if ('connection' in navigator)
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => 
+document.addEventListener("DOMContentLoaded", () =>
 {
-     document.querySelectorAll('img[data-srclow]').forEach((img) => {
-         img.src = img.getAttribute('data-srclow');
-     });
-});
+    document.querySelectorAll('img[data-srclow]').forEach((img) =>
+    {
+        img.src = img.getAttribute('data-srclow')
+         if(window.lazySizesCache.includes(img.dataset.hash)) {
+            img.classList.remove('progressive')
+         }
+    })
+})
+
+document.addEventListener("lazybeforeunveil", (e) =>
+{
+    if(hash = e.target.dataset.hash)
+    {
+        if(!window.lazySizesCache.includes(hash)) {
+            window.lazySizesCache.push(hash)
+        }
+    }
+})
 </script>
 
 <style>
 img.progressive {
     filter: blur(8px);
-    transform: scale(1.05);
     transition: filter 400ms;
 }
 
 img.progressive.lazyloaded {
     filter: blur(0);
 }
-</style>    
+</style> 
 LAZYSIZES;
             }
 
