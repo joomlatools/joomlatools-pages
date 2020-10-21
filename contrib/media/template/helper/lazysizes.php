@@ -76,7 +76,11 @@ document.addEventListener("lazybeforeunveil", (e) =>
 <style>
 img.progressive {
     filter: blur(8px);
+<<<<<<< HEAD
     transition: filter 300ms;
+=======
+    transition: filter 400ms;
+>>>>>>> 52c830c121fdaa900418ca5dd446e730e5159d38
 }
 
 img.progressive.lazyloaded {
