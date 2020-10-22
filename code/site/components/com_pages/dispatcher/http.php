@@ -287,6 +287,9 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             {
                 if($page = $this->getObject('page.registry')->getPageEntity($code))
                 {
+                    //Set status code (before rendering the error)
+                    $context->response->setStatus($code);
+
                     //Set the controller
                     $this->setController($page->getType(), ['page' => $page]);
 
@@ -295,9 +298,6 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
                     //Set error in the response
                     $context->response->setContent($content);
-
-                    //Set status code
-                    $context->response->setStatus($code);
 
                     return true;
                 }
