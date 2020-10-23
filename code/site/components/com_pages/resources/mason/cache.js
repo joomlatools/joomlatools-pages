@@ -83,8 +83,11 @@ class masonCache
             //Check data
             if (data['data']) {
                 data = data['data']
-            } else {
-                throw new Error('Response Not Valid')
+            }
+
+            //Check status code
+            if (response.statusCode == 404) {
+                throw new Error('Url Not Cached')
             }
 
             //Check status code
@@ -159,13 +162,19 @@ class masonCache
 
         let request = this.getRequest(url, options).then((response) =>
         {
-            let time = response.time();
+            let hash   = response.hash()
+            let time   = response.time()
+            let status = response.headers['cache-status'].toLowerCase()
 
-            if(response.headers.etag == item['hash']) {
-                mason.log.debug(chalk.gray('  » Not Modified: ' + url + ' - ' + time + ' s'))
-            } else {
-                mason.log.debug('  » Regenerated: ' + url + ' - ' + time + ' s')
+            if(hash == null || hash != item['hash'])
+            {
+                if(status.includes('purged')) {
+                    mason.log.debug(chalk.red('  » Purged: ' + url + ' - ' + time + ' s'))
+                } else {
+                    mason.log.debug('  » Regenerated: ' + url + ' - ' + time + ' s')
+                }
             }
+            else mason.log.debug(chalk.gray('  » Not Modified: ' + url + ' - ' + time + ' s'))
 
         }).catch((error)  => {
             mason.log.error('Failed: ' + url + ' with error: ' + error.message)
@@ -200,6 +209,17 @@ class masonCache
 
                 response.json = () => {
                     return JSON.parse(data)
+                }
+
+                response.hash = () =>
+                {
+                    let hash = null
+
+                    if(response.headers.etag) {
+                        hash = response.headers.etag.replace('W/', '').replace('-gzip', '')
+                    }
+
+                    return hash
                 }
 
                 response.time = (metric = 'tot') =>
