@@ -17,13 +17,16 @@ class ComPagesEventSubscriberErrorhandler extends ComPagesEventSubscriberAbstrac
 
     public function onException(KEventException $event)
     {
-        if($this->getObject('request')->getFormat() == 'html')
-        {
-            //Let pages handle errors even if pages is not the active component. This allows for a site wide
-            //implementation of error pages through pages.
-            if($this->getObject('com://site/pages.dispatcher.http')->fail($event)) {
-                return true;
-            }
+        $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
+
+        //Purge cache
+        if($event->getCode() == KHttpResponse::NOT_FOUND) {
+            $dispatcher->purge();
+        }
+
+        //Handle exception
+        if($dispatcher->fail($event)) {
+            return true;
         }
 
         return false;
