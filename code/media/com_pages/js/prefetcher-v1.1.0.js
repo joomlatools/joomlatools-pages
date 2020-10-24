@@ -19,14 +19,14 @@ class Prefetcher
     constructor(options)
     {
         //Cache of URLs we've prefetched
-        this.cache = new Set();
+        this.cache = new Set(Array.from(this.getSessionStorage().load('cache')))
 
         //Timers
         this._hoverTimer;
         this._hoverTimestamp;
 
         //Load the runtime configuration
-        this.config = this.getSessionStorage().get('config') ? this.getSessionStorage().get('config') : { };
+        this.config = this.getSessionStorage().load('config')
 
         //Initialize the prefetcher
         var defaults = {
@@ -53,7 +53,11 @@ class Prefetcher
         window.addEventListener('beforeunload', (event) =>
         {
             if(this.config) {
-                this.getSessionStorage().set('config', this.config);
+                this.getSessionStorage().store('config', this.config);
+            }
+
+            if(this.cache) {
+                this.getSessionStorage().store('cache', Array.from(this.cache));
             }
         });
     }
@@ -103,11 +107,18 @@ class Prefetcher
 
         if(!this.cache.has(url) && this.dispatchEvent('prerender', {'url': url, 'context': context}, true))
         {
-            this.cache.add(url);
-
             promise = this.canPrerender() ? this.prerenderViaDOM(url) : fetch(url, {credentials: 'include'})
+            promise.then(result =>  this.cache.add(url))
             promise.then(result =>  this.log('Prerendered on ' + context + ':', url));
             promise.catch(err => this.dispatchEvent('error', {'error': err, 'context': context} ));
+        }
+        else
+        {
+            if(this.cache.has(url)) {
+                this.log('Prerender skipped on ' + context)
+            } else {
+                this.log('Prerender prevented on ' + context)
+            }
         }
 
         return Promise.all([promise]);
@@ -129,11 +140,18 @@ class Prefetcher
 
         if(!this.cache.has(url) && this.dispatchEvent('prefetch', {'url': url, 'context': context}, true))
         {
-            this.cache.add(url);
-
             promise = this.canPrefetch() ? this.prefetchViaDOM(url) : this.prefetchViaXHR(url);
+            promise.then(result =>  this.cache.add(url))
             promise.then(result =>  this.log('Prefetched on ' + context + ':', url));
             promise.catch(err => this.dispatchEvent('error', {'error': err, 'context': context} ));
+        }
+        else
+        {
+            if(this.cache.has(url)) {
+                this.log('Prerender skipped on ' + context)
+            } else {
+                this.log('Prerender prevented on ' + context)
+            }
         }
 
         return Promise.all([promise]);
@@ -457,8 +475,11 @@ class Prefetcher
      */
     canPrerender()
     {
-        var link = document.createElement('link');
-        return link.relList && link.relList.supports && link.relList.supports('prerender');
+        //Prerender no longer seems to work in Chrome
+        //var link = document.createElement('link');
+        //return link.relList && link.relList.supports && link.relList.supports('prerender');
+
+        return false;
     }
 
     /**
@@ -501,39 +522,34 @@ class Prefetcher
      */
     getSessionStorage()
     {
-        const namespace = this.constructor.name;
+        const namespace = this.constructor.name
 
-        function toType(obj) {
-            return ({}).toString.call(obj).match(/\s([a-z|A-Z]+)/)[1].toLowerCase();
-        }
-
-        function get(key)
+        function load(key)
         {
-            var item = sessionStorage.getItem(namespace+':'+key);
-
-            try {
-                item = JSON.parse(item);
-            } catch (e) {}
+            var item = {}
+            if(sessionStorage.getItem(namespace+':'+key))
+            {
+                try {
+                    item = JSON.parse(sessionStorage.getItem(namespace+':'+key));
+                } catch (e) {
+                    item = {}
+                }
+            }
 
             return item;
         }
 
-        function set(key, value)
+        function store(key, value)
         {
-            var type = toType(value);
-
-            if (/object|array/.test(type)) {
-                value = JSON.stringify(value);
-            }
-
-            sessionStorage.setItem(namespace+':'+key, value);
+            sessionStorage.setItem(namespace+':'+key, JSON.stringify(value));
         }
 
-        function remove(key) {
+        function remove(key)
+        {
             sessionStorage.removeItem(key);
         }
 
-        return {'get': get, 'set': set, 'remove': remove};
+        return {'load': load, 'store': store, 'remove': remove};
     };
 
     /**
