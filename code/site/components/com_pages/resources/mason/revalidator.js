@@ -3,7 +3,7 @@ const https  = require('https');
 const http   = require('http');
 const chalk  = require('chalk');
 
-class masonCache
+class masonRevalidator
 {
     options = {
         origin      : null,
@@ -76,7 +76,17 @@ class masonCache
             cache.searchParams.set('filter[collections]', 'in:'+collections)
         }
 
-        this.getRequest(cache).then((response) =>
+        //Request options
+        var options = { }
+        if(cache.username && cache.password)
+        {
+            let authorization = new Buffer.from(cache.username + ':' + cache.password).toString('base64')
+            options = { headers: {
+                    'Authorization' : 'Basic ' + authorization
+                }}
+        }
+
+        this.getRequest(cache, options).then((response) =>
         {
             var data = response.json()
 
@@ -116,7 +126,7 @@ class masonCache
                     mason.log.debug(` ${chalk.green('✔')} Revalidation started  total: ${data.length}, concurrency: ${this.options.concurrency}…`)
 
                     // Async function to revalidate the cache with a concurrency limit
-                    this.revalidateList(data).finally(() => {
+                    this.revalidateList(data, options).finally(() => {
                         mason.log.debug('\n',chalk.bold(`Revalidation completed in ${totalTime()} min`))
                     })
                 }
@@ -127,7 +137,7 @@ class masonCache
             {
                 mason.log.debug(` ${chalk.green('✔')} Revalidation started, total: 1`)
 
-                this.revalidateUrl(data['attributes']).finally(() => {
+                this.revalidateUrl(data['attributes'], options).finally(() => {
                     mason.log.debug('\n',chalk.bold(`Revalidation completed in ${totalTime()} min`))
                 })
             }
@@ -137,28 +147,29 @@ class masonCache
         })
     }
 
-    async revalidateList(list)
+    async revalidateList(list, options)
     {
         for (let i = 0; i < list.length; i += this.options.concurrency)
         {
             const requests = list.slice(i, i + this.options.concurrency).map((item) => {
-                return this.revalidateUrl(item['attributes'])
+                return this.revalidateUrl(item['attributes'], options)
             })
 
             await Promise.allSettled(requests)
         }
     }
 
-    async revalidateUrl(item)
+    async revalidateUrl(item, options)
     {
-        let url     = item['url']
-        let options =
-            {
-                headers: {
-                    'Cache-Control': 'max-age=0, must-revalidate',
-                    'Accept': 'text/html',
-                }
+        let url = item['url']
+        let defaults = {
+            headers: {
+                'Cache-Control': 'max-age=0, must-revalidate',
+                'Accept': 'text/html',
             }
+        }
+
+        options = {...defaults, ...options}
 
         let request = this.getRequest(url, options).then((response) =>
         {
@@ -271,8 +282,10 @@ class masonCache
                 }
             }
 
+            url = new URL(url);
+
             //Create the request based on the protocol
-            let protocol = new URL(url).protocol.replace(':', '');
+            let protocol = url.protocol.replace(':', '');
 
             if(protocol == 'https') {
                 var request = https.get(url, options, callback);
@@ -302,13 +315,13 @@ async function revalidateCache(config = {})
     }, config)
 
     //Revaliate cache
-    const cache = new masonCache(config)
+    const cache = new masonRevalidator(config)
 
     await cache.revalidate(argv._[1], argv.collections)
 }
 
 module.exports = {
     version: 1.0,
-    masonCache,
+    masonRevalidator,
     revalidateCache
 }
