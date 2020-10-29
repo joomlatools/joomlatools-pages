@@ -74,7 +74,8 @@ class Prefetcher
         {
             this.options = options;
 
-            this.log('Prefetcher Initialize Completed', this.options);
+            this.log('Prefetcher Initialize Completed');
+            this.debug('Prefetcher Options', this.options);
 
             if(this.options.onload) {
                 this.onLoad();
@@ -88,7 +89,11 @@ class Prefetcher
                 this.onClick();
             }
         }
-        else this.log('Prefetcher Initialize Prevented', this.options);
+        else
+        {
+            this.log('Prefetcher Initialize Prevented');
+            this.debug('Prefetcher Options', this.options);
+        }
     }
 
     /**
@@ -105,21 +110,18 @@ class Prefetcher
         var promise;
         var url  = new URL(url, location.href).toString();
 
-        if(!this.cache.has(url) && this.dispatchEvent('prerender', {'url': url, 'context': context}, true))
+        if(!this.cache.has(url))
         {
-            promise = this.canPrerender() ? this.prerenderViaDOM(url) : fetch(url, {credentials: 'include'})
-            promise.then(result =>  this.cache.add(url))
-            promise.then(result =>  this.log('Prerendered on ' + context + ':', url));
-            promise.catch(err => this.dispatchEvent('error', {'error': err, 'context': context} ));
-        }
-        else
-        {
-            if(this.cache.has(url)) {
-                this.log('Prerender skipped on ' + context)
-            } else {
-                this.log('Prerender prevented on ' + context)
+            if (this.dispatchEvent('prerender', {'url': url, 'context': context}, true))
+            {
+                promise = this.canPrerender() ? this.prerenderViaDOM(url) : fetch(url, {credentials: 'include'})
+                promise.then(result => this.cache.add(url))
+                promise.then(result => this.log('Prerendered on ' + context + ':', url))
+                promise.catch(err => this.dispatchEvent('error', {'error': err, 'context': context}));
             }
+            else this.debug('Prerender prevented on ' + context + ':', url)
         }
+        else this.debug('Prerender cancelled on ' + context + ':', url)
 
         return Promise.all([promise]);
     }
@@ -138,21 +140,18 @@ class Prefetcher
         var promise;
         var url  = new URL(url, location.href).toString();
 
-        if(!this.cache.has(url) && this.dispatchEvent('prefetch', {'url': url, 'context': context}, true))
+        if(!this.cache.has(url))
         {
-            promise = this.canPrefetch() ? this.prefetchViaDOM(url) : this.prefetchViaXHR(url);
-            promise.then(result =>  this.cache.add(url))
-            promise.then(result =>  this.log('Prefetched on ' + context + ':', url));
-            promise.catch(err => this.dispatchEvent('error', {'error': err, 'context': context} ));
-        }
-        else
-        {
-            if(this.cache.has(url)) {
-                this.log('Prerender skipped on ' + context)
-            } else {
-                this.log('Prerender prevented on ' + context)
+            if(this.dispatchEvent('prefetch', {'url': url, 'context': context}, true))
+            {
+                promise = this.canPrefetch() ? this.prefetchViaDOM(url) : this.prefetchViaXHR(url);
+                promise.then(result =>  this.cache.add(url))
+                promise.then(result =>  this.log('Prefetched on ' + context + ':', url));
+                promise.catch(err => this.dispatchEvent('error', {'error': err, 'context': context} ));
             }
+            else  this.debug('Prerender prevented on ' + context + ':', url)
         }
+        else  this.debug('Prerender cancelled on ' + context + ':', url)
 
         return Promise.all([promise]);
     }
@@ -262,6 +261,8 @@ class Prefetcher
             if(performance.type == PerformanceNavigation.TYPE_RELOAD)
             {
                 this.log('Prefetching disabled: browser reloading');
+                this.cache.clear();
+                this.log('Prefetching session cache cleared');
                 return;
             }
 
@@ -509,9 +510,21 @@ class Prefetcher
         {
             if (typeof console.log === "function") {
                 console.log.apply(console, arguments);
-            } else if (console.log) {
+            } else {
                 console.log(arguments);
             }
+        }
+    }
+
+    /**
+     * Utility to log to console
+     */
+    debug()
+    {
+        if (typeof console.debug === "function") {
+            console.debug.apply(console, arguments);
+        } else {
+            console.debug(arguments);
         }
     }
 
