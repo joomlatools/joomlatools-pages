@@ -27,17 +27,6 @@ class ExtMediaTemplateHelperLazysizes extends ComPagesTemplateHelperBehavior
 <script>
 window.lazySizesConfig = window.lazySizesConfig || {};
 
-const lazySizesCache = 'lazySizesCache:'+location.pathname
-if(sessionStorage.getItem(lazySizesCache) && performance.navigation.type != PerformanceNavigation.TYPE_RELOAD){
-  window.lazySizesCache = JSON.parse(sessionStorage.getItem(lazySizesCache))
-} else {
-  window.lazySizesCache  = []
-}
-
-window.addEventListener('beforeunload', (event) => {
-    sessionStorage.setItem(lazySizesCache, JSON.stringify(window.lazySizesCache))
-})
-
 if ('connection' in navigator)
 {
     //Only load nearby elements
@@ -51,38 +40,64 @@ if ('connection' in navigator)
     }
 }
 
-document.addEventListener("DOMContentLoaded", () =>
+window.addEventListener('lazybeforeunveil', function (e)
 {
-    document.querySelectorAll('img[data-srclow]').forEach((img) =>
-    {
-        img.src = img.getAttribute('data-srclow')
-         if(window.lazySizesCache.includes(img.dataset.hash)) {
-            img.classList.remove('progressive')
-         }
-    })
-})
+  var detail = e.detail;
+  if(detail.instance == lazySizes)
+  {
+      var img = e.target;
 
-document.addEventListener("lazybeforeunveil", (e) =>
-{
-    if(hash = e.target.dataset.hash)
-    {
-        if(!window.lazySizesCache.includes(hash)) {
-            window.lazySizesCache.push(hash)
-        }
-    }
-})
+      setTimeout(function ()
+      {
+          if (img.complete && img.naturalHeight) {
+            img.classList.add('ls-is-cached');
+          }
+      }, 33);
+  }
+
+});
+
 </script>
 
 <style>
-img.progressive {
-    filter: blur(8px);  
-    transition: filter 300ms;
+/* Lazyloaded images */
+span.img-container {
+  display: inline-block;
+  overflow: hidden;
 }
 
-img.progressive.lazyloaded {
-    filter: blur(0);
+span.img-container > img {
+  margin: 0;
 }
-</style> 
+
+.lazyprogressive {
+  background-image: var(--lqi);
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: blur(8px);
+}
+
+.lazyloaded {
+  filter: blur(0);
+  transition: filter 300ms linear;
+}
+
+.ls-is-cached {
+  filter: none;
+  transition: none;
+}
+
+.lazymissing {
+  text-align: center;
+  color: #4a5568;
+  background-color: #f7fafc;
+  border: 2px dotted #e2e8f0;
+  font-size: 0.875rem;
+  padding: 1rem;
+}
+
+
+</style>
 LAZYSIZES;
             }
 
