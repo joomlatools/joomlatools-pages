@@ -149,9 +149,9 @@ class Prefetcher
                 promise.then(result =>  this.log('Prefetched on ' + context + ':', url));
                 promise.catch(err => this.dispatchEvent('error', {'error': err, 'context': context} ));
             }
-            else  this.debug('Prerender prevented on ' + context + ':', url)
+            else  this.debug('Prefetch prevented on ' + context + ':', url)
         }
-        else  this.debug('Prerender cancelled on ' + context + ':', url)
+        else  this.debug('Prefetch cancelled on ' + context + ':', url)
 
         return Promise.all([promise]);
     }
