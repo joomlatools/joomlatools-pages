@@ -12,7 +12,7 @@ if(getenv('REDIRECT_IMAGE') === false)
  * Config options
  */
 
-$basepath      = rtrim($_SERVER['PAGES_IMAGES_ROOT'], '/');
+$image_root    = rtrim($_SERVER['PAGES_IMAGES_ROOT'], '/');
 $enhance       = false;
 $quality       = 100;
 $compress      = false;
@@ -31,7 +31,7 @@ $max_dpr = 3;
  * Route request
  */
 
-$cache_dir    = isset($_SERVER['PAGES_CACHE_ROOT']) ? $_SERVER['PAGES_CACHE_ROOT'] : false;
+$cache_root  = isset($_SERVER['PAGES_CACHE_ROOT']) ? $_SERVER['PAGES_CACHE_ROOT'] : false;
 $cache_bypass = isset($_SERVER['HTTP_CACHE_CONTROL']) && strstr($_SERVER['HTTP_CACHE_CONTROL'], 'no-cache') !== false;
 
 //Request
@@ -41,11 +41,12 @@ parse_str(filter_var($_SERVER['QUERY_STRING'], FILTER_SANITIZE_URL), $query);
 //Time
 $time = microtime(true);
 
-if($query['path'])
+if($query['image_path'])
 {
-    $filepath  = str_replace('.php', '', trim($query['path'], '/'));
+    $image_path  = str_replace('.php', '', trim($query['image_path'], '/'));
+    $cache_path = isset($query['cache_path']) ? $query['cache_path'].'/'.$image_path : $image_path;
 
-    $source      = $basepath.'/'.$filepath;
+    $source      = $image_root.'/'.$image_path;
     $destination = false;
     $background   = null;
 
@@ -55,10 +56,11 @@ if($query['path'])
         exit();
     }
 
-    $format = strtolower(pathinfo($filepath, PATHINFO_EXTENSION));
+    $format = strtolower(pathinfo($image_path, PATHINFO_EXTENSION));
 
     //Get the parameters
-    unset($query['path']);
+    unset($query['image_path']);
+    unset($query['cache_path']);
     $parameters = $query;
 
     if(isset($parameters['auto']))
@@ -158,18 +160,17 @@ if($query['path'])
     }
 
     //Create the filename
-    if($cache_dir)
+    if($cache_root)
     {
-        $path  = $filepath;
-        $query = $parameters;
+        $cache_query = $parameters;
 
-        if(!$parameters['fm'])
+        if(!isset($parameters['fm']))
         {
-            $search  = pathinfo($filepath, PATHINFO_EXTENSION);
-            $path    = str_replace($search, $format, $filepath);
+            $search     = pathinfo($image_path, PATHINFO_EXTENSION);
+            $cache_path = str_replace($search, $format, $cache_path);
         }
 
-        $destination = $cache_dir.'/'.$path.'_'.http_build_query($query, '', '&');
+        $destination = $cache_root.'/'.$cache_path.'_'.http_build_query($cache_query, '', '&');
     }
 
     //Generate image
@@ -226,7 +227,7 @@ if($query['path'])
         }
         catch(Exception $e)
         {
-            $log = $cache_dir.'/.error_log';
+            $log = $cache_root.'/.error_log';
             error_log(sprintf('Could not generate image: %s, error: %s'."\n", $destination, $e->getMessage()), 3, $log);
         }
     }
@@ -282,7 +283,7 @@ if($query['path'])
 Class Image
 {
     protected $_image;
-    protected $_path;
+    protected $_file;
     protected $_format;
     protected $_background;
 
@@ -652,7 +653,7 @@ Class Image
 
     public function getPath()
     {
-        return $this->_path;
+        return $this->_file;
     }
 
     public function getFormat()
@@ -820,7 +821,7 @@ Class Image
     }
 
     /*
-     * Dynamically calculate the response image breakpoints based on fixed filesize reduction
+     * Calculate the image breakpoints based on fixed filesize reduction
      *
      * Inspired by https://stitcher.io/blog/tackling_responsive_images-part_2
      */

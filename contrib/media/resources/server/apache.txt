@@ -7,7 +7,7 @@
 ##
 
 # Define the filesystem locations (related to document root)
-SetEnvIf Request_URI ^.*  PAGES_CACHE_PATH=sites/[SITE]/cache/images
+SetEnvIf Request_URI ^.*  PAGES_CACHE_PATH=sites/[SITE]/cache
 SetEnvIf Request_URI ^.*  PAGES_IMAGES_PATH=images/[SITE]
 
 ## Begin - Image Cache
@@ -17,25 +17,24 @@ SetEnvIf Request_URI ^.*  PAGES_IMAGES_PATH=images/[SITE]
  RewriteRule ^ - [E=PAGES_IMAGES_ROOT:%{DOCUMENT_ROOT}%{ENV:PAGES_IMAGES_PATH}]
 
  # Condition - Do not serve from cache on browser refresh or when caching is not allowed
- #RewriteCond %{HTTP:Cache-Control} ^(no-cache)$ [OR]
+ RewriteCond %{HTTP:Cache-Control} ^(no-cache)$ [OR]
  RewriteCond %{QUERY_STRING} ^$ [OR]
  RewriteCond %{REQUEST_URI} !(?i)(.+)\.(jpe?g|png|gif).*$
  RewriteRule .* - [S=2]
 
  # Find WebP image (if browser supports it)
- RewriteCond %{HTTP_ACCEPT} image/webp [OR]
- RewriteCond %{HTTP_USER_AGENT} "Google Page Speed Insights"
+ RewriteCond %{HTTP_ACCEPT} image/webp
  RewriteCond %{DOCUMENT_ROOT}%{ENV:PAGES_CACHE_PATH}/$1\.webp_%{QUERY_STRING} -f
  RewriteRule (.+)\.(jpe?g|png|gif).*$ %{ENV:PAGES_CACHE_PATH}/$1.webp_%{QUERY_STRING} [NC,T=image/webp,E=IMAGE:1,L]
 
  # Find other image
- RewriteCond %{DOCUMENT_ROOT}/%{ENV:PAGES_CACHE_P}/$1\.$2_%{QUERY_STRING} -f
+ RewriteCond %{DOCUMENT_ROOT}/%{ENV:PAGES_CACHE_PATH}/$1\.$2_%{QUERY_STRING} -f
  RewriteRule (.+)\.(jpe?g|png|gif).*$ %{ENV:PAGES_CACHE_PATH}/$1.$2_%{QUERY_STRING} [NC,E=IMAGE:1,L]
 
  # Generate image
  RewriteCond %{ENV:REDIRECT_IMAGE} !=1
  RewriteCond %{QUERY_STRING} !^$
- RewriteRule images\/(.+)\.(jpe?g|png|gif).*$ image.php?path=$1.$2&%{QUERY_STRING} [NC,E=IMAGE,L]
+ RewriteRule images\/(.+)\.(jpe?g|png|gif).*$ image.php?cache_path=images&image_path=$1.$2&%{QUERY_STRING} [NC,E=IMAGE,L]
 
  # Set cache to 1 year
  Header set Cache-Control public,max-age=315360000 env=REDIRECT_IMAGE
