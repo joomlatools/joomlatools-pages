@@ -74,8 +74,8 @@ class Prefetcher
         {
             this.options = options;
 
-            this.log('initialize completed');
-            this.debug('options', this.options);
+            this.log('Initialize completed');
+            this.debug('Options', this.options);
 
             if(this.options.onload) {
                 this.onLoad();
@@ -91,8 +91,8 @@ class Prefetcher
         }
         else
         {
-            this.log('initialize prevented');
-            this.debug('options', this.options);
+            this.log('Initialize prevented');
+            this.debug('Options', this.options);
         }
     }
 
@@ -116,12 +116,12 @@ class Prefetcher
             {
                 promise = this.canPrerender() ? this.prerenderViaDOM(url) : fetch(url, {credentials: 'include'})
                 promise.then(result => this.cache.add(url))
-                promise.then(result => this.log('prerendered on ' + context + ':', url))
+                promise.then(result => this.log('Prerendered on ' + context + ':', url))
                 promise.catch(err => this.dispatchEvent('error', {'error': err, 'context': context}));
             }
-            else this.debug('prerender prevented on ' + context + ':', url)
+            else this.debug('Prerender prevented on ' + context + ':', url)
         }
-        else this.debug('prerender cancelled on ' + context + ':', url)
+        else this.debug('Prerender cancelled on ' + context + ':', url)
 
         return Promise.all([promise]);
     }
@@ -146,12 +146,12 @@ class Prefetcher
             {
                 promise = this.canPrefetch() ? this.prefetchViaDOM(url) : this.prefetchViaXHR(url);
                 promise.then(result =>  this.cache.add(url))
-                promise.then(result =>  this.log('prefetched on ' + context + ':', url));
+                promise.then(result =>  this.log('Prefetched on ' + context + ':', url));
                 promise.catch(err => this.dispatchEvent('error', {'error': err, 'context': context} ));
             }
-            else  this.debug('prefetch prevented on ' + context + ':', url)
+            else  this.debug('Prefetch prevented on ' + context + ':', url)
         }
-        else  this.debug('prefetch cancelled on ' + context + ':', url)
+        else  this.debug('Prefetch cancelled on ' + context + ':', url)
 
         return Promise.all([promise]);
     }
@@ -242,13 +242,13 @@ class Prefetcher
         {
             if (conn.saveData)
             {
-                this.log('load disabled: Save-Data is enabled');
+                this.log('Load disabled: Save-Data is enabled');
                 return;
             }
 
             if (conn.effectiveType.includes('2g'))
             {
-                this.log('load disabled: network conditions are poor');
+                this.log('Load disabled: network conditions are poor');
                 return;
             }
         }
@@ -260,18 +260,19 @@ class Prefetcher
         {
             if(performance.type == PerformanceNavigation.TYPE_RELOAD)
             {
-                this.log('load disabled » browser reloading | cache cleared');
+                this.log('Load disabled: browser reloading');
+                this.log('Cache cleared on reload');
                 this.cache.clear();
                 return;
             }
 
             if(performance.type == PerformanceNavigation.TYPE_BACK_FORWARD)
             {
-                this.log('load disabled » history traversal');
+                this.log('Load disabled: history traversal');
                 return;
             }
 
-            this.log('load enabled » user navigation');
+            this.log('Load enabled: user navigation');
         }
 
         const[enqueue, dequeue] = this.getThrottledQueue(this.options.concurrency);
@@ -506,7 +507,7 @@ class Prefetcher
     log()
     {
         var args = Array.from(arguments);
-        args.unshift(this.constructor.name + ":");
+        args.unshift('%c['+this.constructor.name.toLowerCase() + ']', 'color: gray');
 
         if (this.options.debug && console)
         {
@@ -524,7 +525,7 @@ class Prefetcher
     debug()
     {
         var args = Array.from(arguments);
-        args.unshift(this.constructor.name + ":");
+        args.unshift('%c['+this.constructor.name.toLowerCase() + ']', 'color: gray');
 
         if (typeof console.debug === "function") {
             console.debug.apply(console, args);
