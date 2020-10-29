@@ -74,8 +74,8 @@ class Prefetcher
         {
             this.options = options;
 
-            this.log('Prefetcher Initialize Completed');
-            this.debug('Prefetcher Options', this.options);
+            this.log('initialize completed');
+            this.debug('options', this.options);
 
             if(this.options.onload) {
                 this.onLoad();
@@ -91,8 +91,8 @@ class Prefetcher
         }
         else
         {
-            this.log('Prefetcher Initialize Prevented');
-            this.debug('Prefetcher Options', this.options);
+            this.log('initialize prevented');
+            this.debug('options', this.options);
         }
     }
 
@@ -116,12 +116,12 @@ class Prefetcher
             {
                 promise = this.canPrerender() ? this.prerenderViaDOM(url) : fetch(url, {credentials: 'include'})
                 promise.then(result => this.cache.add(url))
-                promise.then(result => this.log('Prerendered on ' + context + ':', url))
+                promise.then(result => this.log('prerendered on ' + context + ':', url))
                 promise.catch(err => this.dispatchEvent('error', {'error': err, 'context': context}));
             }
-            else this.debug('Prerender prevented on ' + context + ':', url)
+            else this.debug('prerender prevented on ' + context + ':', url)
         }
-        else this.debug('Prerender cancelled on ' + context + ':', url)
+        else this.debug('prerender cancelled on ' + context + ':', url)
 
         return Promise.all([promise]);
     }
@@ -146,12 +146,12 @@ class Prefetcher
             {
                 promise = this.canPrefetch() ? this.prefetchViaDOM(url) : this.prefetchViaXHR(url);
                 promise.then(result =>  this.cache.add(url))
-                promise.then(result =>  this.log('Prefetched on ' + context + ':', url));
+                promise.then(result =>  this.log('prefetched on ' + context + ':', url));
                 promise.catch(err => this.dispatchEvent('error', {'error': err, 'context': context} ));
             }
-            else  this.debug('Prefetch prevented on ' + context + ':', url)
+            else  this.debug('prefetch prevented on ' + context + ':', url)
         }
-        else  this.debug('Prefetch cancelled on ' + context + ':', url)
+        else  this.debug('prefetch cancelled on ' + context + ':', url)
 
         return Promise.all([promise]);
     }
@@ -242,13 +242,13 @@ class Prefetcher
         {
             if (conn.saveData)
             {
-                this.log('Cannot load: Save-Data is enabled');
+                this.log('load disabled: Save-Data is enabled');
                 return;
             }
 
             if (conn.effectiveType.includes('2g'))
             {
-                this.log('Cannot load: network conditions are poor');
+                this.log('load disabled: network conditions are poor');
                 return;
             }
         }
@@ -260,19 +260,18 @@ class Prefetcher
         {
             if(performance.type == PerformanceNavigation.TYPE_RELOAD)
             {
-                this.log('Prefetching disabled: browser reloading');
+                this.log('load disabled » browser reloading | cache cleared');
                 this.cache.clear();
-                this.log('Prefetching session cache cleared');
                 return;
             }
 
             if(performance.type == PerformanceNavigation.TYPE_BACK_FORWARD)
             {
-                this.log('Prefetching disabled: history traversal');
+                this.log('load disabled » history traversal');
                 return;
             }
 
-            this.log('Prefetching enabled: user navigation');
+            this.log('load enabled » user navigation');
         }
 
         const[enqueue, dequeue] = this.getThrottledQueue(this.options.concurrency);
@@ -506,12 +505,15 @@ class Prefetcher
      */
     log()
     {
+        var args = Array.from(arguments);
+        args.unshift(this.constructor.name + ":");
+
         if (this.options.debug && console)
         {
             if (typeof console.log === "function") {
-                console.log.apply(console, arguments);
+                console.log.apply(console, args);
             } else {
-                console.log(arguments);
+                console.log(args);
             }
         }
     }
@@ -521,10 +523,13 @@ class Prefetcher
      */
     debug()
     {
+        var args = Array.from(arguments);
+        args.unshift(this.constructor.name + ":");
+
         if (typeof console.debug === "function") {
-            console.debug.apply(console, arguments);
+            console.debug.apply(console, args);
         } else {
-            console.debug(arguments);
+            console.debug(args);
         }
     }
 
