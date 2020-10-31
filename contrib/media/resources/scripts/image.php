@@ -21,7 +21,7 @@ $refresh_time  = '1week';  //time before images that are not accessed are garbag
 $w    = null;  //width
 $h    = null;  //height
 $dpr  = 1;     //device pixel ratio
-$vary = ['accept'];
+$vary     = isset($_SERVER['HTTP_ACCEPT']) ? ['accept'] : [];
 
 $max_w   = 1920;
 $min_w   = 320;
@@ -31,8 +31,9 @@ $max_dpr = 3;
  * Route request
  */
 
-$cache_root  = isset($_SERVER['PAGES_CACHE_ROOT']) ? $_SERVER['PAGES_CACHE_ROOT'] : false;
-$cache_bypass = isset($_SERVER['HTTP_CACHE_CONTROL']) && strstr($_SERVER['HTTP_CACHE_CONTROL'], 'no-cache') !== false;
+$cache_root     = isset($_SERVER['PAGES_CACHE_ROOT']) ? $_SERVER['PAGES_CACHE_ROOT'] : false;
+$cache_none     = isset($_SERVER['HTTP_CACHE_CONTROL']) && strstr($_SERVER['HTTP_CACHE_CONTROL'], 'no-cache') !== false;
+$cache_versions = isset($_SERVER['HTTP_CACHE_ACCEPT']) && strstr($_SERVER['HTTP_CACHE_ACCEPT'], 'versions') !== false;
 
 //Request
 $query = array();
@@ -69,8 +70,6 @@ if($query['image_path'])
 
         if(!isset($parameters['fm']) && (in_array('format', $directives) || in_array('true', $directives)))
         {
-            $format = 'pjpeg';
-
             //Return WebP if supported (be forward compat when Safari offers Webp support)
             if(isset($_SERVER['HTTP_ACCEPT']) && strstr($_SERVER['HTTP_ACCEPT'], 'image/webp') !== false)
             {
@@ -167,7 +166,7 @@ if($query['image_path'])
         if(!isset($parameters['fm']))
         {
             $search     = pathinfo($image_path, PATHINFO_EXTENSION);
-            $cache_path = str_replace($search, $format, $cache_path);
+            $cache_path = str_replace('.'.$search, '.'.$format, $cache_path);
         }
 
         $destination = $cache_root.'/'.$cache_path.'_'.http_build_query($cache_query, '', '&');
@@ -175,7 +174,7 @@ if($query['image_path'])
 
     //Generate image
     $image = null;
-    if(!$destination || !file_exists($destination) || $cache_bypass)
+    if(!$destination || !file_exists($destination) || $cache_none)
     {
         try
         {
@@ -232,13 +231,35 @@ if($query['image_path'])
         }
     }
 
+
+    //Get a list of all the different file versions
+    $versions = [];
+    if($cache_none || $cache_versions)
+    {
+        foreach (glob($cache_root.'/'.$cache_path.'*') as $file)
+        {
+            if($cache_none) {
+                unlink($file);
+            }
+
+            if($file != $destination)
+            {
+                foreach(['jpg', 'jpeg', 'png', 'gif'] as $ext) {
+                    $file = str_replace($ext.'_', $ext.'?', $file);
+                }
+
+                $versions[] = str_replace($cache_root, '', $file);
+            }
+        }
+    }
+
     //Garbage collect (single folder only for performance reasons)
     $refresh_time = is_string($refresh_time) ? strtotime($refresh_time) - strtotime('now') : $refresh_time;
     foreach (glob(dirname($destination).'/*') as $file)
     {
         if (is_file($file))
         {
-            if (time() - fileatime($file) >= $refresh_time) {
+            if ((time() - fileatime($file) >= $refresh_time)) {
                 unlink($file);
             }
         }
@@ -274,6 +295,10 @@ if($query['image_path'])
     {
         $time  = (microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000;
         header('Server-Timing: tot;desc="Total";dur='.(int) $time);
+    }
+
+    if(!empty($versions)) {
+        header('Cache-Versions: '.implode(',', $versions));
     }
 
     readfile($file);
