@@ -12,7 +12,9 @@ class ComPagesEventSubscriberErrorhandler extends ComPagesEventSubscriberAbstrac
     public function onAfterKoowaBootstrap(KEventInterface $event)
     {
         //Catch all Joomla exceptions
-        JError::setErrorHandling(E_ERROR, 'callback', array($this, 'handleException'));
+        if(!defined('JOOMLATOOLS_PLATFORM')) {
+            JError::setErrorHandling(E_ERROR, 'callback', array($this, 'handleException'));
+        }
     }
 
     public function onException(KEventException $event)
