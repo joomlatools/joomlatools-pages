@@ -217,28 +217,23 @@ class ExtK2ModelEntityArticle extends ExtK2ModelEntityAbstract
 
 	public function setPropertyFields($value)
 	{
-		$fields = null;
+		if($value && is_string($value)) {
+		 	$value = json_decode($value, true);
+		}
 
-		if($value)
+		if($value && !empty($value))
 		{
-			if(is_string($value)) {
-				$value = json_decode($value, true);
-			}
+			//Get the single field
+			$fields = $this->getObject('ext:k2.model.fields')
+				->id(array_column($value, 'id'))
+				->fetch();
 
-			if(!empty($value))
+			foreach($value as $v)
 			{
-				//Get the single field
-				$fields = $this->getObject('ext:k2.model.fields')
-					->id(array_column($value, 'id'))
-					->fetch();
-
-				foreach($value as $v)
+				if($field = $rows->find($v['id']))
 				{
-					if($field = $rows->find($v['id']))
-					{
-						//Set the value
-						$field->value = $v['value'];
-					}
+					//Set the value
+					$field->value = $v['value'];
 				}
 			}
 		}
