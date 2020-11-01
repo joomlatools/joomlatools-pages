@@ -89,7 +89,7 @@ class ExtJoomlaModelEntityCategory extends ExtJoomlaModelEntityAbstract
 
 	public function setPropertyParameters($value)
 	{
-		if(is_string($value)) {
+		if($value && is_string($value)) {
 			$value = json_decode($value, true);
 		}
 
