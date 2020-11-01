@@ -92,7 +92,7 @@ class ExtK2ModelEntityCategory extends ExtK2ModelEntityAbstract
 
 	public function setPropertyParameters($value)
 	{
-		if(is_string($value)) {
+		if($value && is_string($value)) {
 			$value = json_decode($value, true);
 		}
 
