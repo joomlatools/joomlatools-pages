@@ -132,16 +132,10 @@ class ExtK2ModelEntityArticle extends ExtK2ModelEntityAbstract
 
 	public function getPropertyAttachments()
 	{
-		$attachments = array();
-
 		//Get the single category
-		$rows = $this->getObject('ext:k2.model.attachments')
+		$attachments = $this->getObject('ext:k2.model.attachments')
 			->article($this->id)
 			->fetch();
-
-		foreach($rows as $row) {
-			$attachments[] = $row;
-		}
 
 		return $attachments;
 	}
@@ -234,7 +228,7 @@ class ExtK2ModelEntityArticle extends ExtK2ModelEntityAbstract
 			if(!empty($value))
 			{
 				//Get the single field
-				$rows = $this->getObject('ext:k2.model.fields')
+				$fields = $this->getObject('ext:k2.model.fields')
 					->id(array_column($value, 'id'))
 					->fetch();
 
@@ -244,13 +238,11 @@ class ExtK2ModelEntityArticle extends ExtK2ModelEntityAbstract
 					{
 						//Set the value
 						$field->value = $v['value'];
-
-						//Add the field
-						$fields[] = $field;
 					}
 				}
 			}
 		}
+		else $fields = $this->getObject('ext:k2.model.fields')->create()
 
 		return $fields;
 	}
