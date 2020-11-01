@@ -197,7 +197,7 @@ class ExtJoomlaModelEntityArticle extends ExtJoomlaModelEntityAbstract
 
 	public function setPropertyImage($value)
 	{
-		if(is_string($value)) {
+		if($value && is_string($value)) {
 			$value = json_decode($value, true);
 		}
 
@@ -242,7 +242,7 @@ class ExtJoomlaModelEntityArticle extends ExtJoomlaModelEntityAbstract
 
 	public function setPropertyLinks($value)
 	{
-		if(is_string($value)) {
+		if($value && is_string($value)) {
 			$value = array_filter(json_decode($value, true));
 		}
 
@@ -263,7 +263,7 @@ class ExtJoomlaModelEntityArticle extends ExtJoomlaModelEntityAbstract
 
 	public function setPropertyParameters($value)
 	{
-		if(is_string($value)) {
+		if($value && is_string($value)) {
 			$value = json_decode($value, true);
 		}
 
