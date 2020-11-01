@@ -113,15 +113,9 @@ class ExtJoomlaModelEntityArticle extends ExtJoomlaModelEntityAbstract
 
 	public function getPropertyFields()
 	{
-		$fields = array();
-
-		$rows = $this->getObject('ext:joomla.model.fields')
+		$fields = $this->getObject('ext:joomla.model.fields')
 						->article($this->id)
 						->fetch();
-
-		foreach($rows as $row) {
-			$fields[] = $row;
-		}
 
 		return $fields;
 	}
