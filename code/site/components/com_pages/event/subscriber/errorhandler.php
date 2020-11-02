@@ -22,8 +22,11 @@ class ComPagesEventSubscriberErrorhandler extends ComPagesEventSubscriberAbstrac
         $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
 
         //Purge cache
-        if($event->getCode() == KHttpResponse::NOT_FOUND) {
-            $dispatcher->purge();
+        if($event->getCode() == KHttpResponse::NOT_FOUND)
+        {
+            if($dispatcher->isCacheable()) {
+                $dispatcher->purge();
+            }
         }
 
         //Handle exception
