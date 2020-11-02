@@ -62,7 +62,9 @@ class ComPagesTemplateFilterMeta extends ComPagesTemplateFilterAbstract
 
                 if(isset($metadata['og:type']))
                 {
-                    if (strpos($metadata['og:image'], 'http') === false) {
+                    if (strpos($metadata['og:image'], 'http') === false)
+                    {
+                        $this->getTemplate()->getFilter('asset')->filter($metadata['og:image']);
                         $metadata['og:image'] = (string)$this->getTemplate()->url($metadata['og:image']);
                     }
 
