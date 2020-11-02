@@ -13,9 +13,10 @@ class ComPagesControllerProcessorEmail extends ComPagesControllerProcessorAbstra
     {
         $config->append([
             'html'       => true,
+            'sender'     => null,
             'recipients' => [],
             'title'      => '',
-            'subject'    => ''
+            'subject'    => '',
         ]);
 
         parent::_initialize($config);
@@ -29,16 +30,15 @@ class ComPagesControllerProcessorEmail extends ComPagesControllerProcessorAbstra
             $mailer->isHtml(true);
         }
 
-        //Set the sender
-        if(isset($data['email']))
+        if($this->getConfig()->sender) {
+            $mailer->setSender($this->getConfig()->sender);
+        }
+
+        //Set the reply to
+        if($email = $this->getEmail($data))
         {
-            $sender[] = $data['email'];
-
-            if(isset($data['name'])) {
-                $sender[] = $data['name'];
-            }
-
-            $mailer->setSender($sender);
+            $name = $this->getName($data);
+            $mailer->addReplyTo($email, $name);
         }
 
         //Add the recipients
@@ -56,7 +56,9 @@ class ComPagesControllerProcessorEmail extends ComPagesControllerProcessorAbstra
         $mailer->setBody($body);
 
         //Send the mail
-        $mailer->send();
+        if(!$mailer->send()) {
+            throw new RuntimeException($mailer->ErrorInfo);
+        }
     }
 
     public function getTitle()
@@ -74,6 +76,22 @@ class ComPagesControllerProcessorEmail extends ComPagesControllerProcessorAbstra
         return count($this->getConfig()->recipients) ? $this->getConfig()->recipients : (array) JFactory::getConfig()->get('mailfrom');
     }
 
+    public function getEmail($data)
+    {
+        return $data['email'] ?? '';
+    }
+
+    public function getName($data)
+    {
+        $name = $data['name'] ?? '';
+
+        if(isset($data['firstName']) && isset($data['lastName'])) {
+            $name = $data['firstName'].' '.$data['lastName'];
+        }
+
+        return $name;
+    }
+
     public function getMessage($data)
     {
         $title  = $this->getTitle();
@@ -81,8 +99,8 @@ class ComPagesControllerProcessorEmail extends ComPagesControllerProcessorAbstra
 
         foreach($data as $key => $value)
         {
-            $content[] = sprintf('<h2>%s</h2>', ucfirst($key));
-            $content[] = sprintf('<p>%s</p>', $value);
+            $content[] = sprintf('<h2>%s</h2>', implode(' ', array_map('ucfirst', KStringInflector::explode(ucfirst($key)))));
+            $content[] = sprintf('<p>%s</p>', is_array($value) ? implode(', ', $value) : $value);
         }
 
         $content = implode("\n", $content);
@@ -98,26 +116,26 @@ class ComPagesControllerProcessorEmail extends ComPagesControllerProcessorAbstra
 
   @media only screen and (max-width: 600px) {
     .wrapper{width:95% !important;}
-  }  
-  
+  }
+
   h1, h2, p {
     color:#222;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     padding:0;
-  } 
-  
+  }
+
   h1 {
     font-size:28px;
     font-weight:400;
     margin-top:0;
   }
-  
+
   h2 {
     font-size:16px;
     font-weight:700;
     margin:30px 0 15px 0;
   }
-  
+
   p {
     font-size:14px;
     line-height:1.5em;
@@ -131,7 +149,7 @@ class ComPagesControllerProcessorEmail extends ComPagesControllerProcessorAbstra
 <center>
 
 <table border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#F8F8F8" class="wrapper">
-    
+
   <tr>
     <td align="center" height="100%" valign="top" width="100%">
       <!--[if (gte mso 9)|(IE)]>
