@@ -84,7 +84,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     {
         $result = false;
 
-        if(!isset($this->__route))
+        if(!isset($this->__route) && $this->getObject('com://site/pages.config')->getSitePath() !== false)
         {
             $base  = $this->getRequest()->getBasePath();
             $url   = urldecode($this->getRequest()->getUrl()->getPath());
@@ -285,8 +285,11 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
             foreach([(int) $code, '500'] as $code)
             {
-                if($page = $this->getObject('page.registry')->getPage($code))
+                if($page = $this->getObject('page.registry')->getPageEntity($code))
                 {
+                    //Set status code (before rendering the error)
+                    $context->response->setStatus($code);
+
                     //Set the controller
                     $this->setController($page->getType(), ['page' => $page]);
 
@@ -295,9 +298,6 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
                     //Set error in the response
                     $context->response->setContent($content);
-
-                    //Set status code
-                    $context->response->setStatus($code);
 
                     return true;
                 }

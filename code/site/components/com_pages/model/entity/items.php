@@ -28,6 +28,26 @@ class ComPagesModelEntityItems extends KModelEntityComposite implements JsonSeri
         return $instance;
     }
 
+    public function get($property, $default = null)
+    {
+        $result = $default;
+        if($entity = $this->getIterator()->current()) {
+            $result = $entity->get($property, $default);
+        }
+
+        return $result;
+    }
+
+    public function has($property)
+    {
+        $result = false;
+        if($entity = $this->getIterator()->current()) {
+            $result = $entity->has($property);
+        }
+
+        return $result;
+    }
+
     public function jsonSerialize()
     {
         $result = array();

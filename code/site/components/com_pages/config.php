@@ -39,12 +39,16 @@ class ComPagesConfig extends KObject implements KObjectSingleton
             'template_cache_path'       => $config->site_path ? $config->site_path.'/cache/templates' : false,
             'template_cache_validation' => true,
 
-            'http_cache'                => false,
-            'http_cache_path'           => $config->site_path ? $config->site_path.'/cache/responses': false,
-            'http_cache_time'           => '15min',
-            'http_cache_time_proxy'     => '2h',
-            'http_cache_validation'     => true,
-            'http_cache_control'        => array(),
+            'http_cache'                 => false,
+            'http_cache_path'            => $config->site_path ? $config->site_path.'/cache/responses': false,
+            'http_cache_time'            => false,
+            'http_cache_time_browser'    => null,
+            'http_cache_validation'      => true,
+            'http_cache_control'         => array(),
+            'http_cache_control_private' => array('private', 'no-cache'),
+
+            'http_static_cache'         => getenv('KPATH_PAGES_STATIC') ? true : false,
+            'http_static_cache_path'    => getenv('KPATH_PAGES_STATIC') ? $_SERVER['DOCUMENT_ROOT'].getenv('KPATH_PAGES_STATIC') : false,
 
             'http_resource_cache'       => JFactory::getConfig()->get('caching'),
             'http_resource_cache_time'  => '1day',
@@ -74,6 +78,11 @@ class ComPagesConfig extends KObject implements KObjectSingleton
         return $result;
     }
 
+    public function get($option, $default = null)
+    {
+        return $this->getConfig()->get($option, $default);
+    }
+
     public function getOptions()
     {
         return KObjectConfig::unbox($this->getConfig());
@@ -94,6 +103,16 @@ class ComPagesConfig extends KObject implements KObjectSingleton
             {
                 $config = (array) include JPATH_CONFIGURATION.'/configuration-pages.php';
                 $options = array_replace_recursive($options, $config);
+            }
+
+            //Register the composer class locator
+            if(isset($options['composer_path']) && file_exists($options['composer_path']))
+            {
+                $this->getObject('manager')->getClassLoader()->registerLocator(
+                    new KClassLocatorComposer(array(
+                            'vendor_path' => $options['composer_path']
+                        )
+                    ));
             }
 
             //Load site config options

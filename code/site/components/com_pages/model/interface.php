@@ -18,7 +18,7 @@ interface ComPagesModelInterface extends KModelInterface
     public function getType();
     public function getIdentityKey();
     public function getPrimaryKey();
-    public function getHash();
+    public function getHash($refresh = false);
 
     public function isAtomic();
     public function isPersistable();

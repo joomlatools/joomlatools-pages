@@ -24,9 +24,9 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                 'excerpt'     => null,
                 'text'        => '',
                 'image'       => [
-                    'url' 	   => '',
-                    'alt'	   => null,
-                    'caption'  => null,
+                    //'url' 	   => '',
+                    //'alt'	     => null,
+                    //'caption'  => null,
                 ],
                 'date'        => 'now',
                 'author'      => null,
@@ -163,7 +163,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
     public function setPropertyImage($value)
     {
         //Normalize images
-        $image = array();
+        $image = null;
 
         if(!empty($value))
         {
@@ -188,9 +188,10 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                 ];
             }
 
+            $image = new KObjectConfigJson($image);
         }
 
-        return new KObjectConfigJson($image);
+        return $image;
     }
 
     public function getParent()

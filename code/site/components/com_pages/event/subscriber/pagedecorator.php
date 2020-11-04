@@ -9,6 +9,8 @@
 
 class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstract
 {
+    protected $_dispatcher;
+
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
@@ -18,18 +20,46 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
         parent::_initialize($config);
     }
 
+    public function onAfterApplicationRoute(KEventInterface $event)
+    {
+        //Try to validate the cache
+        if($dispatcher = $this->getDispatcher())
+        {
+            if($dispatcher->isCacheable()) {
+                $dispatcher->validate();
+            }
+        }
+    }
+
     public function onAfterApplicationDispatch(KEventInterface $event)
+    {
+        if($dispatcher = $this->getDispatcher())
+        {
+            $buffer = JFactory::getDocument()->getBuffer('component');
+
+            ob_start();
+
+            $dispatcher->getResponse()->setContent($buffer);
+            $dispatcher->dispatch();
+
+            $result = ob_get_clean();
+
+            JFactory::getDocument()->setBuffer($result, 'component');
+        }
+    }
+
+    public function getDispatcher()
     {
         $menu = JFactory::getApplication()->getMenu()->getActive();
 
         //Only decorate GET requests that are not routing to com_pages
-        if($this->getObject('request')->isGet() && $menu->component != 'com_pages')
+        if(is_null($this->_dispatcher) && $this->getObject('request')->isGet() && $menu->component != 'com_pages')
         {
-            $site_path  =  $this->getObject('com://site/pages.config')->getSitePath();
             $page_route = $route = $this->getObject('com://site/pages.dispatcher.http')->getRoute();
 
-            if($page_route && $site_path)
+            if($page_route)
             {
+                $this->_dispatcher = false;
                 $page_route = $page_route->getPath(false);
 
                 $base  = trim(dirname($menu->route), '.');
@@ -54,28 +84,19 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
                         ->getPage($page)
                         ->process->get('decorate', false);
 
-                    if($decorate === true || (is_int($decorate) && ($decorate >= $level))) {
-                        $this->_decoratePage($page, $event->getTarget());
+                    if($decorate === true || (is_int($decorate) && ($decorate >= $level)))
+                    {
+                        $dispatcher = $this->getObject('com://site/pages.dispatcher.http', ['controller' => 'decorator']);
+
+                        $dispatcher->getResponse()->getHeaders()->set('Content-Location',  clone $dispatcher->getRequest()->getUrl());
+                        $dispatcher->getRequest()->getUrl()->setPath('/'.$page);
+
+                        $this->_dispatcher = $dispatcher;
                     }
                 }
             }
         }
-    }
 
-    protected function _decoratePage($page, $app)
-    {
-        $buffer = $app->getDocument()->getBuffer('component');
-
-        ob_start();
-
-        $dispatcher = $this->getObject('com://site/pages.dispatcher.http', ['controller' => 'decorator']);
-
-        $dispatcher->getRequest()->getUrl()->setPath($page);
-        $dispatcher->getResponse()->setContent($buffer);
-        $dispatcher->dispatch();
-
-        $result = ob_get_clean();
-
-        $app->getDocument()->setBuffer($result, 'component');
+        return $this->_dispatcher;
     }
 }

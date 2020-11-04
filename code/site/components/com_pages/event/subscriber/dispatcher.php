@@ -18,16 +18,58 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         parent::_initialize($config);
     }
 
+    public function onAfterApplicationInitialise(KEventInterface $event)
+    {
+        $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
+        $application = JFactory::getApplication();
+
+        //Turn off sh404sef for com_pages
+        if(JComponentHelper::isEnabled('com_sh404sef'))
+        {
+            //Tun route parsing
+            $application->getRouter()->attachParseRule(function($router, $url)
+            {
+                if(class_exists('Sh404sefClassRouterInternal'))
+                {
+                    $page = $dispatcher->getPage();
+
+                    if($page !== false && !$page->isDecorator()) {
+                        Sh404sefClassRouterInternal::$parsedWithJoomlaRouter = true;
+                    }
+                }
+
+            },  JRouter::PROCESS_BEFORE);
+
+            //Tun off route building
+            $application->getRouter()->attachBuildRule(function($router, $url)
+            {
+                if(class_exists('Sh404sefFactory')) {
+                    Sh404sefFactory::getConfig()->useJoomlaRouter[] = 'pages';
+                }
+
+            },  JRouter::PROCESS_BEFORE);
+        }
+
+        //Authenticate anonymous requests and inject form token dynamically
+        if($dispatcher->getRequest()->isPost() && $dispatcher->isCacheable())
+        {
+            if($cache = $dispatcher->loadCache())
+            {
+                if($application->input->request->get($cache['token'])) {
+                    $application->input->post->set(JSession::getFormToken(), '1');
+                }
+            }
+        }
+    }
+
     public function onAfterApplicationRoute(KEventInterface $event)
     {
-        $site = $this->getObject('com://site/pages.config')->getSitePath();
-        $page = $this->getObject('com://site/pages.dispatcher.http')->getPage();
+        $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
 
-        if($page !== false && $site !== false)
+        //Get the page
+        if($page = $dispatcher->getPage())
         {
-            $request = $this->getObject('request');
-
-            if($request->isSafe())
+            if($this->getObject('request')->isSafe())
             {
                 /**
                  * Route safe requests to pages under the following conditions:
@@ -47,9 +89,10 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
                 /**
                  * Route none-safe requests to pages under the following conditions:
                  *
-                 * 	- Joomla fell back to the default menu item because the page route couldn't be resolved
+                 * 	- Page is a form
+                 *  - Joomla fell back to the default menu item because the page route couldn't be resolved
                  */
-                if(JFactory::getApplication()->getMenu()->getActive()->home && !empty($page->path)) {
+                if($page->isForm() || (JFactory::getApplication()->getMenu()->getActive()->home && !empty($page->path))) {
                     $event->getTarget()->input->set('option', 'com_pages');
                 }
             }
@@ -80,11 +123,78 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
                 JFactory::getApplication()->setTemplate($template, $params);
             }
         }
+        else
+        {
+            //Purge the cache if it exists
+            if($dispatcher->isCacheable() && $dispatcher->loadCache())
+            {
+                $dispatcher->purge();
+
+                //Manually set the cache status
+                JFactory::getApplication()->setHeader('Cache-Status', 'DYNAMIC, PURGED');
+            }
+        }
+    }
+
+    public function onAfterApplicationRender(KEventInterface $event)
+    {
+        if(!headers_sent())
+        {
+            header_register_callback( function() {
+                header_remove('Expires');
+            });
+        }
+    }
+
+    public function onAfterApplicationRespond(KEventInterface $event)
+    {
+        $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
+
+        //Cache and cleanup Joomla output if routing to a page
+        if($route = $dispatcher->getRoute())
+        {
+            $headers = array();
+            foreach (headers_list() as $header)
+            {
+                $parts = explode(':', $header, 2);
+                $headers[trim($parts[0])] = trim($parts[1]);
+            }
+
+            //Remove the Expires header
+            unset($headers['Expires']);
+
+            //Do not cache if Joomla is running in debug mode
+            if(!JDEBUG && $dispatcher->isCacheable() && $dispatcher->isDecorated())
+            {
+                $content = $event->getTarget()->getBody();
+
+                //Replace the session based form and csrf token with a fixed token
+                $token = $dispatcher->getCacheToken();
+
+                $search      = '#<input type="hidden" name="[0-9a-f]{32}" value="1" />#';
+                $replacement = '<input type="hidden" name="' . $token . '" value="1" />';
+
+                $content = preg_replace($search, $replacement, $content);
+
+                //Search for a csrf token in the content and refresh it
+                $search      = '#"csrf.token": "[0-9a-f]{32}"#';
+                $replacement = '"csrf.token": "' . $token . '"';
+
+                $content = preg_replace($search, $replacement, $content);
+
+                $dispatcher->getResponse()->setHeaders($headers);
+                $dispatcher->getResponse()->setContent($content);
+
+                $dispatcher->cache();
+            }
+        }
     }
 
     public function onAfterTemplateModules(KEventInterface $event)
     {
-        if($page = $this->getObject('com://site/pages.dispatcher.http')->getPage())
+        $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
+
+        if($page = $dispatcher->getPage())
         {
             if($page->process->has('template') && $page->process->template->has('modules'))
             {

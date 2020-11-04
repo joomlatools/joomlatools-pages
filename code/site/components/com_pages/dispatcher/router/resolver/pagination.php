@@ -17,7 +17,15 @@ class ComPagesDispatcherRouterResolverPagination extends ComPagesDispatcherRoute
 {
     public function resolve(ComPagesDispatcherRouterRouteInterface $route)
     {
-        $state = $route->getState();
+        $state = $this->_getState($route);
+
+        //Get the state
+        if($page = $route->getPage())
+        {
+            if(($collection = $page->isCollection()) && isset($collection['state'])) {
+                $state = $collection['state'];
+            }
+        }
 
         if($route->getFormat() == 'json')
         {
@@ -61,8 +69,8 @@ class ComPagesDispatcherRouterResolverPagination extends ComPagesDispatcherRoute
 
     public function generate(ComPagesDispatcherRouterRouteInterface $route)
     {
-        $state = $route->getState();
         $page = array();
+        $state = $this->_getState($route);
 
         if($route->getFormat() == 'json')
         {
@@ -105,5 +113,19 @@ class ComPagesDispatcherRouterResolverPagination extends ComPagesDispatcherRoute
                 unset($route->query['offset']);
             }
         }
+    }
+
+    protected function _getState(ComPagesDispatcherRouterRoutePage $route)
+    {
+        $state = array();
+
+        if($page = $route->getPage())
+        {
+            if(($collection = $page->isCollection()) && isset($collection['state'])) {
+                $state = $collection['state'];
+            }
+        }
+
+        return $state;
     }
 }
