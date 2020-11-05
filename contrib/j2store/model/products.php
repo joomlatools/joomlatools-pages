@@ -27,7 +27,7 @@ class ExtJ2StoreModelProducts extends ComPagesModelDatabase
 	{
 		$config->append(array(
 			'persistable' => false,
-			'type'    => 'produtcs',
+			'type'    => 'products',
 			'entity'  => 'product',
 			'table'   => 'content',
 		));
