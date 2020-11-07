@@ -16,9 +16,13 @@ SetEnvIf Request_URI ^.*  PAGES_IMAGES_PATH=images/[SITE]
  RewriteRule ^ - [E=PAGES_CACHE_ROOT:%{DOCUMENT_ROOT}%{ENV:PAGES_CACHE_PATH}]
  RewriteRule ^ - [E=PAGES_IMAGES_ROOT:%{DOCUMENT_ROOT}%{ENV:PAGES_IMAGES_PATH}]
 
+ # Condition - Serve source image if no query and image exists
+ RewriteCond %{QUERY_STRING} ^$
+ RewriteCond %{DOCUMENT_ROOT}/%{ENV:PAGES_IMAGES_PATH}/$1.$2 -f
+ RewriteRule images\/(.+)\.(jpe?g|png|gif).*$ %{ENV:PAGES_IMAGES_PATH}/$1.$2 [NC,E=IMAGE:1,L]
+
  # Condition - Do not serve from cache on browser refresh or when caching is not allowed
- RewriteCond %{HTTP:Cache-Control} ^(no-cache)$ [OR]
- RewriteCond %{QUERY_STRING} ^$ [OR]
+ RewriteCond %{HTTP:Cache-Control} ^(no-cache)$
  RewriteCond %{REQUEST_URI} !(?i)(.+)\.(jpe?g|png|gif).*$
  RewriteRule .* - [S=2]
 
