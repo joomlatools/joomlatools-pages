@@ -211,4 +211,17 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
 
         return $query;
     }
+
+    public function getHash($refresh = false)
+    {
+        $query = $this->getObject('database.query.select')
+            ->table(['tbl' => $this->getTable()->getName()])
+            ->columns(['hash' => 'MAX(GREATEST(tbl.created, tbl.modified))']);
+
+        if($modified = $this->getTable()->select($query, KDatabase::FETCH_FIELD)) {
+            $hash = hash('crc32b', $modified);
+        }
+
+        return $hash;
+    }
 }
