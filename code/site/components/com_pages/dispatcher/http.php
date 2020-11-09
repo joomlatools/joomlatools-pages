@@ -110,7 +110,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             if($page->isSubmittable())
             {
                 //Do not allow get on empty forms or collection, only used as API endpoints
-                if($page->getContent()) {
+                if($page->getContent() || $page->layout) {
                     $methods[] = 'get';
                 }
             }
@@ -250,8 +250,10 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             $this->getResponse()->getHeaders()->set('Link', array($context->page->canonical => array('rel' => 'canonical')));
 
             //Add X-Robots-Tag
-            if($context->page->metadata->has('robots')) {
-                $this->getResponse()->getHeaders()->set('X-Robots-Tag', KObjectConfig::unbox($context->page->metadata->robots));
+            if($context->page->metadata->has('robots'))
+            {
+                $tags = KObjectConfig::unbox($context->page->metadata->robots);
+                $this->getResponse()->getHeaders()->set('X-Robots-Tag', $tags);
             }
         }
     }
@@ -273,6 +275,11 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             $exception = $context->param->getException();
         } else {
             $exception = $context->param;
+        }
+
+        //Context needs to be reset
+        if($page = $this->getPage()) {
+            $context->page = $page;
         }
 
         if(!JDEBUG && $this->getObject('request')->getFormat() == 'html')
