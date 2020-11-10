@@ -27,7 +27,7 @@ class ComPagesEventSubscriberStaticcache extends ComPagesEventSubscriberAbstract
             if($file && $response->getMaxAge() === NULL)
             {
                 // Cache needs to be regenerated OR cache doesn't exist yet
-                $regenerate = !$response->isNotModified() || !file_exists($file);
+                $regenerate = !$dispatcher->isIdentical() || !file_exists($file);
 
                 //Re-generated the static cache
                 if($regenerate && $content = $response->getContent())
