@@ -37,10 +37,10 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     //The page was found in cache but has since been modified.
     const CACHE_MODIFIED = 'MODIFIED';
 
-    //The cache found in cache and has been regenerated
+    //The page was found in cache and has been regenerated
     const CACHE_REGENERATED = 'REGENERATED';
 
-    //The page was found in cache and generated page is identical
+    //The page was found in cache and the generated page is identical
     const CACHE_IDENTICAL = 'IDENTICAL';
 
     /**
