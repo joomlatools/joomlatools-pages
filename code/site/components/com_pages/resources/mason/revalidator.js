@@ -69,14 +69,16 @@ class masonRevalidator {
         }
 
         //Request options
-        var options = {}
+        var options = {
+            headers: {
+                'Cache-Control': 'must-revalidate',
+                'Accept': 'text/html',
+            }
+        }
+
         if (cache.username && cache.password) {
             let authorization = new Buffer.from(cache.username + ':' + cache.password).toString('base64')
-            options = {
-                headers: {
-                    'Authorization': 'Basic ' + authorization
-                }
-            }
+            options.headers['Authorization'] = 'Basic ' + authorization
         }
 
         this.getRequest(cache, options).then((response) => {
@@ -145,21 +147,12 @@ class masonRevalidator {
 
     async revalidateUrl(item, options) {
         let url = item['url']
-        let defaults = {
-            headers: {
-                'Cache-Control': 'max-age=0, must-revalidate',
-                'Accept': 'text/html',
-            }
-        }
-
-        options = {...defaults, ...options}
 
         let request = this.getRequest(url, options).then((response) => {
-            let hash = response.hash()
             let time = response.time()
             let status = response.headers['cache-status'].toLowerCase()
 
-            if (hash == null || hash != item['hash']) {
+            if (!status.includes('hit') && !status.includes('identical')) {
                 if (status.includes('purged')) {
                     mason.log.debug(chalk.red('  » Purged: ' + url + ' - ' + time + ' s'))
                 } else {
@@ -202,7 +195,7 @@ class masonRevalidator {
                     let hash = null
 
                     if (response.headers.etag) {
-                        hash = response.headers.etag.replace('W/', '').replace('-gzip', '')
+                        hash = response.headers.etag.replace('-gzip', '')
                     }
 
                     return hash

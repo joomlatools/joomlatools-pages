@@ -457,6 +457,11 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                         $page->metadata = array();
                                     }
 
+                                    //Set robots metadata
+                                    if(!isset($page->metadata['robots']) && !$page->getContent() && !$page->layout) {
+                                        $page->metadata['robots'] = ['none'];
+                                    }
+
                                     //Handle dynamic data
                                     array_walk_recursive ($page, function(&$value, $key)
                                     {

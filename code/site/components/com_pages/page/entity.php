@@ -28,7 +28,11 @@ class ComPagesPageEntity extends ComPagesModelEntityPage
 
     public function setPropertyLayout($value)
     {
-        return new KObjectConfig($value);
+        if($value) {
+            $value = new KObjectConfig($value);
+        }
+
+        return $value;
     }
 
     public function setPropertyCollection($value)
