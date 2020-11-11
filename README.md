@@ -17,7 +17,7 @@ Pages has a **flat-file bias**, and **doesn't require a database** to work. The 
 
 ### Why Joomlatools Pages?
 
-For the rebuild of [Joomlatools.com](http://joomlatools.test/blog/services/introducing-our-brand-new-website) we needed a solution that would allow us to easily include, and update, content on our site. Using Joomla articles and modules would make the site very hard to manage. Pages solves this in an elegant and simple way, not to mention it's super fast and easy to work with too!
+For the rebuild of [Joomlatools.com](http://joomlatools.com/blog/services/introducing-our-brand-new-website) we needed a solution that would allow us to easily include, and update, content on our site. Using Joomla articles and modules would make the site very hard to manage. Pages solves this in an elegant and simple way, not to mention it's super fast and easy to work with too!
 
 ### Who is Joomlatools Pages for?
 
