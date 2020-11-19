@@ -32,6 +32,7 @@ class ComPagesModelWebservice extends ComPagesModelCollection
             'url'          => '',
             'data'         => '',
             'cache'        => null,
+            'headers'      => array()
         ]);
 
         parent::_initialize($config);
@@ -40,6 +41,11 @@ class ComPagesModelWebservice extends ComPagesModelCollection
     public function getUrl(array $variables = array())
     {
         return KHttpUrl::fromTemplate($this->_url, $variables);
+    }
+
+    public function getHeaders()
+    {
+        return KObjectConfig::unbox($this->getConfig()->headers);
     }
 
     public function getHash($refresh = false)
@@ -51,7 +57,8 @@ class ComPagesModelWebservice extends ComPagesModelCollection
             $http    = $this->_getHttpClient();
 
             $max_age = $refresh ? 0 : $this->getConfig()->cache;
-            $headers = ['Cache-Control' => $this->_getCacheControl($max_age)];
+            $headers = $this->getHeaders();
+            $headers['Cache-Control'] = $this->_getCacheControl($max_age);
 
             try
             {
@@ -83,7 +90,9 @@ class ComPagesModelWebservice extends ComPagesModelCollection
                 $http    = $this->_getHttpClient();
 
                 $max_age = $this->getConfig()->cache;
-                $headers = ['Cache-Control' => $this->_getCacheControl($max_age)];
+
+                $headers = $this->getHeaders();
+                $headers['Cache-Control'] = $this->_getCacheControl($max_age);
 
                 try {
                     $this->__data = $http->get($url, $headers);
@@ -136,8 +145,9 @@ class ComPagesModelWebservice extends ComPagesModelCollection
 
         $http    = $this->_getHttpClient();
         $url     = $this->getUrl($this->getState()->getValues());
-        $headers = ['Origin' => $url->toString(KHttpUrl::AUTHORITY)];
 
+        $headers = $this->getHeaders();
+        $headers['Origin'] = $url->toString(KHttpUrl::AUTHORITY);
 
         $data   = array();
         if(!$context->state->isUnique())
