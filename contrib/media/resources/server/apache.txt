@@ -18,7 +18,7 @@ RewriteRule ^ - [E=PAGES_IMAGES_ROOT:%{DOCUMENT_ROOT}%{ENV:PAGES_IMAGES_PATH}]
 #
 
     RewriteCond %{HTTP:Cache-Control} ^(no-cache)$
-    RewriteCond %{REQUEST_URI} !(?i)(.+)\.(jpe?g|png|gif).*$
+    RewriteCond %{REQUEST_URI} !(?i)(.+)\.(jpe?g|png|gif|svg).*$
     RewriteRule .* - [S=2]
 
     # Find generated WebP image (if browser supports it)
