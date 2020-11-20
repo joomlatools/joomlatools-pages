@@ -482,10 +482,11 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         return $result;
     }
 
-    public function isCacheable()
+    public function isCacheable($strict = true)
     {
-        if($result = parent::isCacheable())
+        if($result = parent::isCacheable() && $strict)
         {
+            //Check if the current page is cacheable
             if($page = $this->getPage()) {
                 $result = (bool)$page->process->get('cache', true);
             } else {
