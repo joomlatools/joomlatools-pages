@@ -51,7 +51,7 @@ ANCHOR;
         $config = new KObjectConfigJson($config);
         $config->append(array(
             'debug'    =>  JFactory::getApplication()->getCfg('debug'),
-            'selector' => '',
+            'selector' => 'header',
             'onload'   => $this->getObject('dispatcher')->isCacheable(),
             'onhover'  => $this->getObject('dispatcher')->isCacheable(),
         ));

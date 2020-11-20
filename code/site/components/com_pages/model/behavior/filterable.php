@@ -55,29 +55,33 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
             {
                 foreach ($filters as $attribute => $values)
                 {
-                    //Support multiple constraints on the same attribute
-                    foreach((array) $values as $key => $value)
+                    //Multiple constraints on the same attribute
+                    foreach((array) $values as $key => $v)
                     {
-                        // Parse filter value for possible operator
-                        if (preg_match('#^([eq|neq|gt|gte|lt|lte|in|nin]+):(.+)\s*$#i', $value, $matches))
+                        //With one level nesting
+                        foreach((array) $v as $value)
                         {
-                            $this->_filters[] = [
-                                'attribute' => $attribute,
-                                'key'       => !is_numeric($key) ? $key : null,
-                                'operation' => $matches[1],
-                                'values' => array_unique(explode(',', $matches[2])),
-                                'combination' => 'AND'
-                            ];
-                        }
-                        else
-                        {
-                            $this->_filters[] = [
-                                'attribute' => $attribute,
-                                'key'       => !is_numeric($key) ? $key : null,
-                                'operation' => 'eq',
-                                'values' => array_unique(explode(',', $value)),
-                                'combination' => 'AND'
-                            ];
+                            // Parse filter value for possible operator
+                            if (preg_match('#^([eq|neq|gt|gte|lt|lte|in|nin]+):(.+)\s*$#i', $value, $matches))
+                            {
+                                $this->_filters[] = [
+                                    'attribute' => $attribute,
+                                    'key'       => !is_numeric($key) ? $key : null,
+                                    'operation' => $matches[1],
+                                    'values' => array_unique(explode(',', $matches[2])),
+                                    'combination' => 'AND'
+                                ];
+                            }
+                            else
+                            {
+                                $this->_filters[] = [
+                                    'attribute' => $attribute,
+                                    'key'       => !is_numeric($key) ? $key : null,
+                                    'operation' => 'eq',
+                                    'values' => array_unique(explode(',', $value)),
+                                    'combination' => 'AND'
+                                ];
+                            }
                         }
                     }
                 }

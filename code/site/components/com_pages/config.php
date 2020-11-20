@@ -47,8 +47,8 @@ class ComPagesConfig extends KObject implements KObjectSingleton
             'http_cache_control'         => array(),
             'http_cache_control_private' => array('private', 'no-cache'),
 
-            'http_static_cache'         => getenv('KPATH_PAGES_STATIC') ? true : false,
-            'http_static_cache_path'    => getenv('KPATH_PAGES_STATIC') ? $_SERVER['DOCUMENT_ROOT'].getenv('KPATH_PAGES_STATIC') : false,
+            'http_static_cache'         => getenv('PAGES_CACHE_STATIC') ? true : false,
+            'http_static_cache_path'    => getenv('PAGES_CACHE_STATIC') ? $_SERVER['DOCUMENT_ROOT'].getenv('PAGES_CACHE_STATIC') : false,
 
             'http_resource_cache'       => JFactory::getConfig()->get('caching'),
             'http_resource_cache_time'  => '1day',
@@ -103,6 +103,16 @@ class ComPagesConfig extends KObject implements KObjectSingleton
             {
                 $config = (array) include JPATH_CONFIGURATION.'/configuration-pages.php';
                 $options = array_replace_recursive($options, $config);
+            }
+
+            //Register the composer class locator
+            if(isset($options['composer_path']) && file_exists($options['composer_path']))
+            {
+                $this->getObject('manager')->getClassLoader()->registerLocator(
+                    new KClassLocatorComposer(array(
+                            'vendor_path' => $options['composer_path']
+                        )
+                    ));
             }
 
             //Load site config options

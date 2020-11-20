@@ -14,27 +14,25 @@
  * - Interaction-based link prefetching on hover
  * - Customizable and throttled prefetching in-viewport links during idle time
  */
-class Prefetcher
-{
-    constructor(options)
-    {
+class Prefetcher {
+    constructor(options) {
         //Cache of URLs we've prefetched
-        this.cache = new Set();
+        this.cache = new Set(Array.from(this.getSessionStorage().load('cache')))
 
         //Timers
         this._hoverTimer;
         this._hoverTimestamp;
 
         //Load the runtime configuration
-        this.config = this.getSessionStorage().get('config') ? this.getSessionStorage().get('config') : { };
+        this.config = this.getSessionStorage().load('config')
 
         //Initialize the prefetcher
         var defaults = {
             onload: false,
             onhover: true,
             onclick: false,
-            limit: 1/0,
-            throttle: 1/0,
+            limit: 1 / 0,
+            throttle: 1 / 0,
             delay: 100,
             timeout: 1000,
             savedata: true,
@@ -44,16 +42,19 @@ class Prefetcher
             debug: false
         };
 
-        this.initalize({...defaults, ...options, ...this.config })
+        this.initalize({...defaults, ...options, ...this.config})
 
         //Attach the prefetcher to the window
         window.Prefetcher = this;
 
         //Store the config in the sessionStorage on unload
-        window.addEventListener('beforeunload', (event) =>
-        {
-            if(this.config) {
-                this.getSessionStorage().set('config', this.config);
+        window.addEventListener('beforeunload', (event) => {
+            if (this.config) {
+                this.getSessionStorage().store('config', this.config);
+            }
+
+            if (this.cache) {
+                this.getSessionStorage().store('cache', Array.from(this.cache));
             }
         });
     }
@@ -64,27 +65,28 @@ class Prefetcher
      * @param {Array} options - The options
      * @return {Object} a Promise
      */
-    initalize(options)
-    {
-        if(this.dispatchEvent('initialize', options, true))
-        {
+    initalize(options) {
+        if (this.dispatchEvent('initialize', options, true)) {
             this.options = options;
 
-            this.log('Prefetcher Initialize Completed', this.options);
+            this.log('Initialize completed');
+            this.debug('Options', this.options);
 
-            if(this.options.onload) {
+            if (this.options.onload) {
                 this.onLoad();
             }
 
-            if(this.options.onhover) {
+            if (this.options.onhover) {
                 this.onHover();
             }
 
-            if(this.options.onclick) {
+            if (this.options.onclick) {
                 this.onClick();
             }
+        } else {
+            this.log('Initialize prevented');
+            this.debug('Options', this.options);
         }
-        else this.log('Prefetcher Initialize Prevented', this.options);
     }
 
     /**
@@ -96,19 +98,18 @@ class Prefetcher
      * @param {String} context - the prefetch context
      * @return {Object} a Promise
      */
-    prerender(url, context)
-    {
+    prerender(url, context) {
         var promise;
-        var url  = new URL(url, location.href).toString();
+        var url = new URL(url, location.href).toString();
 
-        if(!this.cache.has(url) && this.dispatchEvent('prerender', {'url': url, 'context': context}, true))
-        {
-            this.cache.add(url);
-
-            promise = this.canPrerender() ? this.prerenderViaDOM(url) : fetch(url, {credentials: 'include'})
-            promise.then(result =>  this.log('Prerendered on ' + context + ':', url));
-            promise.catch(err => this.dispatchEvent('error', {'error': err, 'context': context} ));
-        }
+        if (!this.cache.has(url)) {
+            if (this.dispatchEvent('prerender', {'url': url, 'context': context}, true)) {
+                promise = this.canPrerender() ? this.prerenderViaDOM(url) : fetch(url, {credentials: 'include'})
+                promise.then(result => this.cache.add(url))
+                promise.then(result => this.log('Prerendered on ' + context + ':', url))
+                promise.catch(err => this.dispatchEvent('error', {'error': err, 'context': context}));
+            } else this.debug('Prerender prevented on ' + context + ':', url)
+        } else this.debug('Prerender cancelled on ' + context + ':', url)
 
         return Promise.all([promise]);
     }
@@ -122,19 +123,18 @@ class Prefetcher
      * @param {String} context - the prefetch context
      * @return {Object} a Promise
      */
-    prefetch(url, context)
-    {
+    prefetch(url, context) {
         var promise;
-        var url  = new URL(url, location.href).toString();
+        var url = new URL(url, location.href).toString();
 
-        if(!this.cache.has(url) && this.dispatchEvent('prefetch', {'url': url, 'context': context}, true))
-        {
-            this.cache.add(url);
-
-            promise = this.canPrefetch() ? this.prefetchViaDOM(url) : this.prefetchViaXHR(url);
-            promise.then(result =>  this.log('Prefetched on ' + context + ':', url));
-            promise.catch(err => this.dispatchEvent('error', {'error': err, 'context': context} ));
-        }
+        if (!this.cache.has(url)) {
+            if (this.dispatchEvent('prefetch', {'url': url, 'context': context}, true)) {
+                promise = this.canPrefetch() ? this.prefetchViaDOM(url) : this.prefetchViaXHR(url);
+                promise.then(result => this.cache.add(url))
+                promise.then(result => this.log('Prefetched on ' + context + ':', url));
+                promise.catch(err => this.dispatchEvent('error', {'error': err, 'context': context}));
+            } else this.debug('Prefetch prevented on ' + context + ':', url)
+        } else this.debug('Prefetch cancelled on ' + context + ':', url)
 
         return Promise.all([promise]);
     }
@@ -142,11 +142,9 @@ class Prefetcher
     /**
      * Prerender of (if not supported prefetch) a URL on click
      */
-    onClick()
-    {
-        document.addEventListener('mousedown', (function (event)
-        {
-            if(this._hoverTimestamp > (performance.now() - 500)) {
+    onClick() {
+        document.addEventListener('mousedown', (function (event) {
+            if (this._hoverTimestamp > (performance.now() - 500)) {
                 return;
             }
 
@@ -162,41 +160,33 @@ class Prefetcher
     /**
      * Prerender or (if not supported prefetch) a URL on hover or touch.
      */
-    onHover()
-    {
-        document.addEventListener('touchstart', (function (event)
-        {
+    onHover() {
+        document.addEventListener('touchstart', (function (event) {
             var element = event.target;
 
-            if (this.isPrefetchable(element))
-            {
+            if (this.isPrefetchable(element)) {
                 this._hoverTimestamp = performance.now();
                 this.prerender(element.href, 'touch');
             }
 
         }).bind(this), {capture: true, passive: true});
 
-        document.addEventListener('mouseover', (function (event)
-        {
-            if(this._hoverTimestamp > (performance.now() - 500)) {
+        document.addEventListener('mouseover', (function (event) {
+            if (this._hoverTimestamp > (performance.now() - 500)) {
                 return;
             }
 
             var element = event.target;
 
-            if (this.isPrefetchable(element))
-            {
-                this._hoverTimer = setTimeout(() =>
-                {
+            if (this.isPrefetchable(element)) {
+                this._hoverTimer = setTimeout(() => {
                     this.prerender(element.href, 'hover');
                     this._hoverTimer = false
 
                 }, this.options.delay)
 
-                element.addEventListener('mouseout', (function(event)
-                {
-                    if (this._hoverTimer)
-                    {
+                element.addEventListener('mouseout', (function (event) {
+                    if (this._hoverTimer) {
                         clearTimeout(this._hoverTimer)
                         this._hoverTimer = undefined
                     }
@@ -211,8 +201,7 @@ class Prefetcher
      * it would be useful. By default, looks at in-viewport links for `document`. Can also work off one or
      * more supplied DOM elements. Prefetching is automatically disabled for reload and history traversals.
      */
-    onLoad()
-    {
+    onLoad() {
         // Compatibility check
         if (!window.IntersectionObserver) {
             return;
@@ -221,17 +210,14 @@ class Prefetcher
         // Don't prefetch if using 2G or if Save-Data is enabled.
         const conn = navigator.connection;
 
-        if (conn && this.options.savedata)
-        {
-            if (conn.saveData)
-            {
-                this.log('Cannot load: Save-Data is enabled');
+        if (conn && this.options.savedata) {
+            if (conn.saveData) {
+                this.log('Load disabled: Save-Data is enabled');
                 return;
             }
 
-            if (conn.effectiveType.includes('2g'))
-            {
-                this.log('Cannot load: network conditions are poor');
+            if (conn.effectiveType.includes('2g')) {
+                this.log('Load disabled: network conditions are poor');
                 return;
             }
         }
@@ -239,72 +225,62 @@ class Prefetcher
         // Don't prefetch when reloading or history traversal
         const performance = window.performance.navigation;
 
-        if(performance)
-        {
-            if(performance.type == PerformanceNavigation.TYPE_RELOAD)
-            {
-                this.log('Prefetching disabled: browser reloading');
+        if (performance) {
+            if (performance.type == PerformanceNavigation.TYPE_RELOAD) {
+                this.log('Load disabled: browser reloading');
+                this.log('Cache cleared on reload');
+                this.cache.clear();
                 return;
             }
 
-            if(performance.type == PerformanceNavigation.TYPE_BACK_FORWARD)
-            {
-                this.log('Prefetching disabled: history traversal');
+            if (performance.type == PerformanceNavigation.TYPE_BACK_FORWARD) {
+                this.log('Load disabled: history traversal');
                 return;
             }
 
-            this.log('Prefetching enabled: user navigation');
+            this.log('Load enabled: user navigation');
         }
 
-        const[enqueue, dequeue] = this.getThrottledQueue(this.options.concurrency);
+        const [enqueue, dequeue] = this.getThrottledQueue(this.options.concurrency);
 
-        var observer = new IntersectionObserver(entries =>
-        {
-            entries.forEach(entry =>
-            {
-                if (entry.isIntersecting)
-                {
+        var observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
                     observer.unobserve(entry = entry.target);
 
                     // Do not prefetch if will match/exceed limit
-                    if (this.cache.size < this.options.limit)
-                    {
-                        enqueue(() =>
-                        {
+                    if (this.cache.size < this.options.limit) {
+                        enqueue(() => {
                             this.prefetch(entry.href, 'load')
                                 .then(dequeue())
-                                .catch(err => {dequeue();});
+                                .catch(err => {
+                                    dequeue();
+                                });
                         });
                     }
                 }
             });
         });
 
-        window.requestIdleCallback(() =>
-        {
-            document.querySelectorAll(this.options.selector).forEach(element =>
-            {
+        window.requestIdleCallback(() => {
+            document.querySelectorAll(this.options.selector).forEach(element => {
                 //Only select anchor elements
-                if(!(element instanceof HTMLAnchorElement))
-                {
-                    element.querySelectorAll('a').forEach(element =>
-                    {
+                if (!(element instanceof HTMLAnchorElement)) {
+                    element.querySelectorAll('a').forEach(element => {
                         if (this.isPrefetchable(element)) {
                             observer.observe(element)
                         }
                     });
-                }
-                else
-                {
-                    if(this.isPrefetchable(element)) {
+                } else {
+                    if (this.isPrefetchable(element)) {
                         observer.observe(element)
-                    };
+                    }
+                    ;
                 }
             });
         }, {timeout: this.options.timeout});
 
-        return function ()
-        {
+        return function () {
             // Disconnect observer
             observer.disconnect();
         };
@@ -316,10 +292,8 @@ class Prefetcher
      * @param {string} url - the URL to fetch
      * @return {Object} a Promise
      */
-    prerenderViaDOM(url)
-    {
-        return new Promise((resolve, reject, link) =>
-        {
+    prerenderViaDOM(url) {
+        return new Promise((resolve, reject, link) => {
             link = document.createElement('link');
             link.rel = 'prerender';
             link.href = url;
@@ -339,10 +313,8 @@ class Prefetcher
      * @param {string} url - the URL to fetch
      * @return {Object} a Promise
      */
-    prefetchViaDOM(url)
-    {
-        return new Promise((resolve, reject, link) =>
-        {
+    prefetchViaDOM(url) {
+        return new Promise((resolve, reject, link) => {
             link = document.createElement('link');
             link.rel = 'prefetch';
             link.href = url;
@@ -361,12 +333,10 @@ class Prefetcher
      * @param {string} url - the URL to fetch
      * @return {Object} a Promise
      */
-    prefetchViaXHR(url)
-    {
-        return new Promise((resolve, reject, req) =>
-        {
+    prefetchViaXHR(url) {
+        return new Promise((resolve, reject, req) => {
             req = new XMLHttpRequest();
-            req.open('GET', url, req.withCredentials=true, true);
+            req.open('GET', url, req.withCredentials = true, true);
             req.onload = () => {
                 (req.status === 200) ? resolve() : reject();
             };
@@ -381,20 +351,19 @@ class Prefetcher
      * @param {element} element - the link Element
      * @return {boolean}
      */
-    isPrefetchable(element)
-    {
+    isPrefetchable(element) {
         //Is not link
         if (!element || !element.href) {
             return false;
         }
 
         //Is a download link
-        if(element.download) {
+        if (element.download) {
             return false;
         }
 
         //Is same page
-        if(element.href.split('#')[0] === location.href.split('#')[0]) {
+        if (element.href.split('#')[0] === location.href.split('#')[0]) {
             return false;
         }
 
@@ -414,7 +383,7 @@ class Prefetcher
         }
 
         //Is offline
-        if(!window.navigator.onLine) {
+        if (!window.navigator.onLine) {
             return false;
         }
 
@@ -432,8 +401,7 @@ class Prefetcher
      * @param  {Mixed}    filter  The custom filter(s)
      * @return {Boolean}  If true, then it should be ignored
      */
-    isIgnored(element, filter)
-    {
+    isIgnored(element, filter) {
         return Array.isArray(filter)
             ? filter.some(x => this.isIgnored(element, x))
             : (filter.test || filter).call(filter, element.href, element);
@@ -444,8 +412,7 @@ class Prefetcher
      *
      * @return {Boolean} whether the feature is supported
      */
-    canPrefetch()
-    {
+    canPrefetch() {
         var link = document.createElement('link');
         return link.relList && link.relList.supports && link.relList.supports('prefetch');
     }
@@ -455,10 +422,12 @@ class Prefetcher
      *
      * @return {Boolean} whether the feature is supported
      */
-    canPrerender()
-    {
-        var link = document.createElement('link');
-        return link.relList && link.relList.supports && link.relList.supports('prerender');
+    canPrerender() {
+        //Prerender no longer seems to work in Chrome
+        //var link = document.createElement('link');
+        //return link.relList && link.relList.supports && link.relList.supports('prerender');
+
+        return false;
     }
 
     /**
@@ -469,9 +438,8 @@ class Prefetcher
      * @param  {Boolean} cancelable  The event is cancellable. Default false
      * @return {Boolean} whether the feature is supported
      */
-    dispatchEvent(name, attributes, cancelable = false)
-    {
-        var event = new CustomEvent('prefetcher:'+name, {
+    dispatchEvent(name, attributes, cancelable = false) {
+        var event = new CustomEvent('prefetcher:' + name, {
             cancelable: cancelable,
             detail: attributes
         });
@@ -482,15 +450,30 @@ class Prefetcher
     /**
      * Utility to log to console
      */
-    log()
-    {
-        if (this.options.debug && console)
-        {
+    log() {
+        var args = Array.from(arguments);
+        args.unshift('%c[' + this.constructor.name.toLowerCase() + ']', 'color: gray');
+
+        if (this.options.debug && console) {
             if (typeof console.log === "function") {
-                console.log.apply(console, arguments);
-            } else if (console.log) {
-                console.log(arguments);
+                console.log.apply(console, args);
+            } else {
+                console.log(args);
             }
+        }
+    }
+
+    /**
+     * Utility to log to console
+     */
+    debug() {
+        var args = Array.from(arguments);
+        args.unshift('%c[' + this.constructor.name.toLowerCase() + ']', 'color: gray');
+
+        if (typeof console.debug === "function") {
+            console.debug.apply(console, args);
+        } else {
+            console.debug(args);
         }
     }
 
@@ -499,41 +482,31 @@ class Prefetcher
      *
      * @returns {Array} Returns an array of named methods
      */
-    getSessionStorage()
-    {
-        const namespace = this.constructor.name;
+    getSessionStorage() {
+        const namespace = this.constructor.name
 
-        function toType(obj) {
-            return ({}).toString.call(obj).match(/\s([a-z|A-Z]+)/)[1].toLowerCase();
-        }
-
-        function get(key)
-        {
-            var item = sessionStorage.getItem(namespace+':'+key);
-
-            try {
-                item = JSON.parse(item);
-            } catch (e) {}
+        function load(key) {
+            var item = {}
+            if (sessionStorage.getItem(namespace + ':' + key)) {
+                try {
+                    item = JSON.parse(sessionStorage.getItem(namespace + ':' + key));
+                } catch (e) {
+                    item = {}
+                }
+            }
 
             return item;
         }
 
-        function set(key, value)
-        {
-            var type = toType(value);
-
-            if (/object|array/.test(type)) {
-                value = JSON.stringify(value);
-            }
-
-            sessionStorage.setItem(namespace+':'+key, value);
+        function store(key, value) {
+            sessionStorage.setItem(namespace + ':' + key, JSON.stringify(value));
         }
 
         function remove(key) {
             sessionStorage.removeItem(key);
         }
 
-        return {'get': get, 'set': set, 'remove': remove};
+        return {'load': load, 'store': store, 'remove': remove};
     };
 
     /**
@@ -542,8 +515,7 @@ class Prefetcher
      * @param {Number} limit The throttle's concurrency limit. By default, runs your functions one at a time.
      * @returns {Array} Returns a tuple of [enqueue, dequeue] actions.
      */
-    getThrottledQueue(limit)
-    {
+    getThrottledQueue(limit) {
         limit = limit || 1;
         var queue = [], size = 0;
 
@@ -551,16 +523,13 @@ class Prefetcher
             queue.push(fn) > 1 || run(); // initializes if 1st
         }
 
-        function dequeue()
-        {
+        function dequeue() {
             size--;
             run();
         }
 
-        function run()
-        {
-            if (size < limit && queue.length > 0)
-            {
+        function run() {
+            if (size < limit && queue.length > 0) {
                 queue.shift()();
                 size++;
             }
@@ -571,15 +540,13 @@ class Prefetcher
 }
 
 // Polyfill for requestIdleCallback
-window.requestIdleCallback = window.requestIdleCallback || function (cb)
-{
-    const start = Math.floor(Date.now()/1000);
-    return setTimeout(function ()
-    {
+window.requestIdleCallback = window.requestIdleCallback || function (cb) {
+    const start = Math.floor(Date.now() / 1000);
+    return setTimeout(function () {
         cb({
             didTimeout: false,
             timeRemaining: function () {
-                return Math.max(0, 50 - (Math.floor(Date.now()/1000) - start));
+                return Math.max(0, 50 - (Math.floor(Date.now() / 1000) - start));
             }
         });
     }, 1);

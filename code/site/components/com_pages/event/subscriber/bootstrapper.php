@@ -25,7 +25,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
         if(false !== $route = $router->resolve())
         {
-            define('KPATH_PAGES', $route->getPath());
+            define('PAGES_SITE_ROOT', $route->getPath());
 
             //Set the site path in the config
             $config = $this->getObject('com://site/pages.config', ['site_path' => $route->getPath()]);
@@ -87,16 +87,6 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         //Set config options
         foreach($options['extensions'] as $identifier => $values) {
             $this->getConfig($identifier)->merge($values);
-        }
-
-        //Register the composer class locator
-        if(isset($options['composer_path']) && file_exists($options['composer_path']))
-        {
-            $this->getObject('manager')->getClassLoader()->registerLocator(
-                new KClassLocatorComposer(array(
-                        'vendor_path' => $options['composer_path']
-                    )
-                ));
         }
     }
 

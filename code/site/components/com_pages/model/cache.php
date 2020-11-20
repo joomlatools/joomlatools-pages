@@ -35,37 +35,43 @@ class ComPagesModelCache extends ComPagesModelCollection
         if(!isset($this->__data))
         {
             $this->__data = array();
-            $state  = $this->getState();
-            $files  = array();
 
-            if ($state->isUnique())
+            $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
+            if($dispatcher->isCacheable(false))
             {
-                $file = $this->getObject('com://site/pages.dispatcher.http')->locateCache($state->id);
+                $state  = $this->getState();
+                $files  = array();
 
-                if(file_exists($file)) {
-                    $files[] = $file;
+                if ($state->isUnique())
+                {
+                    $file = $dispatcher->locateCache($state->id);
+
+                    if(file_exists($file)) {
+                        $files[] = $file;
+                    }
                 }
-            }
-            else $files = glob($this->getConfig()->cache_path.'/response_*');
+                else $files = glob($this->getConfig()->cache_path.'/response_*');
 
-            foreach ($files as $file)
-            {
-                $data = require $file;
-                $valid = $this->getObject('com://site/pages.dispatcher.http')->validateCache($data['validators'], true);
+                foreach ($files as $file)
+                {
+                    $data = require $file;
 
-                $this->__data[] = array(
-                    'id'          => $data['id'],
-                    'url'         => $data['url'],
-                    'date'        => $this->getObject('date', array('date' => $data['headers']['Last-Modified'])),
-                    'hash'        => $data['headers']['Etag'],
-                    'token'       => $data['token'],
-                    'format'      => $data['format'],
-                    'language'    => $data['language'],
-                    'collections' => $data['headers']['Content-Collections'] ?? array(),
-                    'robots'      => isset($data['headers']['X-Robots-Tag']) ? array_map('trim', explode(',', $data['headers']['X-Robots-Tag'])) : array(),
-                    'status'      => $data['status'],
-                    'valid'       => $valid
-                );
+                    $valid = $dispatcher->validateCache($data['validators'], true);
+
+                    $this->__data[] = array(
+                        'id'          => $data['id'],
+                        'url'         => $data['url'],
+                        'date'        => $this->getObject('date', array('date' => $data['headers']['Last-Modified'])),
+                        'hash'        => $data['headers']['Etag'],
+                        'token'       => $data['token'],
+                        'format'      => $data['format'],
+                        'language'    => $data['language'],
+                        'collections' => $data['headers']['Content-Collections'] ?? array(),
+                        'robots'      => isset($data['headers']['X-Robots-Tag']) ? array_map('trim', explode(',', $data['headers']['X-Robots-Tag'])) : array(),
+                        'status'      => $data['status'],
+                        'valid'       => $valid
+                    );
+                }
             }
         }
 
