@@ -44,11 +44,11 @@ $time = microtime(true);
 
 if($query['image_path'])
 {
-    $image_path  = str_replace('.php', '', trim($query['image_path'], '/'));
+    $image_path  = trim($query['image_path'], '/');
     $cache_path = isset($query['cache_path']) ? $query['cache_path'].'/'.$image_path : $image_path;
 
     $source      = $image_root.'/'.$image_path;
-    $destination = false;
+    $destination = $cache_root ?  $cache_root.'/'.$cache_path : false;
     $background   = null;
 
     if(!file_exists($source))
@@ -58,179 +58,196 @@ if($query['image_path'])
     }
 
     $format = strtolower(pathinfo($image_path, PATHINFO_EXTENSION));
-
-    //Get the parameters
-    unset($query['image_path']);
-    unset($query['cache_path']);
-    $parameters = $query;
-
-    if(isset($parameters['auto']))
+    if(Image::isSupported($format) && !Image::isAnimated($source))
     {
-        $directives = array_map('trim', explode(',', $parameters['auto']));
+        //Get the parameters
+        unset($query['image_path']);
+        unset($query['cache_path']);
+        $parameters = $query;
 
-        if(!isset($parameters['fm']) && (in_array('format', $directives) || in_array('true', $directives)))
+        if(isset($parameters['auto']))
         {
-            //Return WebP if supported (be forward compat when Safari offers Webp support)
-            if(isset($_SERVER['HTTP_ACCEPT']) && strstr($_SERVER['HTTP_ACCEPT'], 'image/webp') !== false)
+            $directives = array_map('trim', explode(',', $parameters['auto']));
+
+            if(!isset($parameters['fm']) && (in_array('format', $directives) || in_array('true', $directives)))
             {
-                if(Image::isSupported('webp')) {
-                    $format = 'webp';
-                }
-            }
-        }
-
-        //Set compression
-        if(!isset($parameters['q']) && (in_array('compress', $directives) || in_array('true', $directives)))
-        {
-            $compress = true;
-            $quality  = 75;
-        }
-
-        //Set enchancement
-        if(in_array('enhance', $directives) || in_array('true', $directives)) {
-            $enhance = true;
-        }
-    }
-
-    //Auto DPR
-    if(isset($parameters['dpr']))
-    {
-        if($parameters['dpr'] == 'auto')
-        {
-            $dpr = isset($_SERVER['HTTP_DPR']) ? floatval($_SERVER['HTTP_DPR']) : $dpr;
-            $dpr = floor($dpr * 2) / 2; //round with 0.5 precision
-
-            $vary[] = 'dpr'; //Add dpr to Vary
-        }
-        else $dpr = floatval($parameters['dpr']);
-
-        $parameters['dpr'] = max($dpr, $max_dpr);
-    }
-
-    //Auto Width
-    if(isset($parameters['w']))
-    {
-        if($parameters['w'] == 'auto')
-        {
-            if(isset($_SERVER['HTTP_VIEWPORT_WIDTH'])) {
-                $max_w = min(intval($_SERVER['HTTP_VIEWPORT_WIDTH']), $max_w);
-            }
-
-            if(isset($_SERVER['HTTP_WIDTH'])) {
-                $w = intval($_SERVER['HTTP_WIDTH']);
-            } else {
-                $w = $max_w;
-            }
-
-            $sizes = Image::calculateSizes($source, $max_w, $min_w);
-
-            foreach(array_reverse($sizes) as $size)
-            {
-                if($size > $w) {
-                    $w = $size; break;
+                //Return WebP if supported (be forward compat when Safari offers Webp support)
+                if(isset($_SERVER['HTTP_ACCEPT']) && strstr($_SERVER['HTTP_ACCEPT'], 'image/webp') !== false)
+                {
+                    if(Image::isSupported('webp')) {
+                        $format = 'webp';
+                    }
                 }
             }
 
-            $vary[] = 'width'; //Add width to Vary
+            //Set compression
+            if(!isset($parameters['q']) && (in_array('compress', $directives) || in_array('true', $directives)))
+            {
+                $compress = true;
+                $quality  = 75;
+            }
+
+            //Set enchancement
+            if(in_array('enhance', $directives) || in_array('true', $directives)) {
+                $enhance = true;
+            }
         }
-        else $w = intval($parameters['w']);
 
-        $parameters['w'] = $w;
-    }
-
-    //Set quality
-    if(isset($parameters['q'])) {
-        $quality = (int) $parameters['q'];
-    }
-
-    //Set the format
-    if(isset($parameters['fm']) && $format != $parameters['fm']) {
-        $format = $parameters['fm'];
-    } else {
-        unset($parameters['fm']);
-    }
-
-    //Set background color
-    if(isset($parameters['bg']))
-    {
-        if($color = Image::normalizeColor($parameters['bg'])) {
-            $background = $color;
-        }
-    }
-
-    //Create the filename
-    if($cache_root)
-    {
-        $cache_query = $parameters;
-
-        if(!isset($parameters['fm']))
+        //Auto DPR
+        if(isset($parameters['dpr']))
         {
-            $search     = pathinfo($image_path, PATHINFO_EXTENSION);
-            $cache_path = str_replace('.'.$search, '.'.$format, $cache_path);
+            if($parameters['dpr'] == 'auto')
+            {
+                $dpr = isset($_SERVER['HTTP_DPR']) ? floatval($_SERVER['HTTP_DPR']) : $dpr;
+                $dpr = floor($dpr * 2) / 2; //round with 0.5 precision
+
+                $vary[] = 'dpr'; //Add dpr to Vary
+            }
+            else $dpr = floatval($parameters['dpr']);
+
+            $parameters['dpr'] = max($dpr, $max_dpr);
         }
 
-        $destination = $cache_root.'/'.$cache_path.'_'.http_build_query($cache_query, '', '&');
-    }
-
-    //Generate image
-    $image = null;
-    if(!$destination || !file_exists($destination) || $cache_none)
-    {
-        try
+        //Auto Width
+        if(isset($parameters['w']))
         {
-            //Load the original
-            $image = (new Image())->read($source, $format, $background);
+            if($parameters['w'] == 'auto')
+            {
+                if(isset($_SERVER['HTTP_VIEWPORT_WIDTH'])) {
+                    $max_w = min(intval($_SERVER['HTTP_VIEWPORT_WIDTH']), $max_w);
+                }
 
-            //Resize
-            if(isset($parameters['w']) || isset($parameters['h'])) {
-                $image->resize($parameters['w'] ?? null, $parameters['h'] ?? null, $dpr);
+                if(isset($_SERVER['HTTP_WIDTH'])) {
+                    $w = intval($_SERVER['HTTP_WIDTH']);
+                } else {
+                    $w = $max_w;
+                }
+
+                $sizes = Image::calculateSizes($source, $max_w, $min_w);
+
+                foreach(array_reverse($sizes) as $size)
+                {
+                    if($size > $w) {
+                        $w = $size; break;
+                    }
+                }
+
+                $vary[] = 'width'; //Add width to Vary
+            }
+            else $w = intval($parameters['w']);
+
+            $parameters['w'] = $w;
+        }
+
+        //Set quality
+        if(isset($parameters['q'])) {
+            $quality = (int) $parameters['q'];
+        }
+
+        //Set the format
+        if(isset($parameters['fm'])) {
+            $format = $parameters['fm'];
+        }
+
+        //Set background color
+        if(isset($parameters['bg']))
+        {
+            if($color = Image::normalizeColor($parameters['bg'])) {
+                $background = $color;
+            }
+        }
+
+        //Create the filename
+        if($cache_root)
+        {
+            $cache_query = $parameters;
+
+            if(!isset($parameters['fm']))
+            {
+                $search     = pathinfo($image_path, PATHINFO_EXTENSION);
+                $cache_path = str_replace('.'.$search, '.'.$format, $cache_path);
             }
 
-            //Pixellate
-            if(isset($parameters['px'])) {
-                $image->pixellate((int) $parameters['px'], true);
+            $destination = $cache_root.'/'.$cache_path.'_'.http_build_query($cache_query, '', '&');
+        }
+
+        //Generate image
+        $image = null;
+        if(!$destination || !file_exists($destination) || $cache_none)
+        {
+            try
+            {
+                //Load the original
+                $image = (new Image())->read($source, $format, $background);
+
+                //Resize
+                if(isset($parameters['w']) || isset($parameters['h'])) {
+                    $image->resize($parameters['w'] ?? null, $parameters['h'] ?? null, $dpr);
+                }
+
+                //Pixellate
+                if(isset($parameters['px'])) {
+                    $image->pixellate((int) $parameters['px'], true);
+                }
+
+                //Blur
+                if(isset($parameters['bl'])) {
+                    $image->blur((int) $parameters['bl']);
+                }
+
+                //Interlace
+                if($format == 'pjpeg') {
+                    $image->interlace();
+                }
+
+                //Enhance the image
+                if($enhance) {
+                    $image->enhance();
+                }
+
+                //Compress the image
+                if($compress) {
+                    $image->compress();
+                }
+
+                //Create the directory
+                $dir = dirname($destination);
+
+                if(is_dir($dir) || (true === @mkdir($dir, 0777, true)))
+                {
+                    //Save the image
+                    $image->write($quality, $destination);
+
+                    //Override default permissions for generated file
+                    @chmod($destination, 0666 & ~umask());
+                }
+
+            }
+            catch(Exception $e)
+            {
+                $log = $cache_root.'/.error_log';
+                error_log(sprintf('Could not generate image: %s, error: %s'."\n", $destination, $e->getMessage()), 3, $log);
             }
 
-            //Blur
-            if(isset($parameters['bl'])) {
-                $image->blur((int) $parameters['bl']);
-            }
-
-            //Interlace
-            if($format == 'pjpeg') {
-                $image->interlace();
-            }
-
-            //Enhance the image
-            if($enhance) {
-                $image->enhance();
-            }
-
-            //Compress the image
-            if($compress) {
-                $image->compress();
-            }
-
+        }
+    }
+    else
+    {
+        if(!file_exists($destination) || $cache_none)
+        {
             //Create the directory
             $dir = dirname($destination);
 
             if(is_dir($dir) || (true === @mkdir($dir, 0777, true)))
             {
-                //Save the image
-                $image->write($quality, $destination);
+                //Copy the image
+                copy($source, $destination);
 
                 //Override default permissions for generated file
                 @chmod($destination, 0666 & ~umask());
             }
-
-        }
-        catch(Exception $e)
-        {
-            $log = $cache_root.'/.error_log';
-            error_log(sprintf('Could not generate image: %s, error: %s'."\n", $destination, $e->getMessage()), 3, $log);
         }
     }
-
 
     //Get a list of all the different file versions
     $versions = [];
@@ -302,6 +319,19 @@ if($query['image_path'])
     }
 
     readfile($file);
+
+    //Cleanup and flush output to client
+    if (!function_exists('fastcgi_finish_request'))
+    {
+        for ($i = 0; $i < ob_get_level(); $i++) {
+            ob_end_flush();
+        }
+
+        flush();
+    }
+    else fastcgi_finish_request();
+
+    exit();
 }
 
 
