@@ -1,8 +1,8 @@
 <?php
 //See: https://www.smashingmagazine.com/2015/06/efficient-image-resizing-with-imagemagick/
 
-//Check if we have been redirected by Apache
-if(getenv('REDIRECT_IMAGE') === false)
+//Check if we have been redirected by Apache or Litespeed
+if(getenv('REDIRECT_IMAGE') === false && getenv('IMAGE') === false)
 {
     http_response_code(404);
     exit();
