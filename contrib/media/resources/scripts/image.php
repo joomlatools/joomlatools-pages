@@ -16,7 +16,7 @@ $image_root    = rtrim($_SERVER['PAGES_IMAGES_ROOT'], '/');
 $enhance       = false;
 $quality       = 100;
 $compress      = false;
-$refresh_time  = '1week';  //time before images that are not accessed are garbage collected
+$refresh_time  = '1month';  //time before images that are not accessed are garbage collected
 
 $w    = null;  //width
 $h    = null;  //height

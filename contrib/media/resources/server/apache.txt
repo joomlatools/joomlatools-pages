@@ -38,8 +38,8 @@ RewriteRule ^ - [E=PAGES_IMAGES_ROOT:%{DOCUMENT_ROOT}%{ENV:PAGES_IMAGES_PATH}]
     RewriteCond %{ENV:REDIRECT_IMAGE} !=1
     RewriteRule images\/(.+)\.(jpe?g|png|gif|svg) image.php?cache_path=images&image_path=$1.$2&%{QUERY_STRING} [NC,E=IMAGE,L]
 
-    # Set cache to 1day (browser) and 1 year (cdn)
-    Header set Cache-Control public,max-age=86400,s-maxage=315360000 env=REDIRECT_IMAGE
+    # Set cache to 1day (browser) and 1 month (cdn)
+    Header set Cache-Control public,max-age=86400,s-maxage=2592000 env=REDIRECT_IMAGE
 
     # Add Accept to the Vary header
     Header append Vary Accept env=REDIRECT_IMAGE
