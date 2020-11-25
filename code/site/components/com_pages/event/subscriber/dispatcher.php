@@ -69,6 +69,8 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         //Get the page
         if($page = $dispatcher->getPage())
         {
+            $menu = JFactory::getApplication()->getMenu()->getActive();
+
             if($this->getObject('request')->isSafe())
             {
                 /**
@@ -78,7 +80,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
                  *  - The Joomla menu item isn't being decorated
                  */
 
-                if(JFactory::getApplication()->getMenu()->getActive()->home && !empty($page->path)) {
+                if($menu && $menu->home && !empty($page->path)) {
                     $event->getTarget()->input->set('option', 'com_pages');
                 } elseif(!$page->isDecorator()) {
                     $event->getTarget()->input->set('option', 'com_pages');
@@ -92,7 +94,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
                  * 	- Page is a form
                  *  - Joomla fell back to the default menu item because the page route couldn't be resolved
                  */
-                if($page->isForm() || (JFactory::getApplication()->getMenu()->getActive()->home && !empty($page->path))) {
+                if($page->isForm() || ($menu && $menu->home && !empty($page->path))) {
                     $event->getTarget()->input->set('option', 'com_pages');
                 }
             }
