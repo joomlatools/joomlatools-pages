@@ -32,7 +32,7 @@ $max_dpr = 3;
  */
 
 $cache_root     = isset($_SERVER['PAGES_CACHE_ROOT']) ? $_SERVER['PAGES_CACHE_ROOT'] : false;
-$cache_none     = isset($_SERVER['HTTP_CACHE_CONTROL']) && strstr($_SERVER['HTTP_CACHE_CONTROL'], 'no-cache') !== false;
+$cache_refresh  = isset($_SERVER['HTTP_CACHE_CONTROL']) && strstr($_SERVER['HTTP_CACHE_CONTROL'], 'no-cache') !== false;
 $cache_versions = isset($_SERVER['HTTP_CACHE_ACCEPT']) && strstr($_SERVER['HTTP_CACHE_ACCEPT'], 'versions') !== false;
 
 //Request
@@ -57,14 +57,16 @@ if($query['image_path'])
         exit();
     }
 
+    //Get format
     $format = strtolower(pathinfo($image_path, PATHINFO_EXTENSION));
-    if(Image::isSupported($format) && !Image::isAnimated($source))
-    {
-        //Get the parameters
-        unset($query['image_path']);
-        unset($query['cache_path']);
-        $parameters = $query;
 
+    //Get the parameters
+    unset($query['image_path']);
+    unset($query['cache_path']);
+    $parameters = $query;
+
+    if(!empty($parameters) && Image::isSupported($format) && !Image::isAnimated($source))
+    {
         if(isset($parameters['auto']))
         {
             $directives = array_map('trim', explode(',', $parameters['auto']));
@@ -105,7 +107,7 @@ if($query['image_path'])
             }
             else $dpr = floatval($parameters['dpr']);
 
-            $parameters['dpr'] = max($dpr, $max_dpr);
+            $dpr = min($dpr, $max_dpr);
         }
 
         //Auto Width
@@ -173,7 +175,7 @@ if($query['image_path'])
 
         //Generate image
         $image = null;
-        if(!$destination || !file_exists($destination) || $cache_none)
+        if(!$destination || !file_exists($destination) || $cache_refresh)
         {
             try
             {
@@ -233,7 +235,7 @@ if($query['image_path'])
     }
     else
     {
-        if(!file_exists($destination) || $cache_none)
+        if(!file_exists($destination) || $cache_refresh)
         {
             //Create the directory
             $dir = dirname($destination);
@@ -251,11 +253,11 @@ if($query['image_path'])
 
     //Get a list of all the different file versions
     $versions = [];
-    if($cache_none || $cache_versions)
+    if($cache_refresh || $cache_versions)
     {
         foreach (glob($cache_root.'/'.$cache_path.'*') as $file)
         {
-            if($cache_none) {
+            if($cache_refresh && $file !== $destination) {
                 unlink($file);
             }
 
@@ -296,7 +298,7 @@ if($query['image_path'])
     header('Vary: '.implode(',', $vary));
 
     //Set X-Created-With
-    if($image)
+    if(isset($image))
     {
         if($image->isImagick()) {
             $version = Imagick::getVersion()['versionString'];
@@ -470,8 +472,13 @@ Class Image
             }
 
             //If the alpha channel is not defined, make it opaque
-            if ($this->_image->getImageAlphaChannel() == Imagick::ALPHACHANNEL_UNDEFINED) {
-                $this->_image->setImageAlphaChannel(Imagick::ALPHACHANNEL_OPAQUE);
+            if ($this->_image->getImageAlphaChannel() == Imagick::ALPHACHANNEL_UNDEFINED)
+            {
+                if(defined('Imagick::ALPHACHANNEL_OFF')) {
+                    $this->_image->setImageAlphaChannel(Imagick::ALPHACHANNEL_OFF);
+                } else {
+                    $this->_image->setImageAlphaChannel(Imagick::ALPHACHANNEL_OPAQUE);
+                }
             }
 
             if($file) {
@@ -649,8 +656,13 @@ Class Image
             // Strip all profiles except color profiles.
             foreach ($this->_image->getImageProfiles('*', true) as $key => $value)
             {
-                if ($key != 'icc' && $key != 'icm') {
-                    $this->_image->removeImageProfile($key);
+                if ($key != 'icc' && $key != 'icm')
+                {
+                    try {
+                        $this->_image->removeImageProfile($key);
+                    } catch (ImagickException $e) {
+                        //do nothing
+                    }
                 }
             }
 
