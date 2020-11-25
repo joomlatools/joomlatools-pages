@@ -17,9 +17,13 @@ RewriteRule ^ - [E=PAGES_IMAGES_ROOT:%{DOCUMENT_ROOT}%{ENV:PAGES_IMAGES_PATH}]
 ## Begin - Image Cache
 #
 
-    RewriteCond %{HTTP:Cache-Control} ^(no-cache)$
+    # Condition - Images only
     RewriteCond %{REQUEST_URI} !(?i)(.+)\.(jpe?g|png|gif|svg).*$
-    RewriteRule .* - [S=2]
+    RewriteRule .* - [S=5]
+
+    # Condition - Do not serve from cache on browser refresh or when caching is not allowed
+    RewriteCond %{HTTP:Cache-Control} ^(no-cache)$
+    RewriteRule .* - [S=3]
 
     # Find generated WebP image (if browser supports it)
     RewriteCond %{HTTP_ACCEPT} image/webp
@@ -31,7 +35,7 @@ RewriteRule ^ - [E=PAGES_IMAGES_ROOT:%{DOCUMENT_ROOT}%{ENV:PAGES_IMAGES_PATH}]
     RewriteRule (.+)\.(jpe?g|png|gif|svg) %{ENV:PAGES_CACHE_PATH}/$1.$2_%{QUERY_STRING} [NC,E=IMAGE:1,L]
 
     # Find original image (in case image couldn't be generated)
-    RewriteCond %{DOCUMENT_ROOT}/%{ENV:PAGES_CACHE_PATH}/$1\.$2% -f
+    RewriteCond %{DOCUMENT_ROOT}/%{ENV:PAGES_CACHE_PATH}/$1\.$2 -f
     RewriteRule (.+)\.(jpe?g|png|gif|svg) %{ENV:PAGES_CACHE_PATH}/$1.$2 [NC,E=IMAGE:1,L]
 
     # Generate image
