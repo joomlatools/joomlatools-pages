@@ -63,7 +63,7 @@ class ComPagesModelWebservice extends ComPagesModelCollection
             try
             {
                 $content = $http->get($url, $headers);
-                $hash    = hash('crc32b', $content.$url);
+                $hash    = hash('crc32b', json_encode($content).$url);
             }
             catch(KHttpException $e)
             {
