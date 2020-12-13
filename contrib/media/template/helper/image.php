@@ -50,6 +50,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
         if($config->lazyload)
         {
             $config->attributes->class->append(['lazyload']);
+            $config->attributes_noscript->loading = 'lazy';
 
             $lazyload = KObjectConfig::unbox($config->lazyload);
 
