@@ -1225,8 +1225,8 @@ collection
 							<a href="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-xs font-medium rounded-md text-white bg-blue-800 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-700">
 								<span class="absolute left-0 inset-y-0 flex items-center pl-3">
 									<!-- facebook -->
-									<svg class="h-5 w-5 text-white group-hover:text-blue-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 455.73 455.73" fill="currentColor" aria-hidden="true">
-										<path fill-rule="evenodd" d="M0,0v455.73p42.704V279.691h-59.33v-71.864h59.33v-60.353c0-43.893,35.582-79.475,79.475-79.475h62.025v64.622h-44.382c-13.947,0-25.254,11.307-25.254,25.254v49.953h68.521l-9.47,71.864h-59.051V455.73H455.73V0H0z" clip-rule="evenodd" />
+									<svg class="h-5 w-5 text-white group-hover:text-blue-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+										<path fill-rule="evenodd" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" clip-rule="evenodd" />
 									</svg>
 								</span>
 								johanjanssens
