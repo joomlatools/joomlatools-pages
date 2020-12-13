@@ -12,8 +12,11 @@
 
         <title><?= title() ?></title>
 
-        <ktml:style src="theme://css/reveal.css" rel="preload" as="style"/>
-        <link rel="stylesheet" href="theme://js/reveal/plugin/highlight/monokai.css">
+
+        <link rel="preconnect" href="https://unpkg.com/"  />
+        <ktml:style src="https://unpkg.com/reveal.js@4.0.2/dist/reveal.css" rel="preload" as="style"/>
+        <ktml:style src="https://unpkg.com/reveal.js@4.0.2/plugin/highlight/monokai.css" rel="preload" as="style"/>
+
         <ktml:style src="theme://css/fonts.css" media="print" onload="this.media='all'; this.onload=null;" />
         <ktml:style src="theme://css/output.min.css" rel="preload" as="style" />
         
@@ -34,11 +37,11 @@
         <ktml:content>
         
         <ktml:script>
-        <script src="theme://js/reveal/reveal.js"></script>
-        <script src="theme://js/reveal/plugin/notes/notes.js"></script>
-        <script src="theme://js/reveal/plugin/highlight/highlight.js"></script>
+        <script src="https://unpkg.com/reveal.js@4.0.2/dist/reveal.js"></script>
+        <script src="https://unpkg.com/reveal.js@4.0.2/plugin/notes/notes.js"></script>
+        <script src="https://unpkg.com/reveal.js@4.0.2/plugin/highlight/highlight.js"></script>
         <script>
-            // See https://github.com/hakimel/reveal.js#configuration for a full list of configuration options
+            // See https://revealjs.com/config/ for a full list of configuration options
             Reveal.initialize({
                 center: true,
                 history: true,
