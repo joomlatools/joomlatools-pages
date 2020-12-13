@@ -20,7 +20,6 @@ visible: false
 					</div>
 					<div class="text-center text-white lg:w-2/3 mx-auto w-full">
 						<p class="title-font text-6xl font-medium mb-4">There and back again</p>
-						<p class="mb-8 text-3xl leading-relaxed">A story about the evolution of web publishing<br>from 1990 to 2020</p>
 					</div>
 					<div class="text-white text-xl leading-relaxed w-full grid grid-cols-3 gap-4 place-items-center">
 						<span><a href="http://developer.joomlatools.com/">http://developer.joomlatools.com/</a></span>
@@ -34,7 +33,32 @@ visible: false
 				</div>
 				<aside class="notes border-blue-500">
 					<p class="text-lg font-bold">Well done!</p>
-					<p class="text-gray-700 my-0">You made your awesome tailwind css alert.</p>
+					<p class="text-gray-700 my-0">You made your awesome reveal note.</p>
+				</aside>
+			</section>
+
+			<section class="body-font" data-background="#4daae9" data-auto-animate data-auto-animate-unmatched="fade">
+				<div class="r-stretch grid grid-template-rows-layout content-between">
+					<div class="text-white text-xl flex flex-row gap-4">
+						&nbsp;
+					</div>
+					<div class="text-center text-white lg:w-2/3 mx-auto w-full">
+						<p class="title-font text-6xl font-medium mb-4">There and back again</p>
+						<p class="mb-8 text-3xl leading-relaxed">A story about the evolution of web publishing<br>from 1990 to 2020</p>
+					</div>
+					<div class="text-white text-xl leading-relaxed w-full grid grid-cols-3 gap-4 place-items-center">
+						<span><a href="http://developer.joomlatools.com/">http://developer.joomlatools.com/</a></span>
+						<?= import('/partials/logos/joomlatools',[ 
+								'display_time' => 0, 
+								'icon_size' => '10',
+							]);
+						?>
+						<span><a href="http://developer.joomlatools.com/">@joomlatools</a></span>
+					</div>
+				</div>
+				<aside class="notes border-blue-500">
+					<p class="text-lg font-bold">Well done again!</p>
+					<p class="text-gray-700 my-0">You made your second awesome reveal note.</p>
 				</aside>
 			</section>
 
@@ -49,12 +73,9 @@ visible: false
 						<a class="text-4xl font-jt" href="https://www.joomlatools.com/">joomlatools</a>
 					</div>
 					<div class="xl:w-1/2 lg:w-3/4 w-full xl:mr-0 lg:mr-0 mx-auto text-center text-white">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="inline-block w-8 h-8 text-gray-400 mb-8" viewBox="0 0 975.036 975.036">
-							<path d="M925.036 57.197h-304c-27.6 0-50 22.4-50 50v304c0 27.601 22.4 50 50 50p45.5c-1.9 79.601-20.4 143.3-55.4 191.2-27.6 37.8-69.399 69.1-125.3 93.8-25.7 11.3-36.8 41.7-24.8 67.101l36 76c11.6 24.399 40.3 35.1 65.1 24.399 66.2-28.6 122.101-64.8 167.7-108.8 55.601-53.7 93.7-114.3 114.3-181.9 20.601-67.6 30.9-159.8 30.9-276.8v-239c0-27.599-22.401-50-50-50zM106.036 913.497c65.4-28.5 121-64.699 166.9-108.6 56.1-53.7 94.4-114.1 115-181.2 20.6-67.1 30.899-159.6 30.899-277.5v-239c0-27.6-22.399-50-50-50h-304c-27.6 0-50 22.4-50 50v304c0 27.601 22.4 50 50 50p45.5c-1.9 79.601-20.4 143.3-55.4 191.2-27.6 37.8-69.4 69.1-125.3 93.8-25.7 11.3-36.8 41.7-24.8 67.101l35.9 75.8c11.601 24.399 40.501 35.2 65.301 24.399z"></path>
-						</svg>
-						<p class="leading-relaxed text-lg">Any intelligent fool can make things bigger and more complex... It takes a touch of genius—and a lot of courage to move in the opposite direction.</p>
+						<p class="leading-relaxed text-3xl">Any intelligent fool can make things bigger and more complex... <span class="fragment fade-up">It takes a touch of genius — and a lot of courage to move in the opposite direction.</span></p>
 						<span class="inline-block h-1 w-10 rounded bg-brand mt-8 mb-6"></span>
-						<p class="font-medium title-font tracking-wider text-xs">Albert Einstein</p>
+						<p class="font-medium title-font tracking-wider text-lg">Albert Einstein</p>
 					</div>
 					<div class="flex justify-center items-center py-4">
 						<?= import('/partials/logos/joomlatools',[ 
@@ -129,7 +150,7 @@ visible: false
 					</div>
 					<div class="lg:w-3/4 w-full mx-auto text-center">
 						<p class="leading-relaxed text-lg mb-4">The first web page went live on August 6, 1991. It was dedicated to information on the World Wide Web project and was made by Tim Berners-Lee. It ran on a NeXT computer at the European Organization for Nuclear Research, CERN.</p>
-						<p class="leading-relaxed text-lg">The first web page address was <a href="http://info.cern.ch/hypertext/WWW/TheProject.html">http://info.cern.ch/hypertext/WWW/TheProject.html</a>.</p>
+						<p class="leading-relaxed text-lg">The first web page address was <a href="http://info.cern.ch/hypertext/WWW/TheProject.html" class="text-blue-500 hover:text-blue-700 hover:bg-blue-100 transition duration-500 ease-in-out">http://info.cern.ch/hypertext/WWW/TheProject.html</a>.</p>
 					</div>
 					<span></span>
 				</div>
@@ -165,7 +186,7 @@ visible: false
 						<a class="text-4xl font-jt" href="https://www.joomlatools.com/">joomla<span class="text-blue-500">tools</span></a>
 					</div>
 					<div class="lg:w-3/4 w-full mx-auto text-left">
-						<p class="leading-relaxed text-lg mb-4">HTML 2.0 included everything from the original 1.0 specifications but added a few new features to the mix. <a href="http://www.w3.org/MarkUp/html-spec/">» HTML 2.0</a> was the standard for website design until January 1997 and defined many core HTML features for the first time.</p>
+						<p class="leading-relaxed text-lg mb-4">HTML 2.0 included everything from the original 1.0 specifications but added a few new features to the mix. <a href="http://www.w3.org/MarkUp/html-spec/" class="text-blue-500 hover:text-blue-700 hover:bg-blue-100 transition duration-500 ease-in-out">» HTML 2.0</a> was the standard for website design until January 1997 and defined many core HTML features for the first time.</p>
 					</div>
 					<span></span>
 				</div>
@@ -182,7 +203,7 @@ visible: false
 						<a class="text-4xl font-jt" href="https://www.joomlatools.com/">joomla<span class="text-blue-500">tools</span></a>
 					</div>
 					<div class="lg:w-3/4 w-full mx-auto text-left">
-						<p class="leading-relaxed text-lg mb-4">HTML 2.0 included everything from the original 1.0 specifications but added a few new features to the mix. <a href="http://www.w3.org/MarkUp/html-spec/">» HTML 2.0</a> was the standard for website design until January 1997 and defined many core HTML features for the first time.</p>
+						<p class="leading-relaxed text-lg mb-4">HTML 2.0 included everything from the original 1.0 specifications but added a few new features to the mix. <a href="http://www.w3.org/MarkUp/html-spec/" class="text-blue-500 hover:text-blue-700 hover:bg-blue-100 transition duration-500 ease-in-out">» HTML 2.0</a> was the standard for website design until January 1997 and defined many core HTML features for the first time.</p>
 						<pre class="terminal-mockup whitespace-pre mb-4" data-value="index.html"><code class="html" data-trim data-line-numbers>
 &lt;HEAD&gt;
 	&lt;TITLE&gt;Getting started with HTML 2.0&lt;/TITLE&gt;
@@ -196,7 +217,7 @@ visible: false
 	&lt;LI&gt;&lt;A href="/article-5"&gt;Article 5&lt;/A&gt;
 &lt;/UL&gt;
 							</code></pre>
-						<p class="leading-relaxed text-lg fragment fade-up">For more history: <a href="https://www.yourhtmlsource.com/starthere/historyofhtml.html">https://www.yourhtmlsource.com/starthere/historyofhtml.html</a></p>
+						<p class="leading-relaxed text-lg fragment fade-up">For more history: <a href="https://www.yourhtmlsource.com/starthere/historyofhtml.html" class="text-blue-500 hover:text-blue-700 hover:bg-blue-100 transition duration-500 ease-in-out">https://www.yourhtmlsource.com/starthere/historyofhtml.html</a></p>
 					</div>
 					<span></span>
 				</div>
@@ -251,7 +272,7 @@ visible: false
 			</section>
 
 			<section data-background="images://phposors.jpg" data-auto-animate>
-				<p class="title-font text-white text-6xl mb-4 font-medium">1995</p>
+				<p class="title-font text-white text-6xl font-medium mb-4">1995</p>
 			</section>
 
 			<section data-background="images://phposors.jpg" data-auto-animate>
@@ -270,7 +291,7 @@ visible: false
 						<a class="text-4xl font-jt" href="https://www.joomlatools.com/">joomla<span class="text-blue-500">tools</span></a>
 					</div>
 					<div class="lg:w-3/4 w-full mx-auto text-left">
-						<p class="leading-relaxed text-lg mb-4">PHP development began in 1994 whenRasmus Lerdorf wrote severalCommon Gateway Interface(CGI) programs in C, which he used to maintain his personal homepage. He extended them to work with web forms and to communicate with databases, and called this implementation "<strong>Personal Home Page/Forms Interpreter</strong>" or <strong>PHP/FI</strong></p>
+						<p class="leading-relaxed text-lg mb-4">PHP development began in 1994 when Rasmus Lerdorf wrote several Common Gateway Interface (CGI) programs in C, which he used to maintain his personal homepage. He extended them to work with web forms and to communicate with databases, and called this implementation "<strong>Personal Home Page/Forms Interpreter</strong>" or <strong>PHP/FI</strong></p>
 					</div>
 					<span></span>
 				</div>
@@ -287,9 +308,9 @@ visible: false
 						<a class="text-4xl font-jt" href="https://www.joomlatools.com/">joomla<span class="text-blue-500">tools</span></a>
 					</div>
 					<div class="lg:w-3/4 w-full mx-auto text-left">
-						<p class="leading-relaxed text-lg mb-4">PHP development began in 1994 whenRasmus Lerdorf wrote severalCommon Gateway Interface(CGI) programs in C, which he used to maintain his personal homepage. He extended them to work with web forms and to communicate with databases, and called this implementation "<strong>Personal Home Page/Forms Interpreter</strong>" or <strong>PHP/FI</strong></p>
+						<p class="leading-relaxed text-lg mb-4">PHP development began in 1994 when Rasmus Lerdorf wrote several Common Gateway Interface (CGI) programs in C, which he used to maintain his personal homepage. He extended them to work with web forms and to communicate with databases, and called this implementation "<strong>Personal Home Page/Forms Interpreter</strong>" or <strong>PHP/FI</strong></p>
 
-						<p class="leading-relaxed text-lg">PHP/FI could be used to build simple,dynamic web applications. To accelerate bug reporting and improve the code, Lerdorf initially announced the release of PHP/FI as "Personal Home Page Tools (PHP Tools) version 1.0”.</p>
+						<p class="leading-relaxed text-lg">PHP/FI could be used to build simple, dynamic web applications. To accelerate bug reporting and improve the code, Lerdorf initially announced the release of PHP/FI as "Personal Home Page Tools (PHP Tools) version 1.0”.</p>
 					</div>
 					<span></span>
 				</div>
@@ -379,7 +400,7 @@ visible: false
 					<div class="lg:w-3/4 w-full mx-auto text-left">
 						<p class="leading-relaxed text-lg mb-4">Zeev Suraski and Andi Gutmans rewrote the parser in 1997 and formed the base of PHP3, changing the language's name to the recursive acronym PHP:Hypertext Preprocessor. Afterwards, public testing of PHP3 began, and the official launch came in June 1998.</p>
 
-						<p class="leading-relaxed text-lg">They then started a new rewrite of PHP's core, producing theZend Engine in 1999 They also foundedZend Technologies in Ramat Gan, Israel. On May 22, 2000, PHP 4, powered by the Zend Engine 1.0, was released.</p>
+						<p class="leading-relaxed text-lg">They then started a new rewrite of PHP's core, producing the Zend Engine in 1999 They also founded Zend Technologies in Ramat Gan, Israel. On May 22, 2000, PHP 4, powered by the Zend Engine 1.0, was released.</p>
 					</div>
 					<span></span>
 				</div>
@@ -593,40 +614,7 @@ class HTML_weblinks {
 			?&gt;
 			&lt;/td&gt;
 		&lt;/tr&gt;
-		&lt;tr&gt;
-			&lt;td&gt;
-			&lt;?php
-			if ( count( $rows ) ) {
-				HTML_weblinks::showTable( $params, $rows, $catid, $tabclass );
-			}
-			?&gt;
-			&lt;/td&gt;
-		&lt;/tr&gt;
-		&lt;tr&gt;
-			&lt;td&gt;&nbsp;
-
-			&lt;/td&gt;
-		&lt;/tr&gt;
-		&lt;tr&gt;
-			&lt;td&gt;
-			&lt;?php
-			// Displays listing of Categories
-			if ( ( $params-&gt;get( 'type' ) == 'category' ) &amp;&amp; $params-&gt;get( 'other_cat' ) ) {
-				HTML_weblinks::showCategories( $params, $categories, $catid );
-			} else if ( ( $params-&gt;get( 'type' ) == 'section' ) &amp;&amp; $params-&gt;get( 'other_cat_section' ) ) {
-				HTML_weblinks::showCategories( $params, $categories, $catid );
-			}
-			?&gt;
-			&lt;/td&gt;
-		&lt;/tr&gt;
-		&lt;/table&gt;
-		&lt;/form&gt;
-		&lt;?php
-		// displays back button
-		mosHTML::BackButton ( $params, $hide_js );
-	}
-	
-							</code></pre>
+</code></pre>
 					</div>
 					<span></span>
 				</div>
@@ -721,7 +709,7 @@ class HTML_weblinks {
 			</section>
 
 			<section data-background="images://joomla.png" data-auto-animate>
-				<p class="title-font text-white text-6xl mb-4 font-medium">2008</p>
+				<p class="title-font text-white text-6xl font-medium mb-4">2008</p>
 			</section>
 
 			<section data-background="images://joomla.png" data-auto-animate>
@@ -783,7 +771,7 @@ class HTML_weblinks {
 
 						<p class="leading-relaxed text-lg mb-4">... Perhaps one of the most powerful features of the framework is the newMVCbased component objects. The clear <strong>separation between logic and presentation</strong> helps ensure code re-usability and maintainability.</p>
 
-						<p class="leading-relaxed text-lg fragment fade-up">From: <a href="https://www.joomla.org/announcements/release-news/4483-joomla-15-overview.html">https://www.joomla.org/announcements/release-news/4483-joomla-15-overview.html</a></p>
+						<p class="leading-relaxed text-lg fragment fade-up">From: <a href="https://www.joomla.org/announcements/release-news/4483-joomla-15-overview.html" class="text-blue-500 hover:text-blue-700 hover:bg-blue-100 transition duration-500 ease-in-out">https://www.joomla.org/announcements/release-news/4483-joomla-15-overview.html</a></p>
 					</div>
 					<span></span>
 				</div>
@@ -824,23 +812,7 @@ class HTML_weblinks {
 	&lt;/td&gt;
 &lt;/tr&gt;
 &lt;?php if ( $this-&gt;params-&gt;def( 'show_headings', 1 ) ) : ?&gt;
-&lt;tr&gt;
-	&lt;td width=&quot;10&quot; style=&quot;text-align:right;&quot; class=&quot;sectiontableheader&lt;?php echo $this-&gt;params-&gt;get( 'pageclass_sfx' ); ?&gt;&quot;&gt;
-		&lt;?php echo JText::_('Num'); ?&gt;
-	&lt;/td&gt;
-	&lt;td width=&quot;90%&quot; height=&quot;20&quot; class=&quot;sectiontableheader&lt;?php echo $this-&gt;params-&gt;get( 'pageclass_sfx' ); ?&gt;&quot;&gt;
-		&lt;?php echo JHTML::_('grid.sort',  'Web Link', 'title', $this-&gt;lists['order_Dir'], $this-&gt;lists['order'] ); ?&gt;
-	&lt;/td&gt;
-	&lt;?php if ( $this-&gt;params-&gt;get( 'show_link_hits' ) ) : ?&gt;
-
-	&lt;td width=&quot;30&quot; height=&quot;20&quot; class=&quot;sectiontableheader&lt;?php echo $this-&gt;params-&gt;get( 'pageclass_sfx' ); ?&gt;&quot; style=&quot;text-align:center;&quot; nowrap=&quot;nowrap&quot;&gt;
-		&lt;?php echo JHTML::_('grid.sort',  'Hits', 'hits', $this-&gt;lists['order_Dir'], $this-&gt;lists['order'] ); ?&gt;
-	&lt;/td&gt;
-	&lt;?php endif; ?&gt;
-&lt;/tr&gt;
-&lt;?php endif; ?&gt;
-	
-							</code></pre>
+&lt;tr&gt;</code></pre>
 					</div>
 					<span></span>
 				</div>
@@ -861,7 +833,7 @@ class HTML_weblinks {
 						<div class="browser-mockup mb-4">
 							<img class="w-full h-auto" src="images://joomla-menu-manager.jpg">
 						</div>
-						<p class="leading-relaxed text-lg fragment fade-up">Evolution: <a href="http://joomla15.blogspot.com/2006/10/evolution-adding-new-menu-item.html">http://joomla15.blogspot.com/2006/10/evolution-adding-new-menu-item.html</a></p>
+						<p class="leading-relaxed text-lg fragment fade-up">Evolution: <a href="http://joomla15.blogspot.com/2006/10/evolution-adding-new-menu-item.html" class="text-blue-500 hover:text-blue-700 hover:bg-blue-100 transition duration-500 ease-in-out">http://joomla15.blogspot.com/2006/10/evolution-adding-new-menu-item.html</a></p>
 					</div>
 					<span></span>
 				</div>
@@ -916,7 +888,7 @@ class HTML_weblinks {
 			</section>
 
 			<section data-background="images://joomlatools-pages.png" data-auto-animate>
-				<p class="title-font text-white text-6xl mb-4 font-medium">2020</p>
+				<p class="title-font text-white text-6xl font-medium mb-4">2020</p>
 			</section>
 
 			<section data-background="images://joomlatools-pages.png" data-auto-animate>
@@ -977,7 +949,7 @@ class HTML_weblinks {
 
 						<p class="leading-relaxed text-lg mb-4">Pages has a flat-file bias, and doesn't require a database to work you can use any kind of data source, for example you could use, a Joomla component, a database table, a headless CMS likeStrapi, or even a webservice likeAirtableorGoogle Sheet</p>
 
-						<p class="leading-relaxed text-lg fragment fade-up">From: <a href="https://www.joomla.org/announcements/release-news/4483-joomla-15-overview.html">https://www.joomla.org/announcements/release-news/4483-joomla-15-overview.html</a></p>
+						<p class="leading-relaxed text-lg fragment fade-up">From: <a href="https://www.joomla.org/announcements/release-news/4483-joomla-15-overview.html" class="text-blue-500 hover:text-blue-700 hover:bg-blue-100 transition duration-500 ease-in-out">https://www.joomla.org/announcements/release-news/4483-joomla-15-overview.html</a></p>
 					</div>
 					<span></span>
 				</div>
@@ -1115,8 +1087,8 @@ collection
 						?>
 						<a class="text-4xl font-jt" href="https://www.joomlatools.com/">joomla<span class="text-blue-500">tools</span></a>
 					</div>
-					<div class="lg:w-3/4 w-full mx-auto text-left">
-						<p class="title-font r-fit-text font-medium mb-4">Joomlatools Pages menu item manager</p>
+					<div class="lg:w-3/4 w-full mx-auto text-center">
+						<p class="title-font text-4xl font-medium mb-4">Joomlatools Pages menu item manager</p>
 					</div>
 					<span></span>
 				</div>
@@ -1133,10 +1105,11 @@ collection
 						<a class="text-4xl font-jt" href="https://www.joomlatools.com/">joomla<span class="text-blue-500">tools</span></a>
 					</div>
 					<div class="lg:w-3/4 w-full mx-auto text-left">
-						<p class="leading-relaxed text-lg mb-4">Joomlatools Pages menu item manager <span class="fragment fade">(you still can create dummy menu items)</span></p>
-						<div class="browser-mockup">
+						<p class="leading-relaxed text-lg mb-4">Joomlatools Pages menu item manager</p>
+						<div class="browser-mockup mb-4">
 							<img class="w-full h-auto" src="images://carol.jpg">
 						</div>
+						<p class="fragment fade text-center">(you still can create dummy menu items)</p>
 					</div>
 					<span></span>
 				</div>
@@ -1156,8 +1129,8 @@ collection
 			</section>
 
 			<section data-background="images://pages-code.png" data-auto-animate>
-				<p class="title-font r-fit-text font-medium mb-4">
-					<a href="https://github.com/johanjanssens/agrea.ph">https://github.com/johanjanssens/agrea.ph</a>
+				<p class="title-font text-4xl font-medium mb-4">
+					<a href="https://github.com/johanjanssens/agrea.ph" class="text-blue-500 hover:text-blue-700 hover:bg-blue-100 transition duration-500 ease-in-out">https://github.com/johanjanssens/agrea.ph</a>
 				</p>
 			</section>
 		</section>
@@ -1172,7 +1145,7 @@ collection
 					?>
 					<a class="text-4xl text-white font-jt" href="https://www.joomlatools.com/">joomlatools</a>
 				</div>
-				<p class="title-font text-white text-6xl mb-4 font-medium">Merry Christmas, Happy NY!</p>
+				<p class="title-font text-white text-6xl font-medium mb-4">Merry Christmas, Happy NY!</p>
 				<div class="flex justify-center items-center py-4">
 					<?= import('/partials/logos/joomlatools',[ 
 							'display_time' => 0, 
@@ -1196,7 +1169,7 @@ collection
 				<div class="container mx-auto flex px-5 py-24 md:flex-row flex-col items-center">
 					<div class="lg:max-w-lg lg:w-full md:w-1/2 w-5/6 mb-10 md:mb-0">
 						<img class="object-cover object-center rounded mb-4" alt="hero" src="images://johan.png">
-						<p class="leading-relaxed text-lg"><a href="http://about.me/johanjanssens">http://about.me/johanjanssens</a></p>
+						<p class="leading-relaxed text-lg"><a href="http://about.me/johanjanssens" class="text-blue-500 hover:text-blue-700 hover:bg-blue-100 transition duration-500 ease-in-out">http://about.me/johanjanssens</a></p>
 					</div>
 					<div class="lg:flex-grow md:w-1/2 lg:pl-24 md:pl-16 flex flex-col md:items-start md:text-left items-center text-center">
 						<div class="w-full mb-4">
