@@ -35,12 +35,12 @@ RewriteRule ^ - [E=PAGES_IMAGES_ROOT:%{DOCUMENT_ROOT}%{ENV:PAGES_IMAGES_PATH}]
     RewriteRule (.+)\.(jpe?g|png|gif|svg) %{ENV:PAGES_CACHE_PATH}/$1.$2_%{QUERY_STRING} [NC,E=IMAGE:1,L]
 
     # Find original image (in case image couldn't be generated)
-    RewriteCond %{DOCUMENT_ROOT}/%{ENV:PAGES_CACHE_PATH}/$1\.$2 -f
+    RewriteCond %{DOCUMENT_ROOT}%{ENV:PAGES_CACHE_PATH}/$1\.$2 -f
     RewriteRule (.+)\.(jpe?g|png|gif|svg) %{ENV:PAGES_CACHE_PATH}/$1.$2 [NC,E=IMAGE:1,L]
 
     # Generate image
     RewriteCond %{ENV:REDIRECT_IMAGE} !=1
-    RewriteRule images\/(.+)\.(jpe?g|png|gif|svg) image.php?cache_path=images&image_path=$1.$2&%{QUERY_STRING} [NC,E=IMAGE,L]
+    RewriteRule images\/(.+)\.(jpe?g|png|gif|svg) image.php?cache_path=images&image_path=$1.$2 [NC,E=IMAGE,L,QSA]
 
     # Set cache to 1day (browser) and 1 month (cdn)
     Header set Cache-Control public,max-age=86400,s-maxage=2592000 env=REDIRECT_IMAGE
