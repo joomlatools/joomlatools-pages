@@ -13,7 +13,7 @@ visible: false
 
 		<!-- opening screen -->
 		<section>
-			<section class="body-font" data-background="#4daae9" data-auto-animate data-auto-animate-unmatched="fade">
+			<section class="body-font" data-background="#4daae9" data-auto-animate>
 				<div class="r-stretch grid grid-template-rows-layout content-between">
 					<div class="text-white text-xl flex flex-row gap-4">
 						&nbsp;
@@ -37,7 +37,7 @@ visible: false
 				</aside>
 			</section>
 
-			<section class="body-font" data-background="#4daae9" data-auto-animate data-auto-animate-unmatched="fade">
+			<section class="body-font" data-background="#4daae9" data-auto-animate>
 				<div class="r-stretch grid grid-template-rows-layout content-between">
 					<div class="text-white text-xl flex flex-row gap-4">
 						&nbsp;
@@ -62,7 +62,7 @@ visible: false
 				</aside>
 			</section>
 
-			<section data-background="images://albert-einstein.jpg" data-auto-animate >
+			<section data-background="images://albert-einstein.jpg" data-auto-animate>
 				<div class="r-stretch grid grid-template-rows-layout content-between">
 					<div class="text-white text-xl flex flex-row gap-4">
 						<?= import('/partials/logos/joomlatools',[ 
@@ -73,7 +73,7 @@ visible: false
 						<a class="text-4xl font-jt" href="https://www.joomlatools.com/">joomlatools</a>
 					</div>
 					<div class="xl:w-1/2 lg:w-3/4 w-full xl:mr-0 lg:mr-0 mx-auto text-center text-white">
-						<p class="leading-relaxed text-3xl">Any intelligent fool can make things bigger and more complex... <span class="fragment fade-up">It takes a touch of genius — and a lot of courage to move in the opposite direction.</span></p>
+						<p class="leading-relaxed text-3xl">Any intelligent fool can make things bigger and more complex... <span class="fragment">It takes a touch of genius — and a lot of courage to move in the opposite direction.</span></p>
 						<span class="inline-block h-1 w-10 rounded bg-brand mt-8 mb-6"></span>
 						<p class="font-medium title-font tracking-wider text-lg">Albert Einstein</p>
 					</div>
@@ -1002,7 +1002,7 @@ collection
 					</div>
 					<div class="lg:w-3/4 w-full mx-auto text-left">
 						<p class="leading-relaxed text-3xl mb-4">Joomlatools Pages provides a no-code MVC</p>
-						<pre class="terminal-mockup whitespace-pre" data-value="weblinks.html.php"><code class="html text-xs" data-trim data-line-numbers>
+						<pre class="terminal-mockup whitespace-pre" data-value="weblinks.html.php" data-id="no-mvc"><code class="html text-xs" data-trim data-line-numbers>
 ---
 title: My Awesome Weblinks
 route: /path/to/weblinks.[csv|json]?
@@ -1025,7 +1025,7 @@ route: /path/to/weblinks.[csv|json]?
 					</div>
 					<div class="lg:w-3/4 w-full mx-auto text-left">
 						<p class="leading-relaxed text-3xl mb-4">Joomlatools Pages provides a no-code MVC</p>
-						<pre class="terminal-mockup whitespace-pre" data-value="weblinks.html.php"><code class="html text-xs" data-trim data-line-numbers>
+						<pre class="terminal-mockup whitespace-pre" data-value="weblinks.html.php" data-id="no-mvc"><code class="html text-xs" data-trim data-line-numbers>
 ---
 title: My Awesome Weblinks
 route: /path/to/weblinks.[csv|json]?
@@ -1054,7 +1054,7 @@ collection
 					</div>
 					<div class="lg:w-3/4 w-full mx-auto text-left">
 						<p class="leading-relaxed text-3xl mb-4">Joomlatools Pages provides a no-code MVC</p>
-						<pre class="terminal-mockup whitespace-pre" data-value="weblinks.html.php"><code class="html text-xs" data-trim data-line-numbers>
+						<pre class="terminal-mockup whitespace-pre" data-value="weblinks.html.php" data-id="no-mvc"><code class="html text-xs" data-trim data-line-numbers>
 ---
 title: My Awesome Weblinks
 route: /path/to/weblinks.[csv|json]?
