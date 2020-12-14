@@ -76,7 +76,7 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
                 $valid   = !isset($attribs['srcset']) && !isset($atrribs['data-srcset']) && !isset($attribs['data-src']);
 
                 //Only handle none responsive supported images
-                if($src && $valid && $this->getTemplate()->helper('ext:media.image.supported', $src))
+                if($src && $valid && $this->getTemplate()->helper('ext.media.image.supported', $src))
                 {
                     //Convert class to array
                     if(isset($attribs['class'])) {
@@ -86,6 +86,7 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
                     $attribs['url'] = '/'.ltrim($src, '/');
                     unset($attribs['src']);
 
+                    //Strip data- prefix
                     foreach($attribs as $name => $value)
                     {
                         if(strpos($name, 'data-') !== false)
@@ -93,15 +94,6 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
                             unset($attribs[$name]);
 
                             $name = str_replace('data-', '', $name);
-
-                            if($value === 'true') {
-                                $value = true;
-                            }
-
-                            if($value === 'false') {
-                                $value = false;
-                            }
-
                             $attribs[$name] = $value;
                         }
                     }
@@ -111,6 +103,20 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
                     foreach(array_replace_recursive($config, $attribs) as $name => $value)
                     {
                         $name = str_replace('-', '_', $name);
+                        $options[$name] = $value;
+                    }
+
+                    //Covert false/true
+                    foreach($options as $name => $value)
+                    {
+                        if($value === 'true') {
+                            $value = true;
+                        }
+
+                        if($value === 'false') {
+                            $value = false;
+                        }
+
                         $options[$name] = $value;
                     }
 
