@@ -23,8 +23,8 @@ class ComPagesEventSubscriberStaticcache extends ComPagesEventSubscriberAbstract
             $file = $this->getFilePath($dispatcher);
             $dir  = dirname($file);
 
-            //Only cache statically if no max-age is defined
-            if($file && $response->getMaxAge() === NULL)
+            //Only cache statically if must not revalidate
+            if($file && !in_array('must-revalidate', $response->getCacheControl()))
             {
                 // Cache needs to be regenerated OR cache doesn't exist yet
                 $regenerate = !$dispatcher->isIdentical() || !file_exists($file);
