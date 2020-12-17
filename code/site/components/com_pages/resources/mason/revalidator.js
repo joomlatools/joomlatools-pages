@@ -3,7 +3,7 @@ const https = require("https");
 const http = require("http");
 const chalk = require("chalk");
 
-class revalidator {
+class Revalidator {
   options = {
     origin: null,
     endpoint: "/cache.json",
@@ -77,8 +77,6 @@ class revalidator {
         ...this.options.headers,
       },
     };
-
-    console.log(options);
 
     if (cache.username && cache.password) {
       let authorization = new Buffer.from(
@@ -160,6 +158,7 @@ class revalidator {
 
   async revalidateList(list, options) {
     for (let i = 0; i < list.length; i += this.options.concurrency) {
+      mason.log.debug(chalk.dim("  --- starting batch ---"));
       const requests = list
         .slice(i, i + this.options.concurrency)
         .map((item) => {
@@ -309,13 +308,13 @@ async function revalidateCache(config = {}) {
   );
 
   //Revaliate cache
-  const cache = new revalidator(config);
+  const cache = new Revalidator(config);
 
   await cache.revalidate(argv._[1], argv.collections);
 }
 
 module.exports = {
   version: 1.0,
-  masonRevalidator: revalidator,
+  masonRevalidator: Revalidator,
   revalidateCache,
 };
