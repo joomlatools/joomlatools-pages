@@ -185,6 +185,23 @@ visible: false
 						?>
 						<a class="text-4xl font-jt" href="https://www.joomlatools.com/">joomla<span class="text-blue-500">tools</span></a>
 					</div>
+					<div class="lg:w-3/4 w-full mx-auto text-center">
+						<?= import('/partials/tweet',['tweetID' => '1339507125467398145']);?>
+					</div>
+					<span></span>
+				</div>
+			</section>
+
+			<section data-auto-animate>
+				<div class="r-stretch grid grid-template-rows-layout content-between">
+					<div class="text-xl flex flex-row gap-4">
+						<?= import('/partials/logos/joomlatools',[ 
+							'display_time' => 0, 
+							'icon_size' => '10',
+						]);
+						?>
+						<a class="text-4xl font-jt" href="https://www.joomlatools.com/">joomla<span class="text-blue-500">tools</span></a>
+					</div>
 					<div class="lg:w-3/4 w-full mx-auto text-left">
 						<p class="leading-relaxed text-lg mb-4">HTML 2.0 included everything from the original 1.0 specifications but added a few new features to the mix. <a href="http://www.w3.org/MarkUp/html-spec/" class="text-blue-500 hover:text-blue-700 hover:bg-blue-100 transition duration-500 ease-in-out">» HTML 2.0</a> was the standard for website design until January 1997 and defined many core HTML features for the first time.</p>
 					</div>
