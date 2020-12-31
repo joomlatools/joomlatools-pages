@@ -9,6 +9,18 @@
 
 class ComPagesEventSubscriberErrorhandler extends ComPagesEventSubscriberAbstract
 {
+    public function isEnabled()
+    {
+        $result = parent::isEnabled();
+
+        //Disable error handler if directly routing to a component
+        if(isset($_REQUEST['option']) && substr($_REQUEST['option'], 0, 4) == 'com_') {
+            $result = false;
+        }
+
+        return $result;
+    }
+
     public function onAfterKoowaBootstrap(KEventInterface $event)
     {
         //Catch all Joomla exceptions

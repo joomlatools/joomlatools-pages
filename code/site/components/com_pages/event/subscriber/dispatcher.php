@@ -18,6 +18,18 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         parent::_initialize($config);
     }
 
+    public function isEnabled()
+    {
+        $result = parent::isEnabled();
+
+        //Disable dispatcher if directly routing to a component
+        if(isset($_REQUEST['option']) && substr($_REQUEST['option'], 0, 4) == 'com_') {
+            $result = false;
+        }
+
+        return $result;
+    }
+
     public function onAfterApplicationInitialise(KEventInterface $event)
     {
         $dispatcher = $this->getObject('com://site/pages.dispatcher.http');

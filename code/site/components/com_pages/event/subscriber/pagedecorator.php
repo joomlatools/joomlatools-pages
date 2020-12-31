@@ -20,6 +20,18 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
         parent::_initialize($config);
     }
 
+    public function isEnabled()
+    {
+        $result = parent::isEnabled();
+
+        //Disable page decorator if directly routing to a component
+        if(isset($_REQUEST['option']) && substr($_REQUEST['option'], 0, 4) == 'com_') {
+            $result = false;
+        }
+
+        return $result;
+    }
+
     public function onAfterApplicationRoute(KEventInterface $event)
     {
         //Try to validate the cache
