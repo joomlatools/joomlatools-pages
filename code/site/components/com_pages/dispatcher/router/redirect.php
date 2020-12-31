@@ -29,9 +29,30 @@ class ComPagesDispatcherRouterRedirect extends ComPagesDispatcherRouterAbstract
             $base   = $this->getRequest()->getBasePath();
             $url    = urldecode( $this->getRequest()->getUrl()->getPath());
 
-            $route  = trim(str_replace(array($base, '/index.php'), '', $url), '/');
+            $route  = trim($url, '/');
         }
 
         return parent::resolve($route, $parameters);
+    }
+
+    public function qualify(ComPagesDispatcherRouterRouteInterface $route,  $replace = false)
+    {
+        $url = clone $route;
+
+        if($replace || !$route->isAbsolute())
+        {
+            $request = $this->getRequest();
+
+            //Qualify the url
+            $url->setUrl($request->getUrl()->toString(KHttpUrl::AUTHORITY));
+
+            //Add index.php
+            $base = $request->getBasePath();
+            $path = trim($url->getPath(), '/');
+
+            $url->setPath($base.'/'.$path);
+        }
+
+        return $url;
     }
 }
