@@ -178,7 +178,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         $result   = false;
         $response = $context->getResponse();
 
-        if($response->isCacheable() && !$response->isError())
+        if($response->isCacheable() && $response->isSuccess())
         {
             //Reset the date and last-modified
             $response->setDate(new DateTime('now'));

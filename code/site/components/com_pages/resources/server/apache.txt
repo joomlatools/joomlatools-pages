@@ -15,10 +15,7 @@
     RewriteRule ^joomlatools-pages/cache/static - [END,R=404]
 
     # Condition - Do not serve from cache on browser refresh or when caching is not allowed
-    RewriteCond %{HTTP:Cache-Control} ^(must-revalidate)$ [OR]
-    RewriteCond %{HTTP:Cache-Control} ^(no-store)$ [OR]
-    RewriteCond %{HTTP:Cache-Control} ^(no-cache)$ [OR]
-    RewriteCond %{HTTP:Cache-Control} ^(max-age=0)$
+    RewriteCond %{HTTP:Cache-Control} (must-revalidate|max-age|no-cache|no-store)
     RewriteRule .* - [S=4]
 
     # Condition - Only return cache for none logged in GET request
