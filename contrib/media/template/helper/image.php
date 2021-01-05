@@ -19,6 +19,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
             'base_path' => $this->getObject('com://site/pages.config')->getSitePath().'/images',
             'exclude'    => ['svg'],
             'lazyload'   => true,
+            'preload'    => false,
             'parameters'     => ['auto' => 'true'],
             'parameters_lqi' => ['auto' => 'compress', 'fm' => 'jpg', 'q' => 50]
         ));
@@ -39,6 +40,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
             'min_width' => $this->getConfig()->min_width,
             'max_dpr'   => $this->getConfig()->max_dpr,
             'lazyload'  => $this->getConfig()->lazyload,
+            'preload'   => $this->getConfig()->preload,
         ))->append(array(
             'attributes' => array('class' => $config->class),
         ))->append(array(
@@ -125,6 +127,14 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
                         srcset="'. implode(', ', $srcset).'"
                         alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).'>';
                 }
+
+                //Add preload link to head
+                if($config->preload)
+                {
+                    $html .= '<link href="'.$hqi_url.'&w='.$width.'" rel="preload" as="image"
+                        imagesrcset="'. implode(', ', $srcset).'" imagesizes="100vw" />';
+
+                }
             }
             //Fixed image with display density description
             else
@@ -189,6 +199,13 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
                         srcset="'. implode(', ', $srcset).'"
                         alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).'>';
                 }
+
+                //Add preload link to head
+                if($config->preload)
+                {
+                    $html .= '<link href="'.$hqi_url.'" rel="preload" as="image"
+                        imagesrcset="'. implode(', ', $srcset).'" imagesizes="100vw" />';
+                }
             }
         }
         else $html = '<img class="lazymissing" src="'.$config->url.'" alt="Image Not Found: '.$config->url.'">';
@@ -230,13 +247,23 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
             {
                 $context = stream_context_create([
                     "ssl" => [
-                        "verify_peer"      =>false,
-                        "verify_peer_name" =>false,
+                        "verify_peer"      => false,
+                        "verify_peer_name" => false,
                     ],
                 ]);
 
-                if($data = @file_get_contents($this->getConfig()->base_url.'/'.trim($result, '/'), false, $context)) {
-                    $result = 'data:image/jpg;base64,'.base64_encode($data);
+                $url = $this->getConfig()->base_url.'/'.trim($result, '/');
+                if($data = @file_get_contents($url, false, $context))
+                {
+                    //Failsafe: Ensure file is smaller then 10kb
+                    if(strlen($data) > 10000)
+                    {
+                        $cache_root = isset($_SERVER['PAGES_CACHE_ROOT']) ? $_SERVER['PAGES_CACHE_ROOT'] : false;
+                        $log        = $cache_root.'/.error_log';
+
+                        error_log(sprintf('Could not generate LQI image: %s'."\n", $url), 3, $log);
+                    }
+                    else $result = 'data:image/jpg;base64,'.base64_encode($data);
                 }
             }
         }
@@ -249,9 +276,10 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
     {
         $config = new KObjectConfigJson($parameters);
         $config->append(array(
-            'max_width' => $this->getConfig()->max_width,
-            'min_width' => $this->getConfig()->min_width,
-            'max_dpr'   => $this->getConfig()->max_dpr,
+            'max_width'   => $this->getConfig()->max_width,
+            'min_width'   => $this->getConfig()->min_width,
+            'max_dpr'     => $this->getConfig()->max_dpr,
+            'descriptors' => true,
         ));
 
         $srcset = [];
@@ -277,7 +305,11 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
             foreach ($sizes as $size)
             {
                 $hqi_url->query['w'] = $size;
-                $srcset[$size] = sprintf((string)$hqi_url . ' %1$sw', $size);
+                if($config->descriptors) {
+                    $srcset[$size] = sprintf((string)$hqi_url . ' %1$sw', $size);
+                } else {
+                    $srcset[$size] = (string)$hqi_url;
+                }
             }
         }
 
@@ -363,7 +395,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
      */
     protected function _calculateSizes($url, $max_width, $min_width = 320)
     {
-        $min_filesize = 1024 * 10; //10kb
+        $min_filesize = 1024 * 5; //5kb
         $modifier     = 0.7;       //70% (each image should be +/- 30% smaller in expected size)
 
         //Get dimensions
