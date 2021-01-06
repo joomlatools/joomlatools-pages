@@ -42,6 +42,12 @@ class ComPagesDispatcherBehaviorRedirectable extends KControllerBehaviorAbstract
             $context->getResponse()->getHeaders()->set('Location',  $url);
             $context->getResponse()->setStatus($status);
 
+            //Purge the cache
+            $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
+            if($dispatcher->isCacheable()) {
+                $dispatcher->purge();
+            }
+
             $context->getSubject()->send();
         }
     }

@@ -353,11 +353,12 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
                 unset($route->query[$param]);
             }
 
-            if(strpos($regex, '://') === false) {
-                $route->setPath('/'.ltrim($regex, '/'));
-            } else {
+            if(strpos($regex, '://') !== false)
+            {
+                $route-> path = ''; //Reset the path
                 $route->setUrl($regex);
             }
+            else $route->setPath('/'.ltrim($regex, '/'));
         }
 
         return $result;
