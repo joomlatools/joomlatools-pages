@@ -9,6 +9,7 @@
 
 final class ComPagesDataRegistry extends KObject implements KObjectSingleton
 {
+    private $__http;
     private $__data    = array();
     private $__locator = null;
     private $__namespaces = array();
@@ -23,11 +24,15 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
 
         //Set the namespaces
         $this->__namespaces = KObjectConfig::unbox($config->namespaces);
+
+        //Set http client
+        $this->__http = $config->http;
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
+            'http'       => 'com://site/pages.http.cache',
             'cache'      => JDEBUG ? false : true,
             'cache_path' => $this->getObject('com://site/pages.config')->getSitePath('cache'),
             'cache_validation'  => true,
@@ -85,11 +90,26 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         return $this->__hashes[$path];
     }
 
-    public function fromUrl($url)
+    public function fromUrl($url, $cache = true)
     {
         if (!isset($this->__data[$url]))
         {
-            $data = $this->getObject('com://site/pages.http.client')->get($url);
+            $http = $this->_getHttpClient();
+            $headers['Cache-Control'] = $this->_getCacheControl($cache);
+
+            try
+            {
+                $data = $http->get($url, $headers);
+            }
+            catch(KHttpException $e)
+            {
+                //Re-throw exception if in debug mode
+                if($http->isDebug()) {
+                    throw $e;
+                } else {
+                    $hash = null;
+                }
+            }
 
             $class = $this->getObject('manager')->getClass('com://site/pages.data.object');
             $data = new $class($data);
@@ -308,5 +328,47 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         }
 
         return $result;
+    }
+
+    public function _getHttpClient()
+    {
+        if(!($this->__http instanceof KHttpClientInterface))
+        {
+            $this->__http = $this->getObject($this->__http);
+
+            if(!$this->__http instanceof KHttpClientInterface)
+            {
+                throw new UnexpectedValueException(
+                    'Http client: '.get_class($this->__http).' does not implement  KHttpClientInterface'
+                );
+            }
+        }
+
+        return $this->__http;
+    }
+
+    protected function _getCacheControl($cache)
+    {
+        $cache_control = array();
+
+        if($cache !== true)
+        {
+            if($cache !== false)
+            {
+                //Convert max_age to seconds
+                if(!is_numeric($cache))
+                {
+                    if($max_age = strtotime($cache)) {
+                        $max_age = $max_age - strtotime('now');
+                    }
+                }
+                else $max_age = $cache;
+
+                $cache_control = ['max-age' => (int) $max_age];
+            }
+            else $cache_control = ['no-store'];
+        }
+
+        return $cache_control;
     }
 }
