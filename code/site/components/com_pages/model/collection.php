@@ -41,18 +41,20 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'entity' => $this->getIdentifier()->getName(),
-            'type'             => '', //the collection type used when generating JSDNAPI
-            'name'             => '', //the collection name used to generate this model
-            'identity_key'     => null,
+            'entity'        => $this->getIdentifier()->getName(),
+            'type'          => '', //the collection type used when generating JSDNAPI
+            'name'          => '', //the collection name used to generate this model
+            'search'        => [], //properties to allow searching on
+            'identity_key'  => null,
+            'persistable'   => false,
+        ])->append([
             'behaviors'   => [
                 'com://site/pages.model.behavior.paginatable',
                 'com://site/pages.model.behavior.sortable',
-                'com://site/pages.model.behavior.searchable',
                 'com://site/pages.model.behavior.sparsable',
                 'com://site/pages.model.behavior.filterable',
+                'com://site/pages.model.behavior.searchable' => ['columns' => $config->search],
             ],
-            'persistable' => false,
         ]);
 
         parent::_initialize($config);
