@@ -31,7 +31,7 @@ class ComPagesModelWebservice extends ComPagesModelCollection
             'entity'       => 'resource',
             'url'          => '',
             'data'         => '',
-            'cache'        => null,
+            'cache'        => true,
             'headers'      => array()
         ]);
 
@@ -54,11 +54,11 @@ class ComPagesModelWebservice extends ComPagesModelCollection
 
         if($url = $this->getUrl($this->getState()->getValues()))
         {
-            $http    = $this->_getHttpClient();
+            $http = $this->_getHttpClient();
 
-            $max_age = $refresh ? 0 : $this->getConfig()->cache;
+            $cache   = $refresh ? 0 : $this->getConfig()->cache;
             $headers = $this->getHeaders();
-            $headers['Cache-Control'] = $this->_getCacheControl($max_age);
+            $headers['Cache-Control'] = $this->_getCacheControl($cache);
 
             try
             {
@@ -227,21 +227,22 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         return $this->__http;
     }
 
-    protected function _getCacheControl($max_age = null)
+    protected function _getCacheControl($cache)
     {
         $cache_control = array();
 
-        if($max_age !== null)
+        if($cache !== true)
         {
-            if($max_age !== false)
+            if($cache !== false)
             {
                 //Convert max_age to seconds
-                if(!is_numeric($max_age))
+                if(!is_numeric($cache))
                 {
-                    if($max_age = strtotime($max_age)) {
+                    if($max_age = strtotime($cache)) {
                         $max_age = $max_age - strtotime('now');
                     }
                 }
+                else $max_age = $cache;
 
                 $cache_control = ['max-age' => (int) $max_age];
             }
