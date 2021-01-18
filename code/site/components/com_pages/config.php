@@ -51,9 +51,7 @@ class ComPagesConfig extends KObject implements KObjectSingleton
             'http_static_cache_path'    => getenv('PAGES_STATIC_ROOT') ? getenv('PAGES_STATIC_ROOT') : false,
 
             'http_resource_cache'       => JFactory::getConfig()->get('caching'),
-            'http_resource_cache_time'  => '1day',
             'http_resource_cache_path'  => $config->site_path ? $config->site_path.'/cache/resources' : false,
-            'http_resource_cache_force' => false,
             'http_resource_cache_debug' => (JDEBUG ? true : false),
 
             'collections' => array(),
