@@ -66,6 +66,11 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
             JFactory::getApplication()->setTemplate($template, $params);
         }
+
+        //Set PAGES_PATH based on Joomla configuration
+        if(JFactory::getApplication()->getCfg('sef_rewrite')) {
+            $_SERVER['PAGES_PATH'] = JFactory::getApplication()->getCfg('live_site') ?? '/';
+        }
     }
 
     protected function _bootstrapSite($path, $config = array())
