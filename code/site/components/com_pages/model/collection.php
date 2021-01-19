@@ -245,7 +245,7 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         }
 
         foreach($data as $properties) {
-            $entity->create($properties);
+            $entity->create($properties, ComPagesModelEntityItem::STATUS_CREATED);
         }
 
         return $entity;
