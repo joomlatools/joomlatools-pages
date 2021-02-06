@@ -31,7 +31,7 @@ class ComPagesDispatcherRouterRedirect extends ComPagesDispatcherRouterAbstract
 
             //Strip script name if request is not rewritten (allow to redirect /index.php/)
             if(!isset($_SERVER['PAGES_PATH'])) {
-                $route = str_replace(array($base, $_SERVER['SCRIPT_NAME']), '', $url);
+                $route = str_replace(array($base, basename($_SERVER['SCRIPT_NAME'])), '', $url);
             } else {
                 $route = str_replace($base, '', $url);
             }
