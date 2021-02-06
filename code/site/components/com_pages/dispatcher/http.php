@@ -90,8 +90,8 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             $url   = urldecode($this->getRequest()->getUrl()->getPath());
 
             //Strip script name if request is rewritten
-            if(isset($_SERVER['PAGES_PATH'])) {
-                $path = str_replace(array($base, $_SERVER['SCRIPT_NAME']), '', $url);
+            if(!isset($_SERVER['PAGES_PATH'])) {
+                $path = str_replace(array($base, basename($_SERVER['SCRIPT_NAME'])), '', $url);
             } else {
                 $path = str_replace($base, '', $url);
             }
