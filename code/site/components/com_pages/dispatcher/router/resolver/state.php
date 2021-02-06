@@ -28,7 +28,7 @@ class ComPagesDispatcherRouterResolverState extends ComPagesDispatcherRouterReso
 
                 $route->query = array_intersect_key($route->query, $state->toArray());
             }
-            else $route->query = array();
+            else $route->query = $route->getParameters();
         }
     }
 

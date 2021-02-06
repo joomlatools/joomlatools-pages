@@ -285,7 +285,7 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
                     else unset($query[$key]);
                 }
 
-                $route->setQuery($query, true);
+                $route->setParameters($query);
                 $result = true;
             }
         }
