@@ -72,11 +72,11 @@ class Prefetcher {
       this.log("Initialize completed");
       this.debug("Options", this.options);
 
-      if (this.options.onload) {
+      if (this.options.onload && !navigator.webdriver) {
         this.onLoad();
       }
 
-      if (this.options.onhover) {
+      if (this.options.onhover && !navigator.webdriver) {
         this.onHover();
       }
 

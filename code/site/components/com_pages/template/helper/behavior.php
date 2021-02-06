@@ -59,7 +59,7 @@ ANCHOR;
         $html = '';
         if (!static::isLoaded('prefetcher'))
         {
-            $html .= '<ktml:script src="assets://com_pages/js/prefetcher-v1.1.0.'.(!$config->debug ? 'min.js' : 'js').'" defer="defer" />';
+            $html .= '<ktml:script src="assets://com_pages/js/prefetcher-v1.1.1.'.(!$config->debug ? 'min.js' : 'js').'" defer="defer" />';
             $html .= <<<PREFETCHER
 <script>
 document.addEventListener("DOMContentLoaded", () => {
