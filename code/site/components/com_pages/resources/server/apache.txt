@@ -11,6 +11,9 @@
     # Define the filesystem location of the static cache
     SetEnvIf Request_URI "^.*" PAGES_STATIC_PATH=joomlatools-pages/cache/static
 
+    # Define the filesystem locations (related to server root)
+    RewriteRule ^ - [E=PAGES_STATIC_ROOT:%{DOCUMENT_ROOT}/%{ENV:PAGES_STATIC_PATH}]
+
     # Prevent direct access to the static cache
     RewriteRule ^joomlatools-pages/cache/static - [END,R=404]
 
@@ -26,15 +29,15 @@
     # Rewrite - /
     # Edit when running in a subfolder
     RewriteCond "expr=%{REQUEST_URI} =~  m#/#"
-    RewriteCond %{DOCUMENT_ROOT}%{ENV:PAGES_STATIC_PATH}/%{REQUEST_URI}/index\.html -s
+    RewriteCond %{ENV:PAGES_STATIC_ROOT}/%{REQUEST_URI}/index\.html -s
     RewriteRule .* %{ENV:PAGES_STATIC_PATH}/%{REQUEST_URI}/index\.html [T=text/html,E=STATIC,L]
 
     # Rewrite - /path/to/page.html
-    RewriteCond %{DOCUMENT_ROOT}%{ENV:PAGES_STATIC_PATH}/%{REQUEST_URI}\.html -s
+    RewriteCond %{ENV:PAGES_STATIC_ROOT}/%{REQUEST_URI}\.html -s
     RewriteRule .* %{ENV:PAGES_STATIC_PATH}/%{REQUEST_URI}\.html [T=text/html,E=STATIC,L]
 
     # Rewrite - /path/to/page.[format]
-    RewriteCond %{DOCUMENT_ROOT}%{ENV:PAGES_STATIC_PATH}/%{REQUEST_URI} -s
+    RewriteCond %{ENV:PAGES_STATIC_ROOT}/%{REQUEST_URI} -s
     RewriteRule .* %{ENV:PAGES_STATIC_PATH}/%{REQUEST_URI} [E=STATIC,L]
 
     # Allow browser content sniffing
