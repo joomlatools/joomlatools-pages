@@ -178,7 +178,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         $result   = false;
         $response = $context->getResponse();
 
-        if($response->isCacheable() && !$response->isError())
+        if($response->isCacheable() && $response->isSuccess())
         {
             //Reset the date and last-modified
             $response->setDate(new DateTime('now'));
@@ -484,7 +484,9 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
     public function isCacheable($strict = true)
     {
-        if($result = parent::isCacheable() && $strict)
+        $result = parent::isCacheable();
+
+        if($result && $strict)
         {
             //Check if the current page is cacheable
             if($page = $this->getPage()) {

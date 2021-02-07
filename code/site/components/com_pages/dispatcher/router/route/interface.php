@@ -19,6 +19,38 @@ interface ComPagesDispatcherRouterRouteInterface extends KHttpUrlInterface
     const STATUS_GENERATED = 2;
 
     /**
+     * Get a route parameter
+     *
+     * @param string $name The parameter name
+     * @param mixed $default The parameter default value
+     * @return mixed
+     */
+    public function get($name, $default = null);
+
+    /**
+     * Check if a route parameter exists
+     *
+     * @param string $name The parameter name
+     * @return bool
+     */
+    public function has($name);
+
+    /**
+     * Set the route parameters
+     *
+     * @param array $parameters An associative array of route parameters
+     * @return $this
+     */
+    public function setParameters($parameters);
+
+    /**
+     * Get the route parameters
+     *
+     * @return array
+     */
+    public function getParameters();
+
+    /**
      * Get the route state
      *
      * @return array

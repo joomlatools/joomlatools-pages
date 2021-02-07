@@ -109,8 +109,10 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                     $item_value = $item[$attribute];
 
                     //Handle one dimensional assiociate array values
-                    if($key = $filter['key'])
+                    if(isset($filter['key']))
                     {
+                        $key = $filter['key'];
+
                         if(isset($item_value[$key])) {
                             $item_value = $item_value[$key];
                         } else {

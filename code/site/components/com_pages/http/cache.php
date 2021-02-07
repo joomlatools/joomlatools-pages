@@ -21,7 +21,6 @@ class ComPagesHttpCache extends KHttpClient
         $config->append([
             'cache'      => false,
             'cache_path' => $this->getObject('com://site/pages.config')->getSitePath('cache'),
-            'cache_time' => '1day',
             'debug'      => JDEBUG ? true : false,
 
         ]);
@@ -199,21 +198,11 @@ class ComPagesHttpCache extends KHttpClient
         $stale = false;
         $cache_control = $request->getCacheControl();
 
-        if(!isset($cache_control['max-age']))
+        if(isset($cache_control['max-age']))
         {
-            $max_age = $this->getConfig()->cache_time;
-
-            //Convert max_age to seconds
-            if(!is_numeric($max_age))
-            {
-                if($max_age = strtotime($max_age)) {
-                    $max_age = $max_age - strtotime('now');
-                }
-            }
+            $max_age = (int) $cache_control['max-age'];
+            $stale = ($max_age - $response->getAge()) <= 0;
         }
-        else $max_age = $cache_control['max-age'];
-
-        $stale = ($max_age - $response->getAge()) <= 0;
 
         return $stale;
     }

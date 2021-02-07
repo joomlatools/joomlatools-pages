@@ -31,22 +31,22 @@ class ComPagesDispatcherRouterResolverPagination extends ComPagesDispatcherRoute
         {
             if(isset($route->query['page']))
             {
-                $page  = $route->query['page'];
+                $page = $route->query['page'];
 
                 if(isset($page['number']) && $state['limit']) {
-                    $route->query['offset'] = ($page['number'] - 1) * $state['limit'];
+                    $route->query['offset'] = ($page['number'] - 1) * (int) $state['limit'];
                 }
 
                 if(isset($page['limit'])) {
-                    $route->query['limit'] = $page['limit'];
+                    $route->query['limit'] = (int) $page['limit'];
                 }
 
                 if(isset($page['offset'])) {
-                    $route->query['offset'] = $page['offset'];
+                    $route->query['offset'] = (int) $page['offset'];
                 }
 
                 if(isset($page['total'])) {
-                    $route->query['total'] = $page['total'];
+                    $route->query['total'] = (int) $page['total'];
                 }
 
                 unset($route->query['page']);
@@ -59,7 +59,7 @@ class ComPagesDispatcherRouterResolverPagination extends ComPagesDispatcherRoute
                 $page = $route->query['page'];
 
                 if($page && $state['limit']) {
-                    $route->query['offset'] = ($page - 1) * $state['limit'];
+                    $route->query['offset'] = ($page - 1) * (int) $state['limit'];
                 }
 
                 unset($route->query['page']);

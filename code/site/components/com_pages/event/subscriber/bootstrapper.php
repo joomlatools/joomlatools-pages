@@ -27,6 +27,11 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         {
             define('PAGES_SITE_ROOT', $route->getPath());
 
+            //Set PAGES_PATH based on Joomla configuration
+            if(JFactory::getApplication()->getCfg('sef_rewrite')) {
+                $_SERVER['PAGES_PATH'] = JFactory::getApplication()->getCfg('live_site') ?? '/';
+            }
+
             //Set the site path in the config
             $config = $this->getObject('com://site/pages.config', ['site_path' => $route->getPath()]);
 

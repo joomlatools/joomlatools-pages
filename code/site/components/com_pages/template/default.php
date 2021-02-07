@@ -268,7 +268,7 @@ class ComPagesTemplateDefault extends KTemplate
         return $result;
     }
 
-    protected function _fetchData($path)
+    protected function _fetchData($path, $cache = true)
     {
         $result = false;
         if(is_array($path))
@@ -298,7 +298,7 @@ class ComPagesTemplateDefault extends KTemplate
             if(!in_array($namespace, ['http', 'https'])) {
                 $result = $this->getObject('data.registry')->fromPath($path);
             } else {
-                $result = $this->getObject('data.registry')->fromUrl($path);
+                $result = $this->getObject('data.registry')->fromUrl($path, $cache);
             }
         }
 

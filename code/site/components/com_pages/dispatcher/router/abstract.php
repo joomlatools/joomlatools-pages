@@ -143,12 +143,12 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
             //Qualify the url
             $url->setUrl($request->getUrl()->toString(KHttpUrl::AUTHORITY));
 
-            //Add index.php
             $base = $request->getBasePath();
             $path = trim($url->getPath(), '/');
 
-            if(strpos($request->getUrl()->getPath(), 'index.php') !== false) {
-                $url->setPath($base . '/index.php/' . $path);
+            //Add script name (index.php) if request is not rewritten
+            if(!isset($_SERVER['PAGES_PATH'])) {
+                $url->setPath($base . basename($_SERVER['SCRIPT_NAME']).'/' . $path);
             } else {
                 $url->setPath($base.'/'.$path);
             }

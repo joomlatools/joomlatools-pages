@@ -18,13 +18,13 @@ class ComPagesEventSubscriberStaticcache extends ComPagesEventSubscriberAbstract
         $response   = $dispatcher->getResponse();
 
         //Only cache static pages without a query string
-        if(!$dispatcher->getContentLocation()->getQuery() && $this->getConfig()->cache_path)
+        if($event->result && !$dispatcher->getContentLocation()->getQuery() && $this->getConfig()->cache_path)
         {
             $file = $this->getFilePath($dispatcher);
             $dir  = dirname($file);
 
-            //Only cache statically if no max-age is defined
-            if($file && $response->getMaxAge() === NULL)
+            //Only cache statically if must not revalidate
+            if($file && !in_array('must-revalidate', $response->getCacheControl()))
             {
                 // Cache needs to be regenerated OR cache doesn't exist yet
                 $regenerate = !$dispatcher->isIdentical() || !file_exists($file);
@@ -51,8 +51,15 @@ class ComPagesEventSubscriberStaticcache extends ComPagesEventSubscriberAbstract
             else
             {
                 //Purge the static cache
-                if(file_exists($file)) {
+                if(file_exists($file))
+                {
                     unlink($file);
+
+                    //Delete the folder if its empty
+                    $dir = dirname($file);
+                    if(!(new \FilesystemIterator($dir))->valid()) {
+                        rmdir($dir);
+                    }
                 }
             }
         }
@@ -63,8 +70,15 @@ class ComPagesEventSubscriberStaticcache extends ComPagesEventSubscriberAbstract
         $file = $this->getFilePath($event->getTarget());
 
         //Purge the static cache
-        if(file_exists($file)) {
+        if(file_exists($file))
+        {
             unlink($file);
+
+            //Delete the folder if its empty
+            $dir = dirname($file);
+            if(!(new \FilesystemIterator($dir))->valid()) {
+                rmdir($dir);
+            }
         }
     }
 

@@ -24,6 +24,14 @@ abstract class ComPagesDispatcherRouterRouteAbstract extends KHttpUrl implements
      */
     protected $__status = null;
 
+
+    /**
+     * The route paramaters
+     *
+     * @var array
+     */
+    protected $__parameters = array();
+
     /**
      * Constructor
      *
@@ -52,6 +60,55 @@ abstract class ComPagesDispatcherRouterRouteAbstract extends KHttpUrl implements
         ));
 
         parent::_initialize($config);
+    }
+
+    /**
+     * Get a route parameter
+     *
+     * @param string $name The parameter name
+     * @param mixed $default The parameter default value
+     * @return mixed
+     */
+    public function get($name, $default = null)
+    {
+        return $this->has($name) ? $this->query[$name] : $default;
+    }
+
+    /**
+     * Check if a parameter exists
+     *
+     * @param string $name The parameter name
+     * @return bool
+     */
+    public function has($name)
+    {
+        return isset($this->query[$name]);
+    }
+
+    /**
+     * Set the route parameters
+     *
+     * @param array $parameters An associative array of route parameters
+     * @return $this
+     */
+    public function setParameters($parameters)
+    {
+        $this->__parameters = $parameters;
+
+        //Merge the parameters into the query
+        $this->setQuery($parameters, true);
+
+        return $this;
+    }
+
+    /**
+     * Get the route parameters
+     *
+     * @return array
+     */
+    public function getParameters()
+    {
+        return $this->__parameters;
     }
 
     /**
