@@ -49,7 +49,7 @@ if($query['image_path'])
 
     $source      = $image_root.'/'.$image_path;
     $destination = $cache_root ?  $cache_root.'/'.$cache_path : false;
-    $background   = null;
+    $background  = Image::normalizeColor('white');
 
     if(!file_exists($source))
     {
