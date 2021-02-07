@@ -30,7 +30,9 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
         if($this->getTemplate()->getLayout() === false && $this->enabled())
         {
             $matches = array();
-            //First pass - Find images between <ktml:images></ktml:images>
+            $images  = array();
+
+            //Find images between <ktml:images></ktml:images>
             if(preg_match_all('#<ktml:images(.*)>(.*)<\/ktml:images>#siU', $text, $matches))
             {
                 foreach($matches[0] as $key => $match)
@@ -46,17 +48,22 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
                     $result = $this->filterImages($matches[2][$key], $attribs);
 
                     //Filter background images
-                    $result = $this->filterBackgroundImages($result, $attribs);
+                    $images[$key] = $this->filterBackgroundImages($result, $attribs);
 
-                    $text = str_replace($match, $result, $text);
+                    $text = str_replace($match, '<ktml:images:'.$key.'>', $text);
                 }
             }
 
-            //Second pass - Filter image elements
+            //Filter image elements
             $text =  $this->filterImages($text);
 
-            //Second pass- Filter the background images
+            //Filter the background images
             $text = $this->filterBackgroundImages($text);
+
+            //Find images between <ktml:images></ktml:images>
+            foreach($images as $key => $value) {
+                $text = str_replace('<ktml:images:'.$key.'>', $value, $text);
+            }
 
             //Add client hints
             $text .= '<meta http-equiv="Accept-CH" content="dpr, width, viewport-width, downlink" />';
@@ -76,14 +83,19 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
                 $valid   = !isset($attribs['srcset']) && !isset($atrribs['data-srcset']) && !isset($attribs['data-src']);
 
                 //Only handle none responsive supported images
-                if($src && $valid && $this->getTemplate()->helper('ext.media.image.supported', $src))
+                if($src && $valid)
                 {
                     //Convert class to array
                     if(isset($attribs['class'])) {
                         $attribs['class'] = explode(' ', $attribs['class']);
                     }
 
-                    $attribs['url'] = '/'.ltrim($src, '/');
+                    if($this->getTemplate()->helper('ext.media.image.supported', $src)) {
+                        $attribs['url'] = '/'.ltrim($src, '/');
+                    } else {
+                        $attribs['url'] = $src;
+                    }
+
                     unset($attribs['src']);
 
                     //Strip data- prefix
@@ -121,7 +133,7 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
                     }
 
                     //Filter the images
-                    $html = str_replace($matches[0][$key], $this->getTemplate()->helper('ext:media.image', $options), $html);
+                    $html = str_replace($matches[0][$key], $this->getTemplate()->helper('ext.media.image', $options), $html);
                 }
             }
         }
@@ -136,7 +148,7 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
         {
             foreach($matches[1] as $key => $match)
             {
-                $html .= $this->getTemplate()->helper('ext:media.image.import', 'bgset');
+                $html .= $this->getTemplate()->helper('ext.media.image.import', 'bgset');
 
                 $attribs = $this->parseAttributes($match);
 
@@ -168,6 +180,7 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
                     $name = str_replace('-', '_', $name);
                     $options[$name] = $value;
                 }
+
 
                 if($srcset = $this->getTemplate()->helper('ext:media.image.srcset', $matches[3][$key], $options))
                 {

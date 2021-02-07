@@ -61,6 +61,7 @@ window.addEventListener('lazybeforeunveil', function (e)
 </script>
 
 <style>
+
 /* Lazyloaded images */
 span.img-container {
   display: inline-block;
@@ -69,6 +70,7 @@ span.img-container {
 
 span.img-container > img {
   margin: 0;
+  background-clip: content-box;
 }
 
 .lazyprogressive {
