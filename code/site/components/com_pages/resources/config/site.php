@@ -34,18 +34,17 @@ return [
             'cache_reload'  => $config['template_cache_validation'],
         ],
         'com://site/pages.dispatcher.behavior.cacheable' => [
-            'cache'             => $config['http_cache'],
-            'cache_path'        => $config['http_cache_path'],
-            'cache_time'        => $config['http_cache_time'],
-            'cache_time_shared' => $config['http_cache_time_proxy'],
-            'cache_validation'  => $config['http_cache_validation'],
-            'cache_control'     => $config['http_cache_control'],
+            'cache'       => $config['http_cache'],
+            'cache_path'  => $config['http_cache_path'],
+            'cache_time'         => !is_null($config['http_cache_time_browser']) ? $config['http_cache_time_browser'] : $config['http_cache_time'],
+            'cache_time_shared'  => $config['http_cache_time'],
+            'cache_control'         => $config['http_cache_control'],
+            'cache_control_private' => $config['http_cache_control_private'],
+
         ],
-        'com://site/pages.http.client' => [
+        'com://site/pages.http.cache' => [
             'cache'       => $config['http_resource_cache'],
-            'cache_time'  => $config['http_resource_cache_time'],
             'cache_path'  => $config['http_resource_cache_path'],
-            'cache_force' => $config['http_resource_cache_force'],
             'debug'       => $config['http_resource_cache_debug'],
         ],
         'com://site/pages.model.cache' => [
@@ -62,7 +61,11 @@ return [
                 //See: https://github.com/scrivo/highlight.php
                 return (new \Highlight\Highlighter())->highlight($language, $source, false)->value;
             }
-        ]
+        ],
+        'com://site/pages.event.subscriber.staticcache' => [
+            'enable'     => $config['http_static_cache'] && $config['http_cache'],
+            'cache_path' => $config['http_static_cache_path'],
+        ],
     ],
     'extensions' => $config['extensions'] ?? array(),
 ];

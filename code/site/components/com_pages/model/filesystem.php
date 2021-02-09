@@ -50,7 +50,7 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
         return bin2hex(random_bytes($this->_identity_key_length));
     }
 
-    public function getHash()
+    public function getHash($refresh = false)
     {
         $hahs = null;
         $path = $this->getPath($this->getState()->getValues());
@@ -123,12 +123,15 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
 
                     if($identity_key)
                     {
-                        $identity = $this->createIdentity();
-                        $data[$identity] = [$identity_key => $identity] + $values;
+                        if(!$key)
+                        {
+                            $key = $this->createIdentity();
+                            $entity->setProperty($identity_key, $key, false);
+                        }
 
-                        //Set the identity in the entity
-                        $entity->setProperty($identity_key, $identity, false);
+                        $data[$key] = [$identity_key => $key] + $values;
                     }
+                    else $data[] = $values;
 
                     $result = self::PERSIST_SUCCESS;
                 }

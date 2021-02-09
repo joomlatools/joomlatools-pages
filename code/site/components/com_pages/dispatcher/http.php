@@ -84,11 +84,19 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     {
         $result = false;
 
-        if(!isset($this->__route))
+        if(!isset($this->__route) && $this->getObject('com://site/pages.config')->getSitePath() !== false)
         {
             $base  = $this->getRequest()->getBasePath();
             $url   = urldecode($this->getRequest()->getUrl()->getPath());
-            $path  = trim(str_replace(array($base, '/index.php'), '', $url), '/');
+
+            //Strip script name if request is rewritten
+            if(!isset($_SERVER['PAGES_PATH'])) {
+                $path = str_replace(array($base, basename($_SERVER['SCRIPT_NAME'])), '', $url);
+            } else {
+                $path = str_replace($base, '', $url);
+            }
+
+            $path  = trim($path, '/');
             $query = $this->getRequest()->getUrl()->getQuery(true);
 
             $this->__route = $this->getRouter()->resolve('pages:'.$path,  $query);
@@ -110,7 +118,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             if($page->isSubmittable())
             {
                 //Do not allow get on empty forms or collection, only used as API endpoints
-                if($page->getContent()) {
+                if($page->getContent() || $page->layout) {
                     $methods[] = 'get';
                 }
             }
@@ -250,8 +258,10 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             $this->getResponse()->getHeaders()->set('Link', array($context->page->canonical => array('rel' => 'canonical')));
 
             //Add X-Robots-Tag
-            if($context->page->metadata->has('robots')) {
-                $this->getResponse()->getHeaders()->set('X-Robots-Tag', KObjectConfig::unbox($context->page->metadata->robots));
+            if($context->page->metadata->has('robots'))
+            {
+                $tags = KObjectConfig::unbox($context->page->metadata->robots);
+                $this->getResponse()->getHeaders()->set('X-Robots-Tag', $tags);
             }
         }
     }
@@ -275,6 +285,11 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             $exception = $context->param;
         }
 
+        //Context needs to be reset
+        if($page = $this->getPage()) {
+            $context->page = $page;
+        }
+
         if(!JDEBUG && $this->getObject('request')->getFormat() == 'html')
         {
             //If the error code does not correspond to a status message, use 500
@@ -285,8 +300,11 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
             foreach([(int) $code, '500'] as $code)
             {
-                if($page = $this->getObject('page.registry')->getPage($code))
+                if($page = $this->getObject('page.registry')->getPageEntity($code))
                 {
+                    //Set status code (before rendering the error)
+                    $context->response->setStatus($code);
+
                     //Set the controller
                     $this->setController($page->getType(), ['page' => $page]);
 
@@ -295,9 +313,6 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
                     //Set error in the response
                     $context->response->setContent($content);
-
-                    //Set status code
-                    $context->response->setStatus($code);
 
                     return true;
                 }

@@ -120,7 +120,7 @@ class ComPagesViewJson extends KViewAbstract
                 $document['meta']['description'] = $description;
             }
 
-            if($url = $page->image->url) {
+            if($page->image && $url = $page->image->url) {
                 $document['meta']['image'] = (string) $this->getUrl($url);
             }
 

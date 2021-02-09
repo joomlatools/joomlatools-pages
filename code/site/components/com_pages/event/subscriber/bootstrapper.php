@@ -25,7 +25,12 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
         if(false !== $route = $router->resolve())
         {
-            define('JPATH_PAGES', $route->getPath());
+            define('PAGES_SITE_ROOT', $route->getPath());
+
+            //Set PAGES_PATH based on Joomla configuration
+            if(JFactory::getApplication()->getCfg('sef_rewrite')) {
+                $_SERVER['PAGES_PATH'] = JFactory::getApplication()->getCfg('live_site') ?? '/';
+            }
 
             //Set the site path in the config
             $config = $this->getObject('com://site/pages.config', ['site_path' => $route->getPath()]);
@@ -77,7 +82,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         include $directory.'/resources/vendor/autoload.php';
 
         //Set config options
-        $options   = include $directory.'/resources/config/site.php';
+        $options = include $directory.'/resources/config/site.php';
 
         //Set config options
         foreach($options['identifiers'] as $identifier => $values) {
@@ -87,16 +92,6 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         //Set config options
         foreach($options['extensions'] as $identifier => $values) {
             $this->getConfig($identifier)->merge($values);
-        }
-
-        //Register the composer class locator
-        if(isset($options['composer_path']) && file_exists($options['composer_path']))
-        {
-            $this->getObject('manager')->getClassLoader()->registerLocator(
-                new KClassLocatorComposer(array(
-                        'vendor_path' => $options['composer_path']
-                    )
-                ));
         }
     }
 
@@ -150,8 +145,11 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                 {
                     $identifiers = include $directory.'/config.php';
 
-                    foreach($identifiers as $identifier => $values) {
-                        $this->getConfig($identifier)->merge($values);
+                    if(is_array($identifiers))
+                    {
+                        foreach($identifiers as $identifier => $values) {
+                            $this->getConfig($identifier)->merge($values);
+                        }
                     }
                 }
             }

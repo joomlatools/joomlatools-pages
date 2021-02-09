@@ -39,17 +39,19 @@ class ComPagesConfig extends KObject implements KObjectSingleton
             'template_cache_path'       => $config->site_path ? $config->site_path.'/cache/templates' : false,
             'template_cache_validation' => true,
 
-            'http_cache'                => false,
-            'http_cache_path'           => $config->site_path ? $config->site_path.'/cache/responses': false,
-            'http_cache_time'           => 60*15,  //15min
-            'http_cache_time_proxy'     => 60*60*2, //2h
-            'http_cache_validation'     => true,
-            'http_cache_control'        => array(),
+            'http_cache'                 => false,
+            'http_cache_path'            => $config->site_path ? $config->site_path.'/cache/responses': false,
+            'http_cache_time'            => false,
+            'http_cache_time_browser'    => null,
+            'http_cache_validation'      => true,
+            'http_cache_control'         => array(),
+            'http_cache_control_private' => array('private', 'no-cache'),
+
+            'http_static_cache'         => getenv('PAGES_STATIC_ROOT') ? true : false,
+            'http_static_cache_path'    => getenv('PAGES_STATIC_ROOT') ? getenv('PAGES_STATIC_ROOT') : false,
 
             'http_resource_cache'       => JFactory::getConfig()->get('caching'),
-            'http_resource_cache_time'  => 60*60*24, //1d
             'http_resource_cache_path'  => $config->site_path ? $config->site_path.'/cache/resources' : false,
-            'http_resource_cache_force' => false,
             'http_resource_cache_debug' => (JDEBUG ? true : false),
 
             'collections' => array(),
@@ -74,6 +76,11 @@ class ComPagesConfig extends KObject implements KObjectSingleton
         return $result;
     }
 
+    public function get($option, $default = null)
+    {
+        return $this->getConfig()->get($option, $default);
+    }
+
     public function getOptions()
     {
         return KObjectConfig::unbox($this->getConfig());
@@ -94,6 +101,16 @@ class ComPagesConfig extends KObject implements KObjectSingleton
             {
                 $config = (array) include JPATH_CONFIGURATION.'/configuration-pages.php';
                 $options = array_replace_recursive($options, $config);
+            }
+
+            //Register the composer class locator
+            if(isset($options['composer_path']) && file_exists($options['composer_path']))
+            {
+                $this->getObject('manager')->getClassLoader()->registerLocator(
+                    new KClassLocatorComposer(array(
+                            'vendor_path' => $options['composer_path']
+                        )
+                    ));
             }
 
             //Load site config options

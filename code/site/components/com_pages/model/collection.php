@@ -41,18 +41,20 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'entity' => $this->getIdentifier()->getName(),
-            'type'             => '', //the collection type used when generating JSDNAPI
-            'name'             => '', //the collection name used to generate this model
-            'identity_key'     => null,
+            'entity'        => $this->getIdentifier()->getName(),
+            'type'          => '', //the collection type used when generating JSDNAPI
+            'name'          => '', //the collection name used to generate this model
+            'search'        => [], //properties to allow searching on
+            'identity_key'  => null,
+            'persistable'   => false,
+        ])->append([
             'behaviors'   => [
                 'com://site/pages.model.behavior.paginatable',
                 'com://site/pages.model.behavior.sortable',
-                'com://site/pages.model.behavior.searchable',
                 'com://site/pages.model.behavior.sparsable',
                 'com://site/pages.model.behavior.filterable',
+                'com://site/pages.model.behavior.searchable' => ['columns' => $config->search],
             ],
-            'persistable' => false,
         ]);
 
         parent::_initialize($config);
@@ -126,7 +128,7 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         return (array) $keys;
     }
 
-    public function getHash()
+    public function getHash($refresh = false)
     {
         return null;
     }
@@ -228,21 +230,25 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
 
         $options['entity'] = $this->getIdentifier($identifier);
 
-        //Set the data
-        $data = KModelContext::unbox($context->entity);
-        if(!empty($data) && !is_numeric(key($data))) {
-            $options['data'] = array($data);
-        } else {
-            $options['data'] = $data;
-        }
-
         //Set the identitiy key
         if($identity_key = $context->getIdentityKey()) {
             $options['identity_key'] = $identity_key;
         }
 
         //Delegate entity instantiation
-        return $this->getObject('com://site/pages.model.entity.items', $options);
+        $entity = $this->getObject('com://site/pages.model.entity.items', $options);
+
+        // Insert the data
+        $data = $context->entity;
+        if(!empty($data) && !is_numeric(key($data))) {
+            $data = array($data);
+        }
+
+        foreach($data as $properties) {
+            $entity->create($properties, ComPagesModelEntityItem::STATUS_CREATED);
+        }
+
+        return $entity;
     }
 
     protected function _actionCount(KModelContext $context)

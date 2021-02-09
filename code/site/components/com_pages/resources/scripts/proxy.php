@@ -29,8 +29,7 @@
  *    - Not GET or HEAD
  *    - Contain Cache-Control directives
  *
- * The proxy offers Cache Validation using ETag and will generate a Warning: 110 Joomlatools/Pages "Response is Stale"
- * header if the response is stale.
+ * The proxy offers Cache Validation using ETag
  *
  * @author  Johan Janssens <https://github.com/johanjanssens>
  *
@@ -38,7 +37,7 @@
  * @param callable $callback The callback to execute the application
  * @param integer $user  The user identifier
  */
-return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', callable $callback, $user = 0)
+return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', callable $callback)
 {
     ini_set('output_buffering', false);
     ini_set('zlib.output_compression', false);
@@ -67,19 +66,18 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', c
     //Get the url
     $host    = filter_var($_SERVER['HTTP_HOST'], FILTER_SANITIZE_URL);
     $request = filter_var($_SERVER['REQUEST_URI'], FILTER_SANITIZE_URL);
+    $parts   = parse_url('https://'.$host.$request);
     $url     = trim($host.$request, '/');
 
     //Get the format
-    $format = pathinfo(parse_url('http://'.$url, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'html';
+    $format = pathinfo($parts['path'], PATHINFO_EXTENSION) ?: '';
 
     //Get the user
-    $key = 'url:' .$url. '#format:' . $format . '#user:'.$user;
-
-    $hash = crc32($key . PHP_VERSION);
+    $hash = crc32($parts['path'].$parts['query']);
     $file = $cache_path . '/response_' . $hash . '.php';
 
     //Clear the cache for the specific file to avoid any errors.
-    clearstatcache (true,  $file);
+    clearstatcache (true,  $parts);
 
     if (is_file($file))
     {
@@ -122,7 +120,7 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', c
         }
 
         //Divide the max_age in half and set it in the $_SERVER global
-        if($headers['Cache-Status'] != 'EXPIRED') {
+        if(!strstr($headers['Cache-Status'], 'EXPIRED') && $max_age) {
             $_SERVER['HTTP_CACHE_CONTROL'] = 'max-age='.(int) ($max_age / 2);
         }
 
@@ -168,17 +166,7 @@ return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', c
 
         //Set response code
         http_response_code ($status);
-        header('Cache-Status: HIT');
-
-        //Do not send an Age header when using the proxy
-        header_remove('Age');
-
-        //Check the cache is stale
-        if($max_age !== false && $age > $max_age)
-        {
-            //Se: https://tools.ietf.org/html/rfc7234#section-5.5.1
-            header('Warning: 110 Joomlatools/Pages "Response is Stale"');
-        }
+        //header('Cache-Status: HIT');
 
         //Send the content
         if($_SERVER['REQUEST_METHOD'] == 'GET') {

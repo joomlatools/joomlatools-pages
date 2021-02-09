@@ -11,6 +11,14 @@ class ComPagesModelCache extends ComPagesModelCollection
 {
     private $__data;
 
+    public function __construct(KObjectConfig $config)
+    {
+        parent::__construct($config);
+
+        $this->getState()
+            ->insert('id', 'url', '', true);
+    }
+
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
@@ -28,30 +36,46 @@ class ComPagesModelCache extends ComPagesModelCollection
         {
             $this->__data = array();
 
-            foreach (glob($this->getConfig()->cache_path.'/response_*') as $file)
+            $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
+            if($dispatcher->isCacheable(false))
             {
-                $data = require $file;
+                $state  = $this->getState();
+                $files  = array();
 
-                $this->__data[] = array(
-                    'id'        => str_replace('response_', '', basename($file, '.php')),
-                    'url'       => $data['url'],
-                    'date'      => $this->getObject('date', array('date' => $data['headers']['Last-Modified'])),
-                    'hash'      => $data['headers']['Etag'],
-                    'language'  => $data['page']['language'],
-                    'tags'      => array_unique(array_column($data['collections'], 'type')),
-                    'robots'    => isset($data['headers']['X-Robots-Tag']) ? array_map('trim', explode(',', $data['headers']['X-Robots-Tag'])) : array(),
-                    'status'    => $data['status'],
-                );
+                if ($state->isUnique())
+                {
+                    $file = $dispatcher->locateCache($state->id);
+
+                    if(file_exists($file)) {
+                        $files[] = $file;
+                    }
+                }
+                else $files = glob($this->getConfig()->cache_path.'/response_*');
+
+                foreach ($files as $file)
+                {
+                    $data = require $file;
+
+                    $valid = $dispatcher->validateCache($data['validators'], true);
+
+                    $this->__data[] = array(
+                        'id'          => $data['id'],
+                        'url'         => $data['url'],
+                        'date'        => $this->getObject('date', array('date' => $data['headers']['Last-Modified'])),
+                        'hash'        => $data['headers']['Etag'],
+                        'token'       => $data['token'],
+                        'format'      => $data['format'],
+                        'language'    => $data['language'],
+                        'collections' => $data['headers']['Content-Collections'] ?? array(),
+                        'robots'      => isset($data['headers']['X-Robots-Tag']) ? array_map('trim', explode(',', $data['headers']['X-Robots-Tag'])) : array(),
+                        'status'      => $data['status'],
+                        'valid'       => $valid
+                    );
+                }
             }
         }
 
         return $this->__data;
-    }
-
-    public function getPrimaryKey()
-    {
-        //Cache doesn't have a primary key
-        return array();
     }
 
     protected function _actionReset(KModelContext $context)

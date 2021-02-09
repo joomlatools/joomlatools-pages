@@ -35,6 +35,7 @@ class ComPagesTemplateDefault extends KTemplate
                 'slug'       => [$this, '_createSlug'],
                 'attributes' => [$this, '_createAttributes'],
                 'config'     => [$this, '_getConfig'],
+                'unbox'      => [$this, '_unboxObject']
             ],
             'cache'           => false,
             'cache_namespace' => 'pages',
@@ -267,7 +268,7 @@ class ComPagesTemplateDefault extends KTemplate
         return $result;
     }
 
-    protected function _fetchData($path)
+    protected function _fetchData($path, $cache = true)
     {
         $result = false;
         if(is_array($path))
@@ -279,7 +280,7 @@ class ComPagesTemplateDefault extends KTemplate
                     if (!$result instanceof ComPagesDataObject) {
                         $result = $this->getObject('data.registry')->fromPath($directory);
                     } else {
-                        $result->append($this->getObject('data.registry')->formPath($directory));
+                        $result->append($this->getObject('data.registry')->fromPath($directory));
                     }
                 }
             }
@@ -297,7 +298,7 @@ class ComPagesTemplateDefault extends KTemplate
             if(!in_array($namespace, ['http', 'https'])) {
                 $result = $this->getObject('data.registry')->fromPath($path);
             } else {
-                $result = $this->getObject('data.registry')->fromUrl($path);
+                $result = $this->getObject('data.registry')->fromUrl($path, $cache);
             }
         }
 
@@ -311,5 +312,22 @@ class ComPagesTemplateDefault extends KTemplate
         }
 
         return clone $this->getObject($identifier)->getConfig();
+    }
+
+    protected function _unboxObject($object)
+    {
+        if(is_object($object))
+        {
+            if(method_exists($object, 'toArray')) {
+                $properties = $object->toArray();
+            } elseif($object instanceof Traversable) {
+                $properties = iterator_to_array($object);
+            } else {
+                $properties = get_object_vars($object);
+            }
+        }
+        else $properties = $object;
+
+        return $properties;
     }
 }

@@ -1,4 +1,5 @@
 ![Build package](https://github.com/joomlatools/joomlatools-pages/workflows/Build%20package/badge.svg?branch=master)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/7ba6e3e1390b488ca40f3d7458332345)](https://www.codacy.com/gh/joomlatools/joomlatools-pages?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=joomlatools/joomlatools-pages&amp;utm_campaign=Badge_Grade)
 
 # Joomlatools Pages
 
@@ -24,7 +25,7 @@ Joomlatools Pages is for website developers and designers who create bespoke Joo
 
 * Joomla 3.6.5
 * PHP7 
-* Joomlatools Framework 3.4.2
+* Joomlatools Framework 3.4.10
 
 ## Installation
 

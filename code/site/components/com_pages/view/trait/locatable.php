@@ -9,7 +9,7 @@
 
 trait ComPagesViewTraitLocatable
 {
-    public function getUrl($url = null)
+    public function getUrl($url = null, $escape = null)
     {
         if(!empty($url))
         {
@@ -24,14 +24,24 @@ trait ComPagesViewTraitLocatable
                 $result->setUrl($url);
             }
         }
-        else $result = parent::getUrl();
+        else $result = clone parent::getUrl();
+
+        //Determine if we should escape the url
+        if($escape === null && $this->getFormat() !== 'json') {
+            $result->setEscape(true);
+        }
 
         return $result;
     }
 
-    public function getRoute($route = null, $query = array(), $escape = false)
+    public function getRoute($route = null, $query = array(), $escape = null)
     {
         $result = null;
+
+        //Determine if we should escape the route
+        if($escape === null && $this->getFormat() !== 'json') {
+            $escape = true;
+        }
 
         if($route)
         {

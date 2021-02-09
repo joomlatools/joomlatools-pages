@@ -74,7 +74,7 @@ class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
                 //Get the handle for the parent
                 $parent = $entity->getHandle();
 
-                if($children = $entities->find([$key => $parent]))
+                if($parent && $children = $entities->find([$key => $parent]))
                 {
                     foreach($children as $child)
                     {

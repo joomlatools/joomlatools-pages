@@ -9,7 +9,7 @@
 
 class ComPagesModelWebservice extends ComPagesModelCollection
 {
-    private $__client;
+    private $__http;
     private $__data;
 
     protected $_url;
@@ -18,9 +18,8 @@ class ComPagesModelWebservice extends ComPagesModelCollection
     {
         parent::__construct($config);
 
-        $this->__client = $config->client;
-
-        $this->_url = $config->url;
+        $this->__http = $config->http;
+        $this->_url   = $config->url;
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -28,10 +27,12 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         $config->append([
             'persistable'  => true,
             'identity_key' => 'id',
-            'client'       => 'http.client',
+            'http'         => 'com://site/pages.http.cache',
             'entity'       => 'resource',
             'url'          => '',
             'data'         => '',
+            'cache'        => true,
+            'headers'      => array()
         ]);
 
         parent::_initialize($config);
@@ -42,34 +43,32 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         return KHttpUrl::fromTemplate($this->_url, $variables);
     }
 
-    public function getHash()
+    public function getHeaders()
+    {
+        return KObjectConfig::unbox($this->getConfig()->headers);
+    }
+
+    public function getHash($refresh = false)
     {
         $hash = null;
 
         if($url = $this->getUrl($this->getState()->getValues()))
         {
+            $http = $this->_getHttpClient();
+
+            $cache   = $refresh ? 0 : $this->getConfig()->cache;
+            $headers = $this->getHeaders();
+            $headers['Cache-Control'] = $this->_getCacheControl($cache);
+
             try
             {
-                //Do not return cached results
-                if($headers = $this->getObject('com://site/pages.http.client')->head($url))
-                {
-                    if(isset($headers['Last-Modified']) || isset($headers['Etag']))
-                    {
-                        if(isset($headers['Last-Modified'])) {
-                            $hash = hash('crc32b', $headers['Last-Modified']);
-                        }
-
-                        if(isset($headers['Etag'])) {
-                            $hash = hash('crc32b', $headers['Etag']);
-                        }
-                    }
-                }
-
+                $content = $http->get($url, $headers);
+                $hash    = hash('crc32b', json_encode($content).$url);
             }
             catch(KHttpException $e)
             {
                 //Re-throw exception if in debug mode
-                if($this->getObject('com://site/pages.http.client')->isDebug()) {
+                if($http->isDebug()) {
                     throw $e;
                 } else {
                     $hash = null;
@@ -88,13 +87,20 @@ class ComPagesModelWebservice extends ComPagesModelCollection
 
             if($url = $this->getUrl($this->getState()->getValues()))
             {
+                $http    = $this->_getHttpClient();
+
+                $max_age = $this->getConfig()->cache;
+
+                $headers = $this->getHeaders();
+                $headers['Cache-Control'] = $this->_getCacheControl($max_age);
+
                 try {
-                    $this->__data = $this->getObject('com://site/pages.http.client')->get($url);
+                    $this->__data = $http->get($url, $headers);
                 }
                 catch(KHttpException $e)
                 {
                     //Re-throw exception if in debug mode
-                    if($this->getObject('com://site/pages.http.client')->isDebug()) {
+                    if($http->isDebug()) {
                         throw $e;
                     } else {
                         $this->__data = array();
@@ -137,8 +143,11 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         $result = true;
         $entity = $context->entity;
 
+        $http    = $this->_getHttpClient();
         $url     = $this->getUrl($this->getState()->getValues());
-        $headers = ['Origin' => $url->toString(KHttpUrl::AUTHORITY)];
+
+        $headers = $this->getHeaders();
+        $headers['Origin'] = $url->toString(KHttpUrl::AUTHORITY);
 
         $data   = array();
         if(!$context->state->isUnique())
@@ -152,9 +161,9 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         if($entity->getStatus() == $entity::STATUS_CREATED)
         {
             if($context->state->isUnique()) {
-                $result = $this->getClient()->put($url, $data, $headers);
+                $result = $http->put($url, $data, $headers);
             } else {
-                $result = $this->getClient()->post($url, $data, $headers);
+                $result = $http->post($url, $data, $headers);
             }
 
             if($result !== false)
@@ -170,7 +179,7 @@ class ComPagesModelWebservice extends ComPagesModelCollection
 
         if($entity->getStatus() == $entity::STATUS_UPDATED)
         {
-            $result = $this->getClient()->patch($url, $data, $headers);
+            $result = $http->patch($url, $data, $headers);
 
             if($result !== false)
             {
@@ -189,7 +198,7 @@ class ComPagesModelWebservice extends ComPagesModelCollection
 
         if($entity->getStatus() == $entity::STATUS_DELETED)
         {
-            $result = $this->getClient()->delete($url, $data, $headers);
+            $result = $http->delete($url, $data, $headers);
 
             if($result !== false) {
                 $result = self::PERSIST_SUCCESS;
@@ -201,20 +210,45 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         return $result;
     }
 
-    public function getClient()
+    public function _getHttpClient()
     {
-        if(!($this->__client instanceof KHttpClientInterface))
+        if(!($this->__http instanceof KHttpClientInterface))
         {
-            $this->__client = $this->getObject($this->__client);
+            $this->__http = $this->getObject($this->__http);
 
-            if(!$this->__client instanceof KHttpClientInterface)
+            if(!$this->__http instanceof KHttpClientInterface)
             {
                 throw new UnexpectedValueException(
-                    'Http cient: '.get_class($this->__client).' does not implement  KHttpClientInterface'
+                    'Http client: '.get_class($this->__http).' does not implement  KHttpClientInterface'
                 );
             }
         }
 
-        return $this->__client;
+        return $this->__http;
+    }
+
+    protected function _getCacheControl($cache)
+    {
+        $cache_control = array();
+
+        if($cache !== true)
+        {
+            if($cache !== false)
+            {
+                //Convert max_age to seconds
+                if(!is_numeric($cache))
+                {
+                    if($max_age = strtotime($cache)) {
+                        $max_age = $max_age - strtotime('now');
+                    }
+                }
+                else $max_age = $cache;
+
+                $cache_control = ['max-age' => (int) $max_age];
+            }
+            else $cache_control = ['no-store'];
+        }
+
+        return $cache_control;
     }
 }

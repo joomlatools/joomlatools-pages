@@ -38,7 +38,7 @@ class ComPagesControllerProcessorWebhook extends ComPagesControllerProcessorAbst
         else $request->setContent((string) $data, $data->getMediaType());
 
         //Add the headers
-        $request->getHeaders()->add($this->getHeaders());
+        $request->getHeaders()->add($this->getHeaders(), true);
 
         //Send content
         return $this->getObject('lib:http.client')->send($request);

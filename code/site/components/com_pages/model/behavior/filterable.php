@@ -55,27 +55,33 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
             {
                 foreach ($filters as $attribute => $values)
                 {
-                    //Support multiple constraints on the same attribute
-                    foreach((array) $values as $value)
+                    //Multiple constraints on the same attribute
+                    foreach((array) $values as $key => $v)
                     {
-                        // Parse filter value for possible operator
-                        if (preg_match('#^([eq|neq|gt|gte|lt|lte|in|nin]+):(.+)\s*$#i', $value, $matches))
+                        //With one level nesting
+                        foreach((array) $v as $value)
                         {
-                            $this->_filters[] = [
-                                'attribute' => $attribute,
-                                'operation' => $matches[1],
-                                'values' => array_unique(explode(',', $matches[2])),
-                                'combination' => 'AND'
-                            ];
-                        }
-                        else
-                        {
-                            $this->_filters[] = [
-                                'attribute' => $attribute,
-                                'operation' => 'eq',
-                                'values' => array_unique(explode(',', $value)),
-                                'combination' => 'AND'
-                            ];
+                            // Parse filter value for possible operator
+                            if (preg_match('#^([eq|neq|gt|gte|lt|lte|in|nin]+):(.+)\s*$#i', $value, $matches))
+                            {
+                                $this->_filters[] = [
+                                    'attribute' => $attribute,
+                                    'key'       => !is_numeric($key) ? $key : null,
+                                    'operation' => $matches[1],
+                                    'values' => array_unique(explode(',', $matches[2])),
+                                    'combination' => 'AND'
+                                ];
+                            }
+                            else
+                            {
+                                $this->_filters[] = [
+                                    'attribute' => $attribute,
+                                    'key'       => !is_numeric($key) ? $key : null,
+                                    'operation' => 'eq',
+                                    'values' => array_unique(explode(',', $value)),
+                                    'combination' => 'AND'
+                                ];
+                            }
                         }
                     }
                 }
@@ -98,11 +104,23 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
             {
                 $attribute = $filter['attribute'];
 
-                if(isset($item[$attribute])) {
+                if(isset($item[$attribute]))
+                {
                     $item_value = $item[$attribute];
-                } else {
-                    $item_value = null;
+
+                    //Handle one dimensional assiociate array values
+                    if(isset($filter['key']))
+                    {
+                        $key = $filter['key'];
+
+                        if(isset($item_value[$key])) {
+                            $item_value = $item_value[$key];
+                        } else {
+                            $item_value = null;
+                        }
+                    }
                 }
+                else $item_value = null;
 
                 foreach ((array)$filter['values'] as $value)
                 {
@@ -169,12 +187,18 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                         return true;
                     }
                     //In
-                    elseif ($filter['operation'] == 'in' &&  is_array($item_value) && in_array($value, $item_value)) {
-                        return true;
+                    elseif ($filter['operation'] == 'in')
+                    {
+                        if(is_array($item_value) && in_array($value, $item_value)) {
+                            return true;
+                        }
                     }
                     //Not In
-                    elseif ($filter['operation'] == 'nin' &&  is_array($item_value) && !in_array($value, $item_value)) {
-                        return true;
+                    elseif ($filter['operation'] == 'nin')
+                    {
+                        if(!is_array($item_value) || !in_array($value, $item_value)) {
+                            return true;
+                        };
                     }
                 }
             });
@@ -190,7 +214,6 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                 $items  = $data;
                 $result = $result + $filtered;
             }
-
         }
 
         return $result;

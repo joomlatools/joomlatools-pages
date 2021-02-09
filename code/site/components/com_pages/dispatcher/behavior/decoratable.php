@@ -95,6 +95,11 @@ class ComPagesDispatcherBehaviorDecoratable extends ComKoowaDispatcherBehaviorDe
         return $result;
     }
 
+    public function isDecorated()
+    {
+        return (bool) ($this->getDecorator() == 'joomla');
+    }
+
     public function isSupported()
     {
         $mixer   = $this->getMixer();

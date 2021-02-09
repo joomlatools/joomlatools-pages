@@ -14,6 +14,7 @@ class ComPagesModelPages extends ComPagesModelCollection
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
+
         $this->getState()
             ->insert('folder', 'url')
             ->insert('slug', 'cmd', '', true, array('folder'))
@@ -33,7 +34,7 @@ class ComPagesModelPages extends ComPagesModelCollection
         parent::_initialize($config);
     }
 
-    public function getHash()
+    public function getHash($refresh = false)
     {
         return $this->getObject('page.registry')->getHash();
     }
@@ -46,10 +47,10 @@ class ComPagesModelPages extends ComPagesModelCollection
             $state       = $this->getState();
 
             //Set the folder to the active page path if no folder is defined
-            if($state->folder === null) {
+            if($state->folder === null && $this->isPageable()) {
                 $folder = $this->getPage()->path;
             } else {
-                $folder = $state->folder;
+                $folder = $state->folder ?? '.';
             }
 
             if($folder)
@@ -129,14 +130,22 @@ class ComPagesModelPages extends ComPagesModelCollection
             }
         }
 
-        //Unset reserved properties
-        unset($page['process']);
-        unset($page['collection']);
-        unset($page['form']);
-        unset($page['layout']);
-        unset($page['redirect']);
-
         return $result;
+    }
+
+    protected function _actionFetch(KModelContext $context)
+    {
+        foreach($context->data as $page)
+        {
+            //Unset page attributes
+            unset($page['process']);
+            unset($page['collection']);
+            unset($page['form']);
+            unset($page['layout']);
+            unset($page['redirect']);
+        }
+
+        return parent::_actionFetch($context);
     }
 
     protected function _actionReset(KModelContext $context)

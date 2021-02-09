@@ -9,10 +9,11 @@
 
 final class ComPagesDataRegistry extends KObject implements KObjectSingleton
 {
+    private $__http;
     private $__data    = array();
     private $__locator = null;
     private $__namespaces = array();
-    private $__cache_keys  = array();
+    private $__hashes     = array();
 
     public function __construct(KObjectConfig $config)
     {
@@ -23,11 +24,15 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
 
         //Set the namespaces
         $this->__namespaces = KObjectConfig::unbox($config->namespaces);
+
+        //Set http client
+        $this->__http = $config->http;
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
+            'http'       => 'com://site/pages.http.cache',
             'cache'      => JDEBUG ? false : true,
             'cache_path' => $this->getObject('com://site/pages.config')->getSitePath('cache'),
             'cache_validation'  => true,
@@ -47,11 +52,64 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         return $this->__namespaces;
     }
 
-    public function fromUrl($url)
+    public function getHash($path = null)
+    {
+        $path = $path ?? $this->getLocator()->getBasePath();
+
+        $size = function($path) use(&$size)
+        {
+            $result = array();
+
+            if (is_dir($path))
+            {
+                $files = array_diff(scandir($path), array('.', '..', '.DS_Store'));
+
+                foreach ($files as $file)
+                {
+                    if (is_dir($path.'/'.$file)) {
+                        $result[$file] =  $size($path .'/'.$file);
+                    } else {
+                        $result[$file] = sprintf('%u', filesize($path .'/'.$file));
+                    }
+                }
+            }
+            else $result[basename($path)] = sprintf('%u', filesize($path));
+
+            return $result;
+        };
+
+        if(!isset($this->__hashes[$path]))
+        {
+            if($file = $this->getLocator()->locate($path)) {
+                $this->__hashes[$path] =  hash('crc32b', serialize( $size($file)));
+            }  else {
+                $this->__hashes[$path] = false;
+            }
+        }
+
+        return $this->__hashes[$path];
+    }
+
+    public function fromUrl($url, $cache = true)
     {
         if (!isset($this->__data[$url]))
         {
-            $data = $this->getObject('com://site/pages.http.client')->get($url);
+            $http = $this->_getHttpClient();
+            $headers['Cache-Control'] = $this->_getCacheControl($cache);
+
+            try
+            {
+                $data = $http->get($url, $headers);
+            }
+            catch(KHttpException $e)
+            {
+                //Re-throw exception if in debug mode
+                if($http->isDebug()) {
+                    throw $e;
+                } else {
+                    $hash = null;
+                }
+            }
 
             $class = $this->getObject('manager')->getClass('com://site/pages.data.object');
             $data = new $class($data);
@@ -84,7 +142,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
             //Load the data and cache it
             $segments  = explode('/', $file_path);
             $root_path = array_shift($segments);
-            $key = crc32($base_path . $root_path);
+            $key       = crc32($base_path . $root_path);
 
             if (!isset($this->__data[$key]))
             {
@@ -187,23 +245,6 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         return $data;
     }
 
-    public function buildCache()
-    {
-        if($this->getConfig()->cache)
-        {
-            $basedir = $this->getLocator()->getBasePath();
-
-            foreach (new DirectoryIterator($basedir) as $node)
-            {
-                if (!in_array($node->getFilename()[0], array('.', '_'))) {
-                    $this->loadCache(pathinfo($node, PATHINFO_FILENAME), true);
-                }
-            }
-        }
-
-        return false;
-    }
-
     public function loadCache($path, $refresh = true)
     {
         $file = $this->getLocator()->getBasePath().'/'.$path;
@@ -215,9 +256,9 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
             $result = array();
             $result['data'] = $data;
 
-            //Calculate the key
+            //Calculate the hash
             if($this->getConfig()->cache && $this->getConfig()->cache_validation) {
-                $result['key'] = $this->getCacheKey($path);
+                $result['hash'] = $this->getHash($path);
             }
 
             $this->storeCache($file, $result);
@@ -229,7 +270,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
             }
 
             //Check if the cache is still valid, if not refresh it
-            if($this->getConfig()->cache_validation && $result['key'] != $this->getCacheKey($path)) {
+            if($this->getConfig()->cache_validation && $result['hash'] != $this->getHash($path)) {
                 $this->loadCache($path, true);
             }
 
@@ -289,39 +330,45 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         return $result;
     }
 
-    public function getCacheKey($path)
+    public function _getHttpClient()
     {
-        $size = function($path) use(&$size)
+        if(!($this->__http instanceof KHttpClientInterface))
         {
-            $result = array();
+            $this->__http = $this->getObject($this->__http);
 
-            if (is_dir($path))
+            if(!$this->__http instanceof KHttpClientInterface)
             {
-                $files = array_diff(scandir($path), array('.', '..', '.DS_Store'));
-
-                foreach ($files as $file)
-                {
-                    if (is_dir($path.'/'.$file)) {
-                        $result[$file] =  $size($path .'/'.$file);
-                    } else {
-                        $result[$file] = sprintf('%u', filesize($path .'/'.$file));
-                    }
-                }
-            }
-            else $result[basename($path)] = sprintf('%u', filesize($path));
-
-            return $result;
-        };
-
-        if(!isset($this->__cache_keys[$path]))
-        {
-            if($file = $this->getLocator()->locate($path)) {
-                $this->__cache_keys[$path] =  hash('crc32b', serialize( $size($file)));
-            }  else {
-                $this->__cache_keys[$path] = false;
+                throw new UnexpectedValueException(
+                    'Http client: '.get_class($this->__http).' does not implement  KHttpClientInterface'
+                );
             }
         }
 
-        return $this->__cache_keys[$path];
+        return $this->__http;
+    }
+
+    protected function _getCacheControl($cache)
+    {
+        $cache_control = array();
+
+        if($cache !== true)
+        {
+            if($cache !== false)
+            {
+                //Convert max_age to seconds
+                if(!is_numeric($cache))
+                {
+                    if($max_age = strtotime($cache)) {
+                        $max_age = $max_age - strtotime('now');
+                    }
+                }
+                else $max_age = $cache;
+
+                $cache_control = ['max-age' => (int) $max_age];
+            }
+            else $cache_control = ['no-store'];
+        }
+
+        return $cache_control;
     }
 }
