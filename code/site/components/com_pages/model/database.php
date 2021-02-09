@@ -97,10 +97,13 @@ class ComPagesModelDatabase extends ComPagesModelCollection
 
     public function getIdentityKey()
     {
-        if(!$this->getTable()->getIdentityColumn()) {
-            $key = parent::getIdentityKey();
-        } else {
-            $key = 'id';
+        if(!$key = $this->getConfig()->identity_key)
+        {
+            if(!$this->getTable()->getIdentityColumn()) {
+                $key = parent::getIdentityKey();
+            } else {
+                $key = 'id';
+            }
         }
 
         return $key;
