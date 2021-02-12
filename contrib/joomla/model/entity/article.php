@@ -253,7 +253,7 @@ class ExtJoomlaModelEntityArticle extends ExtJoomlaModelEntityAbstract
 			{
 				$links[] = [
 					'url'  => $value['url'.$name],
-					'text' => $value['url'.$name.'text']
+					'text' => $value['url'.$name.'text'] ?? '',
 				];
 			}
 		}
