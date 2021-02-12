@@ -9,6 +9,8 @@
 
 class ExtJoomlaModelEntityField extends ComPagesModelEntityItem
 {
+    private $__prepared_value;
+
     public function setPropertyParams($value)
     {
         if($value && is_string($value)) {
@@ -18,8 +20,46 @@ class ExtJoomlaModelEntityField extends ComPagesModelEntityItem
         return new KObjectConfigJson($value);
     }
 
+    public function getContent()
+    {
+        if(!$this->__prepared_value)
+        {
+            JPluginHelper::importPlugin('fields');
+
+            $dispatcher = JEventDispatcher::getInstance();
+
+            $context = 'com_content.'.$this->getIdentifier()->getName();
+
+            $content = new stdClass;
+            $content->text = $this->content;
+
+            $field = (object) $this->toArray();
+            $field->context  = $context;
+
+            $field->fieldparams = $field->params;
+            unset($field->params);
+
+            //Allow plugins to modify the output of the field before it is prepared
+            $dispatcher->trigger('onCustomFieldsBeforePrepareField', [$context, $content, &$field]);
+
+            // Gathering the value for the field
+            $value = $dispatcher->trigger('onCustomFieldsPrepareField', [$context, $content, &$field]);
+
+            if (is_array($value)) {
+                $value = implode(' ', $value);
+            }
+
+            // Allow plugins to modify the output of the prepared field
+            $dispatcher->trigger('onCustomFieldsAfterPrepareField', [$context, $content, $field, &$value]);
+
+            $this->__prepared_value = $value;
+        }
+
+        return $this->__prepared_value;
+    }
+
     public function __toString()
     {
-        return $this->value;
+        return $this->getContent();
     }
 }

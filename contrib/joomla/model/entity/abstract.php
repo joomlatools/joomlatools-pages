@@ -162,7 +162,7 @@ abstract class ExtJoomlaModelEntityAbstract extends ComPagesModelEntityItem
 
 			JEventDispatcher::getInstance()->trigger(
 				'onContentPrepare',
-				['com_pages.'.$name, &$content, &$params, 0]
+				['com_content.'.$name, &$content, &$params, 0]
 			);
 
 			$this->content = $content->text;
