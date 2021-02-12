@@ -27,6 +27,7 @@ class ExtJoomlaModelFields extends ComPagesModelDatabase
             'type'   => 'article_fields',
             'entity' => 'field',
             'table'  => 'fields',
+            'identity_key' => 'name',
         ));
         parent::_initialize($config);
     }
@@ -45,8 +46,11 @@ class ExtJoomlaModelFields extends ComPagesModelDatabase
                 'name'      => 'tbl.name',
                 'title'     => 'tbl.title',
                 'type'      => 'tbl.type',
+                'label'     => 'tbl.label',
+                'default'   => 'tbl.default_value',
                 'value'     => 'v.value',
                 'published' => 'IF(tbl.state = 1, 1, 0)',
+                'required'  => 'tbl.required',
             ]);
         }
         else $query->columns('COUNT(*)');
