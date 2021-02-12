@@ -9,6 +9,15 @@
 
 class ExtJoomlaModelEntityField extends ComPagesModelEntityItem
 {
+    public function setPropertyParams($value)
+    {
+        if($value && is_string($value)) {
+            $value = json_decode($value, true);
+        }
+
+        return new KObjectConfigJson($value);
+    }
+
     public function __toString()
     {
         return $this->value;

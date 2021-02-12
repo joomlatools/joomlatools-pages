@@ -51,6 +51,7 @@ class ExtJoomlaModelFields extends ComPagesModelDatabase
                 'value'     => 'v.value',
                 'published' => 'IF(tbl.state = 1, 1, 0)',
                 'required'  => 'tbl.required',
+                'params'    => 'tbl.fieldparams',
             ]);
         }
         else $query->columns('COUNT(*)');
