@@ -35,8 +35,9 @@ class ExtJoomlaModelEntityField extends ComPagesModelEntityItem
 
             $field = (object) $this->toArray();
             $field->context  = $context;
+            $field->rawvalue = $field->value;
 
-            $field->fieldparams = $field->params;
+            $field->fieldparams = new JRegistry($field->params);
             unset($field->params);
 
             //Allow plugins to modify the output of the field before it is prepared
