@@ -303,10 +303,13 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             $validators['user'] = $this->getUser()->getId();
 
             //Add page
-            $validators['page'] = [
-                'path' => $this->getRoute()->getPage()->path,
-                'hash' => $this->getRoute()->getPage()->hash
-            ];
+            if($route = $this->getRoute())
+            {
+                $validators['page'] = [
+                    'path' => $route->getPage()->path,
+                    'hash' => $route->getPage()->hash
+                ];
+            }
 
             //Add collections
             foreach($this->getObject('model.factory')->getModels() as $name => $model) {

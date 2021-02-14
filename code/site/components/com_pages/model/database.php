@@ -106,7 +106,7 @@ class ComPagesModelDatabase extends ComPagesModelCollection
             }
         }
 
-        return $key;
+         return $key;
     }
 
     public function getHash($refresh = false)
