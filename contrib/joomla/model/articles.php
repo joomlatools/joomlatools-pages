@@ -18,6 +18,7 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
             ->insert('slug'      , 'cmd', null, true)
             ->insert('category'  , 'cmd')
             ->insert('tags'      , 'cmd')
+            ->insert('field'     , 'cmd')
 
             ->insert('published' , 'boolean')
             ->insert('archived'  , 'boolean')
@@ -61,12 +62,22 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
         {
             //#__tags
             $query->columns([
-               'tags'	=> $this->getObject('database.query.select')
+                'tags'	=> $this->getObject('database.query.select')
                     ->table(array('t' => 'tags'))
                     ->columns('GROUP_CONCAT(t.title)')
                     ->join(['m' => 'contentitem_tag_map'], 'm.tag_id = t.id')
                     ->where('m.content_item_id = tbl .id')
             ]);
+
+            //#__tags
+            /*$query->columns([
+                'fields'	=> $this->getObject('database.query.select')
+                    ->table(array('f' => 'fields'))
+                     //->columns('GROUP_CONCAT(CONCAT_WS("=",f.name, v.value))')
+                     ->columns('JSON_OBJECTAGG(f.name, v.value)')
+                    ->join(['v' => 'fields_values'], 'v.field_id = f.id')
+                    ->where('v.item_id = tbl.id')
+            ]);*/
 
             $query->columns([
                 'id'       => 'tbl.id',
@@ -104,8 +115,7 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
         $query
             ->join(['c' => 'categories']         , 'tbl.catid = c.id')
             ->join(['g' => 'usergroups']         , 'tbl.access = g.id')
-            ->join(['m' => 'contentitem_tag_map'], 'tbl.id = m.content_item_id')
-            ->join(['t' => 'tags']				 , 't.id = m.tag_id');
+            ->join(['m' => 'contentitem_tag_map'], 'tbl.id = m.content_item_id');
 
         if(!is_null($state->id))
         {
@@ -140,7 +150,25 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
                 $tags = (array) $state->tags;
             }
 
+            $query->join(['t' => 'tags'], 't.id = m.tag_id');
             $query->where('(t.title IN :tags)')->bind(['tags' => $tags]);
+        }
+
+        if(!is_null($state->field) && is_array($state->field))
+        {
+            $query->join(['v' => 'fields_values'], 'tbl.id = v.item_id');
+            $query->join(['f' => 'fields'], 'f.id = v.field_id');
+
+            foreach($state->field as $key => $value)
+            {
+                if(is_string($state->value)) {
+                    $value = array_unique(explode(',',  $value));
+                } else {
+                    $value = (array) $value;
+                }
+
+                $query->where('((f.name = :key) AND (v.value IN :value))')->bind(['key' => $key, 'value' => $value]);
+            }
         }
 
         if(!is_null($state->author))
@@ -208,6 +236,9 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
         if (!is_null($state->featured)) {
             $query->where('(tbl.featured = :featured)')->bind(['featured' => (bool) $state->featured]);
         }
+
+        //var_dump((string)$query);
+        //die;
 
         return $query;
     }
