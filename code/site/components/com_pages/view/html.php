@@ -29,9 +29,18 @@ class ComPagesViewHtml extends ComKoowaViewHtml
         parent::_initialize($config);
     }
 
+    public function getLayout()
+    {
+        $page = $this->getPage();
+        return 'page://pages/'.$page->path;
+    }
+
     protected function _actionRender(KViewContext $context)
     {
         $content = $this->getContent();
+
+        //Set the content in the object
+        $this->getPage()->content = $content;
 
         return trim($content);
     }
