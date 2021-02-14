@@ -17,7 +17,8 @@ class ExtJoomlaModelFields extends ComPagesModelDatabase
             ->insert('id', 'cmd', null, true)
             ->insert('group'     , 'int')
             ->insert('article'   , 'int')
-            ->insert('published' , 'boolean');
+            ->insert('published' , 'boolean')
+            ->insert('access' , 'cmd', array_unique($this->getObject('user')->getRoles()));
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -100,6 +101,17 @@ class ExtJoomlaModelFields extends ComPagesModelDatabase
             } else {
                 $query->where('(tbl.state = 0)');
             }
+        }
+
+        if (!is_null($state->access))
+        {
+            if(is_string($state->access)) {
+                $access = array_unique(explode(',',  $state->access));
+            } else {
+                $access = (array) $state->access;
+            }
+
+            $query->where('(tbl.access IN :access)')->bind(['access' => $access]);
         }
 
         return $query;
