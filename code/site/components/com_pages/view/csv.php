@@ -9,7 +9,7 @@
 
 class ComPagesViewCsv extends KViewCsv
 {
-    use ComPagesViewTraitModellable, ComPagesViewTraitLocatable;
+    use ComPagesViewTraitPage, ComPagesViewTraitUrl, ComPagesViewTraitRoute;
 
     protected function _fetchData(KViewContext $context)
     {

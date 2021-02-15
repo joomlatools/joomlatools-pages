@@ -9,7 +9,7 @@
 
 class ComPagesViewXml extends KViewTemplate
 {
-    use ComPagesViewTraitModellable, ComPagesViewTraitLocatable;
+    use ComPagesViewTraitPage, ComPagesViewTraitUrl, ComPagesViewTraitRoute;
 
     protected function _initialize(KObjectConfig $config)
     {

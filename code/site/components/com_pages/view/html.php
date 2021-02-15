@@ -9,7 +9,7 @@
 
 class ComPagesViewHtml extends ComKoowaViewHtml
 {
-    use ComPagesViewTraitModellable, ComPagesViewTraitLocatable;
+    use ComPagesViewTraitPage, ComPagesViewTraitUrl, ComPagesViewTraitRoute;
 
     protected function _initialize(KObjectConfig $config)
     {
