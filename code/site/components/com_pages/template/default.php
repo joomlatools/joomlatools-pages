@@ -10,8 +10,6 @@
 class ComPagesTemplateDefault extends KTemplate
 {
     protected $_layout;
-    protected $_layout_data;
-
     protected $_type;
 
     private $__helpers = array();
@@ -65,18 +63,17 @@ class ComPagesTemplateDefault extends KTemplate
             $template = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
 
             //Set the parent layout
-            if($layout = KObjectConfig::unbox($template->layout))
+            if($template->has('layout'))
             {
-                if(is_array($layout))
-                {
-                    $this->_layout      = $layout['path'];
-                    $this->_layout_data = $layout;
-
-                    unset($this->_layout_data['path']);
+                if(is_string($template->layout)) {
+                    $layout = ['path' => $template->layout];
+                } else {
+                    $layout = $template->layout;
                 }
-                else $this->_layout = $layout;
+
+                $this->_layout = new KObjectConfigJson($layout);
             }
-            else $this->_layout = false;
+            else $this->_layout = $this->_layout ? false : NULL;
 
             //Store the data and remove the layout
             $this->_data = KObjectConfig::unbox($template->remove('layout'));
@@ -113,11 +110,6 @@ class ComPagesTemplateDefault extends KTemplate
     public function getLayout()
     {
         return $this->_layout;
-    }
-
-    public function getLayoutData()
-    {
-        return new KObjectConfigJson($this->_layout_data);
     }
 
     public function render(array $data = array())

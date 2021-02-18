@@ -31,13 +31,26 @@ class ComPagesViewHtml extends ComKoowaViewHtml
 
     public function getLayout()
     {
-        $page = $this->getPage();
-        return 'page://pages/'.$page->path;
+        return $this->getPage()->get('layout');
     }
 
     protected function _actionRender(KViewContext $context)
     {
-        $content = $this->getContent();
+        $template = $this->getTemplate()->setParameters($context->parameters);
+
+        //Add the filters
+        if($process = $template->get('process') && isset($process['filters'])) {
+            $template->addFilters((array) $process['filters']);
+        }
+
+        //Load the page
+        $template->loadFile('page://pages/'.$this->getPage()->path);
+
+        //Render page
+        $content = $template->render(KObjectConfig::unbox($context->data->append($template->getData())));
+
+        //Set the rendered page in the view to allow for view decoration
+        $this->setContent($content);
 
         //Set the content in the object
         $this->getPage()->content = $content;

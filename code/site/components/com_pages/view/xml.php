@@ -30,15 +30,27 @@ class ComPagesViewXml extends KViewTemplate
 
     public function getLayout()
     {
-        $page = $this->getPage();
-        return 'page://pages/'.$page->path;
+        return $this->getPage()->get('layout');
     }
 
     protected function _actionRender(KViewContext $context)
     {
-        //Prepend the xml prolog
+        $template = $this->getTemplate()->setParameters($context->parameters);
+
+        //Add the filters
+        if($process = $template->get('process') && isset($process['filters'])) {
+            $template->addFilters((array) $process['filters']);
+        }
+
+        //Load the page
+        $template->loadFile('page://pages/'.$this->getPage()->path);
+
+        //Render page
         $content  = '<?xml version="1.0" encoding="utf-8" ?>'."\n";
-        $content .= $this->getContent();
+        $content = $template->render(KObjectConfig::unbox($context->data->append($template->getData())));
+
+        //Set the rendered page in the view to allow for view decoration
+        $this->setContent($content);
 
         //Set the content in the object
         $this->getPage()->content = $content;
