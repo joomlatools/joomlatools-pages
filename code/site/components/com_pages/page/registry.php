@@ -232,8 +232,13 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 }
 
                 //Set the layout (if not set yet)
-                if($page->has('layout') && is_string($page->layout)) {
-                    $page->layout = array('path' => $page->layout);
+                if($page->has('layout'))
+                {
+                    if (is_string($page->layout)) {
+                        $page->layout = new KObjectConfigJson(['path' => $page->layout]);
+                    } else {
+                        $page->layout = new KObjectConfigJson($page->layout);
+                    }
                 }
 
                 $this->__pages[$path] = $page;
