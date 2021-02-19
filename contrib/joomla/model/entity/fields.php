@@ -31,6 +31,22 @@ class ExtJoomlaModelEntityFields extends ComPagesModelEntityItems
         return $result;
     }
 
+    public function group($name)
+    {
+        return $this->find(['group' => $name]);
+    }
+
+    public function values()
+    {
+        $values = array();
+
+        foreach($this as $key => $entity) {
+            $values[$key] = $entity->value;
+        }
+
+        return $values;
+    }
+
     public function getProperty($name)
     {
         $result = null;

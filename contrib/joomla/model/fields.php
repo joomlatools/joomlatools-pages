@@ -53,13 +53,15 @@ class ExtJoomlaModelFields extends ComPagesModelDatabase
                 'published' => 'IF(tbl.state = 1, 1, 0)',
                 'required'  => 'tbl.required',
                 'params'    => 'tbl.fieldparams',
+                'group'     => 'g.title',
             ]);
         }
         else $query->columns('COUNT(*)');
 
         //Joins
         $query
-            ->join(['v' => 'fields_values'], 'tbl.id = v.field_id');
+            ->join(['v' => 'fields_values'], 'tbl.id = v.field_id')
+            ->join(['g' => 'fields_groups'], 'tbl.group_id = g.id');
 
         if(!is_null($state->id))
         {
