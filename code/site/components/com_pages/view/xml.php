@@ -18,6 +18,7 @@ class ComPagesViewXml extends KViewTemplate
             'auto_fetch' => false,
             'template_functions' => [
                 'page'        => [$this, 'getPage'],
+                'layout'      => [$this, 'getLayout'],
                 'collection'  => [$this, 'getCollection'],
                 'state'       => [$this, 'getState'],
                 'direction'   => [$this, 'getDirection'],

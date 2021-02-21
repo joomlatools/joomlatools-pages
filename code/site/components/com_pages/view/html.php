@@ -19,10 +19,12 @@ class ComPagesViewHtml extends ComKoowaViewHtml
             'template_filters'   => ['asset', 'meta'],
             'template_functions' => [
                 'page'        => [$this, 'getPage'],
+                'layout'      => [$this, 'getLayout'],
                 'collection'  => [$this, 'getCollection'],
                 'state'       => [$this, 'getState'],
                 'direction'   => [$this, 'getDirection'],
                 'language'    => [$this, 'getLanguage'],
+
             ],
         ]);
 
