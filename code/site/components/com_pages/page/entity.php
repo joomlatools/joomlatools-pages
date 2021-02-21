@@ -29,7 +29,7 @@ class ComPagesPageEntity extends ComPagesModelEntityPage
     public function setPropertyLayout($value)
     {
         if($value) {
-            $value = new KObjectConfig($value);
+            $value = new KObjectConfigJson($value);
         }
 
         return $value;
@@ -38,7 +38,7 @@ class ComPagesPageEntity extends ComPagesModelEntityPage
     public function setPropertyCollection($value)
     {
         if($value) {
-            $value = new KObjectConfig($value);
+            $value = new KObjectConfigJson($value);
         }
 
         return $value;
@@ -47,7 +47,7 @@ class ComPagesPageEntity extends ComPagesModelEntityPage
     public function setPropertyForm($value)
     {
         if($value) {
-            $value = new KObjectConfig($value);
+            $value = new KObjectConfigJson($value);
         }
 
         return $value;
