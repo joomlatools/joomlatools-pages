@@ -116,12 +116,17 @@ class ComPagesTemplateDefault extends KTemplate
     {
         unset($data['layout']);
 
+        //$display_errors = ini_get('display_errors');
+        //ini_set('display_errors', false);
+
         $result = parent::render($data);
 
         //Exception for html files
         if($this->_type == 'html') {
             $result = $this->filter();
         }
+
+        //ini_set('display_errors', $display_errors);
 
         return $result;
     }
@@ -189,17 +194,26 @@ class ComPagesTemplateDefault extends KTemplate
     {
         if($exception instanceof KTemplateExceptionError)
         {
-            $file   = $exception->getFile();
-            $buffer = $exception->getPrevious()->getFile();
+            $file   = file($exception->getFile());
+            $buffer = file($exception->getPrevious()->getFile());
 
-            //Get the real file if it can be found
-            $line = count(file($file)) - count(file($buffer)) + $exception->getLine() - 1;
+            //Estimate the location of the error in the source file
+            $line = count($file) - count($buffer) + $exception->getLine() - 1;
+
+            //Try to find the specific line in the source file
+            foreach($file as $l => $text)
+            {
+                if($text == $buffer[$exception->getPrevious()->getLine()]) {
+                    $line = $l;
+                    break;
+                }
+            }
 
             $exception = new KTemplateExceptionError(
                 $exception->getMessage(),
                 $exception->getCode(),
                 $exception->getSeverity(),
-                $file,
+                $exception->getFile(),
                 $line,
                 $exception->getPrevious()
             );
