@@ -131,15 +131,34 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
             $query->where('(tbl.alias = :article)')->bind(['article' => $state->slug]);
         }
 
+
         if(!is_null($state->category))
         {
-            if(is_string($state->category)) {
-                $categories = array_unique(explode(',',  $state->category));
+            $id    = array();
+            $alias = array();
+
+            if (is_string($state->category)) {
+                $categories = array_unique(explode(',', $state->category));
             } else {
-                $categories = (array) $state->category;
+                $categories = (array)$state->category;
             }
 
-            $query->where('(tbl.catid IN :category)')->bind(['category' => $categories]);
+            foreach ($categories as $category)
+            {
+                if(is_numeric($category)) {
+                    $id[]  = $category;
+                } else {
+                    $alias[] = $category;
+                }
+            }
+
+            if($id) {
+                $query->where('(tbl.catid IN :category)')->bind(['category' => $categories]);
+            }
+
+            if($alias) {
+                $query->where('(c.alias IN :category)')->bind(['category' => $categories]);
+            }
         }
 
         if(!is_null($state->tags))
