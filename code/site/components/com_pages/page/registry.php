@@ -106,7 +106,12 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             //If the collections extends another collection merge it
             if(isset($result->extend))
             {
-                $extend = $this->getCollection($result->extend);
+                if(!$extend = $this->getCollection($result->extend))
+                {
+                    throw new RuntimeException(
+                        sprintf('Cannot extend from collection. No collection defined in: %s', $result->extend)
+                    );
+                }
 
                 //Merge state
                 if($extend->has('state')) {
