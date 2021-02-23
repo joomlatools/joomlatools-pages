@@ -148,7 +148,7 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
 
             //Add script name (index.php) if request is not rewritten
             if(!isset($_SERVER['PAGES_PATH'])) {
-                $url->setPath($base . basename($_SERVER['SCRIPT_NAME']).'/' . $path);
+                $url->setPath($base . '/'. basename($_SERVER['SCRIPT_NAME']).'/' . $path);
             } else {
                 $url->setPath($base.'/'.$path);
             }
