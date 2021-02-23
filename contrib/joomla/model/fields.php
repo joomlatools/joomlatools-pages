@@ -18,7 +18,9 @@ class ExtJoomlaModelFields extends ComPagesModelDatabase
             ->insert('group'     , 'int')
             ->insert('article'   , 'int')
             ->insert('published' , 'boolean')
-            ->insert('access' , 'cmd', array_unique($this->getObject('user')->getRoles()));
+            ->insert('language', 'cmd')
+            ->insert('access' , 'cmd', array_unique($this->getObject('user')->getRoles()))
+        ;
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -54,6 +56,7 @@ class ExtJoomlaModelFields extends ComPagesModelDatabase
                 'required'  => 'tbl.required',
                 'params'    => 'tbl.fieldparams',
                 'group'     => 'g.title',
+                'language'  => 'SUBSTRING_INDEX(tbl.language, "-", 1)',
             ]);
         }
         else $query->columns('COUNT(*)');
@@ -114,6 +117,12 @@ class ExtJoomlaModelFields extends ComPagesModelDatabase
             }
 
             $query->where('(tbl.access IN :access)')->bind(['access' => $access]);
+        }
+
+        if (!is_null($state->language)) {
+            $query->where('(SUBSTRING_INDEX(tbl.language, "-", 1) = :language)')->bind(['language' => $state->language]);
+        } else {
+            $query->where('tbl.language = :language')->bind(['language' => '*']);
         }
 
         return $query;

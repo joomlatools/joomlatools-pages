@@ -24,6 +24,7 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
             ->insert('archived'  , 'boolean')
             ->insert('trashed'   , 'boolean', false)
             ->insert('featured'  , 'boolean')
+            ->insert('language', 'cmd')
 
             ->insert('author' , 'string')
             ->insert('editor' , 'string')
@@ -104,6 +105,7 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
                 'links'       => 'tbl.urls',
                 'parameters'  => 'tbl.attribs',
                 'impressions' => 'tbl.hits',
+                'language'    => 'SUBSTRING_INDEX(tbl.language, "-", 1)',
 
                 //Protected properties (for getters)
                 '_metadata'   => 'tbl.metadata',
@@ -130,7 +132,6 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
         else if(!is_null($state->slug)) {
             $query->where('(tbl.alias = :article)')->bind(['article' => $state->slug]);
         }
-
 
         if(!is_null($state->category))
         {
@@ -256,8 +257,11 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
             $query->where('(tbl.featured = :featured)')->bind(['featured' => (bool) $state->featured]);
         }
 
-        //var_dump((string)$query);
-        //die;
+        if (!is_null($state->language)) {
+            $query->where('(SUBSTRING_INDEX(tbl.language, "-", 1) = :language)')->bind(['language' => $state->language]);
+        } else {
+            $query->where('tbl.language = :language')->bind(['language' => '*']);
+        }
 
         return $query;
     }

@@ -17,6 +17,7 @@ class ExtJoomlaModelCategories extends ComPagesModelDatabase
             ->insert('id'        , 'cmd', null, true)
 
             ->insert('published' , 'boolean')
+            ->insert('language', 'cmd')
 
             ->insert('author' , 'string')
             ->insert('editor' , 'string')
@@ -62,6 +63,7 @@ class ExtJoomlaModelCategories extends ComPagesModelDatabase
 
                 'parameters'  => 'tbl.params',
                 'impressions' => 'tbl.hits',
+                'language'    => 'SUBSTRING_INDEX(tbl.language, "-", 1)',
 
                 //Protected properties (for getters)
                 '_metadata'   => 'tbl.metadata',
@@ -126,6 +128,12 @@ class ExtJoomlaModelCategories extends ComPagesModelDatabase
             }
         }
 
+        if (!is_null($state->language)) {
+            $query->where('(SUBSTRING_INDEX(tbl.language, "-", 1) = :language)')->bind(['language' => $state->language]);
+        } else {
+            $query->where('tbl.language = :language')->bind(['language' => '*']);
+        }
+
         //Only fetch content categories
         $query->where('tbl.extension = :component')->bind(['component' => 'com_content']);
 
@@ -145,4 +153,3 @@ class ExtJoomlaModelCategories extends ComPagesModelDatabase
         return $hash;
     }
 }
-
