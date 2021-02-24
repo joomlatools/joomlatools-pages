@@ -451,27 +451,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                         $page->metadata['robots'] = ['none'];
                                     }
 
-                                    //Handle dynamic data
-                                    array_walk_recursive ($page, function(&$value, $key)
-                                    {
-                                        if(is_string($value) && strpos($value, 'data://') === 0)
-                                        {
-                                            $matches = array();
-                                            preg_match('#data\:\/\/([^\[]+)(?:\[(.*)\])*#si', $value, $matches);
-
-                                            if(!empty($matches[0]))
-                                            {
-                                                $data = $this->getObject('data.registry')->fromPath($matches[1]);
-
-                                                if($data && !empty($matches[2])) {
-                                                    $data = $data->get($matches[2]);
-                                                }
-
-                                                $value = $data;
-                                            }
-                                        }
-                                    });
-
                                     /**
                                      * Cache
                                      *
