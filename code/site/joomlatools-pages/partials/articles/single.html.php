@@ -3,7 +3,7 @@
 	<h1 role="heading" aria-level="1" itemprop="name" class="sm:text-5xl text-4xl font-medium font-title uppercase mb-2 text-gray-900 dark:text-gray-100 leading-none"><?= $article->title ?></h1>
 	<div class="h-1 w-20 bg-brand rounded mb-6"></div>
 	<div class="mb-6">
-		<img itemprop="image" class="featured-image rounded object-cover object-left-top w-full" src="<?= $article->image->url ?>" alt="<?= $article->title; ?>">
+		<img itemprop="image" class="featured-image rounded object-cover object-left-top w-full" src="<?= ($article->image->url) ? $article->image->url : 'https://loremflickr.com/700/350' ; ?>" alt="<?= $article->title; ?>">
 	</div>
 	<p class="mt-2 text-xs font-medium flex flex-row justify-between">
 		<span itemprop="author" itemscope itemtype="http://schema.org/Person">
