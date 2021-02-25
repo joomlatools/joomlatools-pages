@@ -1,0 +1,14 @@
+[
+  {
+    "title": " Privacy Policy",
+    "route": "/"
+  },
+  {
+    "title": "Terms & Conditions",
+    "route": "/"
+  },
+  {
+    "title": "Contact Us",
+    "url": "#"
+  }
+]
