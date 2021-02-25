@@ -34,7 +34,9 @@ collection:
 					<?= $article->title; ?>
 				</a>
 			</h2>
-
+			<div class="mb-4">
+				<img itemprop="image" class="featured-image rounded object-cover object-left-top w-full" src="<?= ($article->image->url) ? $article->image->url : 'https://loremflickr.com/700/350' ; ?>" alt="<?= $article->title; ?>">
+			</div>
 			<div class="mb-4 text-sm text-gray-700">
 				by <a href="#" class="text-gray-700"><?= $article->getAuthor()->getName(); ?></a> on <?= date($article->published_date, 'd M, Y'); ?>
 				<span class="font-bold mx-1"> | </span>
