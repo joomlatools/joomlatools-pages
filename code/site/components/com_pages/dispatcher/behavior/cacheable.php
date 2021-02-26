@@ -312,8 +312,21 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             }
 
             //Add collections
-            foreach($this->getObject('model.factory')->getModels() as $name => $model) {
-                $validators['collections'][$name] = $model->getHash();
+            foreach($this->getObject('model.factory')->getModels() as $name => $model)
+            {
+                $states = array();
+
+                foreach($model->getState() as $state)
+                {
+                    if(!is_null($state->value) && $state->value != $state->default) {
+                        $states[$state->name] = KObjectConfig::unbox($state->value);
+                    }
+                }
+
+                $validators['collections'][$name] = [
+                    'hash'  => $model->getHash(),
+                    'state' => $states
+                ];
             }
 
             $this->__validators = $validators;
@@ -407,13 +420,19 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             //Validate collections
             if($valid && isset($validators['collections']))
             {
-                foreach($validators['collections'] as $name => $hash)
+                foreach($validators['collections'] as $name => $model)
                 {
                     if(!isset($collections[$name]))
                     {
                         $collections[$name] = $this->getObject('model.factory')
-                            ->createModel($name)
+                            ->createModel($name, $model['state'] ?? array())
                             ->getHash($refresh);
+                    }
+
+                    if(isset($model['hash'])) {
+                        $hash = $model['hash'];
+                    } else {
+                        $hash = $model;
                     }
 
                     //If the collection has a hash validate it
