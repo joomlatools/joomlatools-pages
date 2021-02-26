@@ -38,11 +38,12 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
             //Get the config options
             $options = $config->getOptions();
 
+            //Bootstrap the site configuration (before extensions to allow overriding)
+            $this->_bootstrapSite($config->getSitePath(), $options);
+
             //Bootstrap the extensions
             $this->_bootstrapExtensions($config->getSitePath('extensions'), $options);
 
-            //Bootstrap the site configuration (after extensions to allow overriding)
-            $this->_bootstrapSite($config->getSitePath(), $options);
         }
         else $this->getObject('com://site/pages.config', ['site_path' => false]);
     }
@@ -86,12 +87,12 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
         //Set config options
         foreach($options['identifiers'] as $identifier => $values) {
-            $this->getConfig($identifier)->merge($values);
+            $this->getConfig($identifier)->append($values);
         }
 
         //Set config options
         foreach($options['extensions'] as $identifier => $values) {
-            $this->getConfig($identifier)->merge($values);
+            $this->getConfig($identifier)->append($values);
         }
     }
 
@@ -148,7 +149,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                     if(is_array($identifiers))
                     {
                         foreach($identifiers as $identifier => $values) {
-                            $this->getConfig($identifier)->merge($values);
+                            $this->getConfig($identifier)->append($values);
                         }
                     }
                 }
