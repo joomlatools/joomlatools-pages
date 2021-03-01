@@ -50,7 +50,7 @@ class ComPagesModelWebservice extends ComPagesModelCollection
 
     public function getHash($refresh = false)
     {
-        $hash = null;
+        $hash = parent::getHash();
 
         if($url = $this->getUrl($this->getState()->getValues()))
         {

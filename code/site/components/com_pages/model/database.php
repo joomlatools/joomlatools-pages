@@ -111,7 +111,7 @@ class ComPagesModelDatabase extends ComPagesModelCollection
 
     public function getHash($refresh = false)
     {
-        $hash = null;
+        $hash = parent::getHash();
 
         if($modified = $this->getTable()->getSchema()->modified) {
             $hash = hash('crc32b', $modified);

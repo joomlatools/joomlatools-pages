@@ -52,7 +52,7 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
 
     public function getHash($refresh = false)
     {
-        $hahs = null;
+        $hash = parent::getHash();
         $path = $this->getPath($this->getState()->getValues());
 
         if(file_exists($path)) {

@@ -15,6 +15,7 @@ interface ComPagesModelInterface extends KModelInterface
 
     public function persist();
 
+    public function getName();
     public function getType();
     public function getIdentityKey();
     public function getPrimaryKey();

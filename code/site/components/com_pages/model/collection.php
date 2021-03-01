@@ -131,6 +131,9 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
 
     public function getHash($refresh = false)
     {
+        //Validate the state
+        $this->_validateState();
+
         return null;
     }
 
@@ -195,11 +198,30 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
 
     protected function _prepareContext(KModelContext $context)
     {
+        //Validate the state
+        $this->_validateState();
+
         //Fetch the data
         $data = $this->fetchData($context->getName() == 'before.count');
 
         //Filter the data
         $context->data = $this->filterData($data);
+    }
+
+    protected function _validateState()
+    {
+        foreach($this->getState() as $name => $state)
+        {
+            if($state->required === true && is_null($state->value))
+            {
+                $collection = $this->getName();
+
+                throw new RuntimeException(
+                    sprintf('State "%s" is required for collection: %s', $state->name, $collection)
+                );
+
+            }
+        }
     }
 
     protected function _actionFetch(KModelContext $context)
