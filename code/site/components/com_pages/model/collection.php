@@ -19,7 +19,7 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
 
         //Insert the identity_key
         if($config->identity_key) {
-            $this->getState()->insert($config->identity_key, 'url', null, true);
+            $this->getState()->insertUnique($config->identity_key, 'url');
         }
 
         //Setup callbacks
@@ -47,6 +47,7 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
             'search'        => [], //properties to allow searching on
             'identity_key'  => null,
             'persistable'   => false,
+            'state'         => 'com://site/pages.model.state',
         ])->append([
             'behaviors'   => [
                 'com://site/pages.model.behavior.paginatable',

@@ -20,8 +20,8 @@ class ComPagesModelDatabase extends ComPagesModelCollection
         // Set the dynamic states based on the unique table keys
         foreach ($this->getTable()->getUniqueColumns() as $key => $column)
         {
-            $required = $this->getTable()->mapColumns($column->related, true);
-            $this->getState()->insert($key, $column->filter, null, true, $required);
+            $related = $this->getTable()->mapColumns($column->related, true);
+            $this->getState()->insertUnique($key, $column->filter, null, $related);
         }
     }
 

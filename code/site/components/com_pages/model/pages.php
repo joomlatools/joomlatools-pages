@@ -17,11 +17,10 @@ class ComPagesModelPages extends ComPagesModelCollection
 
         $this->getState()
             ->insert('folder', 'url')
-            ->insert('slug', 'cmd', '', true, array('folder'))
-            //Internal states
-            ->insert('recurse', 'cmd', null, false, array(), true)
-            ->insert('level', 'int', 0, false, array(), true)
-            ->insert('collection', 'boolean', null, false, array(), true);
+            ->insertUnique('slug', 'cmd', '', array('folder'))
+            ->insertInternal('recurse', 'cmd')
+            ->insertInternal('level', 'int', 0)
+            ->insertInternal('collection', 'boolean');
     }
 
     protected function _initialize(KObjectConfig $config)
