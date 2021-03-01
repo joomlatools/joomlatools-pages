@@ -314,19 +314,21 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             //Add collections
             foreach($this->getObject('model.factory')->getModels() as $name => $model)
             {
-                $states = array();
-
-                foreach($model->getState() as $state)
+                if($model->getHash() !== false)
                 {
-                    if(!is_null($state->value) && $state->value != $state->default) {
-                        $states[$state->name] = KObjectConfig::unbox($state->value);
+                    $states = array();
+                    foreach($model->getState() as $state)
+                    {
+                        if($state->required === true) {
+                            $states[$state->name] = KObjectConfig::unbox($state->value);
+                        }
                     }
-                }
 
-                $validators['collections'][$name] = [
-                    'hash'  => $model->getHash(),
-                    'state' => $states
-                ];
+                    $validators['collections'][$name] = [
+                        'hash'  => $model->getHash(),
+                        'state' => $states
+                    ];
+                }
             }
 
             $this->__validators = $validators;
