@@ -98,7 +98,6 @@ class ExtK2ModelArticles extends ComPagesModelDatabase
                 '_image_caption' => 'tbl.image_caption',
             ]);
         }
-        else $query->columns('COUNT(*)');
 
         //Joins
         $query

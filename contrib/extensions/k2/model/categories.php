@@ -54,7 +54,6 @@ class ExtK2ModelCategories extends ComPagesModelDatabase
                 'parameters' => 'tbl.params',
             ]);
         }
-        else $query->columns('COUNT(*)');
 
         if(!is_null($state->id))
         {

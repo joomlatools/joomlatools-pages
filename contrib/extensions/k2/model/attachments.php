@@ -46,7 +46,6 @@ class ExtK2ModelAttachments extends ComPagesModelDatabase
 				'impressions' => 'tbl.hits',
 			]);
 		}
-		else $query->columns('COUNT(*)');
 
 		if(!is_null($state->id))
 		{

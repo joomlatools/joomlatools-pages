@@ -49,7 +49,6 @@ class ExtK2ModelFields extends ComPagesModelDatabase
                 '_value'     => 'tbl.value',
             ]);
         }
-        else $query->columns('COUNT(*)');
 
         if(!is_null($state->id))
         {
