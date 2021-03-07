@@ -240,9 +240,9 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 if($page->has('layout'))
                 {
                     if (is_string($page->layout)) {
-                        $page->layout = new KObjectConfigJson(['path' => $page->layout]);
+                        $page->layout = new ComPagesObjectConfig(['path' => $page->layout]);
                     } else {
-                        $page->layout = new KObjectConfigJson($page->layout);
+                        $page->layout = new ComPagesObjectConfig($page->layout);
                     }
                 }
 
