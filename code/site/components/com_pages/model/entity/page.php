@@ -140,22 +140,22 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
 
     public function setPropertyAccess($value)
     {
-        return new KObjectConfig($value);
+        return new ComPagesObjectConfig($value);
     }
 
     public function setPropertyProcess($value)
     {
-        return new KObjectConfig($value);
+        return new ComPagesObjectConfig($value);
     }
 
     public function setPropertyCollection($value)
     {
-        return new KObjectConfig($value);
+        return new ComPagesObjectConfig($value);
     }
 
     public function setPropertyForm($value)
     {
-        return new KObjectConfig($value);
+        return new ComPagesObjectConfig($value);
     }
 
     public function setPropertyDate($value)
