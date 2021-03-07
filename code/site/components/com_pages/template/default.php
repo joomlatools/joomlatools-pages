@@ -71,7 +71,7 @@ class ComPagesTemplateDefault extends KTemplate
                     $layout = $template->layout;
                 }
 
-                $this->_layout = new KObjectConfigJson($layout);
+                $this->_layout = new ComPagesObjectConfig($layout);
             }
             else $this->_layout = $this->_layout ? false : NULL;
 
