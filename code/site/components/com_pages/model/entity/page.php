@@ -198,7 +198,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                 ];
             }
 
-            $image = new KObjectConfigJson($image);
+            $image = new ComPagesObjectConfig($image);
         }
 
         return $image;

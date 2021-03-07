@@ -11,7 +11,7 @@ class ComPagesTemplateHelperBehavior extends ComKoowaTemplateHelperBehavior
 {
     public function anchor($config = array())
     {
-        $config = new KObjectConfigJson($config);
+        $config = new ComPagesObjectConfig($config);
         $config->append(array(
             'debug' =>  JFactory::getApplication()->getCfg('debug'),
             'options'  => array(
