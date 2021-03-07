@@ -26,6 +26,28 @@ class ComPagesPageEntity extends ComPagesModelEntityPage
         parent::_initialize($config);
     }
 
+    public function get($name, $default = null)
+    {
+        if(!is_array($name)) {
+            $segments = explode('/', $name);
+        } else {
+            $segments = $name;
+        }
+
+        $result = parent::get(array_shift($segments), $default);
+
+        if(!empty($segments) && $result instanceof ComPagesObjectConfig) {
+            $result = $result->get($segments, $default);
+        }
+
+        return $result;
+    }
+
+    public function has($name)
+    {
+        return (bool) $this->get($name);
+    }
+
     public function setPropertyLayout($value)
     {
         if($value) {
@@ -45,6 +67,15 @@ class ComPagesPageEntity extends ComPagesModelEntityPage
     }
 
     public function setPropertyForm($value)
+    {
+        if($value) {
+            $value = new ComPagesObjectConfig($value);
+        }
+
+        return $value;
+    }
+
+    public function setPropertyProcess($value)
     {
         if($value) {
             $value = new ComPagesObjectConfig($value);

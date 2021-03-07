@@ -9,6 +9,28 @@
 
 class ComPagesPageObject extends ComPagesObjectConfigFrontmatter implements ComPagesPageInterface
 {
+    public function get($name, $default = null)
+    {
+        if(!is_array($name)) {
+            $segments = explode('/', $name);
+        } else {
+            $segments = $name;
+        }
+
+        $result = parent::get(array_shift($segments), $default);
+
+        if(!empty($segments) && $result instanceof ComPagesPageObject) {
+            $result = $result->get($segments, $default);
+        }
+
+        return $result;
+    }
+
+    public function has($name)
+    {
+        return (bool) $this->get($name);
+    }
+
     public function getType()
     {
         $type = 'page';
@@ -60,5 +82,10 @@ class ComPagesPageObject extends ComPagesObjectConfigFrontmatter implements ComP
     public function isEditable()
     {
         return $this->isCollection() && isset($this->collection->schema);
+    }
+
+    public function __debugInfo()
+    {
+        return self::unbox($this);
     }
 }

@@ -11,20 +11,16 @@ class ComPagesObjectConfig extends KObjectConfig implements JsonSerializable
 {
     public function get($name, $default = null)
     {
-        $result = $default;
-        $path   = explode('/', $name);
+        if(!is_array($name)) {
+            $segments = explode('/', $name);
+        } else {
+            $segments = $name;
+        }
 
-        if($result = parent::get(array_shift($path)))
-        {
-            foreach($path as $name)
-            {
-                if($result instanceof KObjectConfigInterface && $result->has($name)) {
-                    $result = $result->get($name);
-                } else {
-                    $result = $default;
-                    break;
-                }
-            }
+        $result = parent::get(array_shift($segments), $default);
+
+        if(!empty($segments) && $result instanceof ComPagesObjectConfig) {
+            $result = $result->get($segments, $default);
         }
 
         return $result;
@@ -46,11 +42,6 @@ class ComPagesObjectConfig extends KObjectConfig implements JsonSerializable
         return $this->toArray();
     }
 
-    public function __debugInfo()
-    {
-        return self::unbox($this);
-    }
-
     final public function __toString()
     {
         $result = '';
@@ -63,5 +54,10 @@ class ComPagesObjectConfig extends KObjectConfig implements JsonSerializable
         }
 
         return $result;
+    }
+
+    public function __debugInfo()
+    {
+        return self::unbox($this);
     }
 }
