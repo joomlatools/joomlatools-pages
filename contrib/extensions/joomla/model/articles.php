@@ -14,8 +14,8 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
         parent::__construct($config);
 
         $this->getState()
-            ->insert('id'        , 'cmd', null, true)
-            ->insert('slug'      , 'cmd', null, true)
+            ->insertUnique('id'  , 'cmd')
+            ->insertUnique('slug', 'cmd')
             ->insert('category'  , 'cmd')
             ->insert('tags'      , 'cmd')
             ->insert('field'     , 'cmd')
@@ -50,7 +50,7 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
         return $this->getConfig()->aliases;
     }
 
-    public function fetchData($count = false)
+    public function getQuery($columns = true)
     {
         $state = $this->getState();
 
@@ -59,7 +59,7 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
 
 
         //#__content
-        if(!$count)
+        if($columns)
         {
             //#__tags
             $query->columns([
@@ -268,9 +268,10 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
 
     public function getHash($refresh = false)
     {
-        $query = $this->getObject('database.query.select')
-            ->table(['tbl' => $this->getTable()->getName()])
-            ->columns(['hash' => 'MAX(GREATEST(tbl.created, tbl.modified))']);
+        $hash = parent::getHash();
+
+        $query = $this->getQuery(false);
+        $query->columns(['hash' => 'MAX(GREATEST(tbl.created, tbl.modified))']);
 
         if($modified = $this->getTable()->select($query, KDatabase::FETCH_FIELD)) {
             $hash = hash('crc32b', $modified);
