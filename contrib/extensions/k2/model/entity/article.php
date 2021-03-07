@@ -104,7 +104,7 @@ class ExtK2ModelEntityArticle extends ExtK2ModelEntityAbstract
 			];
 		}
 
-		return new KObjectConfigJson($image);
+		return new ComPagesObjectConfig($image);
 	}
 
 	public function getPropertyMetadata()
@@ -150,7 +150,7 @@ class ExtK2ModelEntityArticle extends ExtK2ModelEntityAbstract
 		}
 		else $value = [];
 
-		return new KObjectConfigJson($value);
+		return new ComPagesObjectConfig($value);
 	}
 
 	public function setPropertyCategory($value)
@@ -250,7 +250,7 @@ class ExtK2ModelEntityArticle extends ExtK2ModelEntityAbstract
 
 		//$params = JComponentHelper::getParams('com_k2')->toArray();
 
-		$config  = new KObjectConfigJson(/*$params*/);
+		$config  = new ComPagesObjectConfig(/*$params*/);
 		$config->merge($value); // Override global params with specific params
 
 		return $config;

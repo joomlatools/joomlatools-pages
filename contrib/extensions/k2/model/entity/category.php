@@ -87,7 +87,7 @@ class ExtK2ModelEntityCategory extends ExtK2ModelEntityAbstract
 			}
 		}
 
-		return new KObjectConfigJson($image);
+		return new ComPagesObjectConfig($image);
 	}
 
 	public function setPropertyParameters($value)
@@ -98,7 +98,7 @@ class ExtK2ModelEntityCategory extends ExtK2ModelEntityAbstract
 
 		//$params = JComponentHelper::getParams('com_k2')->toArray();
 
-		$config  = new KObjectConfigJson(/*$params*/);
+		$config  = new ComPagesObjectConfig(/*$params*/);
 		$config->merge($value); // Override global params with article specific params
 
 		return $config;

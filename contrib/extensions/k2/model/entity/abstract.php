@@ -79,7 +79,7 @@ abstract class ExtK2ModelEntityAbstract extends ComPagesModelEntityItem
 		}
 
 		//Remove empty values
-		$metadata = new KObjectConfigJson($metadata);
+		$metadata = new ComPagesObjectConfig($metadata);
 		$metadata->append($this->getConfig()->data->metadata);
 
 		if(!isset($metadata->description) && $this->summary) {
@@ -132,7 +132,7 @@ abstract class ExtK2ModelEntityAbstract extends ComPagesModelEntityItem
 
 	public function setPropertyParameters($value)
 	{
-		return new KObjectConfigJson($value);
+		return new ComPagesObjectConfig($value);
 	}
 
 	public function getBasePath()
