@@ -312,21 +312,14 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             }
 
             //Add collections
-            foreach($this->getObject('model.factory')->getModels() as $name => $model)
+            foreach($this->getObject('model.factory')->getModels() as $model)
             {
                 if($model->getHash() !== false)
                 {
-                    $states = array();
-                    foreach($model->getState() as $state)
-                    {
-                        if($state->required === true) {
-                            $states[$state->name] = KObjectConfig::unbox($state->value);
-                        }
-                    }
-
-                    $validators['collections'][$name] = [
+                    $validators['collections'][] = [
+                        'name'  => $model->getName(),
                         'hash'  => $model->getHash(),
-                        'state' => $states
+                        'state' => $model->getHashState()
                     ];
                 }
             }
@@ -399,7 +392,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
     public function validateCache($validators, $refresh = false)
     {
-        static $collections;
+        static $hashes;
 
         $valid = false;
 
@@ -422,25 +415,34 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             //Validate collections
             if($valid && isset($validators['collections']))
             {
-                foreach($validators['collections'] as $name => $model)
+                foreach($validators['collections'] as $key => $model)
                 {
-                    if(!isset($collections[$name]))
+                    //Provide BC for cache validators
+                    if(!is_numeric($key))
                     {
-                        $collections[$name] = $this->getObject('model.factory')
-                            ->createModel($name, $model['state'] ?? array())
-                            ->getHash($refresh);
+                        $hash = $model;
+                        $name = $key;
+                        $state = array();
+                    }
+                    else
+                    {
+                        $hash  = $model['hash'];
+                        $state = $model['state'];
+                        $name  = $model['name'];
                     }
 
-                    if(isset($model['hash'])) {
-                        $hash = $model['hash'];
-                    } else {
-                        $hash = $model;
+                    $identifier = hash('crc32b', $name.'.-'.$hash);
+                    if(!isset($hashes[$identifier]))
+                    {
+                        $hashes[$identifier] = $this->getObject('model.factory')
+                            ->createModel($name, $state)
+                            ->getHash($refresh);
                     }
 
                     //If the collection has a hash validate it
                     if($hash)
                     {
-                        if($hash != $collections[$name]) {
+                        if($hash != $hashes[$identifier]) {
                             $valid = false;
                         }
                     }
