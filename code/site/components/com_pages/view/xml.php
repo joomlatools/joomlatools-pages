@@ -38,8 +38,18 @@ class ComPagesViewXml extends KViewTemplate
     {
         $template = $this->getTemplate()->setParameters($context->parameters);
 
-        //Add the filters
+        //Add page filters
         if($process = $this->getPage()->get('process'))
+        {
+            $process = KObjectConfig::unbox($process);
+
+            if(isset($process['filters'])) {
+                $template->addFilters((array) $process['filters']);
+            }
+        }
+
+        //Add layout filters
+        if($process = $this->getLayout()->get('process'))
         {
             $process = KObjectConfig::unbox($process);
 
