@@ -14,8 +14,8 @@ class ExtK2ModelArticles extends ComPagesModelDatabase
         parent::__construct($config);
 
         $this->getState()
-            ->insert('id'        , 'cmd', null, true)
-            ->insert('slug'      , 'cmd', null, true)
+            ->insertUnique('id'  , 'cmd')
+            ->insertUnique('slug', 'cmd')
             ->insert('category'  , 'cmd')
             ->insert('tags'      , 'cmd')
 
@@ -47,7 +47,7 @@ class ExtK2ModelArticles extends ComPagesModelDatabase
         return $this->getConfig()->aliases;
     }
 
-    public function fetchData($count = false)
+    public function getQuery($columns = true)
     {
         $state = $this->getState();
 
@@ -55,7 +55,7 @@ class ExtK2ModelArticles extends ComPagesModelDatabase
             ->table(array('tbl' => $this->getTable()->getName()));
 
         //#__content
-        if(!$count)
+        if($columns)
         {
             //#__tags
             $query->columns([

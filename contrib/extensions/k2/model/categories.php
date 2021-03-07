@@ -14,7 +14,7 @@ class ExtK2ModelCategories extends ComPagesModelDatabase
         parent::__construct($config);
 
         $this->getState()
-            ->insert('id'        , 'cmd', null, true)
+            ->insertUnique('id'  , 'cmd')
             ->insert('published' , 'boolean')
             ->insert('access'    , 'cmd', array_unique($this->getObject('user')->getRoles()))
         ;
@@ -31,7 +31,7 @@ class ExtK2ModelCategories extends ComPagesModelDatabase
         parent::_initialize($config);
     }
 
-    public function fetchData($count = false)
+    public function getQuery($columns = true)
     {
         $state = $this->getState();
 
@@ -39,7 +39,7 @@ class ExtK2ModelCategories extends ComPagesModelDatabase
             ->table(array('tbl' => $this->getTable()->getName()));
 
         //#__k2_categories
-        if(!$count)
+        if($columns)
         {
             $query->columns([
                 'id'       => 'tbl.id',

@@ -14,7 +14,7 @@ class ExtK2ModelFields extends ComPagesModelDatabase
         parent::__construct($config);
 
         $this->getState()
-            ->insert('id', 'cmd', null, true)
+            ->insertUnique('id', 'cmd')
             ->insert('group'     , 'int')
             ->insert('published' , 'boolean');
     }
@@ -30,14 +30,14 @@ class ExtK2ModelFields extends ComPagesModelDatabase
         parent::_initialize($config);
     }
 
-    public function fetchData($count = false)
+    public function getQuery($columns = true)
     {
         $state = $this->getState();
 
         $query = $this->getObject('database.query.select')
             ->table(array('tbl' => $this->getTable()->getName()));
 
-        if(!$count)
+        if($columns)
         {
             $query->columns([
                 'id'        => 'tbl.id',
