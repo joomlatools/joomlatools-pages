@@ -11,7 +11,7 @@ class ExtMediaTemplateHelperLazysizes extends ComPagesTemplateHelperBehavior
 {
     public function import($plugin = '', $config = array())
     {
-        $config = new KObjectConfigJson($config);
+        $config = new ComPagesObjectConfig($config);
         $config->append(array(
             'debug' =>  JFactory::getApplication()->getCfg('debug'),
         ));

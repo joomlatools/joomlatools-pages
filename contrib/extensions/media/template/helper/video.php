@@ -11,7 +11,7 @@ class ExtMediaTemplateHelperVideo extends ExtMediaTemplateHelperLazysizes
 {
     public function player($config = array())
     {
-        $config = new KObjectConfigJson($config);
+        $config = new ComPagesObjectConfig($config);
         $config->append(array(
             'quality_default' => '540',
             'quality_lowest'  => '240',

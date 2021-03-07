@@ -29,7 +29,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
 
     public function __invoke($config = array())
     {
-        $config = new KObjectConfigJson($config);
+        $config = new ComPagesObjectConfig($config);
         $config->append(array(
             'url'     => '',
             'alt'     => '',
@@ -233,7 +233,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
 
     public function url($url, $parameters = array())
     {
-        $config = new KObjectConfigJson($parameters);
+        $config = new ComPagesObjectConfig($parameters);
         $config->append($this->getConfig()->parameters);
 
         if($this->supported($url))
@@ -250,7 +250,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
 
     public function url_lqi($url, $parameters = array(), $data_url = false)
     {
-        $config = new KObjectConfigJson($parameters);
+        $config = new ComPagesObjectConfig($parameters);
         $config->append($this->getConfig()->parameters_lqi);
         $config->append(array(
             'fm' => 'jpg'
@@ -292,7 +292,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
 
     public function srcset($url, $parameters = array())
     {
-        $config = new KObjectConfigJson($parameters);
+        $config = new ComPagesObjectConfig($parameters);
         $config->append(array(
             'max_width'   => $this->getConfig()->max_width,
             'min_width'   => $this->getConfig()->min_width,

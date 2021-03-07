@@ -82,7 +82,7 @@ class ExtMediaTemplateFilterVideo extends ComPagesTemplateFilterAbstract
 
     public function poster($url, $parameters = array())
     {
-        $config = new KObjectConfigJson($parameters);
+        $config = new ComPagesObjectConfig($parameters);
         $config->append($this->getConfig()->parameters_poster);
 
         $url   = KHttpUrl::fromString($url);
