@@ -6,8 +6,8 @@ class ExtJ2StoreModelProducts extends ComPagesModelDatabase
 		parent::__construct($config);
 
 		$this->getState()
-			->insert('id'        , 'cmd', null, true)
-			->insert('slug'      , 'cmd', null, true)
+			->insertUnique('id', 'cmd')
+			->insertUnique('slug', 'cmd')
 			->insert('category'  , 'cmd')
 			->insert('tags'      , 'cmd')
 
@@ -35,7 +35,7 @@ class ExtJ2StoreModelProducts extends ComPagesModelDatabase
 		parent::_initialize($config);
 	}
 
-	public function fetchData($count = false)
+	public function getQuery($columns = true)
 	{
 		$state = $this->getState();
 
@@ -43,7 +43,7 @@ class ExtJ2StoreModelProducts extends ComPagesModelDatabase
 			->table(array('tbl' => $this->getTable()->getName()));
 
 		//#__content
-		if(!$count)
+		if($columns)
 		{
 			//#__tags
 			$query->columns([
@@ -97,7 +97,6 @@ class ExtJ2StoreModelProducts extends ComPagesModelDatabase
 				'_metadata'   => 'tbl.metadata',
 			]);
 		}
-		else $query->columns('COUNT(*)');
 
 		//Joins
 		$query
