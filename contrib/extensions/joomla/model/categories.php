@@ -69,7 +69,6 @@ class ExtJoomlaModelCategories extends ComPagesModelDatabase
                 '_metadata'   => 'tbl.metadata',
             ]);
         }
-        else $query->columns('COUNT(*)');
 
         //Joins
         $query->join(['g' => 'usergroups'], 'tbl.access = g.id');

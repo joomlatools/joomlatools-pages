@@ -59,7 +59,6 @@ class ExtJoomlaModelFields extends ComPagesModelDatabase
                 'language'  => 'SUBSTRING_INDEX(tbl.language, "-", 1)',
             ]);
         }
-        else $query->columns('COUNT(*)');
 
         //Joins
         $query

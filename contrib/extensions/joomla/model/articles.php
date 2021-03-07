@@ -111,7 +111,6 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
                 '_metadata'   => 'tbl.metadata',
             ]);
         }
-        else $query->columns('COUNT(*)');
 
         //Joins
         $query
