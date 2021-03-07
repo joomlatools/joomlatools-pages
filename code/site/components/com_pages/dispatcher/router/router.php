@@ -50,7 +50,6 @@ class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract implemen
         {
             if($route instanceof ComPagesDispatcherRouterRouteInterface) {
                 $package = $route->getScheme();
-                var_dump($package);
             } else {
                 $package = $route->getIdentifier()->getPackage();
             }

@@ -107,7 +107,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
                 if($http->isDebug()) {
                     throw $e;
                 } else {
-                    $hash = null;
+                    $data = null;
                 }
             }
 

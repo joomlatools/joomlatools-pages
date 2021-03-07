@@ -30,7 +30,7 @@ class ComPagesModelCache extends ComPagesModelCollection
         parent::_initialize($config);
     }
 
-    public function fetchData($count = false)
+    public function fetchData()
     {
         if(!isset($this->__data))
         {

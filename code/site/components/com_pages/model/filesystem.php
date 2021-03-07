@@ -9,7 +9,8 @@
 
 class ComPagesModelFilesystem extends ComPagesModelCollection
 {
-    protected $_data;
+    private $__data;
+
     protected $_path;
     protected $_base_path;
     protected $_identity_key_length;
@@ -52,7 +53,7 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
 
     public function getHash($refresh = false)
     {
-        $hahs = null;
+        $hash = parent::getHash();
         $path = $this->getPath($this->getState()->getValues());
 
         if(file_exists($path)) {
@@ -62,25 +63,25 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
         return $hash;
     }
 
-    public function fetchData($count = false)
+    public function fetchData()
     {
-        if(!isset($this->_data))
+        if(!isset($this->__data))
         {
-            $this->_data = array();
+            $this->__data = array();
             $path        = $this->getPath($this->getState()->getValues());
 
             //Only fetch data if the file exists
             if(file_exists($path)) {
-                $this->_data = $this->getObject('object.config.factory')->fromFile($path, false);
+                $this->__data = $this->getObject('object.config.factory')->fromFile($path, false);
             }
         }
 
-       return $this->_data;
+       return $this->__data;
     }
 
     protected function _actionReset(KModelContext $context)
     {
-        $this->_data = null;
+        $this->__data = null;
 
         parent::_actionReset($context);
     }
