@@ -41,8 +41,13 @@ class ComPagesViewHtml extends ComKoowaViewHtml
         $template = $this->getTemplate()->setParameters($context->parameters);
 
         //Add the filters
-        if($process = $template->get('process') && isset($process['filters'])) {
-            $template->addFilters((array) $process['filters']);
+        if($process = $this->getPage()->get('process'))
+        {
+            $process = KObjectConfig::unbox($process);
+
+            if(isset($process['filters'])) {
+                $template->addFilters((array) $process['filters']);
+            }
         }
 
         //Load the page
