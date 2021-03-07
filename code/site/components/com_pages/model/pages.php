@@ -16,8 +16,8 @@ class ComPagesModelPages extends ComPagesModelCollection
         parent::__construct($config);
 
         $this->getState()
-            ->insert('folder', 'url')
-            ->insertUnique('slug', 'cmd', '', array('folder'))
+            ->insertComposite('slug', 'cmd', array('folder'), '')
+            ->insertInternal('folder', 'url')
             ->insertInternal('recurse', 'cmd')
             ->insertInternal('level', 'int', 0)
             ->insertInternal('collection', 'boolean');
@@ -35,10 +35,14 @@ class ComPagesModelPages extends ComPagesModelCollection
 
     public function getHash($refresh = false)
     {
-        return $this->getObject('page.registry')->getHash();
+        $data = $this->fetchData();
+        $data = $this->filterData($data);
+        $data = array_column($data, 'hash', 'path');
+
+        return hash('crc32b', serialize($data));
     }
 
-    public function fetchData($count = false)
+    public function fetchData()
     {
         if(!isset($this->__data))
         {

@@ -11,6 +11,7 @@ class ComPagesModelDecorator extends KModelAbstract implements ComPagesModelInte
 {
     private $__persistable;
     private $__delegate;
+    private $__name;
 
     public function __construct(KObjectConfig $config)
     {
@@ -20,6 +21,9 @@ class ComPagesModelDecorator extends KModelAbstract implements ComPagesModelInte
 
         //Set if the collection is persistable
         $this->__persistable = $config->persistable;
+
+        //Set the name
+        $this->__name = $config->name;
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -27,6 +31,7 @@ class ComPagesModelDecorator extends KModelAbstract implements ComPagesModelInte
         $config->append(array(
             'persistable' => true,
             'delegate'    => '',
+            'name'        => '', //the collection name used to generate this model
         ));
 
         parent::_initialize($config);
@@ -98,6 +103,11 @@ class ComPagesModelDecorator extends KModelAbstract implements ComPagesModelInte
         return sprintf('%s-%s', $package, $name);
     }
 
+    public function getName()
+    {
+        return $this->__name;
+    }
+
     public function getIdentityKey()
     {
         $delegate = $this->getDelegate();
@@ -159,6 +169,35 @@ class ComPagesModelDecorator extends KModelAbstract implements ComPagesModelInte
         }
 
         return $hash;
+    }
+
+    public function getHashState()
+    {
+        $hash     = null;
+        $delegate = $this->getDelegate();
+
+        if($delegate instanceof KControllerModellable)  {
+            $model = $delegate->getModel();
+        } else {
+            $model = $delegate;
+        }
+
+        if($model instanceof KModelDatabase)
+        {
+            $states = array();
+            foreach($model->getState() as $state)
+            {
+                if(($state->required === true || $state->unique === true || $state->internal === true) && !is_null($state->value)) {
+                    $states[$state->name] = KObjectConfig::unbox($state->value);
+                }
+            }
+        }
+
+        if($model instanceof ComPagesModelInterface) {
+            $states = $model->getHashState();
+        }
+
+        return $states;
     }
 
     public function isAtomic()

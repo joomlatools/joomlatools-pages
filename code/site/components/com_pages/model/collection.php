@@ -23,9 +23,9 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         }
 
         //Setup callbacks
-        $this->addCommandCallback('before.fetch'  , '_prepareContext');
-        $this->addCommandCallback('before.count'  , '_prepareContext');
-        $this->addCommandCallback('before.persist', '_prepareContext');
+        $this->addCommandCallback('before.fetch'  , '_initializeContext');
+        $this->addCommandCallback('before.count'  , '_initializeContext');
+        $this->addCommandCallback('before.persist', '_initializeContext');
         $this->addCommandCallback('before.persist', '_beforePersist');
 
         //Set the type
@@ -59,6 +59,18 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         ]);
 
         parent::_initialize($config);
+    }
+
+    protected function _initializeContext(KModelContext $context)
+    {
+        //Validate the state
+        $this->_validateState();
+
+        //Fetch the data
+        $data = $this->fetchData();
+
+        //Filter the data
+        $context->data = $this->filterData($data);
     }
 
     public function setState(array $values)
@@ -137,6 +149,19 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         return null;
     }
 
+    public function getHashState()
+    {
+        $states = array();
+        foreach($this->getState() as $state)
+        {
+            if(($state->required === true || $state->unique === true || $state->internal === true) && !is_null($state->value)) {
+                $states[$state->name] = KObjectConfig::unbox($state->value);
+            }
+        }
+
+        return $states;
+    }
+
     public function isAtomic()
     {
         $atomic = true;
@@ -156,7 +181,7 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         return $atomic;
     }
 
-    public function fetchData($count = false)
+    public function fetchData()
     {
         return array();
     }
@@ -194,18 +219,6 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         }
 
         return true;
-    }
-
-    protected function _prepareContext(KModelContext $context)
-    {
-        //Validate the state
-        $this->_validateState();
-
-        //Fetch the data
-        $data = $this->fetchData($context->getName() == 'before.count');
-
-        //Filter the data
-        $context->data = $this->filterData($data);
     }
 
     protected function _validateState()
