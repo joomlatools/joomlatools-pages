@@ -167,7 +167,7 @@ class ExtJ2storeModelEntityProduct extends ExtJ2storeModelEntityAbstract
 			];
 		}
 
-		return new KObjectConfigJson($product);
+		return new ComPagesObjectConfig($product);
 	}
 
 	public function setPropertyTags($value)
@@ -180,7 +180,7 @@ class ExtJ2storeModelEntityProduct extends ExtJ2storeModelEntityAbstract
 		}
 		else $value = [];
 
-		return new KObjectConfigJson($value);
+		return new ComPagesObjectConfig($value);
 	}
 
 	public function setPropertyCategory($value)
@@ -287,7 +287,7 @@ class ExtJ2storeModelEntityProduct extends ExtJ2storeModelEntityAbstract
 			];
  		}
 
-		return new KObjectConfigJson($image);
+		return new ComPagesObjectConfig($image);
 	}
 
 	public function setPropertyLinks($value)
@@ -308,7 +308,7 @@ class ExtJ2storeModelEntityProduct extends ExtJ2storeModelEntityAbstract
 			}
 		}
 
-		return new KObjectConfigJson($links);
+		return new ComPagesObjectConfig($links);
 	}
 
 	public function setPropertyParameters($value)
@@ -319,7 +319,7 @@ class ExtJ2storeModelEntityProduct extends ExtJ2storeModelEntityAbstract
 
 		//$params = JComponentHelper::getParams('com_content')->toArray();
 
-		$config  = new KObjectConfigJson(/*$params*/);
+		$config  = new ComPagesObjectConfig(/*$params*/);
 		$config->merge($value); // Override global params with specific params
 
 		return $config;
