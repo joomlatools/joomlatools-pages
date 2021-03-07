@@ -68,7 +68,7 @@ class ExtJoomlaModelEntityCategory extends ExtJoomlaModelEntityAbstract
 			];
 		}
 
-		return new KObjectConfigJson($image);
+		return new ComPagesObjectConfig($image);
 	}
 
 	public function setPropertyEditedDate($value)
@@ -95,7 +95,7 @@ class ExtJoomlaModelEntityCategory extends ExtJoomlaModelEntityAbstract
 
 		//$params = JComponentHelper::getParams('com_content')->toArray();
 
-		$config  = new KObjectConfigJson(/*$params*/);
+		$config  = new ComPagesObjectConfig(/*$params*/);
 		$config->merge($value); // Override global params with article specific params
 
 		return $config;

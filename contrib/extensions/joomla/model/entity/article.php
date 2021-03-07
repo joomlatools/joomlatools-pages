@@ -130,7 +130,7 @@ class ExtJoomlaModelEntityArticle extends ExtJoomlaModelEntityAbstract
 		}
 		else $value = [];
 
-		return new KObjectConfigJson($value);
+		return new ComPagesObjectConfig($value);
 	}
 
 	public function setPropertyCategory($value)
@@ -237,7 +237,7 @@ class ExtJoomlaModelEntityArticle extends ExtJoomlaModelEntityAbstract
 			];
  		}
 
-		return new KObjectConfigJson($image);
+		return new ComPagesObjectConfig($image);
 	}
 
 	public function setPropertyLinks($value)
@@ -258,7 +258,7 @@ class ExtJoomlaModelEntityArticle extends ExtJoomlaModelEntityAbstract
 			}
 		}
 
-		return new KObjectConfigJson($links);
+		return new ComPagesObjectConfig($links);
 	}
 
 	public function setPropertyParameters($value)
@@ -269,7 +269,7 @@ class ExtJoomlaModelEntityArticle extends ExtJoomlaModelEntityAbstract
 
 		//$params = JComponentHelper::getParams('com_content')->toArray();
 
-		$config  = new KObjectConfigJson(/*$params*/);
+		$config  = new ComPagesObjectConfig(/*$params*/);
 		$config->merge($value); // Override global params with specific params
 
 		return $config;

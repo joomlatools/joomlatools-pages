@@ -17,7 +17,7 @@ class ExtJoomlaModelEntityField extends ComPagesModelEntityItem
             $value = json_decode($value, true);
         }
 
-        return new KObjectConfigJson($value);
+        return new ComPagesObjectConfig($value);
     }
 
     public function getContent()
