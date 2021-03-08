@@ -46,8 +46,11 @@ class ComPagesViewHtml extends ComKoowaViewHtml
         }
 
         //Add layout filters (append)
-        if($filters = $this->getLayout()->get('process/filters')) {
-            $template->addFilters((array) KObjectConfig::unbox($filters));
+        if($layout = $this->getLayout())
+        {
+            if($filters = $layout->get('process/filters')) {
+                $template->addFilters((array) KObjectConfig::unbox($filters));
+            }
         }
 
         //Load the page
