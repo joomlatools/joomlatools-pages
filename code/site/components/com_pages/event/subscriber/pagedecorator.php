@@ -39,10 +39,13 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
 
             ob_start();
 
-            $dispatcher->getResponse()->setContent($buffer);
+            $dispatcher->getResponse()->setContent('<ktml:component>');
             $dispatcher->dispatch();
 
             $result = ob_get_clean();
+
+            //Replace the component placeholder
+            $result = str_replace('<ktml:component>', $buffer, $result);
 
             JFactory::getDocument()->setBuffer($result, 'component');
         }
