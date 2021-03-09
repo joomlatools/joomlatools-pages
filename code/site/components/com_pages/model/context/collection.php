@@ -31,4 +31,10 @@ class ComPagesModelContextCollection extends KModelContext
     {
         return $this->__entity;
     }
+
+    public function getAction()
+    {
+        $parts = explode('.', $this->getName());
+        return $parts[1];
+    }
 }

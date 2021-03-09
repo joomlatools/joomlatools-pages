@@ -146,31 +146,6 @@ class ComPagesModelDecorator extends KModelAbstract implements ComPagesModelInte
         return (array) $key;
     }
 
-    public function getHash($refresh = false)
-    {
-        $hash     = null;
-        $delegate = $this->getDelegate();
-
-        if($delegate instanceof KControllerModellable)  {
-            $model = $delegate->getModel();
-        } else {
-            $model = $delegate;
-        }
-
-        if($model instanceof KModelDatabase)
-        {
-            if($modified = $model->getTable()->getSchema()->modified) {
-                $hash = hash('crc32b', $modified);
-            }
-        }
-
-        if($model instanceof ComPagesModelInterface) {
-            $hash = $model->getHash($refresh);
-        }
-
-        return $hash;
-    }
-
     public function getHashState()
     {
         $hash     = null;
@@ -217,6 +192,20 @@ class ComPagesModelDecorator extends KModelAbstract implements ComPagesModelInte
         }
 
         return $atomic;
+    }
+
+    final public function hash($refresh = false)
+    {
+        $context = $this->getContext();
+        $context->refresh = $refresh;
+
+        if ($this->invokeCommand('before.hash', $context) !== false)
+        {
+            $context->result = $this->_actionHash($context);
+            $this->invokeCommand('after.hash', $context);
+        }
+
+        return $context->result;
     }
 
     final public function persist()
@@ -268,6 +257,32 @@ class ComPagesModelDecorator extends KModelAbstract implements ComPagesModelInte
             $delegate->reset();
         }
     }
+
+    protected function _actionHash(KModelContext $context)
+    {
+        $hash     = null;
+        $delegate = $this->getDelegate();
+
+        if($delegate instanceof KControllerModellable)  {
+            $model = $delegate->getModel();
+        } else {
+            $model = $delegate;
+        }
+
+        if($model instanceof KModelDatabase)
+        {
+            if($modified = $model->getTable()->getSchema()->modified) {
+                $hash = hash('crc32b', $modified);
+            }
+        }
+
+        if($model instanceof ComPagesModelInterface) {
+            $hash = $model->hash($context->refresh);
+        }
+
+        return $hash;
+    }
+
 
     protected function _beforePersist(KModelContext $context)
     {

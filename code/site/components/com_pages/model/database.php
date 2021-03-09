@@ -50,13 +50,15 @@ class ComPagesModelDatabase extends ComPagesModelCollection
         //Validate the state
         $this->_validateState();
 
-        //Fetch the data
-        if($context->getName() == 'before.count')
-        {
+        if($context->action == 'count' || $context->action == 'hash') {
             $query = $this->getQuery(false);
+        }  else {
+            $query = $this->getQuery();
+        }
+
+        if($context->action == 'count') {
             $query->columns('COUNT(*)');
         }
-        else $query = $this->getQuery();
 
         $context->data = $query;
     }
@@ -132,16 +134,17 @@ class ComPagesModelDatabase extends ComPagesModelCollection
          return $key;
     }
 
-    public function getHash($refresh = false)
+    public function _actionHash(KModelContext $context)
     {
-        $hash = parent::getHash();
+        $hash = parent::_actionHash($context);
 
         if($this->_hash_key)
         {
+            $query = $context->data;
+
             $id  = $this->getIdentityKey();
             $key = $this->getTable()->mapColumns($this->_hash_key);
 
-            $query = $this->getQuery(false);
             $query->columns(['hash' => 'CRC32(GROUP_CONCAT(DISTINCT tbl.'.$id.', "-", tbl.'.$key.'))']);
 
             $hash = $this->getTable()->select($query, KDatabase::FETCH_FIELD);

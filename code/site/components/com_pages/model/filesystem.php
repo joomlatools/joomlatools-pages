@@ -51,18 +51,6 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
         return bin2hex(random_bytes($this->_identity_key_length));
     }
 
-    public function getHash($refresh = false)
-    {
-        $hash = parent::getHash();
-        $path = $this->getPath($this->getState()->getValues());
-
-        if(file_exists($path)) {
-            $hash = hash('crc32b', filemtime($path));
-        }
-
-        return $hash;
-    }
-
     public function fetchData()
     {
         if(!isset($this->__data))
@@ -84,6 +72,18 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
         $this->__data = null;
 
         parent::_actionReset($context);
+    }
+
+    protected function _actionHash(KModelContext $context)
+    {
+        $hash = parent::_actionHash($context);
+        $path = $this->getPath($this->getState()->getValues());
+
+        if(file_exists($path)) {
+            $hash = hash('crc32b', filemtime($path));
+        }
+
+        return $hash;
     }
 
     protected function _actionPersist(KModelContext $context)

@@ -33,15 +33,6 @@ class ComPagesModelPages extends ComPagesModelCollection
         parent::_initialize($config);
     }
 
-    public function getHash($refresh = false)
-    {
-        $data = $this->fetchData();
-        $data = $this->filterData($data);
-        $data = array_column($data, 'hash', 'path');
-
-        return hash('crc32b', serialize($data));
-    }
-
     public function fetchData()
     {
         if(!isset($this->__data))
@@ -135,6 +126,13 @@ class ComPagesModelPages extends ComPagesModelCollection
 
         return $result;
     }
+
+    protected function _actionHash(KModelContext $context)
+    {
+        $data = array_column($context->data, 'hash', 'path');
+        return hash('crc32b', serialize($data));
+    }
+
 
     protected function _actionFetch(KModelContext $context)
     {

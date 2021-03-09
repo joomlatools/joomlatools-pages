@@ -314,11 +314,11 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             //Add collections
             foreach($this->getObject('model.factory')->getModels() as $model)
             {
-                if($model->getHash() !== false)
+                if($model->hash() !== false)
                 {
                     $validators['collections'][] = [
+                        'hash'  => $model->hash(),
                         'name'  => $model->getName(),
-                        'hash'  => $model->getHash(),
                         'state' => $model->getHashState()
                     ];
                 }
@@ -436,7 +436,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
                     {
                         $hashes[$identifier] = $this->getObject('model.factory')
                             ->createModel($name, $state)
-                            ->getHash($refresh);
+                            ->hash($refresh);
                     }
 
                     //If the collection has a hash validate it

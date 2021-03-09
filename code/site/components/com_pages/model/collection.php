@@ -26,6 +26,8 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         $this->addCommandCallback('before.fetch'  , '_initializeContext');
         $this->addCommandCallback('before.count'  , '_initializeContext');
         $this->addCommandCallback('before.persist', '_initializeContext');
+        $this->addCommandCallback('before.hash'   , '_initializeContext');
+
         $this->addCommandCallback('before.persist', '_beforePersist');
 
         //Set the type
@@ -86,6 +88,20 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         return parent::setState($values);
     }
 
+    final public function hash($refresh = false)
+    {
+        $context = $this->getContext();
+        $context->refresh = $refresh;
+
+        if ($this->invokeCommand('before.hash', $context) !== false)
+        {
+            $context->result = $this->_actionHash($context);
+            $this->invokeCommand('after.hash', $context);
+        }
+
+        return $context->result;
+    }
+
     final public function persist()
     {
         if(isset($this->_entity))
@@ -139,14 +155,6 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         else $keys = (array) $this->getIdentityKey();
 
         return (array) $keys;
-    }
-
-    public function getHash($refresh = false)
-    {
-        //Validate the state
-        $this->_validateState();
-
-        return null;
     }
 
     public function getHashState()
@@ -306,6 +314,11 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
     protected function _actionPersist(KModelContext $context)
     {
         return false;
+    }
+
+    protected function _actionHash(KModelContext $context)
+    {
+        return null;
     }
 
     public function getContext()
