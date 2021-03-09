@@ -73,7 +73,7 @@ class ComPagesTemplateDefault extends KTemplate
 
                 $this->_layout = new ComPagesObjectConfig($layout);
             }
-            else $this->_layout = $this->_layout ? false : NULL;
+            else $this->_layout = false;
 
             //Store the data and remove the layout
             $this->_data = KObjectConfig::unbox($template->remove('layout'));
