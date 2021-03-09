@@ -24,7 +24,6 @@ class ComPagesViewHtml extends ComKoowaViewHtml
                 'state'       => [$this, 'getState'],
                 'direction'   => [$this, 'getDirection'],
                 'language'    => [$this, 'getLanguage'],
-
             ],
         ]);
 
@@ -38,19 +37,11 @@ class ComPagesViewHtml extends ComKoowaViewHtml
 
     protected function _actionRender(KViewContext $context)
     {
-        $template = $this->getTemplate()->setParameters($context->parameters);
+        $template = clone $this->getTemplate()->setParameters($context->parameters);
 
         //Add page filters
         if($filters = $this->getPage()->get('process/filters')) {
             $template->addFilters((array) KObjectConfig::unbox($filters));
-        }
-
-        //Add layout filters (append)
-        if($layout = $this->getLayout())
-        {
-            if($filters = $layout->get('process/filters')) {
-                $template->addFilters((array) KObjectConfig::unbox($filters));
-            }
         }
 
         //Load the page
@@ -70,10 +61,6 @@ class ComPagesViewHtml extends ComKoowaViewHtml
 
     protected function _fetchData(KViewContext $context)
     {
-        parent::_fetchData($context);
-
-        if($this->isCollection()) {
-            $context->parameters->total = $this->getModel()->count();
-        }
+        $context->parameters = $this->getState()->getValues();
     }
 }

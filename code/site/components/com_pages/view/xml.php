@@ -36,15 +36,10 @@ class ComPagesViewXml extends KViewTemplate
 
     protected function _actionRender(KViewContext $context)
     {
-        $template = $this->getTemplate()->setParameters($context->parameters);
+        $template = clone $this->getTemplate()->setParameters($context->parameters);
 
         //Add page filters
         if($filters = $this->getPage()->get('process/filters')) {
-            $template->addFilters((array) KObjectConfig::unbox($filters));
-        }
-
-        //Add layout filters (append)
-        if($filters = $this->getLayout()->get('process/filters')) {
             $template->addFilters((array) KObjectConfig::unbox($filters));
         }
 
@@ -66,10 +61,6 @@ class ComPagesViewXml extends KViewTemplate
 
     protected function _fetchData(KViewContext $context)
     {
-        parent::_fetchData($context);
-
-        if($this->isCollection()) {
-            $context->parameters->total = $this->getModel()->count();
-        }
+        $context->parameters = $this->getState()->getValues();
     }
 }
