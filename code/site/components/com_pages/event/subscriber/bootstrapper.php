@@ -126,11 +126,6 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                         ->registerSubscriber('ext:'.$name.'.subscriber.'.basename($filename, '.php'));
                 }
 
-                //Find template filters
-                foreach (glob($directory.'/template/filter/[!_]*.php') as $filename) {
-                    $filters[] = 'ext:'.$name.'.template.filter.'.basename($filename, '.php');
-                }
-
                 //Find template functions
                 foreach (glob($directory.'/template/function/[!_]*.php') as $filename) {
                     $functions[basename($filename, '.php')] = $filename;
@@ -158,11 +153,6 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
             //Register template functions
             if($functions) {
                 $this->getConfig('com://site/pages.template.default')->merge(['functions' => $functions]);
-            }
-
-            //Register template filters
-            if($filters) {
-                $this->getConfig('com://site/pages.template.default')->merge(['filters' => $filters]);
             }
         }
 
