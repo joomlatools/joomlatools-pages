@@ -16,21 +16,40 @@ class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
             //Merge the layout
             $mergeLayout = function($context, $layout) use(&$mergeLayout)
             {
-                $template = $this->getTemplate()->loadFile($layout->path);
+                //Qualify the layout path
+                if(!parse_url($layout, PHP_URL_SCHEME)) {
+                    $layout = 'page://layouts/'.$layout;
+                }
+
+                //Locate the layout
+                if(!$file = $this->getObject('template.locator.factory')->locate($layout)) {
+                    throw new RuntimeException(sprintf('Cannot find layout: "%s"', $layout));
+                }
+
+                //Load the template
+                $template = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
+
+                //Set the parent layout
+                if($layout = $template->get('layout'))
+                {
+                    if(!is_string($layout)) {
+                        $layout = $layout->path;
+                    }
+                }
 
                 //Append the template layout data
                 //
                 //Do not overwrite existing data, only add it not defined yet
-                $context->subject->getLayout()->append($template->getData());
+                $context->subject->getLayout()->append($template->remove('layout'));
 
                 //Handle recursive layout
-                if($layout = $template->getLayout()) {
+                if($layout) {
                     $mergeLayout($context, $layout);
                 }
             };
 
             Closure::bind($mergeLayout, $this, get_class());
-            $mergeLayout($context, $layout);
+            $mergeLayout($context, $layout->path);
         }
     }
 
@@ -41,9 +60,15 @@ class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
             //Render the layout
             $renderLayout = function($context, $layout) use(&$renderLayout)
             {
-                $template = $this->getTemplate()
-                    ->setParameters($context->parameters)
-                    ->loadFile($layout->path);
+                $template = clone $this->getTemplate();
+
+                //Load layout
+                $template->loadFile($layout->path);
+
+                //Add layout filters (only for active layout)
+                if($filters = $layout->get('process/filters')) {
+                    $template->addFilters((array) KObjectConfig::unbox($filters));
+                }
 
                 //Append the template layout data
                 //
