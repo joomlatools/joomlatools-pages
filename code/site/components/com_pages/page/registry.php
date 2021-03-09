@@ -127,6 +127,11 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     $extend->page = $result->get('page');
                 }
 
+                //Merge type
+                if($result->has('type')) {
+                    $extend->type = $result->get('type');
+                }
+
                 $result = $extend;
             }
 
@@ -225,15 +230,10 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 //Set page default properties from parent collection
                 if(!$page->isCollection() && $parent_path && $parent_page = $this->getPage($parent_path))
                 {
-                    if($parent_page->isCollection())
+                    if($parent_page->isCollection() && $parent_page->has('collection/page'))
                     {
-                        $collection = $this->getCollection($parent_page->path);
-
-                        if($collection->has('page'))
-                        {
-                            foreach($collection->get('page') as $property => $value) {
-                                $page->set($property, $value);
-                            }
+                        foreach($parent_page->get('collection/page') as $property => $value) {
+                            $page->set($property, $value);
                         }
                     }
                 }
@@ -246,6 +246,11 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     } else {
                         $page->layout = new ComPagesObjectConfig($page->layout);
                     }
+                }
+
+                //Get the collection
+                if($page->isCollection()) {
+                    $page->collection = $this->getCollection($page->path);
                 }
 
                 $this->__pages[$path] = $page;
