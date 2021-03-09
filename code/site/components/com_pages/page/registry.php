@@ -101,7 +101,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
         if(isset($this->__collections[$name]))
         {
-            $result = new KObjectConfig($this->__collections[$name]);
+            $result = new ComPagesObjectConfig($this->__collections[$name]);
 
             //If the collections extends another collection merge it
             if(isset($result->extend))
@@ -142,11 +142,8 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         else
         {
             //Assume we are being passed a fully qualified identifier
-            if(is_string($name) && strpos($name, ':') !== false)
-            {
-                $result = new KObjectConfig([
-                    'model' => $name
-                ]);
+            if(is_string($name) && strpos($name, ':') !== false) {
+                $result = new ComPagesObjectConfig(['model' => $name]);
             }
         }
 
