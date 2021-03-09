@@ -225,10 +225,15 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 //Set page default properties from parent collection
                 if(!$page->isCollection() && $parent_path && $parent_page = $this->getPage($parent_path))
                 {
-                    if(($collection = $parent_page->isCollection()) && isset($collection['page']))
+                    if($parent_page->isCollection())
                     {
-                        foreach($collection['page'] as $property => $value) {
-                            $page->set($property, $value);
+                        $collection = $this->getCollection($parent_page->path);
+
+                        if($collection->has('page'))
+                        {
+                            foreach($collection->get('page') as $property => $value) {
+                                $page->set($property, $value);
+                            }
                         }
                     }
                 }
