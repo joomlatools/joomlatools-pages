@@ -27,7 +27,7 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
     public function filter(&$text)
     {
         //Filter the images only at the end of the rendering cycle
-        if($this->getTemplate()->getLayout() === false && $this->enabled())
+        if($this->enabled())
         {
             $matches = array();
             $images  = array();
