@@ -227,11 +227,8 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 {
                     if(($collection = $parent_page->isCollection()) && isset($collection['page']))
                     {
-                        foreach($collection['page'] as $property => $value)
-                        {
-                            if(!$page->has($property)) {
-                                $page->set($property, $value);
-                            }
+                        foreach($collection['page'] as $property => $value) {
+                            $page->set($property, $value);
                         }
                     }
                 }
