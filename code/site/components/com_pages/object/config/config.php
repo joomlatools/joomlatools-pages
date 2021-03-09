@@ -19,7 +19,7 @@ class ComPagesObjectConfig extends KObjectConfig implements JsonSerializable
 
         $result = parent::get(array_shift($segments), $default);
 
-        if(!empty($segments) && $result instanceof ComPagesObjectConfig) {
+        if(!empty($segments) && $result instanceof KObjectConfigInterface) {
             $result = $result->get($segments, $default);
         }
 

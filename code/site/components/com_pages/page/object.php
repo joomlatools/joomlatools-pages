@@ -19,7 +19,7 @@ class ComPagesPageObject extends ComPagesObjectConfigFrontmatter implements ComP
 
         $result = parent::get(array_shift($segments), $default);
 
-        if(!empty($segments) && $result instanceof ComPagesPageObject) {
+        if(!empty($segments) && $result instanceof KObjectConfigInterface) {
             $result = $result->get($segments, $default);
         }
 
