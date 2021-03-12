@@ -47,7 +47,7 @@
     Header set Cache-Status "HIT, STATIC" env=REDIRECT_STATIC
 
     # Force explicit browser and proxy cache expiration
-    Header set Cache-Control "max-age=86400,s-maxage=604800"
+    Header set Cache-Control "max-age=86400,s-maxage=604800" env=REDIRECT_STATIC
 
     # Force cache revaliation
     #Header set Cache-Control "no-cache" env=REDIRECT_STATIC

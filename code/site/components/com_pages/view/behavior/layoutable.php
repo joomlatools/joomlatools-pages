@@ -50,6 +50,15 @@ class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
 
             Closure::bind($mergeLayout, $this, get_class());
             $mergeLayout($context, $layout->path);
+
+            //Merge the process (excluding the filters)
+            if($process =  $context->subject->getLayout()->get('process'))
+            {
+                $process = clone $process;
+
+                $context->subject->getPage()->process->append($process->remove('filters'));
+                //$context->subject->getLayout()->remove('process');
+            }
         }
     }
 
