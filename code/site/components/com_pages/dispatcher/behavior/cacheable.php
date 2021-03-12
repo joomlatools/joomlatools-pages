@@ -381,7 +381,9 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             $file = $this->locateCache();
             if (is_file($file))
             {
-                if (!$data = include($file)) {
+                try {
+                    $data = include($file);
+                } catch(Error $e) {
                     unlink($file);
                 }
             }
