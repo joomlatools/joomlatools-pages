@@ -36,8 +36,12 @@ class ComPagesEventSubscriberPrefetcher extends ComPagesEventSubscriberAbstract
             {
                 $template = $event->getTarget()->getController()->getView()->getTemplate();
 
-                $config = $this->getConfig()->options;
-                $config->selector = is_string($prefetch) ? $prefetch : 'a.prefetch';
+                if(is_scalar($prefetch))
+                {
+                    $config = $this->getConfig()->options;
+                    $config->selector = is_string($prefetch) ? $prefetch : 'a.prefetch';
+                }
+                else $config = $prefetch->append($this->getConfig()->options);
 
                 $prefetcher = $template->helper('behavior.prefetcher', $config);
                 $template->getFilter('asset')->filter($prefetcher);
