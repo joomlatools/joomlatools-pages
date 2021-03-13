@@ -276,6 +276,6 @@ class ComPagesModelWebservice extends ComPagesModelCollection
             }
         }
 
-        return $cache_control;
+        return $data;
     }
 }
