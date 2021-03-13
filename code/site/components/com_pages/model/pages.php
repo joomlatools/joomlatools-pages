@@ -16,12 +16,11 @@ class ComPagesModelPages extends ComPagesModelCollection
         parent::__construct($config);
 
         $this->getState()
-            ->insert('folder', 'url')
-            ->insert('slug', 'cmd', '', true, array('folder'))
-            //Internal states
-            ->insert('recurse', 'cmd', null, false, array(), true)
-            ->insert('level', 'int', 0, false, array(), true)
-            ->insert('collection', 'boolean', null, false, array(), true);
+            ->insertComposite('slug', 'cmd', array('folder'), '')
+            ->insertInternal('folder', 'url')
+            ->insertInternal('recurse', 'cmd')
+            ->insertInternal('level', 'int', 0)
+            ->insertInternal('collection', 'boolean');
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -34,12 +33,7 @@ class ComPagesModelPages extends ComPagesModelCollection
         parent::_initialize($config);
     }
 
-    public function getHash($refresh = false)
-    {
-        return $this->getObject('page.registry')->getHash();
-    }
-
-    public function fetchData($count = false)
+    public function fetchData()
     {
         if(!isset($this->__data))
         {
@@ -107,6 +101,13 @@ class ComPagesModelPages extends ComPagesModelCollection
 
         return $result;
     }
+
+    protected function _actionHash(KModelContext $context)
+    {
+        $data = array_column($context->data, 'hash', 'path');
+        return hash('crc32b', serialize($data));
+    }
+
 
     protected function _actionFetch(KModelContext $context)
     {

@@ -44,7 +44,6 @@ return [
         ],
         'com://site/pages.http.cache' => [
             'cache'       => $config['http_resource_cache'],
-            'cache_time'  => $config['http_resource_cache_time'],
             'cache_path'  => $config['http_resource_cache_path'],
             'debug'       => $config['http_resource_cache_debug'],
         ],
@@ -64,7 +63,7 @@ return [
             }
         ],
         'com://site/pages.event.subscriber.staticcache' => [
-            'enable'     => $config['http_static_cache'],
+            'enable'     => $config['http_static_cache'] && $config['http_cache'],
             'cache_path' => $config['http_static_cache_path'],
         ],
     ],

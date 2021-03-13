@@ -39,10 +39,13 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
 
             ob_start();
 
-            $dispatcher->getResponse()->setContent($buffer);
+            $dispatcher->getResponse()->setContent('<ktml:component>');
             $dispatcher->dispatch();
 
             $result = ob_get_clean();
+
+            //Replace the component placeholder
+            $result = str_replace('<ktml:component>', $buffer, $result);
 
             JFactory::getDocument()->setBuffer($result, 'component');
         }
@@ -52,8 +55,11 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
     {
         $menu = JFactory::getApplication()->getMenu()->getActive();
 
+        $component  = $menu ? $menu->component : '';
+        $menu_route = $menu ? $menu->route : '';
+
         //Only decorate GET requests that are not routing to com_pages
-        if(is_null($this->_dispatcher) && $this->getObject('request')->isGet() && $menu->component != 'com_pages')
+        if(is_null($this->_dispatcher) && $this->getObject('request')->isGet() && $component != 'com_pages')
         {
             $page_route = $route = $this->getObject('com://site/pages.dispatcher.http')->getRoute();
 
@@ -62,7 +68,7 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
                 $this->_dispatcher = false;
                 $page_route = $page_route->getPath(false);
 
-                $base  = trim(dirname($menu->route), '.');
+                $base  = trim(dirname($menu_route), '.');
                 $route = trim(str_replace($base, '', $page_route), '/');
 
                 $page = $base ? $base.'/'.$route : $route;

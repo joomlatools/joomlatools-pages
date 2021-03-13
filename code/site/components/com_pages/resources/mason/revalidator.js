@@ -1,286 +1,320 @@
-const mason = require('@joomlatools/mason-tools-v1');
-const https = require('https');
-const http = require('http');
-const chalk = require('chalk');
+const mason = require("@joomlatools/mason-tools-v1");
+const https = require("https");
+const http = require("http");
+const chalk = require("chalk");
 
-class masonRevalidator {
-    options = {
-        origin: null,
-        endpoint: '/cache.json',
-        concurrency: 10,
-        force: false,
-        unauthorized: false,
+class Revalidator {
+  options = {
+    origin: null,
+    endpoint: "/cache.json",
+    concurrency: 10,
+    force: false,
+    unauthorized: false,
+    headers: {},
+  };
+
+  constructor(options = {}) {
+    this.options = { ...this.options, ...options };
+
+    //Turn off certificate validation for TLS connections (only needed for self-signed certs)
+    if (this.options.unauthorized) {
+      process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
+    }
+  }
+
+  async revalidate(url, collections) {
+    const time = Date.now();
+
+    //Cache origin url
+    if (this.options.origin) {
+      const origin = new URL(this.options.origin);
+
+      if (url) {
+        // Sanitize the url
+        if (url.indexOf("/") == 0) {
+          url = origin.origin + url;
+        }
+
+        if (!/^https?:\/\//i.test(url)) {
+          url = origin.protocol + "//" + url;
+        }
+      } else url = this.options.origin;
     }
 
-    constructor(options = {}) {
-        this.options = {...this.options, ...options}
+    //Cache endpoint url
+    const cache = new URL(this.options.endpoint, url);
 
-        //Turn off certificate validation for TLS connections (only needed for self-signed certs)
-        if (this.options.unauthorized) {
-            process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
-        }
+    //Filter:id
+    if (url) {
+      let page = new URL(url);
 
+      if (url.substr(-1) == "/" || page.pathname.length > 1) {
+        cache.searchParams.set("id", page.pathname + page.search);
+      }
     }
 
-    async revalidate(url, collections) {
-        const time = Date.now()
-
-        //Cache origin url
-        if (this.options.origin) {
-            const origin = new URL(this.options.origin)
-
-            if (url) {
-                // Sanitize the url
-                if (url.indexOf('/') == 0) {
-                    url = origin.origin + url
-                }
-
-                if (!/^https?:\/\//i.test(url)) {
-                    url = origin.protocol + '//' + url
-                }
-            } else url = this.options.origin
-
-        }
-
-        //Cache endpoint url
-        const cache = new URL(this.options.endpoint, url)
-
-        //Filter:id
-        if (url) {
-            let page = new URL(url)
-
-            if (url.substr(-1) == '/' || page.pathname.length > 1) {
-                cache.searchParams.set('id', page.pathname + page.search)
-            }
-        }
-
-        //Filter:valid
-        if (!this.options.force) {
-            cache.searchParams.set('filter[valid]', 'neq:true')
-        }
-
-        //Filter:collection
-        if (collections) {
-            if (collections instanceof Array) {
-                collections = collections.join(',')
-            }
-
-            cache.searchParams.set('filter[collections]', 'in:' + collections)
-        }
-
-        //Request options
-        var options = {
-            headers: {
-                'Cache-Control': 'must-revalidate',
-                'Accept': 'text/html',
-            }
-        }
-
-        if (cache.username && cache.password) {
-            let authorization = new Buffer.from(cache.username + ':' + cache.password).toString('base64')
-            options.headers['Authorization'] = 'Basic ' + authorization
-        }
-
-        this.getRequest(cache, options).then((response) => {
-            var data = response.json()
-
-            //Check data
-            if (data['data']) {
-                data = data['data']
-            }
-
-            //Check status code
-            if (response.statusCode == 404) {
-                throw new Error('Url Not Cached')
-            }
-
-            //Check status code
-            if (response.statusCode !== 200) {
-                throw new Error(`Request Failed Status Code: ${response.statusCode}`)
-            }
-
-            //Get request time
-            mason.log.debug('\n', `${chalk.green('✔')} Cache fetched from: ${decodeURIComponent(cache.toString())} - ${response.time()} s`)
-
-            //Calculate the total elapsed time
-            let totalTime = () => {
-                let date = new Date(Date.now() - time)
-                let min = date.getUTCMinutes()
-                let sec = date.getUTCSeconds()
-                let ms = ((date.getUTCMilliseconds() / 1000).toFixed(2)) * 1000;
-
-                return min + ":" + sec + '.' + ms
-            }
-
-            if (data.length != undefined) {
-                if (data.length > 0) {
-                    mason.log.debug(` ${chalk.green('✔')} Revalidation started  total: ${data.length}, concurrency: ${this.options.concurrency}…`)
-
-                    // Async function to revalidate the cache with a concurrency limit
-                    this.revalidateList(data, options).finally(() => {
-                        mason.log.debug('\n', chalk.bold(`Revalidation completed in ${totalTime()} min`))
-                    })
-                } else mason.log.debug('\n', chalk.bold(`Cache is valid`))
-
-            } else {
-                mason.log.debug(` ${chalk.green('✔')} Revalidation started, total: 1`)
-
-                this.revalidateUrl(data['attributes'], options).finally(() => {
-                    mason.log.debug('\n', chalk.bold(`Revalidation completed in ${totalTime()} min`))
-                })
-            }
-
-        }).catch((error) => {
-            mason.log.error(error.message)
-        })
+    //Filter:valid
+    if (!this.options.force) {
+      cache.searchParams.set("filter[valid]", "neq:true");
     }
 
-    async revalidateList(list, options) {
-        for (let i = 0; i < list.length; i += this.options.concurrency) {
-            const requests = list.slice(i, i + this.options.concurrency).map((item) => {
-                return this.revalidateUrl(item['attributes'], options)
-            })
+    //Filter:collection
+    if (collections) {
+      if (collections instanceof Array) {
+        collections = collections.join(",");
+      }
 
-            await Promise.allSettled(requests)
+      cache.searchParams.set("filter[collections]", "in:" + collections);
+    }
+
+    //Request options
+    var options = {
+      headers: {
+        ...{
+          "Cache-Control": "must-revalidate",
+          Accept: "text/html",
+        },
+        ...this.options.headers,
+      },
+    };
+
+    if (cache.username && cache.password) {
+      let authorization = new Buffer.from(
+        cache.username + ":" + cache.password
+      ).toString("base64");
+      options.headers["Authorization"] = "Basic " + authorization;
+    }
+
+    this.getRequest(cache, options)
+      .then((response) => {
+        var data = response.json();
+
+        //Check data
+        if (data["data"]) {
+          data = data["data"];
         }
+
+        //Check status code
+        if (response.statusCode == 404) {
+          throw new Error("Url Not Cached");
+        }
+
+        //Check status code
+        if (response.statusCode !== 200) {
+          throw new Error(`Request Failed Status Code: ${response.statusCode}`);
+        }
+
+        //Get request time
+        mason.log.debug(
+          "\n",
+          `${chalk.green("✔")} Cache fetched from: ${decodeURIComponent(
+            cache.toString()
+          )} - ${response.time()} s`
+        );
+
+        //Calculate the total elapsed time
+        let totalTime = () => {
+          let date = new Date(Date.now() - time);
+          let min = date.getUTCMinutes();
+          let sec = date.getUTCSeconds();
+          let ms = (date.getUTCMilliseconds() / 1000).toFixed(2) * 1000;
+
+          return min + ":" + sec + "." + ms;
+        };
+
+        if (data.length != undefined) {
+          if (data.length > 0) {
+            mason.log.debug(
+              ` ${chalk.green("✔")} Revalidation started  total: ${
+                data.length
+              }, concurrency: ${this.options.concurrency}…`
+            );
+
+            // Async function to revalidate the cache with a concurrency limit
+            this.revalidateList(data, options).finally(() => {
+              mason.log.debug(
+                "\n",
+                chalk.bold(`Revalidation completed in ${totalTime()} min`)
+              );
+            });
+          } else mason.log.debug("\n", chalk.bold(`Cache is valid`));
+        } else {
+          mason.log.debug(
+            ` ${chalk.green("✔")} Revalidation started, total: 1`
+          );
+
+          this.revalidateUrl(data["attributes"], options).finally(() => {
+            mason.log.debug(
+              "\n",
+              chalk.bold(`Revalidation completed in ${totalTime()} min`)
+            );
+          });
+        }
+      })
+      .catch((error) => {
+        mason.log.error(error.message);
+      });
+  }
+
+  async revalidateList(list, options) {
+    for (let i = 0; i < list.length; i += this.options.concurrency) {
+      mason.log.debug(chalk.dim("  --- starting batch ---"));
+      const requests = list
+        .slice(i, i + this.options.concurrency)
+        .map((item) => {
+          return this.revalidateUrl(item["attributes"], options);
+        });
+
+      await Promise.allSettled(requests);
     }
+  }
 
-    async revalidateUrl(item, options) {
-        let url = item['url']
+  async revalidateUrl(item, options) {
+    let url = item["url"];
 
-        let request = this.getRequest(url, options).then((response) => {
-            let time = response.time()
-            let status = response.headers['cache-status'].toLowerCase()
+    let request = this.getRequest(url, options)
+      .then((response) => {
+        let time = response.time();
+        let status = response.headers["cache-status"].toLowerCase();
 
-            if (!status.includes('hit') && !status.includes('identical')) {
-                if (status.includes('purged')) {
-                    mason.log.debug(chalk.red('  » Purged: ' + url + ' - ' + time + ' s'))
-                } else {
-                    mason.log.debug('  » Regenerated: ' + url + ' - ' + time + ' s')
-                }
-            } else mason.log.debug(chalk.gray('  » Not Modified: ' + url + ' - ' + time + ' s'))
+        if (!status.includes("hit") && !status.includes("identical")) {
+          if (status.includes("purged")) {
+            mason.log.debug(
+              chalk.red("  » Purged: " + url + " - " + time + " s")
+            );
+          } else {
+            mason.log.debug("  » Regenerated: " + url + " - " + time + " s");
+          }
+        } else
+          mason.log.debug(
+            chalk.gray("  » Not Modified: " + url + " - " + time + " s")
+          );
+      })
+      .catch((error) => {
+        mason.log.error("Failed: " + url + " with error: " + error.message);
+      });
 
-        }).catch((error) => {
-            mason.log.error('Failed: ' + url + ' with error: ' + error.message)
-        })
+    return request;
+  }
 
-        return request
-    }
+  async getRequest(url, options) {
+    options = options || {};
 
-    async getRequest(url, options) {
-        options = options || {}
+    let promise = new Promise((resolve, reject) => {
+      let callback = (response) => {
+        let data = "";
 
-        let promise = new Promise((resolve, reject) => {
-            let callback = (response) => {
-                let data = ''
+        response.on("data", (chunk) => {
+          data += chunk;
+        });
 
-                response.on('data', (chunk) => {
-                    data += chunk
-                })
+        response.on("end", () => {
+          response.data = data;
+          resolve(response);
+        });
 
-                response.on('end', () => {
-                    response.data = data
-                    resolve(response)
-                })
+        response.on("error", (error) => {
+          reject(error);
+        });
 
-                response.on('error', (error) => {
-                    reject(error)
-                })
+        response.json = () => {
+          return JSON.parse(data);
+        };
 
-                response.json = () => {
-                    return JSON.parse(data)
-                }
+        response.hash = () => {
+          let hash = null;
 
-                response.hash = () => {
-                    let hash = null
+          if (response.headers.etag) {
+            hash = response.headers.etag.replace("-gzip", "");
+          }
 
-                    if (response.headers.etag) {
-                        hash = response.headers.etag.replace('-gzip', '')
-                    }
+          return hash;
+        };
 
-                    return hash
-                }
+        response.time = (metric = "tot") => {
+          let time = null;
+          let timing = response.timing();
 
-                response.time = (metric = 'tot') => {
-                    let time = null
-                    let timing = response.timing();
+          if (timing[metric]) {
+            metric = timing[metric];
+            time = (metric.dur / 1000).toFixed(2);
+          }
 
-                    if (timing[metric]) {
-                        metric = timing[metric];
-                        time = (metric.dur / 1000).toFixed(2);
-                    }
+          return time;
+        };
 
-                    return time;
-                }
+        response.timing = () => {
+          var timing = {};
 
-                response.timing = () => {
-                    var timing = {};
+          if (response.headers["server-timing"]) {
+            let timings = response.headers["server-timing"].split(",");
 
-                    if (response.headers['server-timing']) {
-                        let timings = response.headers['server-timing'].split(',')
+            timings.forEach((metric) => {
+              metric = metric.split(";");
 
-                        timings.forEach((metric) => {
-                            metric = metric.split(';');
+              var values = {};
+              var name = "";
 
-                            var values = {};
-                            var name = '';
+              metric.forEach((part) => {
+                if (part.includes("=")) {
+                  var [key, value] = part.split("=");
+                  values[key] = value.replace(/"/g, "");
+                } else name = part;
+              });
 
-                            metric.forEach((part) => {
-                                if (part.includes('=')) {
-                                    var [key, value] = part.split('=');
-                                    values[key] = value.replace(/"/g, '')
-                                } else name = part;
-                            })
+              if (name) {
+                timing[name] = values;
+              }
+            });
+          }
 
-                            if (name) {
-                                timing[name] = values;
-                            }
-                        })
-                    }
+          return timing;
+        };
+      };
 
-                    return timing;
-                }
-            }
+      url = new URL(url);
 
-            url = new URL(url);
+      //Create the request based on the protocol
+      let protocol = url.protocol.replace(":", "");
 
-            //Create the request based on the protocol
-            let protocol = url.protocol.replace(':', '');
+      if (protocol == "https") {
+        var request = https.get(url, options, callback);
+      } else {
+        var request = http.get(url, options, callback);
+      }
 
-            if (protocol == 'https') {
-                var request = https.get(url, options, callback);
-            } else {
-                var request = http.get(url, options, callback);
-            }
+      request.on("error", (error) => {
+        reject(error);
+      });
 
-            request.on('error', (error) => {
-                reject(error)
-            })
+      request.end();
+    });
 
-            request.end()
-        })
-
-        return promise
-    }
+    return promise;
+  }
 }
 
 async function revalidateCache(config = {}) {
-    const argv = require('yargs').argv
+  const argv = require("yargs").argv;
 
-    config = mason.config.merge({
-        force: argv.force,
-        unauthorized: argv.u,
-        concurrency: argv.concurrency != null ? argv.concurrency : 10,
-    }, config)
+  config = mason.config.merge(
+    {
+      force: argv.force,
+      unauthorized: argv.u,
+      concurrency: argv.concurrency != null ? argv.concurrency : 10,
+      headers: argv.headers != null ? argv.headers : {},
+    },
+    config
+  );
 
-    //Revaliate cache
-    const cache = new masonRevalidator(config)
+  //Revaliate cache
+  const cache = new Revalidator(config);
 
-    await cache.revalidate(argv._[1], argv.collections)
+  await cache.revalidate(argv._[1], argv.collections);
 }
 
 module.exports = {
-    version: 1.0,
-    masonRevalidator,
-    revalidateCache
-}
+  version: 1.0,
+  masonRevalidator: Revalidator,
+  revalidateCache,
+};

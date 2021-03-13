@@ -9,14 +9,10 @@
 
 class ComPagesViewCsv extends KViewCsv
 {
-    use ComPagesViewTraitModellable, ComPagesViewTraitLocatable;
+    use ComPagesViewTraitPage, ComPagesViewTraitUrl, ComPagesViewTraitRoute;
 
     protected function _fetchData(KViewContext $context)
     {
-        parent::_fetchData($context);
-
-        if($this->isCollection()) {
-            $context->parameters->total = $this->getModel()->count();
-        }
+        $context->parameters = $this->getState()->getValues();
     }
 }

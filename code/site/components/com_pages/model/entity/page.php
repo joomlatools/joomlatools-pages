@@ -140,12 +140,36 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
 
     public function setPropertyAccess($value)
     {
-        return new KObjectConfig($value);
+        return new ComPagesObjectConfig($value);
     }
 
     public function setPropertyProcess($value)
     {
-        return new KObjectConfig($value);
+        return new ComPagesObjectConfig($value);
+    }
+
+    public function setPropertyCollection($value)
+    {
+        return new ComPagesObjectConfig($value);
+    }
+
+    public function setPropertyForm($value)
+    {
+        if($value)
+        {
+            $value = new ComPagesObjectConfig($value);
+
+            $name = $value->honeypot ?? 'name';
+
+            if($value->schema->has($name))
+            {
+                $hash = $this->hash;
+                $value->honeypot = sprintf('%s_%s', $name, $hash);
+            }
+            else $value->honeypot = $name;
+        }
+
+        return $value;
     }
 
     public function setPropertyDate($value)
@@ -188,7 +212,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                 ];
             }
 
-            $image = new KObjectConfigJson($image);
+            $image = new ComPagesObjectConfig($image);
         }
 
         return $image;

@@ -9,7 +9,7 @@
 
 class ComPagesViewXml extends KViewTemplate
 {
-    use ComPagesViewTraitModellable, ComPagesViewTraitLocatable;
+    use ComPagesViewTraitPage, ComPagesViewTraitUrl, ComPagesViewTraitRoute;
 
     protected function _initialize(KObjectConfig $config)
     {
@@ -18,6 +18,7 @@ class ComPagesViewXml extends KViewTemplate
             'auto_fetch' => false,
             'template_functions' => [
                 'page'        => [$this, 'getPage'],
+                'layout'      => [$this, 'getLayout'],
                 'collection'  => [$this, 'getCollection'],
                 'state'       => [$this, 'getState'],
                 'direction'   => [$this, 'getDirection'],
@@ -28,21 +29,38 @@ class ComPagesViewXml extends KViewTemplate
         parent::_initialize($config);
     }
 
+    public function getLayout()
+    {
+        return $this->getPage()->get('layout');
+    }
+
     protected function _actionRender(KViewContext $context)
     {
-        //Prepend the xml prolog
+        $template = clone $this->getTemplate()->setParameters($context->parameters);
+
+        //Add page filters
+        if($filters = $this->getPage()->get('process/filters')) {
+            $template->addFilters((array) KObjectConfig::unbox($filters));
+        }
+
+        //Load the page
+        $template->loadFile('page://pages/'.$this->getPage()->path);
+
+        //Render page
         $content  = '<?xml version="1.0" encoding="utf-8" ?>'."\n";
-        $content .= $this->getContent();
+        $content = $template->render(KObjectConfig::unbox($context->data->append($template->getData())));
+
+        //Set the rendered page in the view to allow for view decoration
+        $this->setContent($content);
+
+        //Set the content in the object
+        $this->getPage()->content = $content;
 
         return trim($content);
     }
 
     protected function _fetchData(KViewContext $context)
     {
-        parent::_fetchData($context);
-
-        if($this->isCollection()) {
-            $context->parameters->total = $this->getModel()->count();
-        }
+        $context->parameters = $this->getState()->getValues();
     }
 }

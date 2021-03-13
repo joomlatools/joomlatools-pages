@@ -98,14 +98,10 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
             $model->setState($state);
 
             //Store the collection
-            $this->__models[$name] = $model;
+            $hash = hash('crc32b', $name.serialize($model->getHashState()));
+            $this->__models[$hash] = $model;
         }
-        else
-        {
-            throw new UnexpectedValueException(
-                'Collection Model: '.get_class($name).' cannot be found'
-            );
-        }
+        else throw new UnexpectedValueException('Collection: '.$name.' cannot be found');
 
         return $model;
     }

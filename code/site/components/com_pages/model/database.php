@@ -10,6 +10,9 @@
 class ComPagesModelDatabase extends ComPagesModelCollection
 {
     private $__table;
+    private $__data;
+
+    protected $_hash_key;
 
     public function __construct(KObjectConfig $config)
     {
@@ -20,9 +23,15 @@ class ComPagesModelDatabase extends ComPagesModelCollection
         // Set the dynamic states based on the unique table keys
         foreach ($this->getTable()->getUniqueColumns() as $key => $column)
         {
-            $required = $this->getTable()->mapColumns($column->related, true);
-            $this->getState()->insert($key, $column->filter, null, true, $required);
+            if(!empty($column->related))
+            {
+                $related = $this->getTable()->mapColumns($column->related, true);
+                $this->getState()->insertComposite($key, $column->filter, $related);
+            }
+            else $this->getState()->insertUnique($key, $column->filter);
         }
+
+        $this->_hash_key  = $config->hash_key;
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -30,43 +39,33 @@ class ComPagesModelDatabase extends ComPagesModelCollection
         $config->append(array(
             'persistable'  => true,
             'table'        => '',
+            'hash_key'     => '',
         ));
 
         parent::_initialize($config);
     }
 
-    public function fetchData($count = false)
+    protected function _initializeContext(KModelContext $context)
     {
-        $query = $this->getObject('lib:database.query.select')
-                       ->table(array('tbl' => $this->getTable()->getName()));
+        //Validate the state
+        $this->_validateState();
 
-        if($count) {
+        if($context->action == 'count' || $context->action == 'hash') {
+            $query = $this->getQuery(false);
+        }  else {
+            $query = $this->getQuery();
+        }
+
+        if($context->action == 'count') {
             $query->columns('COUNT(*)');
-        } else {
-            $query->columns('tbl.*');
         }
 
-        if ($states = $this->getState()->getValues())
-        {
-            $columns = $this->getTable()->filter($states);
-
-            foreach ($columns as $column => $value)
-            {
-                if (isset($value))
-                {
-                    $query->where('tbl.' . $column . ' ' . (is_array($value) ? 'IN' : '=') . ' :' . $column)
-                        ->bind(array($column => $value));
-                }
-            }
-        }
-
-        return $query;
+        $context->data = $query;
     }
 
-    protected function _prepareContext(KModelContext $context)
+    public function fetchData()
     {
-        //Fetch the data
-        $context->data = $this->fetchData($context->getName() == 'before.count');
+        return $this->__data;
     }
 
     public function getTable()
@@ -95,23 +94,66 @@ class ComPagesModelDatabase extends ComPagesModelCollection
         return $this->__table;
     }
 
-    public function getIdentityKey()
+    protected function getQuery($columns = true)
     {
-        if(!$this->getTable()->getIdentityColumn()) {
-            $key = parent::getIdentityKey();
-        } else {
-            $key = 'id';
+        $query = $this->getObject('lib:database.query.select')
+            ->table(array('tbl' => $this->getTable()->getName()));
+
+        if($columns) {
+            $query->columns('tbl.*');
         }
 
-        return $key;
+        if ($states = $this->getState()->getValues())
+        {
+            $columns = $this->getTable()->filter($states);
+
+            foreach ($columns as $column => $value)
+            {
+                if (isset($value))
+                {
+                    $query->where('tbl.' . $column . ' ' . (is_array($value) ? 'IN' : '=') . ' :' . $column)
+                        ->bind(array($column => $value));
+                }
+            }
+        }
+
+        return $query;
     }
 
-    public function getHash($refresh = false)
+    public function getIdentityKey()
     {
-        $hash = null;
+        if(!$key = $this->getConfig()->identity_key)
+        {
+            if(!$this->getTable()->getIdentityColumn()) {
+                $key = parent::getIdentityKey();
+            } else {
+                $key = 'id';
+            }
+        }
 
-        if($modified = $this->getTable()->getSchema()->modified) {
-            $hash = hash('crc32b', $modified);
+         return $key;
+    }
+
+    public function _actionHash(KModelContext $context)
+    {
+        $hash = parent::_actionHash($context);
+
+        if($this->_hash_key)
+        {
+            $query = $context->data;
+
+            $id  = $this->getIdentityKey();
+            $key = $this->getTable()->mapColumns($this->_hash_key);
+
+            $query->columns(['hash' => 'CRC32(GROUP_CONCAT(DISTINCT tbl.'.$id.', "-", tbl.'.$key.'))']);
+
+            $hash = $this->getTable()->select($query, KDatabase::FETCH_FIELD);
+        }
+        else
+        {
+            if($modified = $this->getTable()->getSchema()->modified) {
+                $hash = hash('crc32b', $modified);
+            }
         }
 
         return $hash;
@@ -123,10 +165,11 @@ class ComPagesModelDatabase extends ComPagesModelCollection
 
         if($context->data instanceof KDatabaseQueryInterface)
         {
-            $data = $this->getTable()
-                ->select($context->data, KDatabase::FETCH_ARRAY_LIST);
-
+            $data = $this->getTable()->select($context->data, KDatabase::FETCH_ARRAY_LIST);
             $data = array_values($data);
+
+            //Store the raw data
+            $this->__data = $data;
         }
 
         $entities = $this->create($data);

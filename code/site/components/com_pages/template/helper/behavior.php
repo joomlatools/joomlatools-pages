@@ -11,7 +11,7 @@ class ComPagesTemplateHelperBehavior extends ComKoowaTemplateHelperBehavior
 {
     public function anchor($config = array())
     {
-        $config = new KObjectConfigJson($config);
+        $config = new ComPagesObjectConfig($config);
         $config->append(array(
             'debug' =>  JFactory::getApplication()->getCfg('debug'),
             'options'  => array(
@@ -51,16 +51,15 @@ ANCHOR;
         $config = new KObjectConfigJson($config);
         $config->append(array(
             'debug'    =>  JFactory::getApplication()->getCfg('debug'),
-            'selector' => 'header',
-            'onload'   => $this->getObject('dispatcher')->isCacheable(),
-            'onhover'  => $this->getObject('dispatcher')->isCacheable(),
+            'selector' => 'a.prefetch',
+            'onload'   => true,
+            'onhover'  => true,
         ));
 
         $html = '';
         if (!static::isLoaded('prefetcher'))
         {
-            $html .= '<meta http-equiv="X-UA-Compatible" content="IE=8,9" />';
-            $html .= '<ktml:script src="assets://com_pages/js/prefetcher-v1.1.0.'.(!$config->debug ? 'min.js' : 'js').'" defer="defer" />';
+            $html .= '<ktml:script src="assets://com_pages/js/prefetcher-v1.1.1.'.(!$config->debug ? 'min.js' : 'js').'" defer="defer" />';
             $html .= <<<PREFETCHER
 <script>
 document.addEventListener("DOMContentLoaded", () => {

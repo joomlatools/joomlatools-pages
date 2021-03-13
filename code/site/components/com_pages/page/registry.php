@@ -101,12 +101,17 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
         if(isset($this->__collections[$name]))
         {
-            $result = new KObjectConfig($this->__collections[$name]);
+            $result = new ComPagesObjectConfig($this->__collections[$name]);
 
             //If the collections extends another collection merge it
             if(isset($result->extend))
             {
-                $extend = $this->getCollection($result->extend);
+                if(!$extend = $this->getCollection($result->extend))
+                {
+                    throw new RuntimeException(
+                        sprintf('Cannot extend from collection. No collection defined in: %s', $result->extend)
+                    );
+                }
 
                 //Merge state
                 if($extend->has('state')) {
@@ -122,6 +127,11 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     $extend->page = $result->get('page');
                 }
 
+                //Merge type
+                if($result->has('type')) {
+                    $extend->type = $result->get('type');
+                }
+
                 $result = $extend;
             }
 
@@ -132,11 +142,8 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         else
         {
             //Assume we are being passed a fully qualified identifier
-            if(is_string($name) && strpos($name, ':') !== false)
-            {
-                $result = new KObjectConfig([
-                    'model' => $name
-                ]);
+            if(is_string($name) && strpos($name, ':') !== false) {
+                $result = new ComPagesObjectConfig(['model' => $name]);
             }
         }
 
@@ -220,20 +227,27 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 //Set page default properties from parent collection
                 if(!$page->isCollection() && $parent_path && $parent_page = $this->getPage($parent_path))
                 {
-                    if(($collection = $parent_page->isCollection()) && isset($collection['page']))
+                    if($parent_page->isCollection() && $parent_page->has('collection/page'))
                     {
-                        foreach($collection['page'] as $property => $value)
-                        {
-                            if(!$page->has($property)) {
-                                $page->set($property, $value);
-                            }
+                        foreach($parent_page->get('collection/page') as $property => $value) {
+                            $page->set($property, $value);
                         }
                     }
                 }
 
                 //Set the layout (if not set yet)
-                if($page->has('layout') && is_string($page->layout)) {
-                    $page->layout = array('path' => $page->layout);
+                if($page->has('layout'))
+                {
+                    if (is_string($page->layout)) {
+                        $page->layout = new ComPagesObjectConfig(['path' => $page->layout]);
+                    } else {
+                        $page->layout = new ComPagesObjectConfig($page->layout);
+                    }
+                }
+
+                //Get the collection
+                if($page->isCollection()) {
+                    $page->collection = $this->getCollection($page->path);
                 }
 
                 $this->__pages[$path] = $page;
@@ -461,27 +475,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     if(!isset($page->metadata['robots']) && !$page->getContent() && !$page->layout) {
                                         $page->metadata['robots'] = ['none'];
                                     }
-
-                                    //Handle dynamic data
-                                    array_walk_recursive ($page, function(&$value, $key)
-                                    {
-                                        if(is_string($value) && strpos($value, 'data://') === 0)
-                                        {
-                                            $matches = array();
-                                            preg_match('#data\:\/\/([^\[]+)(?:\[(.*)\])*#si', $value, $matches);
-
-                                            if(!empty($matches[0]))
-                                            {
-                                                $data = $this->getObject('data.registry')->fromPath($matches[1]);
-
-                                                if($data && !empty($matches[2])) {
-                                                    $data = $data->get($matches[2]);
-                                                }
-
-                                                $value = $data;
-                                            }
-                                        }
-                                    });
 
                                     /**
                                      * Cache

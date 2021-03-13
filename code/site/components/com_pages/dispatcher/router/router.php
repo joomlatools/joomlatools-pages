@@ -54,7 +54,11 @@ class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract implemen
                 $package = $route->getIdentifier()->getPackage();
             }
         }
-        else $package = parse_url($route, PHP_URL_SCHEME);
+        else
+        {
+            $parts   = explode(':', $route);
+            $package = $parts[0];
+        }
 
         //Get router instance
         if(!isset($this->__routers[$package]))

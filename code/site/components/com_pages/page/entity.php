@@ -26,10 +26,32 @@ class ComPagesPageEntity extends ComPagesModelEntityPage
         parent::_initialize($config);
     }
 
+    public function get($name, $default = null)
+    {
+        if(!is_array($name)) {
+            $segments = explode('/', $name);
+        } else {
+            $segments = $name;
+        }
+
+        $result = parent::get(array_shift($segments), $default);
+
+        if(!empty($segments) && $result instanceof KObjectConfigInterface) {
+            $result = $result->get($segments, $default);
+        }
+
+        return $result;
+    }
+
+    public function has($name)
+    {
+        return (bool) $this->get($name);
+    }
+
     public function setPropertyLayout($value)
     {
         if($value) {
-            $value = new KObjectConfig($value);
+            $value = new ComPagesObjectConfig($value);
         }
 
         return $value;
@@ -38,27 +60,38 @@ class ComPagesPageEntity extends ComPagesModelEntityPage
     public function setPropertyCollection($value)
     {
         if($value) {
-            $value = new KObjectConfig($value);
+            $value = new ComPagesObjectConfig($value);
         }
 
         return $value;
     }
 
-    public function getPropertyForm()
+    public function setPropertyForm($value)
     {
-        if($form = $this->getConfig()->data->get('form'))
+        if($value)
         {
-            $name = $form->honeypot ?? 'name';
+            $value = new ComPagesObjectConfig($value);
 
-            if($form->schema->has($name))
+            $name = $value->honeypot ?? 'name';
+
+            if($value->schema->has($name))
             {
                 $hash = $this->hash;
-                $form->honeypot = sprintf('%s_%s', $name, $hash);
+                $value->honeypot = sprintf('%s_%s', $name, $hash);
             }
-            else $form->honeypot = $name;
+            else $value->honeypot = $name;
         }
 
-        return $form;
+        return $value;
+    }
+
+    public function setPropertyProcess($value)
+    {
+        if($value) {
+            $value = new ComPagesObjectConfig($value);
+        }
+
+        return $value;
     }
 
     public function getType()

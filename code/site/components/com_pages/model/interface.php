@@ -14,11 +14,14 @@ interface ComPagesModelInterface extends KModelInterface
     const PERSIST_FAILURE  = 3;
 
     public function persist();
+    public function hash($refresh = false);
 
+    public function getName();
     public function getType();
     public function getIdentityKey();
     public function getPrimaryKey();
-    public function getHash($refresh = false);
+
+    public function getHashState();
 
     public function isAtomic();
     public function isPersistable();

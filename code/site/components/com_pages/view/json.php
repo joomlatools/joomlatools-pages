@@ -9,7 +9,7 @@
 
 class ComPagesViewJson extends KViewAbstract
 {
-    use ComPagesViewTraitLocatable;
+    use ComPagesViewTraitUrl, ComPagesViewTraitRoute;
 
     /**
      * JSON API version

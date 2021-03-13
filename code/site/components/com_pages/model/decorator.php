@@ -11,6 +11,7 @@ class ComPagesModelDecorator extends KModelAbstract implements ComPagesModelInte
 {
     private $__persistable;
     private $__delegate;
+    private $__name;
 
     public function __construct(KObjectConfig $config)
     {
@@ -20,6 +21,9 @@ class ComPagesModelDecorator extends KModelAbstract implements ComPagesModelInte
 
         //Set if the collection is persistable
         $this->__persistable = $config->persistable;
+
+        //Set the name
+        $this->__name = $config->name;
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -27,6 +31,7 @@ class ComPagesModelDecorator extends KModelAbstract implements ComPagesModelInte
         $config->append(array(
             'persistable' => true,
             'delegate'    => '',
+            'name'        => '', //the collection name used to generate this model
         ));
 
         parent::_initialize($config);
@@ -98,6 +103,11 @@ class ComPagesModelDecorator extends KModelAbstract implements ComPagesModelInte
         return sprintf('%s-%s', $package, $name);
     }
 
+    public function getName()
+    {
+        return $this->__name;
+    }
+
     public function getIdentityKey()
     {
         $delegate = $this->getDelegate();
@@ -136,7 +146,7 @@ class ComPagesModelDecorator extends KModelAbstract implements ComPagesModelInte
         return (array) $key;
     }
 
-    public function getHash($refresh = false)
+    public function getHashState()
     {
         $hash     = null;
         $delegate = $this->getDelegate();
@@ -149,16 +159,20 @@ class ComPagesModelDecorator extends KModelAbstract implements ComPagesModelInte
 
         if($model instanceof KModelDatabase)
         {
-            if($modified = $model->getTable()->getSchema()->modified) {
-                $hash = hash('crc32b', $modified);
+            $states = array();
+            foreach($model->getState() as $state)
+            {
+                if(($state->required === true || $state->unique === true || $state->internal === true) && !is_null($state->value)) {
+                    $states[$state->name] = KObjectConfig::unbox($state->value);
+                }
             }
         }
 
         if($model instanceof ComPagesModelInterface) {
-            $hash = $model->getHash($refresh);
+            $states = $model->getHashState();
         }
 
-        return $hash;
+        return $states;
     }
 
     public function isAtomic()
@@ -178,6 +192,20 @@ class ComPagesModelDecorator extends KModelAbstract implements ComPagesModelInte
         }
 
         return $atomic;
+    }
+
+    final public function hash($refresh = false)
+    {
+        $context = $this->getContext();
+        $context->refresh = $refresh;
+
+        if ($this->invokeCommand('before.hash', $context) !== false)
+        {
+            $context->result = $this->_actionHash($context);
+            $this->invokeCommand('after.hash', $context);
+        }
+
+        return $context->result;
     }
 
     final public function persist()
@@ -229,6 +257,32 @@ class ComPagesModelDecorator extends KModelAbstract implements ComPagesModelInte
             $delegate->reset();
         }
     }
+
+    protected function _actionHash(KModelContext $context)
+    {
+        $hash     = null;
+        $delegate = $this->getDelegate();
+
+        if($delegate instanceof KControllerModellable)  {
+            $model = $delegate->getModel();
+        } else {
+            $model = $delegate;
+        }
+
+        if($model instanceof KModelDatabase)
+        {
+            if($modified = $model->getTable()->getSchema()->modified) {
+                $hash = hash('crc32b', $modified);
+            }
+        }
+
+        if($model instanceof ComPagesModelInterface) {
+            $hash = $model->hash($context->refresh);
+        }
+
+        return $hash;
+    }
+
 
     protected function _beforePersist(KModelContext $context)
     {

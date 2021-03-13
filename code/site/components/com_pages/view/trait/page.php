@@ -7,8 +7,10 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-trait ComPagesViewTraitModellable
+trait ComPagesViewTraitPage
 {
+    use ComPagesViewTraitCollection;
+
     public function getPage($path = null)
     {
         if(!is_null($path)) {
@@ -18,22 +20,6 @@ trait ComPagesViewTraitModellable
         }
 
         return $result;
-    }
-
-    public function getCollection($model = '', $state = array())
-    {
-        if($model) {
-            $result = $this->getObject('model.factory')->createModel($model, $state)->fetch();
-        } else {
-            $result = $this->getModel()->fetch();
-        }
-
-        return $result;
-    }
-
-    public function getState()
-    {
-        return $this->getModel()->getState();
     }
 
     public function getTitle()
@@ -77,10 +63,5 @@ trait ComPagesViewTraitModellable
         }
 
         return $language;
-    }
-
-    public function isCollection()
-    {
-        return (bool) !$this->getState()->isUnique();
     }
 }

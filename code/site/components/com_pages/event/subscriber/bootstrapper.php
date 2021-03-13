@@ -27,17 +27,23 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         {
             define('PAGES_SITE_ROOT', $route->getPath());
 
+            //Set PAGES_PATH based on Joomla configuration
+            if(JFactory::getApplication()->getCfg('sef_rewrite')) {
+                $_SERVER['PAGES_PATH'] = JFactory::getApplication()->getCfg('live_site') ?? '/';
+            }
+
             //Set the site path in the config
             $config = $this->getObject('com://site/pages.config', ['site_path' => $route->getPath()]);
 
             //Get the config options
             $options = $config->getOptions();
 
+            //Bootstrap the site configuration (before extensions to allow overriding)
+            $this->_bootstrapSite($config->getSitePath(), $options);
+
             //Bootstrap the extensions
             $this->_bootstrapExtensions($config->getSitePath('extensions'), $options);
 
-            //Bootstrap the site configuration (after extensions to allow overriding)
-            $this->_bootstrapSite($config->getSitePath(), $options);
         }
         else $this->getObject('com://site/pages.config', ['site_path' => false]);
     }
@@ -81,12 +87,12 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
         //Set config options
         foreach($options['identifiers'] as $identifier => $values) {
-            $this->getConfig($identifier)->merge($values);
+            $this->getConfig($identifier)->append($values);
         }
 
         //Set config options
         foreach($options['extensions'] as $identifier => $values) {
-            $this->getConfig($identifier)->merge($values);
+            $this->getConfig($identifier)->append($values);
         }
     }
 
@@ -120,11 +126,6 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                         ->registerSubscriber('ext:'.$name.'.subscriber.'.basename($filename, '.php'));
                 }
 
-                //Find template filters
-                foreach (glob($directory.'/template/filter/[!_]*.php') as $filename) {
-                    $filters[] = 'ext:'.$name.'.template.filter.'.basename($filename, '.php');
-                }
-
                 //Find template functions
                 foreach (glob($directory.'/template/function/[!_]*.php') as $filename) {
                     $functions[basename($filename, '.php')] = $filename;
@@ -143,7 +144,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                     if(is_array($identifiers))
                     {
                         foreach($identifiers as $identifier => $values) {
-                            $this->getConfig($identifier)->merge($values);
+                            $this->getConfig($identifier)->append($values);
                         }
                     }
                 }
@@ -152,11 +153,6 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
             //Register template functions
             if($functions) {
                 $this->getConfig('com://site/pages.template.default')->merge(['functions' => $functions]);
-            }
-
-            //Register template filters
-            if($filters) {
-                $this->getConfig('com://site/pages.template.default')->merge(['filters' => $filters]);
             }
         }
 
