@@ -60,7 +60,7 @@ class ComPagesTemplateFilterMeta extends ComPagesTemplateFilterAbstract
 
                 $metadata = KObjectConfig::unbox($metadata);
 
-                if(isset($metadata['og:type']))
+                if(isset($metadata['og:type']) && $metadata['og:type'])
                 {
                     if (strpos($metadata['og:image'], 'http') === false)
                     {
