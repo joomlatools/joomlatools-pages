@@ -38,14 +38,10 @@ class ComPagesModelPages extends ComPagesModelCollection
         if(!isset($this->__data))
         {
             $this->__data = array();
-            $state       = $this->getState();
 
-            //Set the folder to the active page path if no folder is defined
-            if($state->folder === null && $this->isPageable()) {
-                $folder = $this->getPage()->path;
-            } else {
-                $folder = $state->folder ?? '.';
-            }
+            //If folder is not defined to set root path
+            $state  = $this->getState();
+            $folder = $state->folder ?? '.';
 
             if($folder)
             {

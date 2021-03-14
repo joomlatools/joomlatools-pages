@@ -9,15 +9,19 @@
 
 class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 {
+    use ComPagesPageTrait;
+
     private $__router;
     private $__route;
-    private $__page;
 
     public function __construct( KObjectConfig $config)
     {
         parent::__construct($config);
 
         $this->__router = $config->router;
+
+        //Set the page
+        $this->setPage($config->page);
 
         //Re-register the exception event listener to run through pages scope
         $this->addEventListener('onException', array($this, 'fail'),  KEvent::PRIORITY_NORMAL);
@@ -31,6 +35,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
                 'cacheable',
                 'validatable'
             ],
+            'page'    => 'com://site/pages.page',
             'router'  => 'com://site/pages.dispatcher.router',
         ]);
 
@@ -62,24 +67,6 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         return $this->__router;
     }
 
-    public function getPage()
-    {
-        $result = false;
-
-        if(!isset($this->__page))
-        {
-            if($route = $this->getRoute()) {
-                $this->__page = $route->getPage();
-            }
-        }
-
-        if(is_object($this->__page)) {
-            $result = $this->__page;
-        }
-
-        return $result;
-    }
-
     public function getRoute()
     {
         $result = false;
@@ -99,7 +86,11 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             $path  = trim($path, '/');
             $query = $this->getRequest()->getUrl()->getQuery(true);
 
-            $this->__route = $this->getRouter()->resolve('pages:'.$path,  $query);
+            if($route = $this->getRouter()->resolve('pages:'.$path,  $query)) {
+                $this->getPage()->setProperties($route->getPage());
+            }
+
+            $this->__route = $route;
         }
 
         if(is_object($this->__route)) {
@@ -173,9 +164,6 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
         //Set the query in the request
         $context->request->setQuery($route->query);
-
-        //Set the page in the context
-        $context->page = $this->getPage();
 
         //Set the route in the context
         $context->route = $this->getRoute();
@@ -300,7 +288,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
             foreach([(int) $code, '500'] as $code)
             {
-                if($page = $this->getObject('page.registry')->getPageEntity($code))
+                if($page = $this->getPage($code))
                 {
                     //Set status code (before rendering the error)
                     $context->response->setStatus($code);
@@ -330,6 +318,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         $context->setResponse($this->getResponse());
         $context->setUser($this->getUser());
         $context->setRouter($this->getRouter());
+        $context->setPage($this->getPage());
 
         return $context;
     }

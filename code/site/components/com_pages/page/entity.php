@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesPageEntity extends ComPagesModelEntityPage
+class ComPagesPageEntity extends ComPagesModelEntityPage implements ComPagesPageInterface
 {
     protected function _initialize(KObjectConfig $config)
     {

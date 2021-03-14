@@ -472,9 +472,15 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     }
 
                                     //Set robots metadata
-                                    if(!isset($page->metadata['robots']) && !$page->getContent() && !$page->layout) {
-                                        $page->metadata['robots'] = ['none'];
+                                    if(!isset($page->metadata['robots']))
+                                    {
+                                        if (!$page->getContent() && !$page->layout) {
+                                            $page->metadata['robots'] = ['none'];
+                                        } else {
+                                            $page->metadata['robots'] = array();
+                                        }
                                     }
+                                    else $page->metadata['robots'] = (array) $page->metadata['robots'];
 
                                     /**
                                      * Cache

@@ -44,7 +44,7 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
     {
         $config->append([
             'entity'        => $this->getIdentifier()->getName(),
-            'type'          => '', //the collection type used when generating JSDNAPI
+            'type'          => $this->getIdentifier()->getPackage() .'-'. KStringInflector::pluralize($this->getIdentifier()->getName()),
             'name'          => '', //the collection name used to generate this model
             'search'        => [], //properties to allow searching on
             'identity_key'  => null,
