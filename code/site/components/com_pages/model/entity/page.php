@@ -175,7 +175,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         //Normalize images
         $image = null;
 
-        if(!empty($value))
+        if(!empty($value) && !$value instanceof ComPagesObjectConfig)
         {
             if(is_array($value)) {
                 $url = $value['url'] ?? '';
@@ -200,6 +200,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
 
             $image = new ComPagesObjectConfig($image);
         }
+        else $image = $value;
 
         return $image;
     }

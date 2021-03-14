@@ -20,6 +20,7 @@ return [
     'priority' => KObjectBootstrapper::PRIORITY_HIGH,
     'aliases' => [
         'router'        => 'com://site/pages.dispatcher.router',
+        'page'          => 'com://site/pages.page',
         'page.registry' => 'com://site/pages.page.registry',
         'data.registry' => 'com://site/pages.data.registry',
         'model.factory' => 'com://site/pages.model.factory',

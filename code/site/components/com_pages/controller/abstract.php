@@ -9,7 +9,7 @@
 
 class ComPagesControllerAbstract extends KControllerModel
 {
-    private $__page;
+    use ComPagesPageTrait;
 
     public function __construct(KObjectConfig $config)
     {
@@ -22,22 +22,11 @@ class ComPagesControllerAbstract extends KControllerModel
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'page'  => null,
+            'page'  => 'com://site/pages.page',
             'model' => 'com://site/pages.model.pages',
         ]);
 
         parent::_initialize($config);
-    }
-
-    public function setPage(ComPagesPageEntity $page)
-    {
-        $this->__page = $page;
-        return $this;
-    }
-
-    public function getPage()
-    {
-        return $this->__page;
     }
 
     public function getFormats()
@@ -59,27 +48,20 @@ class ComPagesControllerAbstract extends KControllerModel
         return parent::getView();
     }
 
-    public function setModel($model)
+    public function getModel()
     {
-        if(!$model instanceof KModelInterface) {
-            $model = $this->getObject('com://site/pages.model.pages');
+        if(!$this->_model instanceof KModelInterface)
+        {
+            //Get the model
+            $model = parent::getModel();
+
+            //Set the folder to the active page path if no folder is defined
+            if($model->getState()->folder === null) {
+                $model->getState()->folder = $this->getPage()->path;
+            }
         }
 
-        $model->addBehavior('com://site/pages.model.behavior.pageable', ['page' => $this->getPage()]);
-
-        return parent::setModel($model);
-    }
-
-    public function getContext()
-    {
-        $context = new ComPagesControllerContext();
-        $context->setSubject($this);
-        $context->setRequest($this->getRequest());
-        $context->setResponse($this->getResponse());
-        $context->setUser($this->getUser());
-        $context->setPage($this->getPage());
-
-        return $context;
+        return $this->_model;
     }
 
     protected function _actionRender(KControllerContextInterface $context)
@@ -127,5 +109,17 @@ class ComPagesControllerAbstract extends KControllerModel
         else $entity = $context->result;
 
         return $entity;
+    }
+
+    public function getContext()
+    {
+        $context = new ComPagesControllerContext();
+        $context->setSubject($this);
+        $context->setRequest($this->getRequest());
+        $context->setResponse($this->getResponse());
+        $context->setUser($this->getUser());
+        $context->setPage($this->getPage());
+
+        return $context;
     }
 }

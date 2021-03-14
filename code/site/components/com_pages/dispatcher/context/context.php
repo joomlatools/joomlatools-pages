@@ -9,8 +9,6 @@
 
 class ComPagesDispatcherContext extends KDispatcherContext implements ComPagesDispatcherContextInterface
 {
-    private $__validators;
-
     public function getRouter()
     {
         return KObjectConfig::get('router');

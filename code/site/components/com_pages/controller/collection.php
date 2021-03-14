@@ -86,7 +86,7 @@ class ComPagesControllerCollection extends ComPagesControllerPage
             $query[$key] = $entity->getProperty($key);
         }
 
-        $route    = $context->router->generate($this->getModel()->getPage(), $query);
+        $route    = $context->router->generate($this->getPage(), $query);
         $location = $context->router->qualify($route);
 
         //See: https://tools.ietf.org/html/rfc7231#page-52
