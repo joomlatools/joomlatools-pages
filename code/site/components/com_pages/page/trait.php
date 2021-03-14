@@ -13,7 +13,12 @@ trait ComPagesPageTrait
 
     public function setPage($page)
     {
-        $this->__page = $page;
+        if($this->__page instanceof ComPagesPageInterface && $page instanceof ComPagesPageInterface) {
+            $this->__page->setProperties($page);
+        } else {
+            $this->__page = $page;
+        }
+
         return $this;
     }
 

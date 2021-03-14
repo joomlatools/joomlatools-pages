@@ -87,7 +87,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             $query = $this->getRequest()->getUrl()->getQuery(true);
 
             if($route = $this->getRouter()->resolve('pages:'.$path,  $query)) {
-                $this->getPage()->setProperties($route->getPage());
+                $this->setPage($route->getPage());
             }
 
             $this->__route = $route;
@@ -237,7 +237,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         //Add a (self-referential) canonical URL (only to GET and HEAD requests)
         if($context->page && $context->request->isCacheable())
         {
-            if(!$context->page->canonical)
+            if(!$context->page->canonical && $this->getRoute())
             {
                 $route = $context->router->generate($this->getRoute());
                 $context->page->canonical = (string) $context->router->qualify($route);
@@ -273,11 +273,6 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             $exception = $context->param;
         }
 
-        //Context needs to be reset
-        if($page = $this->getPage()) {
-            $context->page = $page;
-        }
-
         if(!JDEBUG && $this->getObject('request')->getFormat() == 'html')
         {
             //If the error code does not correspond to a status message, use 500
@@ -290,6 +285,8 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             {
                 if($page = $this->getPage($code))
                 {
+                    $this->setPage($page);
+
                     //Set status code (before rendering the error)
                     $context->response->setStatus($code);
 
