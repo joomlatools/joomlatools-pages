@@ -403,7 +403,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             $valid = true;
 
             //Validate page
-            $page = $this->getObject('page.registry')->getPage($validators['page']['path']);
+            $page = $this->getPage($validators['page']['path']);
             if($validators['page']['hash'] != $page->hash) {
                 $valid = false;
             }

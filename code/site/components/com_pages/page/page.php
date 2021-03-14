@@ -7,15 +7,13 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesControllerContext extends KControllerContext implements ComPagesControllerContextInterface
+class ComPagesPage extends ComPagesPageEntity implements KObjectSingleton
 {
-    public function getPage()
+    public function __construct(KObjectConfig $config)
     {
-        return KObjectConfig::get('page');
-    }
+        parent::__construct($config);
 
-    public function setPage(ComPagesPageInterface $page)
-    {
-        return KObjectConfig::set('page', $page);
+        //Add a global object alias
+        $this->getObject('manager')->registerAlias($this->getIdentifier(), 'page');
     }
 }

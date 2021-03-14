@@ -9,18 +9,7 @@
 
 trait ComPagesViewTraitPage
 {
-    use ComPagesViewTraitCollection;
-
-    public function getPage($path = null)
-    {
-        if(!is_null($path)) {
-            $result = $this->getObject('page.registry')->getPageEntity($path);
-        } else {
-            $result = $this->getModel()->getPage();
-        }
-
-        return $result;
-    }
+    use ComPagesPageTrait, ComPagesViewTraitCollection;
 
     public function getTitle()
     {
