@@ -89,39 +89,77 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         return $text;
     }
 
-    public function getPropertyMetadata()
+    public function setPropertyImage($value)
     {
-        $metadata = $this->getConfig()->data->metadata;
+        //Normalize images
+        $image = null;
 
-        if(!isset($metadata->description) && $this->summary) {
-            $metadata->set('description', $this->summary);
-        }
-
-        if($this->image && $this->image->url) {
-            $metadata->set('og:image', $this->image->url);
-        }
-
-        //Type and image are required. If they are not set remove any opengraph properties
-        if(!empty($metadata->get('og:type')) && !empty($metadata->get('og:image')))
+        if(!empty($value) && !$value instanceof ComPagesObjectConfig)
         {
-            if($this->title) {
-                $metadata->set('og:title', $this->title);
+            if(is_array($value)) {
+                $url = $value['url'] ?? '';
+            } else {
+                $url = $value;
             }
 
-            if($this->summary) {
-                $metadata->set('og:description', $this->summary);
-            }
-
-            if($this->language) {
-                $metadata->set('og:locale', $this->language);
-            }
-        }
-        else
-        {
-            foreach($metadata as $name => $value)
+            if($url)
             {
-                if(strpos($name, 'og:') === 0 || strpos($name, 'twitter:') === 0) {
-                    $metadata->remove($name);
+                if(is_string($url) && strpos($url, '://') === false) {
+                    $url = '/'.ltrim($url, '/');
+                }
+
+                $url = $this->getObject('lib:http.url')->setUrl($url);
+
+                $image = [
+                    'url'      => $url,
+                    'alt'      => $value['alt'] ?? null,
+                    'caption'  => $value['caption'] ?? null,
+                ];
+            }
+
+            $image = new ComPagesObjectConfig($image);
+        }
+        else $image = new ComPagesObjectConfig($value);
+
+        return $image;
+    }
+
+    public function setPropertyMetadata($metadata)
+    {
+        if(!$metadata instanceof ComPagesObjectConfig)
+        {
+            $metadata = new ComPagesObjectConfig($metadata);
+
+            if(!isset($metadata->description) && $this->summary) {
+                $metadata->set('description', $this->summary);
+            }
+
+            if($this->image && $this->image->url) {
+                $metadata->set('og:image', $this->image->url);
+            }
+
+            //Type and image are required. If they are not set remove any opengraph properties
+            if(!empty($metadata->get('og:type')) && !empty($metadata->get('og:image')))
+            {
+                if($this->title) {
+                    $metadata->set('og:title', $this->title);
+                }
+
+                if($this->summary) {
+                    $metadata->set('og:description', $this->summary);
+                }
+
+                if($this->language) {
+                    $metadata->set('og:locale', $this->language);
+                }
+            }
+            else
+            {
+                foreach($metadata as $name => $value)
+                {
+                    if(strpos($name, 'og:') === 0 || strpos($name, 'twitter:') === 0) {
+                        $metadata->remove($name);
+                    }
                 }
             }
         }
@@ -168,41 +206,6 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         }
 
         return $date;
-    }
-
-    public function setPropertyImage($value)
-    {
-        //Normalize images
-        $image = null;
-
-        if(!empty($value) && !$value instanceof ComPagesObjectConfig)
-        {
-            if(is_array($value)) {
-                $url = $value['url'] ?? '';
-            } else {
-                $url = $value;
-            }
-
-            if($url)
-            {
-                if(is_string($url) && strpos($url, '://') === false) {
-                    $url = '/'.ltrim($url, '/');
-                }
-
-                $url = $this->getObject('lib:http.url')->setUrl($url);
-
-                $image = [
-                    'url'      => $url,
-                    'alt'      => $value['alt'] ?? null,
-                    'caption'  => $value['caption'] ?? null,
-                ];
-            }
-
-            $image = new ComPagesObjectConfig($image);
-        }
-        else $image = $value;
-
-        return $image;
     }
 
     public function getParent()
