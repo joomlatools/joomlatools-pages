@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesEventSubscriberErrorhandler extends ComPagesEventSubscriberAbstract
+class ComPagesEventSubscriberException extends ComPagesEventSubscriberAbstract
 {
     public function isEnabled()
     {
@@ -41,9 +41,33 @@ class ComPagesEventSubscriberErrorhandler extends ComPagesEventSubscriberAbstrac
             }
         }
 
-        //Handle exception
-        if($dispatcher->fail($event)) {
-            return true;
+        if(!JDEBUG && $this->getObject('request')->getFormat() == 'html')
+        {
+            $exception = $event->getException();
+
+            //If the error code does not correspond to a status message, use 500
+            $code = $exception->getCode();
+            if(!isset(KHttpResponse::$status_messages[$code])) {
+                $code = '500';
+            }
+
+            foreach([(int) $code, '500'] as $code)
+            {
+                if($page = $dispatcher->getPage($code))
+                {
+                    $dispatcher->setPage($page);
+
+                    //Set status code (before rendering the error)
+                    $dispatcher->getResponse()->setStatus($code);
+
+                    //Render the error
+                    $content = $dispatcher->getController()->render($exception);
+
+                    //Set error in the response
+                    $dispatcher->getResponse()->setContent($content);
+                    $dispatcher->send();
+                }
+            }
         }
 
         return false;
