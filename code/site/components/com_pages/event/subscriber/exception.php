@@ -29,12 +29,13 @@ class ComPagesEventSubscriberException extends ComPagesEventSubscriberAbstract
         }
     }
 
-    public function onException(KEventException $event)
+    public function onException(KEvent $event)
     {
         $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
+        $exception = $event->exception;
 
         //Purge cache
-        if($event->getCode() == KHttpResponse::NOT_FOUND)
+        if($exception->getCode() == KHttpResponse::NOT_FOUND)
         {
             if($dispatcher->isCacheable()) {
                 $dispatcher->purge();
@@ -43,8 +44,6 @@ class ComPagesEventSubscriberException extends ComPagesEventSubscriberAbstract
 
         if(!JDEBUG && $this->getObject('request')->getFormat() == 'html')
         {
-            $exception = $event->getException();
-
             //If the error code does not correspond to a status message, use 500
             $code = $exception->getCode();
             if(!isset(KHttpResponse::$status_messages[$code])) {
@@ -69,8 +68,6 @@ class ComPagesEventSubscriberException extends ComPagesEventSubscriberAbstract
                 }
             }
         }
-
-        return false;
     }
 
     public function handleException(\Exception $exception)
