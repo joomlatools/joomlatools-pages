@@ -230,7 +230,7 @@ class ExtK2ModelEntityArticle extends ExtK2ModelEntityAbstract
 
 			foreach($value as $v)
 			{
-				if($field = $rows->find($v['id']))
+				if($field = $fields->find($v['id']))
 				{
 					//Set the value
 					$field->value = $v['value'];
