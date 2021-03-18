@@ -14,7 +14,7 @@ class ExtJoomlaModelFields extends ComPagesModelDatabase
         parent::__construct($config);
 
         $this->getState()
-            ->insertUnqiue('id', 'cmd')
+            ->insertUnique('id', 'cmd')
             ->insert('group'     , 'int')
             ->insert('article'   , 'int')
             ->insert('published' , 'boolean')
