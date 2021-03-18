@@ -237,7 +237,7 @@ class ExtK2ModelEntityArticle extends ExtK2ModelEntityAbstract
 				}
 			}
 		}
-		else $fields = $this->getObject('ext:k2.model.fields')->create()
+		else $fields = $this->getObject('ext:k2.model.fields')->create();
 
 		return $fields;
 	}
