@@ -5,7 +5,7 @@ class ComPagesEventSubscriberStaticcache extends ComPagesEventSubscriberAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'enable'     => false,
+            'enabled'    => false,
             'cache_path' => false,
         ));
 
