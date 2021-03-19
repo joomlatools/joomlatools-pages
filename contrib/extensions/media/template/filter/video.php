@@ -13,23 +13,23 @@ class ExtMediaTemplateFilterVideo extends ComPagesTemplateFilterAbstract
     {
         $config->append(array(
             'priority'   => self::PRIORITY_LOW,
-            'enable'     => JDEBUG ? false : true,
-            'parameters_poster' => ['auto' => 'true'],
+            'enabled'     => JDEBUG ? false : true,
+            'parameters' => ['auto' => 'true'],
         ));
 
         parent::_initialize($config);
     }
 
-    public function enabled()
+    public function isEnabled()
     {
-        return (bool) $this->getConfig()->enable;
+        return (bool) $this->getConfig()->enabled;
     }
 
     //See: https://github.com/aFarkas/lazysizes/blob/gh-pages/plugins/unveilhooks/ls.unveilhooks.js#L9
     public function filter(&$text)
     {
         //Filter the images only at the end of the rendering cycle
-        if($this->enabled())
+        if($this->isEnabled())
         {
             $matches = array();
             if(preg_match_all('#<video\s([^>]*?[\'\"][^>]*?)>#iU', $text, $matches))
@@ -73,7 +73,7 @@ class ExtMediaTemplateFilterVideo extends ComPagesTemplateFilterAbstract
                         $text = str_replace($matches[1][$key], $this->buildAttributes($attribs), $text);
 
                         //Enable plyr (custom player)
-                        $text .= $this->getTemplate()->helper('ext:media.video.player');
+                        $text .= $this->getTemplate()->helper('video.player');
                     }
                 }
             }
@@ -83,7 +83,7 @@ class ExtMediaTemplateFilterVideo extends ComPagesTemplateFilterAbstract
     public function poster($url, $parameters = array())
     {
         $config = new ComPagesObjectConfig($parameters);
-        $config->append($this->getConfig()->parameters_poster);
+        $config->append($this->getConfig()->parameters);
 
         $url   = KHttpUrl::fromString($url);
         $query = array_merge(array_filter(KObjectConfig::unbox($config)), $url->query);
