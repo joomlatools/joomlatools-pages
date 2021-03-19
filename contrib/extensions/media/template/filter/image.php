@@ -13,21 +13,22 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
     {
         $config->append(array(
             'priority' => self::PRIORITY_LOW,
-            'enable'   => JDEBUG ? false : true,
+            'enabled'  => JDEBUG ? false : true,
+            'origins'  => [],
         ));
 
         parent::_initialize($config);
     }
 
-    public function enabled()
+    public function isEnabled()
     {
-        return (bool) $this->getConfig()->enable;
+        return (bool) $this->getConfig()->enabled;
     }
 
     public function filter(&$text)
     {
         //Filter the images only at the end of the rendering cycle
-        if($this->enabled())
+        if($this->isEnabled())
         {
             $matches = array();
             $images  = array();
@@ -88,6 +89,35 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
                     //Convert class to array
                     if(isset($attribs['class'])) {
                         $attribs['class'] = explode(' ', $attribs['class']);
+                    }
+
+                    //Copy images
+                    if(strpos($src, '://') !== false && count($this->getConfig()->origins))
+                    {
+                        foreach($this->getConfig()->origins as $origin => $path)
+                        {
+                            if(stripos($src, $origin) === 0)
+                            {
+                                if ($extension = pathinfo($src, PATHINFO_EXTENSION))
+                                {
+                                    $base = $this->getObject('com://site/pages.config')->getSitePath();
+                                    $dest = $path .'/'. hash("crc32b", $src).'.' . $extension;
+
+                                    if(!file_exists($base . $dest))
+                                    {
+                                        if(copy($src, $base . $dest) == false) {
+
+                                            $cache_root = isset($_SERVER['PAGES_CACHE_ROOT']) ? $_SERVER['PAGES_CACHE_ROOT'] : false;
+                                            $log        = $cache_root.'/.error_log';
+
+                                            error_log(sprintf('Could copy image: %s'."\n", $src), 3, $log);
+                                        }
+                                        else $src = $dest;
+                                    }
+                                    else $src = $dest;
+                                }
+                            }
+                        }
                     }
 
                     if($this->getTemplate()->helper('ext.media.image.supported', $src)) {
