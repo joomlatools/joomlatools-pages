@@ -132,7 +132,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
                 //Add preload link to head
                 if($config->preload)
                 {
-                    $html .= '<link href="'.$hqi_url.'&w='.$width.'" rel="preload" as="image"
+                    $html .= '<link href="'.$hqi_url.'&w='.$width.'" rel="preload" as="image" 
                         imagesrcset="'. implode(', ', $srcset).'" imagesizes="100vw" />';
 
                 }
@@ -202,7 +202,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
                 //Add preload link to head
                 if($config->preload)
                 {
-                    $html .= '<link href="'.$hqi_url.'" rel="preload" as="image"
+                    $html .= '<link href="'.$hqi_url.'" rel="preload" as="image" 
                         imagesrcset="'. implode(', ', $srcset).'" imagesizes="100vw" />';
                 }
             }
@@ -426,7 +426,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
             $filesize = @filesize($file);
 
             if ($width < $max_width) {
-                $breakpoints[] = $width;
+                $sizes[] = $width;
             }
 
             $ratio   = $height / $width;
@@ -479,21 +479,15 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
         {
             list($width, $height) = @getimagesize($file);
 
-            if($max_width && !$max_height)
+            if($max_width && $max_width < $width)
             {
                 $height = ceil(($max_width / $width) * $height);
                 $width  = $max_width;
             }
 
-            if($max_height && !$max_width)
+            if($max_height && $max_height < $height)
             {
                 $width = ceil(($max_height / $height) * $width);
-                $height = $max_height;
-            }
-
-            if($max_height && $max_width)
-            {
-                $width  = $max_width;
                 $height = $max_height;
             }
         }
