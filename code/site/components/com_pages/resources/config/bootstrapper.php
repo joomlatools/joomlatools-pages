@@ -57,7 +57,7 @@ return [
                 'com://site/pages.event.subscriber.bootstrapper',
                 'com://site/pages.event.subscriber.dispatcher',
                 'com://site/pages.event.subscriber.pagedecorator',
-                'com://site/pages.event.subscriber.errorhandler',
+                'com://site/pages.event.subscriber.exception',
                 'com://site/pages.event.subscriber.staticcache',
                 'com://site/pages.event.subscriber.prefetcher',
             ]

@@ -9,6 +9,8 @@
 
 class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
 {
+    use ComKoowaEventTrait;
+
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
@@ -16,6 +18,11 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         ));
 
         parent::_initialize($config);
+    }
+
+    public function onAfterKoowaBootstrap()
+    {
+        $this->attachEventHandler('onAfterModuleList', 'filterTemplateModules');
     }
 
     public function isEnabled()
@@ -39,7 +46,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         if(JComponentHelper::isEnabled('com_sh404sef'))
         {
             //Tun route parsing
-            $application->getRouter()->attachParseRule(function($router, $url)
+            $application->getRouter()->attachParseRule(function($router, $url) use ($dispatcher)
             {
                 if(class_exists('Sh404sefClassRouterInternal'))
                 {
@@ -53,7 +60,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
             },  JRouter::PROCESS_BEFORE);
 
             //Tun off route building
-            $application->getRouter()->attachBuildRule(function($router, $url)
+            $application->getRouter()->attachBuildRule(function($router, $url) use ($dispatcher)
             {
                 if(class_exists('Sh404sefFactory')) {
                     Sh404sefFactory::getConfig()->useJoomlaRouter[] = 'pages';
@@ -204,19 +211,17 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         }
     }
 
-    public function onAfterTemplateModules(KEventInterface $event)
+    public function filterTemplateModules(&$modules)
     {
         $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
 
         if($page = $dispatcher->getPage())
         {
-            if($page->process->has('template') && $page->process->template->has('modules'))
+            if($page->has('process/template/modules'))
             {
-                $modules = $page->process->template->modules;
-
-                if(count($modules))
+                if(count($page->get('process/template/modules')))
                 {
-                    foreach ($event->modules as $key => $module)
+                    foreach ($page->get('process/template/modules') as $key => $module)
                     {
                         $include = array();
                         $exclude = array();
@@ -233,18 +238,18 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
                         if ($include)
                         {
                             if (!in_array($module->title, $include) && !in_array($module->id, $include)) {
-                                unset($event->modules[$key]);
+                                unset($modules[$key]);
                             }
                         }
                         else
                         {
                             if (in_array($module->title, $exclude) || in_array($module->id, $exclude)) {
-                                unset($event->modules[$key]);
+                                unset($modules[$key]);
                             }
                         }
                     }
                 }
-                else $event->modules  = array();
+                else $modules = array();
             }
         }
     }

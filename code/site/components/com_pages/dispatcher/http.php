@@ -22,9 +22,6 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
         //Set the page
         $this->setPage($config->page);
-
-        //Re-register the exception event listener to run through pages scope
-        $this->addEventListener('onException', array($this, 'fail'),  KEvent::PRIORITY_NORMAL);
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -262,49 +259,6 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         } else {
             $this->terminate($context);
         }
-    }
-
-    protected function _renderError(KDispatcherContextInterface $context)
-    {
-        //Get the exception object
-        if($context->param instanceof KEventException) {
-            $exception = $context->param->getException();
-        } else {
-            $exception = $context->param;
-        }
-
-        if(!JDEBUG && $this->getObject('request')->getFormat() == 'html')
-        {
-            //If the error code does not correspond to a status message, use 500
-            $code = $exception->getCode();
-            if(!isset(KHttpResponse::$status_messages[$code])) {
-                $code = '500';
-            }
-
-            foreach([(int) $code, '500'] as $code)
-            {
-                if($page = $this->getPage($code))
-                {
-                    $this->setPage($page);
-
-                    //Set status code (before rendering the error)
-                    $context->response->setStatus($code);
-
-                    //Set the controller
-                    $this->setController($page->getType(), ['page' => $page]);
-
-                    //Render the error
-                    $content = $this->getController()->render($exception);
-
-                    //Set error in the response
-                    $context->response->setContent($content);
-
-                    return true;
-                }
-            }
-        }
-
-        return parent::_renderError($context);
     }
 
     public function getContext()
