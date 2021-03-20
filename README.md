@@ -15,7 +15,7 @@ Pages takes your custom HTML/CSS/JS and churns through layouts to create a page.
 
 Pages has a **flat-file bias**, and **doesn't require a database** to work. You data however can come from any data source, for example you could use, a Joomla component, a database table, a headless CMS or even a webservice like [Airtable](https://airtable.com) or [Google Sheets](https://www.google.com/sheets/about/).
 
-Pages works just like any regular frontend Joomla component, it's 100% compatible with every Joomla template, and also offers a very powerful [theme'ing system](https://github.com/joomlatools/joomlatools-pages/wiki/Themes). 
+Pages works just like any regular frontend Joomla component, it's 100% compatible with every Joomla template, and also offers it's own a very powerful [theme'ing system](https://github.com/joomlatools/joomlatools-pages/wiki/Themes). 
 
 We built it to be your perfect buddy, and [bring joy to Joomla development](https://github.com/joomlatools/joomlatools-pages/wiki/Developer-Joy), it doesn't get in your way and it's always there if you need it.
 
