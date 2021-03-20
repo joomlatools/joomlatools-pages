@@ -11,7 +11,7 @@ Make no mistake, Pages is **not** a static site generator (SSG), Pages works in 
 
 > Pages is more than a page generator, _it's an engine for creating websites_ 
 
-Pages takes your custom HTML/CSS/JS and churns through layouts to create a page. Throughout that process, you can tweak how you want the page to look, what data gets displayed in the layout, using only a little bit of PHP code.
+Pages takes your custom HTML/CSS/JS and churns through layouts to create a page. Throughout that process, you can tweak how you want the page to look, what data gets displayed in the layout, all that is required is a little bit of PHP logic to bring it all together.
 
 Pages has a **flat-file bias**, and **doesn't require a database** to work. You data however can come from any data source, for example you could use, a Joomla component, a database table, a headless CMS or even a webservice like [Airtable](https://airtable.com) or [Google Sheets](https://www.google.com/sheets/about/).
 
