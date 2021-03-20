@@ -50,10 +50,13 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
             {
                 if(class_exists('Sh404sefClassRouterInternal'))
                 {
-                    $page = $dispatcher->getPage();
+                    if($dispatcher->getRoute())
+                    {
+                        $page = $dispatcher->getPage();
 
-                    if($page->path && !$page->isDecorator()) {
-                        Sh404sefClassRouterInternal::$parsedWithJoomlaRouter = true;
+                        if($page->path && !$page->isDecorator()) {
+                            Sh404sefClassRouterInternal::$parsedWithJoomlaRouter = true;
+                        }
                     }
                 }
 
@@ -86,8 +89,9 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
 
         //Get the page
-        if($page = $dispatcher->getPage()->path)
+        if($dispatcher->getRoute())
         {
+            $page = $dispatcher->getPage();
             $menu = JFactory::getApplication()->getMenu()->getActive();
 
             if($this->getObject('request')->isSafe())
@@ -172,7 +176,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
 
         //Cache and cleanup Joomla output if routing to a page
-        if($route = $dispatcher->getRoute())
+        if($dispatcher->getRoute())
         {
             $headers = array();
             foreach (headers_list() as $header)
@@ -215,8 +219,10 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
     {
         $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
 
-        if($page = $dispatcher->getPage()->path)
+        if($dispatcher->getRoute())
         {
+            $page = $dispatcher->getPage();
+
             if($page->has('process/template/modules'))
             {
                 if(count($page->get('process/template/modules')))

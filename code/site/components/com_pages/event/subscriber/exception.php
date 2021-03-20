@@ -54,7 +54,7 @@ class ComPagesEventSubscriberException extends ComPagesEventSubscriberAbstract
             {
                 if($page = $dispatcher->getPage($code))
                 {
-                    $dispatcher->setPage($page);
+                    $dispatcher->getPage()->setProperties($page);
 
                     //Set status code (before rendering the error)
                     $dispatcher->getResponse()->setStatus($code);

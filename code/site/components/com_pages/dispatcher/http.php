@@ -84,7 +84,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             $query = $this->getRequest()->getUrl()->getQuery(true);
 
             if($route = $this->getRouter()->resolve('pages:'.$path,  $query)) {
-                $this->setPage($route->getPage());
+                $this->getPage()->setProperties($route->getPage());
             }
 
             $this->__route = $route;
@@ -161,9 +161,6 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
         //Set the query in the request
         $context->request->setQuery($route->query);
-
-        //Set the route in the context
-        $context->route = $this->getRoute();
 
         //Throw 415 if the media type is not allowed
         $format = strtolower($context->request->getFormat());

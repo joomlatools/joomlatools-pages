@@ -13,12 +13,7 @@ trait ComPagesPageTrait
 
     public function setPage($page)
     {
-        if($this->__page instanceof ComPagesPageInterface && $page instanceof ComPagesPageInterface) {
-            $this->__page->setProperties($page);
-        } else {
-            $this->__page = $page;
-        }
-
+        $this->__page = $page;
         return $this;
     }
 
@@ -28,7 +23,7 @@ trait ComPagesPageTrait
         {
             if(!$this->__page instanceof ComPagesPageInterface)
             {
-                $this->__page = $this->getObject($this->__page ?? 'com://site/pages.page');
+                $this->__page = $this->getObject($this->__page ?? 'page');
 
                 if(!$this->__page instanceof ComPagesPageInterface)
                 {
