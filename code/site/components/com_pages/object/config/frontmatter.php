@@ -45,8 +45,7 @@ class ComPagesObjectConfigFrontmatter extends KObjectConfigYaml
 
                         if(!empty($matches[0]))
                         {
-                            $data = KObjectManager::getInstance()
-                                ->getObject('data.registry')
+                            $data = Koowa::getObject('data.registry')
                                 ->fromPath($matches[1]);
 
                             if($data && !empty($matches[2])) {
