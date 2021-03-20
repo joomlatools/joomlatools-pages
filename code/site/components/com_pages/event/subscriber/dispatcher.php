@@ -52,7 +52,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
                 {
                     $page = $dispatcher->getPage();
 
-                    if($page !== false && !$page->isDecorator()) {
+                    if($page->path && !$page->isDecorator()) {
                         Sh404sefClassRouterInternal::$parsedWithJoomlaRouter = true;
                     }
                 }
@@ -86,7 +86,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
 
         //Get the page
-        if($page = $dispatcher->getPage())
+        if($page = $dispatcher->getPage()->path)
         {
             $menu = JFactory::getApplication()->getMenu()->getActive();
 
@@ -215,7 +215,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
     {
         $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
 
-        if($page = $dispatcher->getPage())
+        if($page = $dispatcher->getPage()->path)
         {
             if($page->has('process/template/modules'))
             {
