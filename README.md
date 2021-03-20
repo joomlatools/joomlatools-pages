@@ -5,15 +5,19 @@
 
 ### What is Joomlatools Pages?
 
-Joomlatools Pages is an easy to use **page generator** for [Joomla](http://www.joomla.org) inspired by the ideas and concepts of flat-file CMS systems like [Grav](https://getgrav.org/) and [Statamic](statamic.com), static site generators like [Jekyll]( https://jekyllrb.com), [Hugo](https://gohugo.io), [Gatsby](https://www.gatsbyjs.org/) and Headless CMS system like [Strapi](https://strapi.io/) and [Prismic](https://prismic.io/) etc. 
+Joomlatools Pages is an easy to use _just-in-time_ **page generator** for [Joomla](http://www.joomla.org) inspired by the ideas and concepts of flat-file CMS systems like [Grav](https://getgrav.org/) and [Statamic](statamic.com), static site generators like [Jekyll]( https://jekyllrb.com), [Hugo](https://gohugo.io), [Gatsby](https://www.gatsbyjs.org/) and Headless CMS system like [Strapi](https://strapi.io/) and [Prismic](https://prismic.io/) etc. 
 
-Make no mistake, Pages is **not** a static site generator (SSG), Pages works in a _dynamic, lazy and smart_ way. A page is dynamically generated, cached and only re-generated when its content or layout has changed.
+Make no mistake, Pages is **not** a static site generator (SSG), Pages works in a _dynamic, lazy and smart_ way. A page is just in time dynamically generated, cached and only re-generated when its content or layout has changed.
 
 > Pages is more than a page generator, _it's an engine for creating websites_ 
 
-Pages takes your Markdown files, custom HTML or PHP code churns through layouts to create a page, then injects that back into your site.  Throughout that process, you can tweak how you want the page to look, what data gets displayed in the layout, and more.
+Pages takes your custom HTML/CSS/JS and churns through layouts to create a page, then injects that back into your site.  Throughout that process, you can tweak how you want the page to look, what data gets displayed in the layout, using only a little bit of PHP code.
 
-Pages has a **flat-file bias**, and **doesn't require a database** to work. The content you’ll render on your site is generally written using Markdown, but you can use any kind of data source, for example you could use, a Joomla component, a database table, a headless CMS or even a webservice like [Airtable](https://airtable.com) or [Google Sheets](https://www.google.com/sheets/about/).
+Pages has a **flat-file bias**, and **doesn't require a database** to work. You data however can come from any data source, for example you could use, a Joomla component, a database table, a headless CMS or even a webservice like [Airtable](https://airtable.com) or [Google Sheets](https://www.google.com/sheets/about/).
+
+Pages works just like any regular frontend Joomla component, it's 100% compatible with every Joomla template, and also offers a very powerful [theme'ing system](https://github.com/joomlatools/joomlatools-pages/wiki/Themes). 
+
+We built it to be your perfect buddy, and [bring joy to Joomla development](https://github.com/joomlatools/joomlatools-pages/wiki/Developer-Joy), it doesn't get in your way and it's always there if you need it.
 
 ### Why Joomlatools Pages?
 
