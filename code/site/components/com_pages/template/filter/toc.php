@@ -48,7 +48,7 @@ class ComPagesTemplateFilterToc extends ComPagesTemplateFilterAbstract
         $matches = array();
         if(preg_match_all('#<h(['.$attributes['min'].'-'.$attributes['max'].'])\s*[^>]*>(.+?)</h\1>#is', $text, $headers))
         {
-            $toc = '<ul id="toc">';
+            $toc = '<ul class="toc">';
             foreach($headers[1] as $key => $level)
             {
                 $content = $headers[2][$key];
@@ -76,7 +76,7 @@ class ComPagesTemplateFilterToc extends ComPagesTemplateFilterAbstract
                 $headers = array();
                 if(preg_match_all('#<h(['.$attributes['min'].'-'.$attributes['max'].'])\s*[^>]*>(.+?)</h\1>#is', $text, $headers))
                 {
-                    $toc = '<ul id="toc">';
+                    $toc = '<ul class="toc">';
 
                     foreach($headers[1] as $key => $level)
                     {
