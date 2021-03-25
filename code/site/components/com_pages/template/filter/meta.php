@@ -44,13 +44,13 @@ class ComPagesTemplateFilterMeta extends ComPagesTemplateFilterAbstract
     protected function _getMetadata()
     {
         $metadata = array();
-        if($page = $this->getTemplate()->page())
+        if($page = $this->page())
         {
             if($page->metadata)
             {
-                if($page->isCollection() && $this->getTemplate()->state()->isUnique())
+                if($page->isCollection() && $this->state()->isUnique())
                 {
-                    if($metadata = $this->getTemplate()->collection()->metadata) {
+                    if($metadata = $this->collection()->metadata) {
                         $metadata->append($page->metadata);
                     } else {
                         $metadata = $page->metadata;
@@ -65,15 +65,15 @@ class ComPagesTemplateFilterMeta extends ComPagesTemplateFilterAbstract
                     if (strpos($metadata['og:image'], 'http') === false)
                     {
                         $this->getTemplate()->getFilter('asset')->filter($metadata['og:image']);
-                        $metadata['og:image'] = (string)$this->getTemplate()->url($metadata['og:image']);
+                        $metadata['og:image'] = (string)$this->url($metadata['og:image']);
                     }
 
                     if (!$metadata['og:url']) {
-                        $metadata['og:url'] = (string)$this->getTemplate()->route($page);
+                        $metadata['og:url'] = (string)$this->route($page);
                     }
 
                     if (strpos($metadata['og:url'], 'http') === false) {
-                        $metadata['og:url'] = (string)$this->getTemplate()->url($metadata['og:url']);
+                        $metadata['og:url'] = (string)$this->url($metadata['og:url']);
                     }
                 }
             }
@@ -85,12 +85,12 @@ class ComPagesTemplateFilterMeta extends ComPagesTemplateFilterAbstract
     protected function _getCanonical()
     {
         $canonical = '';
-        if($page = $this->getTemplate()->page())
+        if($page = $this->page())
         {
             $canonical = $page->canonical ?: '';
 
-            if($page->isCollection() && $this->getTemplate()->state()->isUnique()) {
-                $canonical = $this->getTemplate()->collection()->get('canonical', $canonical);
+            if($page->isCollection() && $this->state()->isUnique()) {
+                $canonical = $this->collection()->get('canonical', $canonical);
             }
 
             if($canonical) {

@@ -9,5 +9,5 @@
 
 abstract class ComPagesTemplateFilterAbstract extends KTemplateFilterAbstract
 {
-
+    use ComPagesTemplateTraitFunction;
 }

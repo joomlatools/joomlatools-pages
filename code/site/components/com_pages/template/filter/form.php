@@ -9,9 +9,11 @@
 
 class ComPagesTemplateFilterForm extends KTemplateFilterForm
 {
+    use ComPagesTemplateTraitFunction;
+
     public function filter(&$text)
     {
-        if($this->getTemplate()->page()->isForm()) {
+        if($this->page()->isForm()) {
             parent::filter($text);
         }
 
