@@ -190,6 +190,17 @@ class ComPagesTemplateDefault extends KTemplate
         return parent::registerFunction($name, $function);
     }
 
+    public function isFunction($name)
+    {
+        $result = false;
+
+        if(isset($this->_functions[$name])) {
+            $result = true;
+        }
+
+        return $result;
+    }
+
     public function handleException(Exception &$exception)
     {
         if($exception instanceof KTemplateExceptionError)

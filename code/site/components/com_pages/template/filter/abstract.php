@@ -9,5 +9,14 @@
 
 abstract class ComPagesTemplateFilterAbstract extends KTemplateFilterAbstract
 {
+    public function __call($method, $arguments)
+    {
+        if($this->getTemplate()->isFunction($method)) {
+            $result = $this->getTemplate()->__call($method, $arguments);
+        } else {
+            $result = parent::__call($method, $arguments);
+        }
 
+        return $result;
+    }
 }
