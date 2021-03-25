@@ -35,7 +35,8 @@ class ComPagesTemplateDefault extends KTemplate
                 'slug'       => [$this, '_createSlug'],
                 'attributes' => [$this, '_createAttributes'],
                 'config'     => [$this, '_getConfig'],
-                'unbox'      => [$this, '_unboxObject']
+                'unbox'      => [$this, '_unboxObject'],
+                'import'     => [$this, '_importFile'],
             ],
             'cache'           => false,
             'cache_namespace' => 'pages',
@@ -83,6 +84,8 @@ class ComPagesTemplateDefault extends KTemplate
 
             if(!in_array($this->_type, $this->_excluded_types))
             {
+                unset($this->_functions['import']); //prevent conflict
+
                 //Create the template engine
                 $config = array(
                     'template'  => $this,
@@ -356,5 +359,10 @@ class ComPagesTemplateDefault extends KTemplate
         else $properties = $object;
 
         return $properties;
+    }
+
+    protected function _importFile($url, $data = array())
+    {
+        return $this->loadFile($url)->render($data);
     }
 }
