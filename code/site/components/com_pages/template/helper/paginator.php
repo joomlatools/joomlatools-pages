@@ -9,12 +9,14 @@
 
 class ComPagesTemplateHelperPaginator extends KTemplateHelperPaginator
 {
+    use ComPagesTemplateTraitFunction;
+
     public function pagination($config = array())
     {
         $html = '';
 
         //If the limit is hardcoded in the collection dont allow it to be changed.
-        if($collection = $this->getTemplate()->page()->collection)
+        if($collection = $this->page()->collection)
         {
             if($collection->state->limit) {
                 $config['show_limit'] = false;
@@ -33,7 +35,7 @@ class ComPagesTemplateHelperPaginator extends KTemplateHelperPaginator
             'offset' => $page->offset,
         ));
 
-        $route = $this->getTemplate()->route($this->getTemplate()->page(), $query);
+        $route = $this->route($this->getTemplate()->page(), $query);
 
         if ($page->active && !$page->current) {
             $html = '<a href="'.$route.'">'.$this->getObject('translator')->translate($title).'</a>';

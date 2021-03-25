@@ -14,7 +14,7 @@ class ComPagesTemplateFilterPlugins extends ComPagesTemplateFilterAbstract
         $matches = array();
         if(preg_match_all('#<ktml:plugins>(.*)<\/ktml:plugins>#siU', $text, $matches))
         {
-            $page = $this->getTemplate()->page();
+            $page = $this->page();
 
             foreach($matches[0] as $key => $match)
             {
