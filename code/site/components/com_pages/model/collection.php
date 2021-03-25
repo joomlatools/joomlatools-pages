@@ -235,12 +235,15 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         {
             if($state->required === true && is_null($state->value))
             {
-                $collection = $this->getName();
+                if($this->getName()) {
+                    $collection = $this->getName();
+                } else {
+                    $collection = (string) $this->getIdentifier();
+                }
 
                 throw new RuntimeException(
                     sprintf('State "%s" is required for collection: %s', $state->name, $collection)
                 );
-
             }
         }
     }
