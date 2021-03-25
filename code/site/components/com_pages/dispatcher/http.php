@@ -30,7 +30,8 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             'behaviors' => [
                 'redirectable',
                 'cacheable',
-                'validatable'
+                'validatable',
+                'prefetchable'
             ],
             'page'    => 'com://site/pages.page',
             'router'  => 'com://site/pages.dispatcher.router',

@@ -59,7 +59,6 @@ return [
                 'com://site/pages.event.subscriber.pagedecorator',
                 'com://site/pages.event.subscriber.exception',
                 'com://site/pages.event.subscriber.staticcache',
-                'com://site/pages.event.subscriber.prefetcher',
             ]
         ],
         'com://site/pages.dispatcher.router.site' => [

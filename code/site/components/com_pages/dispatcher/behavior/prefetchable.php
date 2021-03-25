@@ -7,11 +7,12 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesEventSubscriberPrefetcher extends ComPagesEventSubscriberAbstract
+class ComPagesDispatcherBehaviorPrefetchable extends KControllerBehaviorAbstract
 {
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
+            'priority' => KEvent::PRIORITY_HIGH,
             'options'  => [
                 'selector' => 'a.prefetch',
                 'onload'   => true,
@@ -23,18 +24,18 @@ class ComPagesEventSubscriberPrefetcher extends ComPagesEventSubscriberAbstract
         parent::_initialize($config);
     }
 
-    public function onBeforeDispatcherSend(KEventInterface $event)
+    protected function _beforeSend(KDispatcherContextInterface $context)
     {
-        $content = $event->getTarget()->getResponse()->getContent();
+        $content = $context->getResponse()->getContent();
 
-        if($event->getTarget()->getRequest()->getFormat() == 'html' && $event->getTarget()->isCacheable(true))
+        if($context->subject->getRequest()->getFormat() == 'html' && $context->subject->isCacheable(true))
         {
-            $page     = $event->getTarget()->getPage();
+            $page     = $context->subject->getPage();
             $prefetch = $page->get('process/prefetch',  $this->getObject('com://site/pages.config')->get('http_static_cache', false));
 
             if($prefetch !== false)
             {
-                $template = $event->getTarget()->getController()->getView()->getTemplate();
+                $template = $context->subject->getController()->getView()->getTemplate();
 
                 if(is_scalar($prefetch))
                 {
@@ -46,7 +47,7 @@ class ComPagesEventSubscriberPrefetcher extends ComPagesEventSubscriberAbstract
                 $prefetcher = $template->helper('behavior.prefetcher', $config);
                 $template->getFilter('asset')->filter($prefetcher);
 
-                $event->getTarget()->getResponse()->setContent($content.$prefetcher);
+                $context->subject->getResponse()->setContent($content.$prefetcher);
             }
         }
     }
