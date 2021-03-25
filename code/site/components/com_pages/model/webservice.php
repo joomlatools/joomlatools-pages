@@ -37,7 +37,6 @@ class ComPagesModelWebservice extends ComPagesModelCollection
             'persistable'  => true,
             'identity_key' => 'id',
             'http'         => 'com://site/pages.http.cache',
-            'entity'       => 'resource',
             'url'          => '',
             'data_path'    => '',
             'hash_key'     => array(),

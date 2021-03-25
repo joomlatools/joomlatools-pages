@@ -48,7 +48,7 @@ class ComPagesModelDatabase extends ComPagesModelCollection
     protected function _initializeContext(KModelContext $context)
     {
         //Validate the state
-        $this->_validateState();
+        $this->_validateState($context->state);
 
         if($context->action == 'count' || $context->action == 'hash') {
             $query = $this->getQuery(false);
