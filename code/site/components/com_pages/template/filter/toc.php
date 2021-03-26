@@ -82,7 +82,7 @@ class ComPagesTemplateFilterToc extends ComPagesTemplateFilterAbstract
                         $content = $headers[2][$key];
                         $id      = $this->_generateId($content);
 
-                        $toc .= '<li><a href="#'.$id.'">'.$content.'</a>';
+                        $toc .= '<li><a href="#'.$id.'" title="'.$content.'">'.$content.'</a>';
 
                         if(isset($headers[1][$key + 1])) {
                             $next = $headers[1][$key + 1];
