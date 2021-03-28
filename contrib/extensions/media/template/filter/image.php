@@ -120,7 +120,7 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
                         }
                     }
 
-                    if($this->getTemplate()->helper('ext.media.image.supported', $src)) {
+                    if($this->helper('ext.media.image.supported', $src)) {
                         $attribs['url'] = '/'.ltrim($src, '/');
                     } else {
                         $attribs['url'] = $src;
@@ -163,7 +163,7 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
                     }
 
                     //Filter the images
-                    $html = str_replace($matches[0][$key], $this->getTemplate()->helper('ext.media.image', $options), $html);
+                    $html = str_replace($matches[0][$key], $this->helper('ext.media.image', $options), $html);
                 }
             }
         }
@@ -178,7 +178,7 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
         {
             foreach($matches[1] as $key => $match)
             {
-                $html .= $this->getTemplate()->helper('ext.media.image.import', 'bgset');
+                $html .= $this->helper('ext.media.image.import', 'bgset');
 
                 $attribs = $this->parseAttributes($match);
 
@@ -212,7 +212,7 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
                 }
 
 
-                if($srcset = $this->getTemplate()->helper('ext:media.image.srcset', $matches[3][$key], $options))
+                if($srcset = $this->helper('ext:media.image.srcset', $matches[3][$key], $options))
                 {
                     $attribs['data-sizes'] = 'auto';
                     $attribs['data-bgset'] = implode(',', $srcset);

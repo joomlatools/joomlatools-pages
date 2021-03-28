@@ -73,7 +73,7 @@ class ExtMediaTemplateFilterVideo extends ComPagesTemplateFilterAbstract
                         $text = str_replace($matches[1][$key], $this->buildAttributes($attribs), $text);
 
                         //Enable plyr (custom player)
-                        $text .= $this->getTemplate()->helper('video.player');
+                        $text .= $this->getTemplate()->helper('ext:media.video.player');
                     }
                 }
             }
