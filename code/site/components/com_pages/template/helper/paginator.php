@@ -40,7 +40,7 @@ class ComPagesTemplateHelperPaginator extends KTemplateHelperPaginator
         if ($page->active && !$page->current) {
             $html = '<a href="'.$route.'">'.$this->getObject('translator')->translate($title).'</a>';
         } else {
-            $html = '<a>'.$this->getObject('translator')->translate($title).'</a>';
+            $html = '<span class="active">'.$this->getObject('translator')->translate($title).'</span>';
         }
 
         return $html;
