@@ -10,6 +10,7 @@
 class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
 {
     private $__children = array();
+    private $__copy = null;
 
     protected function _initialize(KObjectConfig $config)
     {
@@ -46,6 +47,11 @@ class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
         return $result;
     }
 
+    public function getEntityCopy()
+    {
+        return $this->__copy;
+    }
+
     public function getMixableMethods($exclude = array())
     {
         $methods = array();
@@ -63,7 +69,7 @@ class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
         if (!$state->isUnique() && $state->recurse && ($state->level == 0 || $state->level > 1))
         {
             $entities = clone $context->entity;
-            $key      = $this->getConfig()->key ?? $entities->getIdentityKey();
+            $key      = $this->getConfig()->key ?? $context->getIdentityKey();
 
             //Filter children
             foreach ($entities as $entity)
@@ -76,15 +82,35 @@ class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
 
                 if($parent && $children = $entities->find([$key => $parent]))
                 {
-                    foreach($children as $child)
-                    {
-                        //Store the nodes by parent
-                        $this->__children[$parent][] = $child;
+                    //Store the nodes by parent
+                    $this->__children[$parent] = $children;
 
+                    foreach($children as $child) {
                         $context->entity->remove($child);
                     }
                 }
             }
+
+            //Store original entities
+            $this->__copy = $entities;
+
+            //Re-order entities
+            $ordering = 0;
+            $reorder = function($entities) use (&$reorder, &$ordering, $key)
+            {
+                foreach($entities as $entity)
+                {
+                    $entity->ordering = ++$ordering;
+
+                    $this->__copy->find($entity->getHandle())->ordering = $entity->ordering;
+
+                    if($entity->hasChildren()) {
+                        $reorder($entity->getChildren());
+                    }
+                }
+            };
+
+            $reorder($context->entity);
 
             //Mixin the behavior
             $context->entity->mixin($this);
