@@ -42,7 +42,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
             'lazyload'  => $this->getConfig()->lazyload,
             'preload'   => $this->getConfig()->preload,
         ))->append(array(
-            'attributes' => array('class' => $config->class),
+            'attributes' => array('class' => $config->class, 'decoding' => 'async'),
         ))->append(array(
             'attributes_container' => array('class' => clone $config->class),
             'attributes_noscript'  => clone $config->attributes,
@@ -240,6 +240,9 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
         {
             $url   = KHttpUrl::fromString($url);
             $query = array_merge(array_filter(KObjectConfig::unbox($config)), $url->query);
+
+            //Add CRC32 checksum
+            $query['crc'] = hash('crc32', filesize($this->_findFile($url)));
 
             ksort($query); //sort alphabetically
             $url->query = $query;

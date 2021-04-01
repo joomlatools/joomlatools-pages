@@ -32,8 +32,6 @@ $max_dpr = 3;
  */
 
 $cache_root     = isset($_SERVER['PAGES_CACHE_ROOT']) ? $_SERVER['PAGES_CACHE_ROOT'] : false;
-$cache_refresh  = isset($_SERVER['HTTP_CACHE_CONTROL']) && strstr($_SERVER['HTTP_CACHE_CONTROL'], 'no-cache') !== false;
-$cache_versions = isset($_SERVER['HTTP_CACHE_ACCEPT']) && strstr($_SERVER['HTTP_CACHE_ACCEPT'], 'versions') !== false;
 
 //Request
 $query = array();
@@ -176,7 +174,7 @@ if($query['image_path'])
     $supported = Image::isSupported($format) && !Image::isAnimated($source);
     $generate  = !empty($parameters);
 
-    if($supported && $generate && (!$destination || !file_exists($destination) || $cache_refresh))
+    if($supported && $generate && (!$destination || !file_exists($destination)))
     {
         try
         {
@@ -234,7 +232,7 @@ if($query['image_path'])
     }
     else
     {
-        if(!file_exists($destination) || $cache_refresh)
+        if(!file_exists($destination))
         {
             //Create the directory
             $dir = dirname($destination);
@@ -246,28 +244,6 @@ if($query['image_path'])
 
                 //Override default permissions for generated file
                 @chmod($destination, 0666 & ~umask());
-            }
-        }
-    }
-
-    //Get a list of all the different file versions
-    $versions = [];
-    if($cache_refresh || $cache_versions)
-    {
-        $filepath = substr($cache_path, 0 , (strrpos($cache_path, ".")));
-        foreach (glob($cache_root.'/'.$filepath.'*') as $file)
-        {
-            if($cache_refresh && $file !== $destination) {
-                unlink($file);
-            }
-
-            if($file != $destination)
-            {
-                foreach(['jpg', 'jpeg', 'png', 'gif'] as $ext) {
-                    $file = str_replace($ext.'_', $ext.'?', $file);
-                }
-
-                $versions[] = str_replace($cache_root, '', $file);
             }
         }
     }
@@ -312,10 +288,6 @@ if($query['image_path'])
         {
             $time  = (microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000;
             header('Server-Timing: tot;desc="Total";dur='.(int) $time);
-        }
-
-        if(!empty($versions)) {
-            header('Cache-Versions: '.implode(',', $versions));
         }
 
         readfile($file);
