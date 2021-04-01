@@ -10,6 +10,7 @@
 class ComPagesModelEntityPage extends ComPagesModelEntityItem
 {
     private $__parent;
+    private $__content;
 
     protected function _initialize(KObjectConfig $config)
     {
@@ -243,6 +244,10 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
 
     public function __toString()
     {
-        return $this->getObject('page.registry')->getPageContent($this->path, true);
+        if(!isset($this->__content)) {
+            $this->__content = $this->getObject('page.registry')->getPageContent($this->path, true);
+        }
+
+        return $this->__content;
     }
 }
