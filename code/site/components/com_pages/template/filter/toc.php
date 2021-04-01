@@ -75,14 +75,14 @@ class ComPagesTemplateFilterToc extends ComPagesTemplateFilterAbstract
                 $headers = array();
                 if(preg_match_all('#<h(['.$attributes['min'].'-'.$attributes['max'].'])\s*[^>]*>(.+?)</h\1>#is', $text, $headers))
                 {
-                    $toc = '<ul class="toc">';
+                    $toc = '<ul class="toc" itemscope itemtype="http://www.schema.org/SiteNavigationElement">';
 
                     foreach($headers[1] as $key => $level)
                     {
                         $content = $headers[2][$key];
                         $id      = $this->_generateId($content);
 
-                        $toc .= '<li><a href="#'.$id.'" title="'.$content.'">'.$content.'</a>';
+                        $toc .= '<li><a href="#'.$id.'" title="'.$content.'" itemprop="url"><span itemprop="name">'.$content.'</span></a>';
 
                         if(isset($headers[1][$key + 1])) {
                             $next = $headers[1][$key + 1];
