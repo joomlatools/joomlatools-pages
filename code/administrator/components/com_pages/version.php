@@ -8,7 +8,7 @@
  */
 class ComPagesVersion extends KObject
 {
-    const VERSION = '0.19.9';
+    const VERSION = '0.19.10';
 
     public function getVersion()
     {
