@@ -25,7 +25,6 @@ class ComPagesTemplateFilterPartial extends ComPagesTemplateFilterAbstract
                 $result = $engine->loadString(trim($matches[2][$key]))->render();
 
                 $text = str_replace($match, $result, $text);
-
             }
         }
     }

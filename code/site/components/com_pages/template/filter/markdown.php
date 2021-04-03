@@ -20,9 +20,12 @@ class ComPagesTemplateFilterMarkdown extends ComPagesTemplateFilterAbstract
 
     public function filter(&$text)
     {
-        $engine = $this->getObject('template.engine.factory')
+        if($this->isEnabled())
+        {
+            $engine = $this->getObject('template.engine.factory')
                 ->createEngine('markdown', array('template' => $this->getTemplate()));
 
-        $text = $engine->loadString($text)->render();
+            $text = $engine->loadString($text)->render();
+        }
     }
 }

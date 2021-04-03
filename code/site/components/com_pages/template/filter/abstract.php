@@ -10,4 +10,18 @@
 abstract class ComPagesTemplateFilterAbstract extends KTemplateFilterAbstract
 {
     use ComPagesTemplateTraitFunction;
+
+    protected function _initialize(KObjectConfig $config)
+    {
+        $config->append(array(
+            'enabled' => true,
+        ));
+
+        parent::_initialize($config);
+    }
+
+    public function isEnabled()
+    {
+        return $this->getConfig()->enabled;
+    }
 }

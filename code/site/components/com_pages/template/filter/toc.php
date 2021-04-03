@@ -46,7 +46,7 @@ class ComPagesTemplateFilterToc extends ComPagesTemplateFilterAbstract
          */
 
         $matches = array();
-        if(preg_match_all('#<h(['.$attributes['min'].'-'.$attributes['max'].'])\s*[^>]*>(.+?)</h\1>#is', $text, $headers))
+        if($this->isEnabled() && preg_match_all('#<h(['.$attributes['min'].'-'.$attributes['max'].'])\s*[^>]*>(.+?)</h\1>#is', $text, $headers))
         {
             foreach($headers[1] as $key => $level)
             {
@@ -70,45 +70,49 @@ class ComPagesTemplateFilterToc extends ComPagesTemplateFilterAbstract
         {
             foreach($matches[0] as $key => $match)
             {
-                $attributes = array_merge($attributes, $this->parseAttributes($matches[1][$key]));
-
-                $headers = array();
-                if(preg_match_all('#<h(['.$attributes['min'].'-'.$attributes['max'].'])\s*[^>]*>(.+?)</h\1>#is', $text, $headers))
+                $toc = '';
+                if($this->isEnabled())
                 {
-                    $toc = '<ul class="toc" itemscope itemtype="http://www.schema.org/SiteNavigationElement">';
+                    $attributes = array_merge($attributes, $this->parseAttributes($matches[1][$key]));
 
-                    foreach($headers[1] as $key => $level)
+                    $headers = array();
+                    if(preg_match_all('#<h(['.$attributes['min'].'-'.$attributes['max'].'])\s*[^>]*>(.+?)</h\1>#is', $text, $headers))
                     {
-                        $content = $headers[2][$key];
-                        $id      = $this->_generateId($content);
+                        $toc = '<ul class="toc" itemscope itemtype="http://www.schema.org/SiteNavigationElement">';
 
-                        $toc .= '<li><a href="#'.$id.'" title="'.$content.'" itemprop="url"><span itemprop="name">'.$content.'</span></a>';
+                        foreach($headers[1] as $key => $level)
+                        {
+                            $content = $headers[2][$key];
+                            $id      = $this->_generateId($content);
 
-                        if(isset($headers[1][$key + 1])) {
-                            $next = $headers[1][$key + 1];
-                        } else {
-                            $next = $headers[1][0];
+                            $toc .= '<li><a href="#'.$id.'" title="'.$content.'" itemprop="url"><span itemprop="name">'.$content.'</span></a>';
+
+                            if(isset($headers[1][$key + 1])) {
+                                $next = $headers[1][$key + 1];
+                            } else {
+                                $next = $headers[1][0];
+                            }
+
+                            if($next > $level) {
+                                $toc .= '<ul>';
+                            }
+
+                            if($next < $level) {
+                                $toc .= str_repeat('</li></ul>', $level - $next);
+                            }
+
+                            if($next == $level) {
+                                $toc .= '</li>';
+                            }
                         }
 
-                        if($next > $level) {
-                            $toc .= '<ul>';
-                        }
-
-                        if($next < $level) {
-                            $toc .= str_repeat('</li></ul>', $level - $next);
-                        }
-
-                        if($next == $level) {
-                            $toc .= '</li>';
-                        }
+                        $toc .= '</ul>';
                     }
 
-                    $toc .= '</ul>';
                 }
 
                 //Remove the <khtml:toc> tags
                 $text = str_replace($match, $toc, $text);
-
             }
         }
     }
