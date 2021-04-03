@@ -34,7 +34,7 @@ class ComPagesTemplateFilterHighlight extends ComPagesTemplateFilterAbstract
 
     public function filter(&$text)
     {
-        if(preg_match_all('#<pre>\s*<code\s*([^>]*)>(.*)<\/code>\s*</pre>#siU', $text, $matches))
+        if($this->isEnabled() && preg_match_all('#<pre>\s*<code\s*([^>]*)>(.*)<\/code>\s*</pre>#siU', $text, $matches))
         {
             foreach($matches[2] as $key => $code)
             {

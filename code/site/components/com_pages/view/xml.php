@@ -36,11 +36,36 @@ class ComPagesViewXml extends KViewTemplate
 
     protected function _actionRender(KViewContext $context)
     {
+        //Disable filters
+        if($filters = $this->getPage()->get('process/filters'))
+        {
+            $filters = (array) KObjectConfig::unbox($filters);
+
+            //Disable filters
+            foreach ($filters as $key => $value)
+            {
+                if (is_numeric($key))
+                {
+                    if ($value[0] == '-') {
+                        $this->getTemplate()->addFilter(substr($value, 1), ['enabled' => false]);
+                        unset($filters[$key]);
+                    }
+                }
+                else
+                {
+                    if ($key[0] == '-') {
+                        $this->getTemplate()->addFilter(substr($key, 1), $value['enabled'] = false);
+                        unset($filters[$key]);
+                    }
+                }
+            }
+        }
+
         $template = clone $this->getTemplate()->setParameters($context->parameters);
 
         //Add page filters
-        if($filters = $this->getPage()->get('process/filters')) {
-            $template->addFilters((array) KObjectConfig::unbox($filters));
+        if($filters) {
+            $template->addFilters($filters);
         }
 
         //Load the page

@@ -11,9 +11,18 @@ class ComPagesTemplateFilterForm extends KTemplateFilterForm
 {
     use ComPagesTemplateTraitFunction;
 
+    protected function _initialize(KObjectConfig $config)
+    {
+        $config->append(array(
+            'enabled' => true,
+        ));
+
+        parent::_initialize($config);
+    }
+
     public function filter(&$text)
     {
-        if($this->page()->isForm()) {
+        if($this->isEnabled() && $this->page()->isForm()) {
             parent::filter($text);
         }
 
@@ -24,5 +33,10 @@ class ComPagesTemplateFilterForm extends KTemplateFilterForm
     {
         //Action can be empty in HTML5 forms
         return $this;
+    }
+
+    public function isEnabled()
+    {
+        return $this->getConfig()->enabled;
     }
 }
