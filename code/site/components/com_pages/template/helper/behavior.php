@@ -100,9 +100,11 @@ PREFETCHER;
         $html = '';
         if (!static::isLoaded('highlight'))
         {
-            $html .= '<ktml:script src="https://unpkg.com/@highlightjs/cdn-assets@10.7.1/highlight.' . (!$config->debug ? 'min.js' : 'js') . '" defer="defer" />';
-            $html .= '<ktml:script src="https://unpkg.com/highlightjs-badge@0.1.9/highlightjs-badge.' . (!$config->debug ? 'min.js' : 'js') . '" defer="defer" />';
-            $html .= '<ktml:style src="https://unpkg.com/@highlightjs/cdn-assets@10.7.1/styles/'.$config->style.'.min.css" />';
+            $style_url = 'https://unpkg.com/@highlightjs/cdn-assets@10.7.1/styles/'.$config->style.'.min.css';
+            $hljs_url  = 'https://unpkg.com/@highlightjs/cdn-assets@10.7.1/highlight.' . (!$config->debug ? 'min.js' : 'js');
+            $badge_url = 'https://unpkg.com/highlightjs-badge@0.1.9/highlightjs-badge.' . (!$config->debug ? 'min.js' : 'js');
+    
+            $html .= '<ktml:style src= />';
             $html .= <<<HIGHLIGHT
 <script>
 document.addEventListener('DOMContentLoaded', (event) => {
@@ -112,13 +114,43 @@ document.addEventListener('DOMContentLoaded', (event) => {
         contentSelector: '$config->selector pre > code',
     };
     
-    const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
+    const observer = new IntersectionObserver(entries => 
+    {
+        entries.forEach(entry => 
+        {
             if (entry.intersectionRatio > 0) 
             {
-                hljs.highlightElement(entry.target);
-                window.highlightJsBadge(options);
-		        
+                if(typeof hljs == 'undefined')
+                {
+                    var style = document.createElement('link');
+                    style.rel = 'stylesheet'
+                    style.href = '$style_url'
+                    document.head.appendChild(style)
+
+                    var script = document.createElement('script')
+                    script.async = false
+                    script.src   = '$hljs_url'
+                    document.head.appendChild(script)
+                    
+                    var badge = document.createElement('script')
+                    badge.async = false
+                    badge.src   = '$badge_url'
+                    document.head.appendChild(badge)
+                    
+                    script.addEventListener('load', () => {
+                        hljs.highlightElement(entry.target);
+                    })
+                
+                    badge.addEventListener('load', () => {
+                        window.highlightJsBadge(options);  
+                    })
+                }
+                else
+                {
+                    hljs.highlightElement(entry.target);
+                    window.highlightJsBadge(options);
+                }
+               
 		        observer.unobserve(entry.target);
             }
         });
