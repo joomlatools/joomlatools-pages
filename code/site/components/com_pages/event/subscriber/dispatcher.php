@@ -42,6 +42,23 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
         $application = JFactory::getApplication();
 
+        //Turn off component sef_advanced to bypass routing failure
+        //See: https://github.com/joomla/joomla-cms/blob/staging/libraries/src/Router/Router.php#L238
+        $application->getRouter()->attachParseRule(function($router, $url) use ($dispatcher)
+        {
+            if($dispatcher->getRoute())
+            {
+                $page = $dispatcher->getPage();
+
+                if($page->path && !$page->isDecorator())
+                {
+                    $option = $router->getVar('option');
+                    JComponentHelper::getParams($option)->set('sef_advanced', 0);
+                }
+            }
+
+        },  JRouter::PROCESS_AFTER);
+
         //Turn off sh404sef for com_pages
         if(JComponentHelper::isEnabled('com_sh404sef'))
         {
