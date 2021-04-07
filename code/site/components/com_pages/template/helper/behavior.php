@@ -22,6 +22,7 @@ class ComPagesTemplateHelperBehavior extends ComKoowaTemplateHelperBehavior
                 'truncate'  => null,
                 'arialabel' => 'Anchor',
             ),
+            'version'  => '4.3.0',
             'selector' => 'article h2, article h3, article h4, article h5, article h6',
         ));
 
@@ -30,7 +31,7 @@ class ComPagesTemplateHelperBehavior extends ComKoowaTemplateHelperBehavior
         {
             $selector = json_encode($config->selector);
 
-            $html .= '<ktml:script src="assets://com_pages/js/anchor-v4.2.1.'.(!$config->debug ? 'min.js' : 'js').'" defer="defer" />';
+            $html .= '<ktml:script src="https://unpkg.com/anchor-js@'.$config->version.'/anchor.'.(!$config->debug ? 'min.js' : 'js').'" defer="defer" />';
             $html .= <<<ANCHOR
 <script>
 document.addEventListener("DOMContentLoaded", function(event) {
@@ -54,12 +55,13 @@ ANCHOR;
             'selector' => 'a.prefetch',
             'onload'   => true,
             'onhover'  => true,
+            'version'  => $this->getObject('com://site/pages.version')->getVersion()
         ));
 
         $html = '';
         if (!static::isLoaded('prefetcher'))
         {
-            $html .= '<ktml:script src="assets://com_pages/js/prefetcher-v1.1.1.'.(!$config->debug ? 'min.js' : 'js').'" defer="defer" />';
+            $html .= '<ktml:script src="https://files.joomlatools.com/pages@'.$config->version.'/prefetcher.'.(!$config->debug ? 'min.js' : 'js').'" defer="defer" />';
             $html .= <<<PREFETCHER
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -83,6 +85,7 @@ PREFETCHER;
             'style'    => 'atom-one-light',
             'badge_icon' => true,
             'badge_lang' => true,
+            'version'    => '10.7.1',
         ));
 
         if($config->badge_icon) {
@@ -100,8 +103,8 @@ PREFETCHER;
         $html = '';
         if (!static::isLoaded('highlight'))
         {
-            $style_url = 'https://unpkg.com/@highlightjs/cdn-assets@10.7.1/styles/'.$config->style.'.min.css';
-            $hljs_url  = 'https://unpkg.com/@highlightjs/cdn-assets@10.7.1/highlight.' . (!$config->debug ? 'min.js' : 'js');
+            $style_url = 'https://unpkg.com/@highlightjs/cdn-assets@'.$config->version.'/styles/'.$config->style.'.min.css';
+            $hljs_url  = 'https://unpkg.com/@highlightjs/cdn-assets@'.$config->version.'/highlight.' . (!$config->debug ? 'min.js' : 'js');
             $badge_url = 'https://unpkg.com/highlightjs-badge@0.1.9/highlightjs-badge.' . (!$config->debug ? 'min.js' : 'js');
     
             $html .= '<ktml:style src= />';

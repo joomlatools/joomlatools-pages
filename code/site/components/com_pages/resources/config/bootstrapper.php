@@ -24,7 +24,6 @@ return [
         'page.registry' => 'com://site/pages.page.registry',
         'data.registry' => 'com://site/pages.data.registry',
         'model.factory' => 'com://site/pages.model.factory',
-        'com://site/pages.version' => 'com://admin/pages.version',
     ],
 
     'identifiers' => [

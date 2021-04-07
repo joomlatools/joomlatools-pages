@@ -30,14 +30,8 @@
         <folder>view</folder>
     </files>
 
-    <media folder="media">
-        <folder>com_pages</folder>
-    </media>
-
     <administration>
         <files folder="administrator/components/com_pages">
-            <filename>version.php</filename>
-
             <folder>language</folder>
         </files>
     </administration>
