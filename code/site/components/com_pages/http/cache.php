@@ -20,8 +20,8 @@ class ComPagesHttpCache extends KHttpClient
     {
         $config->append([
             'cache'      => false,
-            'cache_path' => $this->getObject('com://site/pages.config')->getSitePath('cache'),
-            'debug'      => JDEBUG ? true : false,
+            'cache_path' => $this->getObject('pages.config')->getSitePath('cache'),
+            'debug'      => $this->getConfig('pages.config')->debug ? true : false,
 
         ]);
 

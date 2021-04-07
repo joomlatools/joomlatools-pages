@@ -206,7 +206,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
             unset($headers['Expires']);
 
             //Do not cache if Joomla is running in debug mode
-            if(!JDEBUG && $dispatcher->isCacheable() && $dispatcher->isDecorated())
+            if(!$this->getConfig('pages.config')->debug && $dispatcher->isCacheable() && $dispatcher->isDecorated())
             {
                 $content = $event->getTarget()->getBody();
 

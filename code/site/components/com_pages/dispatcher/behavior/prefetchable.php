@@ -17,7 +17,7 @@ class ComPagesDispatcherBehaviorPrefetchable extends KControllerBehaviorAbstract
                 'selector' => 'a.prefetch',
                 'onload'   => true,
                 'onhover'  => true,
-                'debug'    => JDEBUG
+                'debug'    => $this->getConfig('pages.config')->debug
             ],
         ));
 
@@ -31,7 +31,7 @@ class ComPagesDispatcherBehaviorPrefetchable extends KControllerBehaviorAbstract
         if($context->subject->getRequest()->getFormat() == 'html' && $context->subject->isCacheable(true))
         {
             $page     = $context->subject->getPage();
-            $prefetch = $page->get('process/prefetch',  $this->getObject('com://site/pages.config')->get('http_static_cache', false));
+            $prefetch = $page->get('process/prefetch',  $this->getObject('pages.config')->get('http_static_cache', false));
 
             if($prefetch !== false)
             {
