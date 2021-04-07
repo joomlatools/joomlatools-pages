@@ -16,6 +16,9 @@
  */
 class Prefetcher {
   constructor(options) {
+
+    this.version = '1.1.2';
+
     //Cache of URLs we've prefetched
     this.cache = new Set(Array.from(this.getSessionStorage().load("cache")));
 
