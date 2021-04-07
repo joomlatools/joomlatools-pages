@@ -42,8 +42,8 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'cache'         => JDEBUG ? false : true,
-            'cache_path'    => $this->getObject('com://site/pages.config')->getSitePath('cache'),
+            'cache'         => $this->getConfig('pages.config')->debug ? false : true,
+            'cache_path'    => $this->getObject('pages.config')->getSitePath('cache'),
             'cache_validation' => true,
             'collections' => array('pages' => ['model' => 'com://site/pages.model.pages']),
             'redirects'   => array(),

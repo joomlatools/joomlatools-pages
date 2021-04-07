@@ -11,7 +11,7 @@ class ComPagesTemplateFilterAsset extends ComKoowaTemplateFilterAsset
 {
     protected function _initialize(KObjectConfig $config)
     {
-        $site_path = $this->getObject('com://site/pages.config')->getSitePath();
+        $site_path = $this->getObject('pages.config')->getSitePath();
         $root_path = Koowa::getInstance()->getRootPath();
 
         $config->append(array(

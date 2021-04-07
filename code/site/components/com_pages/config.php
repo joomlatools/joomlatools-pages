@@ -59,6 +59,7 @@ class ComPagesConfig extends KObject implements KObjectSingleton
             'page'        => array(),
             'sites'       => array('[*]' => JPATH_ROOT.'/joomlatools-pages'),
             'headers'     => array(),
+            'debug'       => JFactory::getConfig()->get('debug'),
 
             'composer_path' => $config->site_path.'/vendor',
         ));
@@ -124,5 +125,10 @@ class ComPagesConfig extends KObject implements KObjectSingleton
         }
 
         return $options;
+    }
+
+    final public function __get($key)
+    {
+        return $this->get($key);
     }
 }

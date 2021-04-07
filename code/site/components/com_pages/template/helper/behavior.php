@@ -13,7 +13,7 @@ class ComPagesTemplateHelperBehavior extends ComKoowaTemplateHelperBehavior
     {
         $config = new ComPagesObjectConfig($config);
         $config->append(array(
-            'debug' =>  JFactory::getApplication()->getCfg('debug'),
+            'debug' =>  $this->getConfig('pages.config')->debug,
             'options'  => array(
                 'placement' => 'right',
                 'visibale'  => 'hover',
@@ -51,7 +51,7 @@ ANCHOR;
     {
         $config = new ComPagesObjectConfig($config);
         $config->append(array(
-            'debug'    =>  JFactory::getApplication()->getCfg('debug'),
+            'debug'    =>  $this->getConfig('pages.config')->debug,
             'selector' => 'a.prefetch',
             'onload'   => true,
             'onhover'  => true,
@@ -80,7 +80,7 @@ PREFETCHER;
     {
         $config = new ComPagesObjectConfig($config);
         $config->append(array(
-            'debug'    =>  JFactory::getApplication()->getCfg('debug'),
+            'debug'    => $this->getConfig('pages.config')->debug,
             'selector' => 'body',
             'style'    => 'atom-one-light',
             'badge_icon' => true,

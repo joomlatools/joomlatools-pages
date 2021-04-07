@@ -69,7 +69,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     {
         $result = false;
 
-        if(!isset($this->__route) && $this->getObject('com://site/pages.config')->getSitePath() !== false)
+        if(!isset($this->__route) && $this->getObject('pages.config')->getSitePath() !== false)
         {
             $base  = $this->getRequest()->getBasePath();
             $url   = urldecode($this->getRequest()->getUrl()->getPath());
@@ -151,7 +151,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
         //Throw 404 if the site was not found
-        if(false ===  $this->getObject('com://site/pages.config')->getSitePath()) {
+        if(false ===  $this->getObject('pages.config')->getSitePath()) {
             throw new KHttpExceptionNotFound('Site Not Found');
         }
 
