@@ -114,14 +114,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
         contentSelector: '$config->selector pre > code',
     };
     
-    const observer = new IntersectionObserver(entries => 
-    {
-        entries.forEach(entry => 
-        {
-            if (entry.intersectionRatio > 0) 
-            {
-                if(typeof hljs == 'undefined')
-                {
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.intersectionRatio > 0)  {
+                if(typeof hljs == 'undefined') {
                     var style = document.createElement('link');
                     style.rel = 'stylesheet'
                     style.href = '$style_url'
@@ -144,9 +140,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     badge.addEventListener('load', () => {
                         window.highlightJsBadge(options);  
                     })
-                }
-                else
-                {
+                } else {
                     hljs.highlightElement(entry.target);
                     window.highlightJsBadge(options);
                 }
