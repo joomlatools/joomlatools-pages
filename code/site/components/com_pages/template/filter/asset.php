@@ -17,6 +17,7 @@ class ComPagesTemplateFilterAsset extends ComKoowaTemplateFilterAsset
         $config->append(array(
             'priority' => self::PRIORITY_LOW,
             'schemes' => array(
+                'host://'   =>  $this->getObject('request')->getBaseUrl()->toString(KHttpUrl::AUTHORITY),
                 'theme://'  => 'site://theme/',
                 'site://'   => 'base://'.trim(str_replace($root_path, '', $site_path), '/').'/',
             ),
