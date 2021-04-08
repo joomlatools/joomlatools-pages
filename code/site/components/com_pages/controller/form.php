@@ -42,6 +42,8 @@ class ComPagesControllerForm extends ComPagesControllerPage
         {
             if(substr($redirect, 0, 4) !== 'http') {
                 $redirect = $this->getView()->getRoute($redirect);
+            } else {
+                $redirect = KHttpUrl::fromTemplate($redirect, $context->request->data->toArray());
             }
 
             $this->getResponse()->setRedirect($redirect);
