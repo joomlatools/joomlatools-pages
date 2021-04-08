@@ -15,6 +15,7 @@ class ComPagesTemplateFilterToc extends ComPagesTemplateFilterAbstract
             'min_level' => 2,
             'max_level' => 6,
             'anchor'     => true,
+            'icon'       => '¶'
         ));
 
         parent::_initialize($config);
@@ -49,6 +50,8 @@ class ComPagesTemplateFilterToc extends ComPagesTemplateFilterAbstract
 
                 if($this->getConfig()->anchor)
                 {
+                    $icon = $this->getConfig()->icon;
+
                     //Accessible anchor links, see https://codepen.io/johanjanssens/pen/PoWObpL
                     $text .= <<<ANCHOR
 <style>
@@ -63,13 +66,15 @@ class ComPagesTemplateFilterToc extends ComPagesTemplateFilterAbstract
     color: inherit !important;
   }
   .toc-anchor a::after  {
-    content: '#';
-    padding: 0 .15em; /* to make the content a bigger target */
+    content: '$icon';
+    font-size: 0.8em;
+    padding-left: .3em; /* to make the content a bigger target */
     pointer-events: auto;
-    display: none;
+    visibility: hidden;
+    display: inline-block;
   }
   .toc-anchor:hover a::after {
-    display: inline-block;
+    visibility: visible;
   }
 }
 </style>
