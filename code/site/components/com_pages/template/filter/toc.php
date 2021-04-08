@@ -12,20 +12,9 @@ class ComPagesTemplateFilterToc extends ComPagesTemplateFilterAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'min_level' => 1,
+            'min_level' => 2,
             'max_level' => 6,
-            'anchor'     => [
-                'enabled'   => true,
-                'options' => [
-                    'placement' => 'right',
-                    'visibale'  => 'hover',
-                    'icon'      => "",
-                    'class'     => null,
-                    'truncate'  => null,
-                    'arialabel' => 'Anchor',
-                ],
-                'selector' => 'article h2, article h3, article h4, article h5, article h6',
-            ],
+            'anchor'     => true,
         ));
 
         parent::_initialize($config);
@@ -46,37 +35,61 @@ class ComPagesTemplateFilterToc extends ComPagesTemplateFilterAbstract
          */
 
         $matches = array();
-        if($this->isEnabled() && preg_match_all('#<h(['.$attributes['min'].'-'.$attributes['max'].'])\s*[^>]*>(.+?)</h\1>#is', $text, $headers))
+        if($this->isEnabled())
         {
+            preg_match_all('#<h(['.$attributes['min'].'-'.$attributes['max'].'])\s*[^>]*>(.+?)</h\1>#is', $text, $headers);
+
             foreach($headers[1] as $key => $level)
             {
                 $content = $headers[2][$key];
                 $id      = $this->_generateId($content);
 
-                $result = '<h'.$level.' id="'.$id.'">'.$content.'</h'.$level.'>';
+                $result = '<h'.$level.' id="'.$id.'" class="toc-anchor"><a href="#'.$id.'">'.$content.'</a></h'.$level.'>';
                 $text   = str_replace($headers[0][$key], $result, $text);
 
-                if($this->getConfig()->anchor->enabled) {
-                    $text .= $this->getTemplate()->helper('behavior.anchor', KObjectConfig::unbox($this->getConfig()->anchor));
+                if($this->getConfig()->anchor)
+                {
+                    //Accessible anchor links, see https://codepen.io/johanjanssens/pen/PoWObpL
+                    $text .= <<<ANCHOR
+<style>
+@media (hover: hover) {
+  .toc-anchor  {
+    margin-left: -1em;
+    padding-left: 1em;
+  }
+  .toc-anchor a {
+    text-decoration: none;
+    pointer-events: none;
+    color: inherit !important;
+  }
+  .toc-anchor a::after  {
+    content: '#';
+    padding: 0 .15em; /* to make the content a bigger target */
+    pointer-events: auto;
+    display: none;
+  }
+  .toc-anchor:hover a::after {
+    display: inline-block;
+  }
+}
+</style>
+ANCHOR;
+
                 }
             }
-        }
 
-        /*
-         * Table of content
-         */
-        $matches = array();
-        if(preg_match_all('#<ktml:toc\s*([^>]*)>#siU', $text, $matches))
-        {
-            foreach($matches[0] as $key => $match)
+            /*
+             * Table of content
+            */
+            $matches = array();
+            if(preg_match_all('#<ktml:toc\s*([^>]*)>#siU', $text, $matches))
             {
-                $toc = '';
-                if($this->isEnabled())
+                foreach($matches[0] as $key => $match)
                 {
+                    $toc = '';
                     $attributes = array_merge($attributes, $this->parseAttributes($matches[1][$key]));
 
-                    $headers = array();
-                    if(preg_match_all('#<h(['.$attributes['min'].'-'.$attributes['max'].'])\s*[^>]*>(.+?)</h\1>#is', $text, $headers))
+                    if($headers)
                     {
                         $toc = '<ul class="toc" itemscope itemtype="http://www.schema.org/SiteNavigationElement">';
 

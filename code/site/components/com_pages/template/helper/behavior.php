@@ -9,44 +9,6 @@
 
 class ComPagesTemplateHelperBehavior extends ComKoowaTemplateHelperBehavior
 {
-    public function anchor($config = array())
-    {
-        $config = new ComPagesObjectConfig($config);
-        $config->append(array(
-            'debug' =>  $this->getConfig('pages.config')->debug,
-            'options'  => array(
-                'placement' => 'right',
-                'visibale'  => 'hover',
-                'icon'      => "",
-                'class'     => null,
-                'truncate'  => null,
-                'arialabel' => 'Anchor',
-            ),
-            'version'  => '4.3.0',
-            'selector' => 'article h2, article h3, article h4, article h5, article h6',
-        ));
-
-        $html = '';
-        if (!static::isLoaded('anchor'))
-        {
-            $selector = json_encode($config->selector);
-
-            $html .= '<ktml:script src="https://unpkg.com/anchor-js@'.$config->version.'/anchor.'.(!$config->debug ? 'min.js' : 'js').'" defer="defer" />';
-            $html .= <<<ANCHOR
-<script>
-document.addEventListener("DOMContentLoaded", function(event) {
-     anchors.options = $config->options  
-     anchors.add($selector);if(document.querySelector('.no-anchor')!==null){anchors.remove('.no-anchor');}
-})
-</script>
-ANCHOR;
-
-            static::setLoaded('anchor');
-        }
-
-        return $html;
-    }
-
     public function prefetcher($config = array())
     {
         $config = new ComPagesObjectConfig($config);
