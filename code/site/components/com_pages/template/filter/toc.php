@@ -52,6 +52,10 @@ class ComPagesTemplateFilterToc extends ComPagesTemplateFilterAbstract
                 {
                     $icon = $this->getConfig()->icon;
 
+                    if(strlen($icon) == 1) {
+                        $icon = '"'.$icon.'"';
+                    }
+
                     //Accessible anchor links, see https://codepen.io/johanjanssens/pen/PoWObpL
                     $text .= <<<ANCHOR
 <style>
@@ -66,7 +70,7 @@ class ComPagesTemplateFilterToc extends ComPagesTemplateFilterAbstract
     color: inherit !important;
   }
   .toc-anchor a::after  {
-    content: '$icon';
+    content: $icon;
     font-size: 0.8em;
     padding-left: .3em; /* to make the content a bigger target */
     pointer-events: auto;
