@@ -15,7 +15,7 @@ class ComPagesTemplateFilterToc extends ComPagesTemplateFilterAbstract
             'min_level' => 2,
             'max_level' => 6,
             'anchor'     => true,
-            'icon'       => '¶'
+            'icon'       => '#'
         ));
 
         parent::_initialize($config);
