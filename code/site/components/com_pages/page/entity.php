@@ -18,7 +18,7 @@ class ComPagesPageEntity extends ComPagesModelEntityPage implements ComPagesPage
                     'filters' => [],
                 ],
                 'layout'      => array(),
-                'colllection' => null,
+                'collection' => null,
                 'form'        => null,
             ],
         ]);
