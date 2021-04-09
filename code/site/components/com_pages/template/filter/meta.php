@@ -17,8 +17,9 @@ class ComPagesTemplateFilterMeta extends ComPagesTemplateFilterAbstract
         if($this->isEnabled() && !$included && !empty($text))
         {
             $meta = array();
+            $metadata = $this->unbox($this->metadata());
 
-            foreach($this->_getMetadata() as $name => $content)
+            foreach($metadata as $name => $content)
             {
                 if($content)
                 {
@@ -33,71 +34,13 @@ class ComPagesTemplateFilterMeta extends ComPagesTemplateFilterAbstract
                 }
             }
 
-            $meta[] = $this->_getCanonical();
+            if($canonical = $this->canonical()) {
+                $meta[] = sprintf('<link href="%s" rel="canonical" />', $canonical);
+            }
 
             $text = implode("", $meta).$text;
 
             $included = true;
         }
-    }
-
-    protected function _getMetadata()
-    {
-        $metadata = array();
-        if($page = $this->page())
-        {
-            if($page->metadata)
-            {
-                if($page->isCollection() && $this->state()->isUnique())
-                {
-                    if($metadata = $this->collection()->metadata) {
-                        $metadata->append($page->metadata);
-                    } else {
-                        $metadata = $page->metadata;
-                    }
-                }
-                else $metadata = $page->metadata;
-
-                $metadata = KObjectConfig::unbox($metadata);
-
-                if(isset($metadata['og:type']) && $metadata['og:type'])
-                {
-                    if (strpos($metadata['og:image'], 'http') === false)
-                    {
-                        $this->getTemplate()->getFilter('asset')->filter($metadata['og:image']);
-                        $metadata['og:image'] = (string)$this->url($metadata['og:image']);
-                    }
-
-                    if (!$metadata['og:url']) {
-                        $metadata['og:url'] = (string)$this->route($page);
-                    }
-
-                    if (strpos($metadata['og:url'], 'http') === false) {
-                        $metadata['og:url'] = (string)$this->url($metadata['og:url']);
-                    }
-                }
-            }
-        }
-
-        return $metadata;
-    }
-
-    protected function _getCanonical()
-    {
-        $canonical = '';
-        if($page = $this->page())
-        {
-            $canonical = $page->canonical ?: '';
-
-            if($page->isCollection() && $this->state()->isUnique()) {
-                $canonical = $this->collection()->get('canonical', $canonical);
-            }
-
-            if($canonical) {
-                $canonical = sprintf('<link href="%s" rel="canonical" />', $canonical);
-            }
-        }
-
-        return $canonical;
     }
 }

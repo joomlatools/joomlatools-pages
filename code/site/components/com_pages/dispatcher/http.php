@@ -31,7 +31,8 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
                 'redirectable',
                 'cacheable',
                 'validatable',
-                'prefetchable'
+                'prefetchable',
+                'crawlable'
             ],
             'page'    => 'com://site/pages.page',
             'router'  => 'com://site/pages.dispatcher.router',
@@ -225,28 +226,6 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         else $result = $this->getController()->execute('submit', $context);
 
         return $result;
-    }
-
-    protected function _beforeSend(KDispatcherContextInterface $context)
-    {
-        //Add a (self-referential) canonical URL (only to GET and HEAD requests)
-        if($context->page && $context->request->isCacheable())
-        {
-            if(!$context->page->canonical && $this->getRoute())
-            {
-                $route = $context->router->generate($this->getRoute());
-                $context->page->canonical = (string) $context->router->qualify($route);
-            }
-
-            $this->getResponse()->getHeaders()->set('Link', array($context->page->canonical => array('rel' => 'canonical')));
-
-            //Add X-Robots-Tag
-            if($context->page->metadata->has('robots'))
-            {
-                $tags = KObjectConfig::unbox($context->page->metadata->robots);
-                $this->getResponse()->getHeaders()->set('X-Robots-Tag', $tags);
-            }
-        }
     }
 
     protected function _actionSend(KDispatcherContextInterface $context)
