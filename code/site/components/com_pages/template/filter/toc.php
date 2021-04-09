@@ -100,7 +100,7 @@ ANCHOR;
                     $toc = '';
                     $attributes = array_merge($attributes, $this->parseAttributes($matches[1][$key]));
 
-                    if($headers)
+                    if($headers[1])
                     {
                         $toc = '<ul class="toc" itemscope itemtype="http://www.schema.org/SiteNavigationElement">';
 
