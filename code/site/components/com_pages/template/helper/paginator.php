@@ -27,11 +27,13 @@ class ComPagesTemplateHelperPaginator extends KTemplateHelperPaginator
 
         $this->_initialize($config);
 
-        //If the limit is hardcoded in the collection dont allow it to be changed.
         //See: https://www.a11ymatters.com/pattern/pagination/
         $html = '';
         if($collection = $this->page()->collection)
         {
+            $items = $this->_items($config);
+
+            //If the limit is hardcoded in the collection dont allow it to be changed.
             if($collection->state->limit) {
                 $config['show_limit'] = false;
             }
@@ -44,8 +46,8 @@ class ComPagesTemplateHelperPaginator extends KTemplateHelperPaginator
 
             if ($config->show_pages)
             {
-                $html .= '<ul class="k-pagination__pages">';
-                $html .=  $this->_pages($this->_items($config));
+                $html .= '<ul class="k-pagination__pages" itemscope itemtype="http://schema.org/SiteNavigationElement">';
+                $html .=  $this->_pages($items);
                 $html .= '</ul>';
             }
 
@@ -60,17 +62,19 @@ class ComPagesTemplateHelperPaginator extends KTemplateHelperPaginator
             }
 
             $html .= '</nav>';
+
+            if($items['previous']->active) {
+                $html .= $this->_rel($items['previous']);
+            }
+
+            if($items['next']->active) {
+                $html .= $this->_rel($items['next']);
+            }
         }
 
         return $html;
     }
 
-    /**
-     * Get a list of pages
-     *
-     * @param   KObjectConfig $config
-     * @return  array   Returns and array of pages information
-     */
     protected function _items(KObjectConfig $config)
     {
         $elements  = array();
@@ -78,14 +82,29 @@ class ComPagesTemplateHelperPaginator extends KTemplateHelperPaginator
         // First
         $offset  = 0;
         $active  = $offset != $config->offset;
-        $props   = array('page' => 1, 'offset' => $offset, 'limit' => $config->limit, 'current' => false, 'active' => $active, 'label' => 'First page');
+        $props   = array(
+            'page'      => 1,
+            'offset'    => $offset,
+            'limit'     => $config->limit,
+            'current'   => false,
+            'active'    => $active,
+            'label'     => 'First page',
+        );
 
         $elements['first'] = (object) $props;
 
         // Previous
         $offset  = max(0, ($config->current - 2) * $config->limit);
         $active  = $offset != $config->offset;
-        $props   = array('page' => $config->current - 1, 'offset' => $offset, 'limit' => $config->limit, 'current' => false, 'active' => $active, 'label' => 'Previous page');
+        $props   = array(
+            'page'      => $config->current - 1,
+            'offset'    => $offset,
+            'limit'     => $config->limit,
+            'current'   => false,
+            'active'    => $active,
+            'label'     => 'Previous page',
+            'rel'       => 'prev'
+        );
         $elements['previous'] = (object) $props;
 
         // Pages
@@ -93,20 +112,43 @@ class ComPagesTemplateHelperPaginator extends KTemplateHelperPaginator
         foreach($this->_offsets($config) as $page => $offset)
         {
             $current = $offset == $config->offset;
-            $props = array('page' => $page, 'offset' => $offset, 'limit' => $config->limit, 'current' => $current, 'active' => !$current, 'label' => $current ? 'Current page, page '.$page : 'Go to page '.$page);
+            $props = array(
+                'page'      => $page,
+                'offset'    => $offset,
+                'limit'     => $config->limit,
+                'current'   => $current,
+                'active'    => !$current,
+                'label'     => $current ? 'Current page, page '.$page : 'Go to page '.$page,
+                'rel'       => false
+            );
             $elements['pages'][] = (object) $props;
         }
 
         // Next
         $offset  = min(($config->count-1) * $config->limit, ($config->current) * $config->limit);
         $active  = $offset != $config->offset;
-        $props   = array('page' => $config->current + 1, 'offset' => $offset, 'limit' => $config->limit, 'current' => false, 'active' => $active, 'label' => 'Next page');
+        $props   = array(
+            'page' => $config->current + 1,
+            'offset' => $offset,
+            'limit' => $config->limit,
+            'current' => false,
+            'active' => $active,
+            'label' => 'Next page',
+            'rel'   => 'next'
+        );
         $elements['next'] = (object) $props;
 
         // Last
         $offset  = ($config->count - 1) * $config->limit;
         $active  = $offset != $config->offset;
-        $props   = array('page' => $config->count, 'offset' => $offset, 'limit' => $config->limit, 'current' => false, 'active' => $active, 'label' => 'Last page');
+        $props   = array(
+            'page'      => $config->count,
+            'offset'    => $offset,
+            'limit'     => $config->limit,
+            'current'   => false,
+            'active'    => $active,
+            'label'     => 'Last page',
+        );
         $elements['last'] = (object) $props;
 
         return $elements;
@@ -120,12 +162,29 @@ class ComPagesTemplateHelperPaginator extends KTemplateHelperPaginator
         ));
 
         $route = $this->route($this->getTemplate()->page(), $query);
-
         $label = $this->getObject('translator')->translate($page->label);
+        $title = $this->getObject('translator')->translate($title);
+
         if ($page->active && !$page->current) {
-            $html = '<a href="'.$route.'" aria-label="'.$label.'">'.$this->getObject('translator')->translate($title).'</a>';
+            $html = '<a href="'.$route.'" aria-label="'.$label.'" itemprop="url"><span itemprop="name">'.$title.'</span></a>';
         } else {
-            $html = '<span class="active" aria-current="page" aria-label="'.$label.'">'.$this->getObject('translator')->translate($title).'</span>';
+            $html = '<span class="active" aria-current="page" aria-label="'.$label.'" itemprop="name">'.$title.'</span>';
+        }
+
+        return $html;
+    }
+
+    protected function _rel($page)
+    {
+        $query = (array(
+            'limit'  => $page->limit,
+            'offset' => $page->offset,
+        ));
+
+        $route = $this->route($this->getTemplate()->page(), $query);
+
+        if($page->rel) {
+            $html = '<link href="'.$this->url($route).'" rel="'.$page->rel.'"  />';
         }
 
         return $html;
