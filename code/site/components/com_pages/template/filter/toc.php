@@ -72,8 +72,10 @@ class ComPagesTemplateFilterToc extends ComPagesTemplateFilterAbstract
   .toc-anchor a::after  {
     content: $icon;
     font-size: 0.8em;
-    padding-left: .3em; /* to make the content a bigger target */
+    float: left;
+    padding: 0 .15em; /* to make the content a bigger target */
     pointer-events: auto;
+    margin-left: -1em;
     visibility: hidden;
     display: inline-block;
   }
