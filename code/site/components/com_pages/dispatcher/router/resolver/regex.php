@@ -71,6 +71,7 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
                 'email' => '\S+@\S+',
                 'month' => '(0?[1-9]|1[012])',
                 'year'  => '(19|20)\d{2}',
+                'lang'  => '[a-z]{2,3}(-[A-Z]{2,3}){0,1}',
                 'digit' => '[0-9]++',
                 '*digit' => '[0-9]+(,[0-9]+)*',
                 'alnum' => '[0-9A-Za-z]++',
@@ -144,9 +145,6 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
         //Check if we have a static route
         if(!isset($this->__static_routes[$path]))
         {
-            //Sort routes longest path to shortest
-            arsort($this->__dynamic_routes);
-
             //Match against the dynamic routes
             foreach($this->__dynamic_routes as $regex => $target)
             {
@@ -287,7 +285,7 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
                     else unset($query[$key]);
                 }
 
-                $route->setQuery($query, true);
+                $route->setParameters($query);
                 $result = true;
             }
         }
@@ -355,11 +353,12 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
                 unset($route->query[$param]);
             }
 
-            if(strpos($regex, '://') === false) {
-                $route->setPath('/'.ltrim($regex, '/'));
-            } else {
+            if(strpos($regex, '://') !== false)
+            {
+                $route-> path = ''; //Reset the path
                 $route->setUrl($regex);
             }
+            else $route->setPath('/'.ltrim($regex, '/'));
         }
 
         return $result;

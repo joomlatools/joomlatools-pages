@@ -18,6 +18,8 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     private $__data   = null;
     private $__collections = array();
     private $__redirects   = array();
+    private $__hashes      = array();
+    private $__entities    = array();
 
     public function __construct(KObjectConfig $config)
     {
@@ -40,19 +42,52 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'cache'       => JDEBUG ? false : true,
-            'cache_path'  => $this->getObject('com://site/pages.config')->getSitePath('cache'),
-            'cache_time'  => 60*60*24, //1 day
-            'collections' => array(),
+            'cache'         => JDEBUG ? false : true,
+            'cache_path'    => $this->getObject('com://site/pages.config')->getSitePath('cache'),
+            'cache_validation' => true,
+            'collections' => array('pages' => ['model' => 'com://site/pages.model.pages']),
             'redirects'   => array(),
+            'properties'  => array(),
         ]);
 
         parent::_initialize($config);
     }
 
-    public function getHash()
+    public function getHash($path = null)
     {
-        return $this->__data['hash'];
+        if($path)
+        {
+            $size = function($path) use(&$size)
+            {
+                $result = array();
+
+                if (is_dir($path))
+                {
+                    $files = array_diff(scandir($path), array('.', '..', '.DS_Store'));
+
+                    foreach ($files as $file)
+                    {
+                        if (is_dir($path.'/'.$file)) {
+                            $result[$file] =  $size($path .'/'.$file);
+                        } else {
+                            $result[$file] = sprintf('%u', filemtime($path .'/'.$file));
+                        }
+                    }
+                }
+                else $result[basename($path)] = sprintf('%u', filemtime($path));
+
+                return $result;
+            };
+
+            if(!isset($this->__hashes[$path])) {
+                $this->__hashes[$path] =  hash('crc32b', serialize($size($path)));
+            }
+
+            $result = $this->__hashes[$path];
+        }
+        else $result = $this->__data['hash'];
+
+        return $result;
     }
 
     public function getLocator()
@@ -66,10 +101,49 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
         if(isset($this->__collections[$name]))
         {
-            $result = new KObjectConfig($this->__collections[$name]);
+            $result = new ComPagesObjectConfig($this->__collections[$name]);
+
+            //If the collections extends another collection merge it
+            if(isset($result->extend))
+            {
+                if(!$extend = $this->getCollection($result->extend))
+                {
+                    throw new RuntimeException(
+                        sprintf('Cannot extend from collection. No collection defined in: %s', $result->extend)
+                    );
+                }
+
+                //Merge state
+                if($extend->has('state')) {
+                    $extend->state->merge($result->get('state', array()));
+                } else {
+                    $extend->state = $result->get('state');
+                }
+
+                //Merge page
+                if($extend->has('page')) {
+                    $extend->page->merge($result->get('page', array()));
+                } else {
+                    $extend->page = $result->get('page');
+                }
+
+                //Merge type
+                if($result->has('type')) {
+                    $extend->type = $result->get('type');
+                }
+
+                $result = $extend;
+            }
 
             if(!isset($result->model)) {
                 $result->model = 'com://site/pages.model.pages';
+            }
+        }
+        else
+        {
+            //Assume we are being passed a fully qualified identifier
+            if(is_string($name) && strpos($name, ':') !== false) {
+                $result = new ComPagesObjectConfig(['model' => $name]);
             }
         }
 
@@ -153,20 +227,27 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 //Set page default properties from parent collection
                 if(!$page->isCollection() && $parent_path && $parent_page = $this->getPage($parent_path))
                 {
-                    if(($collection = $parent_page->isCollection()) && isset($collection['page']))
+                    if($parent_page->isCollection() && $parent_page->has('collection/page'))
                     {
-                        foreach($collection['page'] as $property => $value)
-                        {
-                            if(!$page->has($property)) {
-                                $page->set($property, $value);
-                            }
+                        foreach($parent_page->get('collection/page') as $property => $value) {
+                            $page->set($property, $value);
                         }
                     }
                 }
 
                 //Set the layout (if not set yet)
-                if($page->has('layout') && is_string($page->layout)) {
-                    $page->layout = array('path' => $page->layout);
+                if($page->has('layout'))
+                {
+                    if (is_string($page->layout)) {
+                        $page->layout = new ComPagesObjectConfig(['path' => $page->layout]);
+                    } else {
+                        $page->layout = new ComPagesObjectConfig($page->layout);
+                    }
+                }
+
+                //Get the collection
+                if($page->isCollection()) {
+                    $page->collection = $this->getCollection($page->path);
                 }
 
                 $this->__pages[$path] = $page;
@@ -213,6 +294,22 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $content;
     }
 
+    public function getPageEntity($path)
+    {
+        $entity = null;
+
+        if($page = $this->getPage($path))
+        {
+            if(!isset($this->__entities[$path])) {
+                $this->__entities[$path] = $this->getObject('com://site/pages.page.entity', ['data' => $page]);
+            }
+
+            $entity = $this->__entities[$path];
+        }
+
+        return $entity;
+    }
+
     public function getRoutes($path = null)
     {
         if(!is_null($path)) {
@@ -227,7 +324,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     public function isPage($path)
     {
         if(!isset($this->__pages[$path])) {
-           $result = (bool) $this->getLocator()->locate('page://pages/'. $path);
+            $result = (bool) $this->getLocator()->locate('page://pages/'. $path);
         } else {
             $result = ($this->__pages[$path] === false) ? false : true;
         }
@@ -235,15 +332,25 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $result;
     }
 
-    public function buildCache()
+    public function isPageAccessible($path)
     {
-        if($this->getConfig()->cache)
-        {
-            $basedir = $this->getLocator()->getBasePath().'/pages';
-            $this->loadCache($basedir, true);
-        }
+        $result = true;
 
-        return false;
+        if($page = $this->getPage($path))
+        {
+            //Groups
+            if(isset($page['access']['groups'])) {
+                $result = $this->getObject('user')->hasGroup($page['access']['groups']);
+            }
+
+            //Roles
+            if($result && isset($page['access']['roles'])) {
+                $result = $this->getObject('user')->hasRole($page['access']['roles']);
+            }
+        }
+        else $result = false;
+
+        return $result;
     }
 
     public function loadCache($basedir, $refresh = true)
@@ -324,6 +431,9 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                      */
                                     $page = (new ComPagesPageObject())->fromFile($file);
 
+                                    //Append the page properties
+                                    $page->append($this->getConfig()->properties);
+
                                     //Set the path
                                     $page->path = $path;
 
@@ -346,36 +456,31 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                         $page->route = $path;
                                     }
 
-                                    //Set the published state (if not set yet)
-                                    if (!isset($page->published)) {
-                                        $page->published = true;
-                                    }
-
                                     //Set the date (if not set yet)
                                     if (!isset($page->date)) {
                                         $page->date = filemtime($file);
                                     }
 
-                                    //Handle dynamic data
-                                    array_walk_recursive ($page, function(&$value, $key)
+                                    //Set the process
+                                    if (!$page->language) {
+                                        $page->language = 'en-GB';
+                                    }
+
+                                    //Set the metadata
+                                    if(!$page->metadata) {
+                                        $page->metadata = array();
+                                    }
+
+                                    //Set robots metadata
+                                    if(!isset($page->metadata['robots']))
                                     {
-                                        if(is_string($value) && strpos($value, 'data://') === 0)
-                                        {
-                                            $matches = array();
-                                            preg_match('#data\:\/\/([^\[]+)(?:\[(.*)\])*#si', $value, $matches);
-
-                                            if(!empty($matches[0]))
-                                            {
-                                                $data = $this->getObject('data.registry')->getData($matches[1]);
-
-                                                if($data && !empty($matches[2])) {
-                                                    $data = $data->get($matches[2]);
-                                                }
-
-                                                $value = $data;
-                                            }
+                                        if (!$page->getContent() && !$page->layout) {
+                                            $page->metadata['robots'] = ['none'];
+                                        } else {
+                                            $page->metadata['robots'] = array();
                                         }
-                                    });
+                                    }
+                                    else $page->metadata['robots'] = (array) $page->metadata['robots'];
 
                                     /**
                                      * Cache
@@ -433,21 +538,26 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             $result['collections'] = $collections;
             $result['redirects']   = array_flip($redirects);
 
-            //Generate a checksum
-            $result['hash']  = hash('crc32b', serialize($result));
+            //Calculate the hash
+            if($this->getConfig()->cache && $this->getConfig()->cache_validation) {
+                $result['hash'] = $this->getHash($basedir);
+            }
 
             $this->storeCache($basedir, $result);
-
         }
         else
         {
             if (!$result = require($cache)) {
                 throw new RuntimeException(sprintf('The page registry "%s" cannot be loaded from cache.', $cache));
             }
+
+            //Check if the cache is still valid, if not refresh it
+            if($this->getConfig()->cache_validation && $result['hash'] != $this->getHash($basedir)) {
+                $this->loadCache($basedir, true);
+            }
         }
 
         return $result;
-
     }
 
     public function storeCache($file, $data)
@@ -456,7 +566,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         {
             $path = $this->getConfig()->cache_path;
 
-            if(!is_dir($path) && (false === @mkdir($path, 0755, true) && !is_dir($path))) {
+            if(!is_dir($path) && (false === @mkdir($path, 0777, true) && !is_dir($path))) {
                 throw new RuntimeException(sprintf('The page registry cache path "%s" does not exist', $path));
             }
 
@@ -495,15 +605,10 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             $hash   = crc32($file.PHP_VERSION);
             $cache  = $this->getConfig()->cache_path.'/page_'.$hash.'.php';
             $result = is_file($cache) ? $cache : false;
-
-            if($result && file_exists($file))
-            {
-                if((filemtime($cache) < filemtime($file)) || ((time() - filemtime($cache)) > $this->getConfig()->cache_time)) {
-                    $result = false;
-                }
-            }
         }
 
         return $result;
     }
+
+
 }

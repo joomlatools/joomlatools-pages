@@ -9,23 +9,9 @@
 
 class ComPagesModelFactory extends KObject implements KObjectSingleton
 {
-    private $__collections;
+    private $__models;
 
-    public function createPage($path)
-    {
-        $entity = false;
-
-        if ($page = $this->getObject('page.registry')->getPage($path))
-        {
-            $entity = $this->getObject('com://site/pages.model.entity.page',
-                array('data'  => $page->toArray())
-            );
-        }
-
-        return $entity;
-    }
-
-    public function createCollection($name, $state = array(), $replace = true)
+    public function createModel($name, $state = array(), $replace = true)
     {
         $model = null;
 
@@ -45,6 +31,9 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
                 $identifier = $temp;
             }
 
+            //Set the name
+            $config['name'] = $name;
+
             //Set the type
             if($collection->has('type')) {
                 $config['type'] = $collection->type;
@@ -57,15 +46,15 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
 
             $model = $this->getObject($identifier, $config);
 
-            if(!$model instanceof KModelInterface && !$model instanceof KControllerModellable)
+            if(!$model instanceof KControllerModellable && !$model instanceof KModelInterface)
             {
                 throw new UnexpectedValueException(
                     'Collection: '.get_class($model).' does not implement KModelInterface or KControllerModellable'
                 );
             }
 
-            if($model instanceof KControllerModellable) {
-                $model = $this->getObject('com://site/pages.model.controller', ['controller' => $model]);
+            if($model instanceof KControllerModellable || !$model instanceof ComPagesModelInterface) {
+                $model = $this->getObject('com://site/pages.model.decorator', ['delegate' => $model]);
             }
 
             //Add model filters for unique fields
@@ -109,14 +98,16 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
             $model->setState($state);
 
             //Store the collection
-            $this->__collections[$name] = $model;
+            $hash = hash('crc32b', $name.serialize($model->getHashState()));
+            $this->__models[$hash] = $model;
         }
+        else throw new UnexpectedValueException('Collection: '.$name.' cannot be found');
 
         return $model;
     }
 
-    public function getCollections()
+    public function getModels()
     {
-        return (array) $this->__collections;
+        return (array) $this->__models;
     }
 }

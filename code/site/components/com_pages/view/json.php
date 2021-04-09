@@ -9,6 +9,8 @@
 
 class ComPagesViewJson extends KViewAbstract
 {
+    use ComPagesViewTraitUrl, ComPagesViewTraitRoute, ComPagesViewTraitPage;
+
     /**
      * JSON API version
      *
@@ -39,7 +41,6 @@ class ComPagesViewJson extends KViewAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'behaviors'   => ['routable'],
             'version'     => '1.0',
         ]);
 
@@ -102,10 +103,29 @@ class ComPagesViewJson extends KViewAbstract
         {
             $context->parameters->total = $this->getModel()->count();
 
-            $page = $this->getModel()->getPage();
-
             foreach ($this->getModel()->fetch() as $entity) {
                 $document['data'][] = $this->_createResource($entity);
+            }
+
+            $page = $this->getPage();
+
+            $document['meta'] = array();
+            $document['meta']['total'] = $this->getModel()->count();
+
+            if($title = $page->title) {
+                $document['meta']['title'] = $title;
+            }
+
+            if($description = $page->metadata->get('description')) {
+                $document['meta']['description'] = $description;
+            }
+
+            if($page->image && $url = $page->image->url) {
+                $document['meta']['image'] = (string) $this->getUrl($url);
+            }
+
+            if($language = $page->language) {
+                $document['meta']['language'] = $language;
             }
 
             if($this->getModel()->isPaginatable())
@@ -116,27 +136,8 @@ class ComPagesViewJson extends KViewAbstract
                 $limit  = (int) $paginator->limit;
                 $offset = (int) $paginator->offset;
 
-                $document['meta'] = [
-                    'offset'   => $offset,
-                    'limit'    => $limit,
-                    'total'	   => $total,
-                ];
-
-                if($title = $page->title) {
-                    $document['meta']['title'] = $title;
-                }
-
-                if($description = $page->metadata->get('description')) {
-                    $document['meta']['description'] = $description;
-                }
-
-                if($image = $page->image) {
-                    $document['meta']['image'] = (string) $this->getUrl((string)$image);
-                }
-
-                if($language = $page->language) {
-                    $document['meta']['language'] = $language;
-                }
+                $document['meta']['offset'] = $offset;
+                $document['meta']['limit']  = $limit;
 
                 if ($limit && $total > count($this->getModel()->fetch())) {
                     $document['links']['first'] = (string) $this->getRoute($route, array('offset' => 0));
@@ -196,11 +197,18 @@ class ComPagesViewJson extends KViewAbstract
     protected function _getEntityId(KModelEntityInterface $entity)
     {
         $values = array();
-        foreach($this->getModel()->getPrimaryKey() as $key){
-            $values[] = $entity->{$key};
-        }
 
-        return implode('/', $values);
+        if($keys = $this->getModel()->getPrimaryKey())
+        {
+            foreach($keys as $key){
+                $values[] = $entity->{$key};
+            }
+
+            $id = implode('/', $values);
+        }
+        else  $id = $entity->getProperty($entity->getIdentityKey(), '');
+
+        return $id;
     }
 
     /**
@@ -224,23 +232,46 @@ class ComPagesViewJson extends KViewAbstract
     {
         $attributes = $entity->toArray();
 
-        //Cast objects to string
-        foreach($attributes as $key => $value)
+        //Recursively serialize the attributes
+        array_walk_recursive($attributes, function(&$value)
         {
-            //Qualify the url's
-            if($value instanceof KHttpUrlInterface) {
-                $value = $this->getUrl($value);
-            }
-
-            if(is_object($value))
+            if(!$value instanceof KModelEntityInterface)
             {
-                if(!method_exists($value, '__toString')) {
-                    unset($attributes[$key]);
-                } else {
-                    $attributes[$key] = (string) $value;
+                //Qualify the url's
+                if($value instanceof KHttpUrlInterface) {
+                    $value = $this->getUrl($value);
+                }
+
+                if(is_object($value))
+                {
+                    if(!method_exists($value, '__toString')) {
+                        $value = null;
+                    } else {
+                        $value = (string) $value;
+                    }
                 }
             }
-        }
+            else $value = $this->_getEntityAttributes($value);
+        });
+
+        //Remove NULL values
+        $filter = function($attributes) use (&$filter)
+        {
+            foreach($attributes as $k => $v)
+            {
+                if(!is_array($v))
+                {
+                    if(is_null($v)) {
+                        unset($attributes[$k]);
+                    }
+                }
+                else $attributes[$k] = $filter($v);
+            }
+
+            return $attributes;
+        };
+
+        $attributes = $filter($attributes);
 
         //Remove the identity key from the attributes
         $key = $entity->getIdentityKey();
@@ -276,8 +307,11 @@ class ComPagesViewJson extends KViewAbstract
                 $query[$key] = $entity->{$key};
             }
 
-            $url = $this->getRoute($this->getModel()->getPage(), $query);
-            $links = ['self' => (string) $url];
+            if(!empty($query))
+            {
+                $url = $this->getRoute($this->getPage(), $query);
+                $links = ['self' => (string) $url];
+            }
         }
 
         return $links;
@@ -292,30 +326,5 @@ class ComPagesViewJson extends KViewAbstract
     protected function _getEntityRelationships(KModelEntityInterface $entity)
     {
         return array();
-    }
-
-    public function getRoute($page = null, $query = array(), $escape = false)
-    {
-        return $this->getBehavior('routable')->getRoute($page, $query, $escape);
-    }
-
-    public function getUrl($url = null)
-    {
-        if(!empty($url))
-        {
-            if($url instanceof KHttpUrlInterface)
-            {
-                $result = clone $url;
-                $result->setUrl(parent::getUrl()->toString(KHttpUrl::AUTHORITY));
-            }
-            else
-            {
-                $result = clone parent::getUrl();;
-                $result->setUrl($url);
-            }
-        }
-        else $result = parent::getUrl();
-
-        return $result;
     }
 }

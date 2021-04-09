@@ -9,45 +9,62 @@
 
 return [
 
-    'identifiers' => [
+    'composer_path' => $config['composer_path'],
+    'identifiers'   => [
         'com://site/pages.template.filter.asset' => [
             'schemes' =>  $config['aliases'] ?? array()
         ],
         'page.registry' => [
-            'cache'       => $config['page_cache'] ?? (bool) JFactory::getConfig()->get('caching'),
-            'cache_time'  => $config['page_cache_time'] ?? 60*60*24, //1d
-            'cache_path'  => $config['page_cache_path'] ?? $base_path.'/cache/pages',
-            'collections' => $config['collections'] ?? array(),
-            'redirects'   => isset($config['redirects']) ? array_flip($config['redirects']) : array(),
+            'cache'            => $config['page_cache'],
+            'cache_path'       => $config['page_cache_path'],
+            'cache_validation' => $config['page_cache_validation'],
+            'collections' => $config['collections'],
+            'redirects'   => array_flip($config['redirects']),
+            'properties'  => $config['page'],
         ],
         'data.registry' => [
-            'cache'      => $config['data_cache'] ?? (bool) JFactory::getConfig()->get('caching'),
-            'cache_time' => $config['data_cache_time'] ?? 60*60*24, //1d
-            'cache_path' => $config['data_cache_path'] ?? $base_path.'/cache/data',
+            'namespaces'       => $config['data_namespaces'],
+            'cache'            => $config['data_cache'],
+            'cache_path'       => $config['data_cache_path'],
+            'cache_validation' => $config['data_cache_validation'],
         ],
         'template.engine.factory' => [
-            'cache'      => $config['template_cache'] ?? (bool) JFactory::getConfig()->get('caching'),
-            'cache_path' => $config['template_cache_path'] ?? $base_path.'/cache/templates',
+            'cache'         => $config['template_cache'],
+            'cache_path'    => $config['template_cache_path'],
+            'cache_reload'  => $config['template_cache_validation'],
         ],
         'com://site/pages.dispatcher.behavior.cacheable' => [
-            'cache'             => $config['http_cache'] ??  false,
-            'cache_path'        => $config['http_cache_path'] ?? $base_path.'/cache/responses',
-            'cache_time'        => $config['http_cache_time']       ?? 60*15,  //15min
-            'cache_time_shared' => $config['http_cache_time_proxy'] ?? 60*60*2, //2h
-            'cache_validation'  => $config['http_cache_validation'] ?? true,
-            'cache_control'     => $config['http_cache_control'] ?? array(),
+            'cache'       => $config['http_cache'],
+            'cache_path'  => $config['http_cache_path'],
+            'cache_time'         => !is_null($config['http_cache_time_browser']) ? $config['http_cache_time_browser'] : $config['http_cache_time'],
+            'cache_time_shared'  => $config['http_cache_time'],
+            'cache_control'         => $config['http_cache_control'],
+            'cache_control_private' => $config['http_cache_control_private'],
+
         ],
-        'com://site/pages.http.client' => [
-            'cache'       => $config['http_resource_cache'] ??  (bool) JFactory::getConfig()->get('caching'),
-            'cache_time'  => $config['http_resource_cache_time'] ?? 60*60*24, //1d
-            'cache_path'  => $config['http_resource_cache_path'] ??  $base_path.'/cache/resources',
-            'cache_force' => $config['http_resource_cache_force'] ?? false,
-            'debug'       => $config['http_resource_cache_debug'] ?? (JDEBUG ? true : false),
+        'com://site/pages.http.cache' => [
+            'cache'       => $config['http_resource_cache'],
+            'cache_path'  => $config['http_resource_cache_path'],
+            'debug'       => $config['http_resource_cache_debug'],
         ],
-        'com://site/pages.model.entity.page' => [
-            'data' => [
-                'metadata' => $config['metadata'] ?? array(),
-            ]
+        'com://site/pages.model.cache' => [
+            'cache_path' => $config['http_cache_path'],
+        ],
+        'lib:template.engine.markdown' => [
+            'compiler' => function($text) {
+                //See: https://michelf.ca/projects/php-markdown/extra/
+                return \Michelf\MarkdownExtra::defaultTransform($text);
+            }
+        ],
+        'com://site/pages.template.filter.highlight' => [
+            'highlighter' => function($source, $language) {
+                //See: https://github.com/scrivo/highlight.php
+                return (new \Highlight\Highlighter())->highlight($language, $source, false)->value;
+            }
+        ],
+        'com://site/pages.event.subscriber.staticcache' => [
+            'enable'     => $config['http_static_cache'] && $config['http_cache'],
+            'cache_path' => $config['http_static_cache_path'],
         ],
     ],
     'extensions' => $config['extensions'] ?? array(),

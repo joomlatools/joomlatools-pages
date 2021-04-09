@@ -9,6 +9,8 @@
 
 class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 {
+    use ComPagesPageTrait;
+
     private $__router;
     private $__route;
 
@@ -17,6 +19,9 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         parent::__construct($config);
 
         $this->__router = $config->router;
+
+        //Set the page
+        $this->setPage($config->page);
 
         //Re-register the exception event listener to run through pages scope
         $this->addEventListener('onException', array($this, 'fail'),  KEvent::PRIORITY_NORMAL);
@@ -30,6 +35,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
                 'cacheable',
                 'validatable'
             ],
+            'page'    => 'com://site/pages.page',
             'router'  => 'com://site/pages.dispatcher.router',
         ]);
 
@@ -61,18 +67,30 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         return $this->__router;
     }
 
-
     public function getRoute()
     {
         $result = false;
 
-        if(!isset($this->__route))
+        if(!isset($this->__route) && $this->getObject('com://site/pages.config')->getSitePath() !== false)
         {
-            $base = $this->getRequest()->getBasePath();
-            $url  = urldecode($this->getRequest()->getUrl()->getPath());
-            $path = trim(str_replace(array($base, '/index.php'), '', $url), '/');
+            $base  = $this->getRequest()->getBasePath();
+            $url   = urldecode($this->getRequest()->getUrl()->getPath());
 
-            $this->__route = $this->getRouter()->resolve('pages:'.$path,  $this->getRequest()->query->toArray());
+            //Strip script name if request is rewritten
+            if(!isset($_SERVER['PAGES_PATH'])) {
+                $path = str_replace(array($base, basename($_SERVER['SCRIPT_NAME'])), '', $url);
+            } else {
+                $path = str_replace($base, '', $url);
+            }
+
+            $path  = trim($path, '/');
+            $query = $this->getRequest()->getUrl()->getQuery(true);
+
+            if($route = $this->getRouter()->resolve('pages:'.$path,  $query)) {
+                $this->getPage()->setProperties($route->getPage());
+            }
+
+            $this->__route = $route;
         }
 
         if(is_object($this->__route)) {
@@ -86,11 +104,16 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     {
         $methods =  array('head', 'options');
 
-        if(  $page = $this->getRoute()->getPage())
+        if($page = $this->getPage())
         {
-            if($page->isReadable()) {
-                $methods[] = 'get';
+            if($page->isSubmittable())
+            {
+                //Do not allow get on empty forms or collection, only used as API endpoints
+                if($page->getContent() || $page->layout) {
+                    $methods[] = 'get';
+                }
             }
+            else $methods[] = 'get';
 
             if($page->isSubmittable()) {
                 $methods[] = 'post';
@@ -112,7 +135,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     {
         $formats = array();
 
-        if($page = $this->getRoute()->getPage())
+        if($page = $this->getPage())
         {
             $formats = (array) $page->format;
 
@@ -129,16 +152,21 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
-        //Throw 404 if the page was not found
-        if(false !== $route = $this->getRoute())
-        {
-            //Set the query in the request
-            $context->request->setQuery($route->query);
-
-            //Set the page in the context
-            $context->page = $route->getPage();
+        //Throw 404 if the site was not found
+        if(false ===  $this->getObject('com://site/pages.config')->getSitePath()) {
+            throw new KHttpExceptionNotFound('Site Not Found');
         }
-        else throw new KHttpExceptionNotFound('Page Not Found');
+
+        //Throw 404 if the page was not found
+        if(false === $route = $this->getRoute()) {
+            throw new KHttpExceptionNotFound('Page Not Found');
+        }
+
+        //Set the query in the request
+        $context->request->setQuery($route->query);
+
+        //Set the route in the context
+        $context->route = $this->getRoute();
 
         //Throw 415 if the media type is not allowed
         $format = strtolower($context->request->getFormat());
@@ -216,6 +244,23 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             }
 
             $this->getResponse()->getHeaders()->set('Link', array($context->page->canonical => array('rel' => 'canonical')));
+
+            //Add X-Robots-Tag
+            if($context->page->metadata->has('robots'))
+            {
+                $tags = KObjectConfig::unbox($context->page->metadata->robots);
+                $this->getResponse()->getHeaders()->set('X-Robots-Tag', $tags);
+            }
+        }
+    }
+
+    protected function _actionSend(KDispatcherContextInterface $context)
+    {
+        //Do not send the response if it was already send
+        if(!headers_sent()) {
+            parent::_actionSend($context);
+        } else {
+            $this->terminate($context);
         }
     }
 
@@ -228,6 +273,11 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             $exception = $context->param;
         }
 
+        //Context needs to be reset
+        if($page = $this->getPage()) {
+            $context->page = $page;
+        }
+
         if(!JDEBUG && $this->getObject('request')->getFormat() == 'html')
         {
             //If the error code does not correspond to a status message, use 500
@@ -238,8 +288,11 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
             foreach([(int) $code, '500'] as $code)
             {
-                if($page = $this->getObject('page.registry')->getPage($code))
+                if($page = $this->getPage($code))
                 {
+                    //Set status code (before rendering the error)
+                    $context->response->setStatus($code);
+
                     //Set the controller
                     $this->setController($page->getType(), ['page' => $page]);
 
@@ -248,9 +301,6 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
                     //Set error in the response
                     $context->response->setContent($content);
-
-                    //Set status code
-                    $context->response->setStatus($code);
 
                     return true;
                 }
@@ -268,6 +318,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         $context->setResponse($this->getResponse());
         $context->setUser($this->getUser());
         $context->setRouter($this->getRouter());
+        $context->setPage($this->getPage());
 
         return $context;
     }

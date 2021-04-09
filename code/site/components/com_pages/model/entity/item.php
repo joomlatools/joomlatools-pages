@@ -9,7 +9,26 @@
 
 class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesModelEntityInterface
 {
+    use ComPagesObjectDebuggable;
+
     private $__internal_properties;
+
+    public static function getInstance(KObjectConfigInterface $config, KObjectManagerInterface $manager)
+    {
+        if($config->entity)
+        {
+            $config->object_identifier = $config->entity;
+
+            if(!$class = $manager->getClass($config->entity, false)) {
+                $instance = new static($config);
+            } else {
+                $instance = new $class($config);
+            }
+        }
+        else $instance = new static($config);
+
+        return $instance;
+    }
 
     public function __construct(KObjectConfig $config)
     {
@@ -30,6 +49,26 @@ class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesMo
     public function getInteralProperties()
     {
         return $this->__internal_properties;
+    }
+
+    public function get($property, $default = null)
+    {
+        $result = $this->getProperty($property);
+
+        if($result instanceof Traversable) {
+            $result = iterator_count($result) ? $result : $default;
+        } elseif($result instanceof Countable) {
+            $result = count($result) ?  $result : $default;
+        } else {
+            $result = !empty($result) ? $result : $default;
+        }
+
+        return $result;
+    }
+
+    public function has($name)
+    {
+        return parent::hasProperty($name);
     }
 
     public function save()
@@ -59,27 +98,26 @@ class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesMo
     {
         $data = parent::toArray();
 
-        $data = array_diff_key($data, array_flip($this->getInteralProperties()));
+        $computed = $this->getComputedProperties();
+        $internal = $this->getInteralProperties();
 
-        foreach($data as $key => $value)
-        {
-            //Remove NULL values
-            if(is_null($value)) {
-                unset($data[$key]);
-            }
+        //Remove internal properties
+        $data = array_diff_key($data, array_flip($internal));
 
-            //Unpack config objects
-            if($value instanceof KObjectConfigInterface) {
-                $data[$key] = KObjectConfig::unbox($value);
-            }
+        //Add none-internal computed properties
+        foreach(array_diff($computed, $internal) as $property) {
+            $data[$property] = $this->{$property};
         }
 
-        return $data;
-    }
+        //Unpack config objects
+        array_walk_recursive($data, function(&$value, $key)
+        {
+            if($value instanceof KObjectConfigInterface) {
+                $value = KObjectConfig::unbox($value);
+            }
+        });
 
-    public function __debugInfo()
-    {
-        return $this->_data;
+        return $data;
     }
 
     public function __call($method, $arguments)

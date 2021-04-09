@@ -17,28 +17,36 @@ class ComPagesDispatcherRouterResolverPagination extends ComPagesDispatcherRoute
 {
     public function resolve(ComPagesDispatcherRouterRouteInterface $route)
     {
-        $state = $route->getState();
+        $state = $this->_getState($route);
+
+        //Get the state
+        if($page = $route->getPage())
+        {
+            if(($collection = $page->isCollection()) && isset($collection['state'])) {
+                $state = $collection['state'];
+            }
+        }
 
         if($route->getFormat() == 'json')
         {
             if(isset($route->query['page']))
             {
-                $page  = $route->query['page'];
+                $page = $route->query['page'];
 
                 if(isset($page['number']) && $state['limit']) {
-                    $route->query['offset'] = ($page['number'] - 1) * $state['limit'];
+                    $route->query['offset'] = ($page['number'] - 1) * (int) $state['limit'];
                 }
 
                 if(isset($page['limit'])) {
-                    $route->query['limit'] = $page['limit'];
+                    $route->query['limit'] = (int) $page['limit'];
                 }
 
                 if(isset($page['offset'])) {
-                    $route->query['offset'] = $page['offset'];
+                    $route->query['offset'] = (int) $page['offset'];
                 }
 
                 if(isset($page['total'])) {
-                    $route->query['total'] = $page['total'];
+                    $route->query['total'] = (int) $page['total'];
                 }
 
                 unset($route->query['page']);
@@ -51,7 +59,7 @@ class ComPagesDispatcherRouterResolverPagination extends ComPagesDispatcherRoute
                 $page = $route->query['page'];
 
                 if($page && $state['limit']) {
-                    $route->query['offset'] = ($page - 1) * $state['limit'];
+                    $route->query['offset'] = ($page - 1) * (int) $state['limit'];
                 }
 
                 unset($route->query['page']);
@@ -61,8 +69,8 @@ class ComPagesDispatcherRouterResolverPagination extends ComPagesDispatcherRoute
 
     public function generate(ComPagesDispatcherRouterRouteInterface $route)
     {
-        $state = $route->getState();
         $page = array();
+        $state = $this->_getState($route);
 
         if($route->getFormat() == 'json')
         {
@@ -83,7 +91,10 @@ class ComPagesDispatcherRouterResolverPagination extends ComPagesDispatcherRoute
 
             if (isset($state['limit']) && isset($page['offset']))
             {
-                $page['number'] = ceil($page['offset'] / $state['limit']) + 1;
+                if($state['limit']) {
+                    $page['number'] = ceil($page['offset'] / $state['limit']) + 1;
+                }
+
                 unset($page['offset']);
             }
 
@@ -102,5 +113,19 @@ class ComPagesDispatcherRouterResolverPagination extends ComPagesDispatcherRoute
                 unset($route->query['offset']);
             }
         }
+    }
+
+    protected function _getState(ComPagesDispatcherRouterRoutePage $route)
+    {
+        $state = array();
+
+        if($page = $route->getPage())
+        {
+            if(($collection = $page->isCollection()) && isset($collection['state'])) {
+                $state = $collection['state'];
+            }
+        }
+
+        return $state;
     }
 }

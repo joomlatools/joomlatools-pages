@@ -15,12 +15,17 @@ class ComPagesControllerBehaviorBreadcrumbable extends KControllerBehaviorAbstra
         {
             //Set the path in the pathway to allow for module injection
             $page_route = $this->getObject('dispatcher')->getRoute()->getPath(false);
-            $menu_route = JFactory::getApplication()->getMenu()->getActive();
 
-            if($path = ltrim(str_replace($menu_route->route, '', $page_route), '/'))
+            if($menu = JFactory::getApplication()->getMenu()->getActive()) {
+                $menu_route = $menu->route;
+            } else {
+                $menu_route = '';
+            }
+
+            if($path = ltrim(str_replace($menu_route, '', $page_route), '/'))
             {
                 $pathway = JFactory::getApplication()->getPathway();
-                $router = $this->getObject('dispatcher')->getRouter();
+                $router = $this->getObject('router');
 
                 $segments = array();
                 foreach(explode('/', $path) as $segment)

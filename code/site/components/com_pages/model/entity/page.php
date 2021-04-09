@@ -9,6 +9,8 @@
 
 class ComPagesModelEntityPage extends ComPagesModelEntityItem
 {
+    private $__parent;
+
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
@@ -19,18 +21,16 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                 'title'       => '',
                 'summary'     => '',
                 'content'     => '',
-                'excerpt'     => '',
+                'excerpt'     => null,
                 'text'        => '',
-                'image'       => '',
-                'date'        => 'now',
-                'author'      => '',
-                'published'   => true,
-                'category'    => '',
-                'access'      => [
-                    'roles'  => ['public'],
-                    'groups' => ['public', 'guest']
+                'image'       => [
+                    //'url' 	   => '',
+                    //'alt'	     => null,
+                    //'caption'  => null,
                 ],
-                'redirect'    => '',
+                'date'        => 'now',
+                'author'      => null,
+                'access'      => [],
                 'metadata'    => [
                     'og:type'        => 'website',
                     'og:title'       => null,
@@ -38,51 +38,29 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                     'og:image'       => null,
                     'og:description' => null,
                 ],
-                'process'     => [
-                    'filters' => [],
-                ],
-                'layout'      => array(),
-                'colllection' => false,
-                'form'        => false,
                 'direction'   => 'auto',
                 'language'    => 'en-GB',
                 'canonical'   => null,
             ],
-            'internal_properties' => ['process', 'layout', 'format', 'collection', 'form', 'route', 'slug', 'path', 'folder', 'content', 'hash'],
+            'internal_properties' => [
+                'format',
+                'route',
+                'slug',
+                'path',
+                'folder',
+                'content',
+                'hash',
+                'text',
+                'excerpt',
+            ],
         ]);
 
         parent::_initialize($config);
     }
 
-    public function get($property, $default)
-    {
-        if($this->hasProperty($property)) {
-            $result = $this->getProperty($property);
-        } else {
-            $result = $default;
-        }
-
-        return $result;
-    }
-
     public function getPropertyFolder()
     {
         return dirname($this->path);
-    }
-
-    public function getPropertyDay()
-    {
-        return $this->date->format('d');
-    }
-
-    public function getPropertyMonth()
-    {
-        return $this->date->format('m');
-    }
-
-    public function getPropertyYear()
-    {
-        return $this->date->format('y');
     }
 
     public function getPropertyExcerpt()
@@ -92,7 +70,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         if(count($parts) > 1) {
             $excerpt = $parts[0];
         } else {
-            $excerpt = '';
+            $excerpt = null;
         }
 
         return $excerpt;
@@ -111,35 +89,77 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         return $text;
     }
 
-    public function getPropertyMetadata()
+    public function setPropertyImage($value)
     {
-        $metadata = $this->getConfig()->data->metadata;
+        //Normalize images
+        $image = null;
 
-        if(!isset($metadata->description) && $this->summary) {
-            $metadata->set('description', $this->summary);
-        }
-
-        if(!$metadata->has('og:image') && $this->image) {
-            $metadata->set('og:image', $this->image);
-        }
-
-        //Type and image are required. If they are not set remove any opengraph properties
-        if(!empty($metadata->get('og:type')) && !empty($metadata->get('og:image')))
+        if(!empty($value) && !$value instanceof ComPagesObjectConfig)
         {
-            if($this->title) {
-                $metadata->set('og:title', $this->title);
+            if(is_array($value)) {
+                $url = $value['url'] ?? '';
+            } else {
+                $url = $value;
             }
 
-            if($this->summary) {
-                $metadata->set('og:description', $this->summary);
-            }
-        }
-        else
-        {
-            foreach($metadata as $name => $value)
+            if($url)
             {
-                if(strpos($name, 'og:') === 0 || strpos($name, 'twitter:') === 0) {
-                    $metadata->remove($name);
+                if(is_string($url) && strpos($url, '://') === false) {
+                    $url = '/'.ltrim($url, '/');
+                }
+
+                $url = $this->getObject('lib:http.url')->setUrl($url);
+
+                $image = [
+                    'url'      => $url,
+                    'alt'      => $value['alt'] ?? null,
+                    'caption'  => $value['caption'] ?? null,
+                ];
+            }
+
+            $image = new ComPagesObjectConfig($image);
+        }
+        else $image = new ComPagesObjectConfig($value);
+
+        return $image;
+    }
+
+    public function setPropertyMetadata($metadata)
+    {
+        if(!$metadata instanceof ComPagesObjectConfig)
+        {
+            $metadata = new ComPagesObjectConfig($metadata);
+
+            if(!isset($metadata->description) && $this->summary) {
+                $metadata->set('description', $this->summary);
+            }
+
+            if($this->image && $this->image->url) {
+                $metadata->set('og:image', $this->image->url);
+            }
+
+            //Type and image are required. If they are not set remove any opengraph properties
+            if(!empty($metadata->get('og:type')) && !empty($metadata->get('og:image')))
+            {
+                if($this->title) {
+                    $metadata->set('og:title', $this->title);
+                }
+
+                if($this->summary) {
+                    $metadata->set('og:description', $this->summary);
+                }
+
+                if($this->language) {
+                    $metadata->set('og:locale', $this->language);
+                }
+            }
+            else
+            {
+                foreach($metadata as $name => $value)
+                {
+                    if(strpos($name, 'og:') === 0 || strpos($name, 'twitter:') === 0) {
+                        $metadata->remove($name);
+                    }
                 }
             }
         }
@@ -156,33 +176,38 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         return $name;
     }
 
-    public function setPropertyCategory($category)
-    {
-        if(empty($category)) {
-            $category = trim(basename(dirname($this->path)), './');
-        }
-
-        return $category;
-    }
-
     public function setPropertyAccess($value)
     {
-        return new KObjectConfig($value);
+        return new ComPagesObjectConfig($value);
     }
 
     public function setPropertyProcess($value)
     {
-        return new KObjectConfig($value);
+        return new ComPagesObjectConfig($value);
     }
 
     public function setPropertyCollection($value)
     {
-        return new KObjectConfig($value);
+        return new ComPagesObjectConfig($value);
     }
 
     public function setPropertyForm($value)
     {
-        return new KObjectConfig($value);
+        if($value)
+        {
+            $value = new ComPagesObjectConfig($value);
+
+            $name = $value->honeypot ?? 'name';
+
+            if($value->schema->has($name))
+            {
+                $hash = $this->hash;
+                $value->honeypot = sprintf('%s_%s', $name, $hash);
+            }
+            else $value->honeypot = $name;
+        }
+
+        return $value;
     }
 
     public function setPropertyDate($value)
@@ -197,34 +222,18 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         return $date;
     }
 
-    public function setPropertyImage($value)
+    public function getParent()
     {
-        if(!empty($value))
+        if(!$this->__parent)
         {
-            if(is_string($value) && strpos($value, '://') === false) {
-                $value = '/'.ltrim($value, '/');
-            }
+            $page = $this->getObject('page.registry')->getPage($this->folder);
 
-            $image = $this->getObject('lib:http.url')->setUrl($value);
+            $this->__parent = $this->getObject($this->getIdentifier(),
+                array('data'  => $page->toArray())
+            );
         }
-        else $image = null;
 
-        return $image;
-    }
-
-    public function setPropertyLayout($value)
-    {
-        return new KObjectConfig($value);
-    }
-
-    public function isCollection()
-    {
-        return isset($this->collection) && $this->collection !== false ? $this->collection : false;
-    }
-
-    public function isForm()
-    {
-        return isset($this->form) && $this->form !== false ? $this->form : false;
+        return $this->__parent;
     }
 
     public function getContent()

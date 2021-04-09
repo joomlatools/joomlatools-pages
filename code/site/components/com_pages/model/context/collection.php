@@ -10,6 +10,7 @@
 class ComPagesModelContextCollection extends KModelContext
 {
     private $__data;
+    private $__entity;
 
     public function setData($data)
     {
@@ -19,5 +20,21 @@ class ComPagesModelContextCollection extends KModelContext
     public function getData()
     {
         return $this->__data;
+    }
+
+    public function setEntity($entity)
+    {
+        return $this->__entity = $entity;
+    }
+
+    public function getEntity()
+    {
+        return $this->__entity;
+    }
+
+    public function getAction()
+    {
+        $parts = explode('.', $this->getName());
+        return $parts[1];
     }
 }

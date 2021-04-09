@@ -8,16 +8,20 @@
  */
 
 /**
- * Http Transparent Reverse Cache Proxy
+ * Http Transparent Async Reverse Cache Proxy
  *
- * This anonymous function implements a http cache proxy following the https://tools.ietf.org/html/rfc7234
- * specification. It support an array based php file cache with 'headers' and 'content' properties.
+ * This anonymous function implements an async http cache proxy following the https://tools.ietf.org/html/rfc7234
+ * specification. It supports an array based php file cache with 'headers', 'content' and 'status' properties.
+ *
+ * The proxy will return the resource from cache immediatly if it exists and validate it async in the background.
+ * This ensure that each request is equally fast.
  *
  * <code>
  * <?php
  *     return array (
  *          'headers' => array (),
  *          'content' => '',
+ *          'status'  => '',
  * ?>
  * </code>
  *
@@ -25,165 +29,155 @@
  *    - Not GET or HEAD
  *    - Contain Cache-Control directives
  *
- * The proxy offers Cache Validation using ETag and Last-Modified and Cache Expiration using the `max_age`function
- * parameter. The `max_age' function parameter can have following values:
- *
- * - true: The proxy cache will rely on resource max-age or s-maxage Cache-Control directives to determine if it's fresh
- * - false: If the resource exists in the proxy cache it will always be considered fresh
- * - integer: Time in seconds the proxy cache is considered fresh
- *
- * The proxy cache will return the following Cache-Status headers
- *
- * - PROXY-HIT: The resource was was served from the cache
- * - PROXY-REFRESHED: The resource was found in cache and was refreshed. It has been served from the cache
- * - PROXY-REVALIDATED: The resource is served from cache but is stale. The resource was revalidated by either an
- *                       If-Modified-Since header or an If-None-Match header.
- *
- * If the resource was served from cache and the cache has not been refreshed the proxy will set the Age header with
- * the calculated the response was generated or validated by the origin server. After succesfull validation the proxy
- * will return a 304 Not Modified together with the current date in a Date header to allow clients to freshen their
- * own stored response.
+ * The proxy offers Cache Validation using ETag
  *
  * @author  Johan Janssens <https://github.com/johanjanssens>
  *
  * @param string $cache_path The path for the cache responses
- * @param integer|bool $max_age
+ * @param callable $callback The callback to execute the application
  * @param integer $user  The user identifier
  */
-return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', $max_age = true, $user = 0)
+return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/responses', callable $callback)
 {
+    ini_set('output_buffering', false);
+    ini_set('zlib.output_compression', false);
+
     //Do not process cache for none GET or HEAD requests
-    if(!in_array($_SERVER['REQUEST_METHOD'], ['GET', 'HEAD'])) {
+    if(!in_array($_SERVER['REQUEST_METHOD'], ['GET', 'HEAD']))
+    {
+        call_user_func($callback);
         return false;
     }
 
     //If request include cache control directives pass it on for validation
-    if(isset($_SERVER['HTTP_CACHE_CONTROL'])) {
+    if(isset($_SERVER['HTTP_CACHE_CONTROL']))
+    {
+        call_user_func($callback);
         return false;
     }
 
-    if(file_exists($cache_path))
+    //If the cache path doesn't exist
+    if(!file_exists($cache_path))
     {
-        //Get the url
-        $host    = filter_var($_SERVER['HTTP_HOST'], FILTER_SANITIZE_URL);
-        $request = filter_var($_SERVER['REQUEST_URI'], FILTER_SANITIZE_URL);
-        $url     = trim($host.$request, '/');
-
-        //Get the format
-        $format = pathinfo(parse_url('http://'.$url, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'html';
-
-        //Get the user
-        $key = 'url:' .$url. '#format:' . $format . '#user:'.$user;
-
-        $hash = crc32($key . PHP_VERSION);
-        $file = $cache_path . '/response_' . $hash . '.php';
-
-        if (file_exists($file))
-        {
-            $data = require $file;
-
-            $headers = $data['headers'];
-            $content = $data['content'];
-
-            //Cache expiration using max-age or s-maxage headers
-            if($max_age !== false)
-            {
-                if(!is_int($max_age) && isset($headers['Cache-Control']))
-                {
-                    $cache_control = explode(',', $headers['Cache-Control']);
-
-                    foreach ($cache_control as $key => $value)
-                    {
-                        if(is_string($value))
-                        {
-                            $parts = explode('=', $value);
-
-                            if (count($parts) > 1)
-                            {
-                                unset( $cache_control[$key]);
-                                $cache_control[trim($parts[0])] = trim($parts[1]);
-                            }
-                        }
-                    }
-
-                    if (isset($cache_control['max-age'])) {
-                        $max_age = $cache_control['max-age'];
-                    }
-
-                    if (isset($cache_control['s-maxage'])) {
-                        $max_age = $cache_control['s-maxage'];
-                    }
-                }
-
-                $age = max(time() - strtotime($headers['Date']), 0);
-
-                if($age > $max_age) {
-                    return false;
-                }
-            }
-
-            //Cache validation
-            if(isset($_SERVER['HTTP_IF_NONE_MATCH']) || isset($_SERVER['HTTP_IF_MODIFIED_SINCE']))
-            {
-                if(isset($_SERVER['HTTP_IF_NONE_MATCH']) && isset($headers['Etag']))
-                {
-                    $etags = preg_split('/\s*,\s*/', $_SERVER['HTTP_IF_NONE_MATCH'], null, PREG_SPLIT_NO_EMPTY);
-
-                    //RFC-7232 explicitly states that ETags should be content-coding aware
-                    $etags = str_replace('-gzip', '', $etags);
-
-                    if(in_array($headers['Etag'], $etags) || in_array('*', $etags))
-                    {
-                        header('HTTP/1.1 304 Not Modified');
-                        header('Cache-Status: PROXY-REVALIDATED');
-                        header('Date: '.date_format(date_create('now', new DateTimeZone('UTC')), 'D, d M Y H:i:s').' GMT');
-                        return true;
-                    }
-                }
-
-                if(isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && isset($headers['Last-Modified']))
-                {
-                    if (!(strtotime($headers['Last-Modified']) > strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE'])))
-                    {
-                        header('HTTP/1.1 304 Not Modified');
-                        header('Cache-Status: PROXY-REVALIDATED');
-                        header('Date: '.date_format(date_create('now', new DateTimeZone('UTC')), 'D, d M Y H:i:s').' GMT');
-                        return true;
-                    }
-                }
-            }
-            else
-            {
-
-                //Send the headers
-                foreach ($headers as $name => $value) {
-                    header($name . ': ' . $value);
-                }
-
-                //Set response code
-                header('HTTP/1.1 200 OK');
-
-                //Set Age
-                if($max_age === false)
-                {
-                    header('Cache-Status: PROXY-REFRESHED');
-                    header('Date: '.date_format(date_create('now', new DateTimeZone('UTC')), 'D, d M Y H:i:s').' GMT');
-                }
-                else
-                {
-                    header('Cache-Status: PROXY-HIT');
-                    header('Age: '.max(time() - strtotime($headers['Date']), 0));
-                }
-
-                //Send the content
-                if($_SERVER['REQUEST_METHOD'] == 'GET') {
-                    echo $content;
-                }
-            }
-
-            return true;
-        }
+        call_user_func($callback);
+        return false;
     }
 
-    return false;
+    //Get the url
+    $host    = filter_var($_SERVER['HTTP_HOST'], FILTER_SANITIZE_URL);
+    $request = filter_var($_SERVER['REQUEST_URI'], FILTER_SANITIZE_URL);
+    $parts   = parse_url('https://'.$host.$request);
+    $url     = trim($host.$request, '/');
+
+    //Get the format
+    $format = pathinfo($parts['path'], PATHINFO_EXTENSION) ?: '';
+
+    //Get the user
+    $hash = crc32($parts['path'].$parts['query']);
+    $file = $cache_path . '/response_' . $hash . '.php';
+
+    //Clear the cache for the specific file to avoid any errors.
+    clearstatcache (true,  $parts);
+
+    if (is_file($file))
+    {
+        $data = require $file;
+
+        $headers = $data['headers'];
+        $content = $data['content'];
+        $status  = $data['status'];
+
+        $max_age = false;
+        $age     = max(time() - strtotime($headers['Date']), 0);
+
+        //Check the cache is stale
+        if(isset($headers['Cache-Control']))
+        {
+            $cache_control = explode(',', $headers['Cache-Control']);
+
+            foreach ($cache_control as $key => $value)
+            {
+                if(is_string($value))
+                {
+                    $parts = explode('=', $value);
+
+                    if (count($parts) > 1)
+                    {
+                        unset( $cache_control[$key]);
+                        $cache_control[trim($parts[0])] = trim($parts[1]);
+                    }
+                }
+            }
+
+
+            if (isset($cache_control['max-age'])) {
+                $max_age = $cache_control['max-age'];
+            }
+
+            if (isset($cache_control['s-maxage'])) {
+                $max_age = $cache_control['s-maxage'];
+            }
+        }
+
+        //Divide the max_age in half and set it in the $_SERVER global
+        if(!strstr($headers['Cache-Status'], 'EXPIRED') && $max_age) {
+            $_SERVER['HTTP_CACHE_CONTROL'] = 'max-age='.(int) ($max_age / 2);
+        }
+
+        //Cache validation
+        if(isset($_SERVER['HTTP_IF_NONE_MATCH']) && isset($headers['Etag']))
+        {
+            $etags = preg_split('/\s*,\s*/', $_SERVER['HTTP_IF_NONE_MATCH'], null, PREG_SPLIT_NO_EMPTY);
+
+            //RFC-7232 explicitly states that ETags should be content-coding aware
+            $etags = str_replace('-gzip', '', $etags);
+
+            if(in_array($headers['Etag'], $etags) || in_array('*', $etags))
+            {
+                http_response_code ('304');
+                header('Cache-Status: HIT');
+
+                //Generating a 304 response MUST generate any of the following header fields that would have been sent
+                //in a 200 (OK) response to the same request: Cache-Control, Content-Location, Date, ETag and Vary
+                $required = ['Cache-Control', 'Content-Location', 'ETag', 'Vary'];
+
+                foreach($required as $header)
+                {
+                    if(isset($headers[$header])) {
+                        header($header.': '.$headers[$header]);
+                    }
+                }
+
+                //Refresh the date
+                header('Date: '.date('D, d M Y H:i:s', strtotime('now')).' GMT');
+
+                //Revalidation the cache async
+                fastcgi_finish_request();
+                call_user_func($callback);
+
+                return true;
+            }
+        }
+
+        //Send the headers
+        foreach ($headers as $name => $value) {
+            header($name . ': ' . $value);
+        }
+
+        //Set response code
+        http_response_code ($status);
+        //header('Cache-Status: HIT');
+
+        //Send the content
+        if($_SERVER['REQUEST_METHOD'] == 'GET') {
+            echo $content;
+        }
+
+        //Revalidation the cache async
+        fastcgi_finish_request();
+        call_user_func($callback);
+
+        return true;
+    }
+    else call_user_func($callback);
 };

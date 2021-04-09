@@ -9,9 +9,7 @@
 
 defined('KOOWA') or die; ?>
 
-<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"
-        xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
     <? foreach(collection() as $page): ?>
     <? if(!$page->metadata->has('robots') || !in_array('noindex', (array) KObjectConfig::unbox($page->metadata->robots))): ?>

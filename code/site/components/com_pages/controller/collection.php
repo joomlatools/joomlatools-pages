@@ -21,8 +21,8 @@ class ComPagesControllerCollection extends ComPagesControllerPage
     public function setModel($model)
     {
         //Create the collection model
-        $model = $this->getObject('com://site/pages.model.factory')
-            ->createCollection($this->getPage()->path, $this->getRequest()->query->toArray(), false);
+        $model = $this->getObject('model.factory')
+            ->createModel($this->getPage()->path, $this->getRequest()->query->toArray(), false);
 
         return parent::setModel($model);
     }
@@ -86,7 +86,7 @@ class ComPagesControllerCollection extends ComPagesControllerPage
             $query[$key] = $entity->getProperty($key);
         }
 
-        $route    = $context->router->generate($this->getModel()->getPage(), $query);
+        $route    = $context->router->generate($this->getPage(), $query);
         $location = $context->router->qualify($route);
 
         //See: https://tools.ietf.org/html/rfc7231#page-52

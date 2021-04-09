@@ -9,65 +9,100 @@
 
 class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
 {
-    protected function _afterRender(KViewContext $context)
+    protected function _beforeRender(KViewContext $context)
     {
-        $data       = $context->data;
-        $parameters = $context->parameters;
-
-        if($layout = $this->_getLayout())
+        if($layout = $context->subject->getLayout())
         {
-            //Render the layout
-            $renderLayout = function($layout, $data, $parameters) use(&$renderLayout)
+            //Merge the layout
+            $mergeLayout = function($context, $layout) use(&$mergeLayout)
             {
-                $template = $this->getTemplate()
-                    ->setParameters($parameters)
-                    ->loadFile($layout);
+                //Qualify the layout path
+                if(!parse_url($layout, PHP_URL_SCHEME)) {
+                    $layout = 'page://layouts/'.$layout;
+                }
+
+                //Locate the layout
+                if(!$file = $this->getObject('template.locator.factory')->locate($layout)) {
+                    throw new RuntimeException(sprintf('Cannot find layout: "%s"', $layout));
+                }
+
+                //Load the template
+                $template = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
+
+                //Set the parent layout
+                if($layout = $template->get('layout'))
+                {
+                    if(!is_string($layout)) {
+                        $layout = $layout->path;
+                    }
+                }
 
                 //Append the template layout data
                 //
                 //Do not overwrite existing data, only add it not defined yet
-                $this->_getLayoutData()->append($template->getData());
+                $context->subject->getLayout()->append($template->remove('layout'));
+
+                //Handle recursive layout
+                if($layout) {
+                    $mergeLayout($context, $layout);
+                }
+            };
+
+            Closure::bind($mergeLayout, $this, get_class());
+            $mergeLayout($context, $layout->path);
+
+            //Merge the process (excluding the filters)
+            if($process =  $context->subject->getLayout()->get('process'))
+            {
+                $process = clone $process;
+
+                $context->subject->getPage()->process->append($process->remove('filters'));
+                //$context->subject->getLayout()->remove('process');
+            }
+        }
+    }
+
+    protected function _afterRender(KViewContext $context)
+    {
+        if($layout = $context->subject->getLayout())
+        {
+            //Render the layout
+            $renderLayout = function($context, $layout) use(&$renderLayout)
+            {
+                $template = clone $this->getTemplate();
+
+                //Load layout
+                $template->loadFile($layout->path);
+
+                //Add layout filters (only for active layout)
+                if($filters = $layout->get('process/filters')) {
+                    $template->addFilters((array) KObjectConfig::unbox($filters));
+                }
+
+                //Append the template layout data
+                //
+                //Do not overwrite existing data, only add it not defined yet
+                //$context->subject->getLayout()->append($template->getData());
 
                 //Merge the page layout data
                 //
                 //Allow the layout data to be modified during template rendering
-                $data->merge($this->_getLayoutData());
+                $context->data->merge($context->subject->getLayout());
 
                 //Render the template
-                $this->setContent($template->render(KObjectConfig::unbox($data)));
+                $this->setContent($template->render(KObjectConfig::unbox($context->data)));
 
                 //Handle recursive layout
                 if($layout = $template->getLayout()) {
-                    $renderLayout($layout, $data, $parameters);
+                    $renderLayout($context, $layout);
                 }
             };
 
             Closure::bind($renderLayout, $this, get_class());
-            $renderLayout($layout, $data, $parameters);
+            $renderLayout($context, $layout);
         }
 
         $context->result = $this->getContent();
-    }
-
-    protected function _getLayout()
-    {
-        if($layout = $this->getModel()->getPage()->layout) {
-            $layout = $layout->path;
-        }
-
-        return $layout;
-    }
-
-    protected function _getLayoutData()
-    {
-        $data = array();
-        if($layout = $this->getModel()->getPage()->layout)
-        {
-            unset($layout->path);
-            $data = $layout;
-        }
-
-        return $data;
     }
 
     public function isSupported()

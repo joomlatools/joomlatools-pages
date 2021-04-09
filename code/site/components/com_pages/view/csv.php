@@ -9,42 +9,10 @@
 
 class ComPagesViewCsv extends KViewCsv
 {
-    public function isCollection()
-    {
-        return (bool) !$this->getModel()->getState()->isUnique();
-    }
-
-    public function getRoute($page, $query = array(), $escape = false)
-    {
-        return $this->getBehavior('routable')->getRoute($page, $query, $escape);
-    }
-
-    public function getUrl($url = null)
-    {
-        if(!empty($url))
-        {
-            if($url instanceof KHttpUrlInterface)
-            {
-                $result = clone $url;
-                $result->setUrl(parent::getUrl()->toString(KHttpUrl::AUTHORITY));
-            }
-            else
-            {
-                $result = clone parent::getUrl();;
-                $result->setUrl($url);
-            }
-        }
-        else $result = parent::getUrl();
-
-        return $result;
-    }
+    use ComPagesViewTraitPage, ComPagesViewTraitUrl, ComPagesViewTraitRoute;
 
     protected function _fetchData(KViewContext $context)
     {
-        parent::_fetchData($context);
-
-        if($this->isCollection()) {
-            $context->parameters->total = $this->getModel()->count();
-        }
+        $context->parameters = $this->getState()->getValues();
     }
 }

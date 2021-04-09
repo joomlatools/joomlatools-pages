@@ -14,7 +14,7 @@ class ComPagesControllerContext extends KControllerContext implements ComPagesCo
         return KObjectConfig::get('page');
     }
 
-    public function setPage(ComPagesPageObject $page)
+    public function setPage(ComPagesPageInterface $page)
     {
         return KObjectConfig::set('page', $page);
     }

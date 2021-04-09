@@ -51,9 +51,9 @@ class ComPagesTemplateFilterHighlight extends ComPagesTemplateFilterAbstract
                 if($result = $this->_highlight(trim($code), $attributes['class']))
                 {
                     $html = '<ktml:style src="assets://com_pages/css/highlight-v1.8.4.'.($this->getConfig()->debug ? 'min.css' : 'css').'" />';
-                    $html .= '<pre class="hljs ' . $attributes['class'] . '">';
+                    $html .= '<pre><code class="hljs ' . $attributes['class'] . '">';
                     $html .=  $result;
-                    $html .= '</pre>';
+                    $html .= '</code></pre>';
 
                     $text = str_replace($matches[0][$key], $html, $text);
                 }

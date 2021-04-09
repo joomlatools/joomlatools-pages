@@ -28,21 +28,21 @@ class ComPagesTemplateFilterPlugins extends ComPagesTemplateFilterAbstract
                 $results[] = $this->getTemplate()->createHelper('event')->trigger(array(
                     'name'         => 'onContentBeforeDisplay',
                     'import_group' => 'content',
-                    'attributes'   => array('com_pages.item', &$content, &$params)
+                    'attributes'   => array('com_pages.page', &$content, &$params)
                 ));
 
                 //Trigger onContentPrepare
                 $results[] = $this->getTemplate()->createHelper('event')->trigger(array(
                     'name'         => 'onContentPrepare',
                     'import_group' => 'content',
-                    'attributes'   => array('com_pages.item', &$content, &$params)
+                    'attributes'   => array('com_pages.page', &$content, &$params)
                 ));
 
                 //Trigger onContentAfterDisplay
                 $results[] = $this->getTemplate()->createHelper('event')->trigger(array(
                     'name'         => 'onContentAfterDisplay',
                     'import_group' => 'content',
-                    'attributes'   => array('com_pages.item', &$content, &$params)
+                    'attributes'   => array('com_pages.page', &$content, &$params)
                 ));
 
                 $result = trim(implode("\n", $results));

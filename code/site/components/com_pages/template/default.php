@@ -28,17 +28,19 @@ class ComPagesTemplateDefault extends KTemplate
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'filters'   => ['frontmatter', 'partial'],
-            'functions' => [
-                'date'       => [$this, '_formatDate'],
-                'data'       => [$this, '_fetchData'],
-                'slug'       => [$this, '_createSlug'],
-                'attributes' => [$this, '_createAttributes'],
-            ],
+            'filters'         => ['partial'],
             'cache'           => false,
             'cache_namespace' => 'pages',
-            'excluded_types' => ['html', 'txt', 'svg', 'css', 'js'],
+            'excluded_types'  => ['html', 'txt', 'svg', 'css', 'js'],
         ]);
+
+        //Register template functions (allows core functions to be overridden)
+        $functions = array();
+        foreach (glob(__DIR__.'/function/[!_]*.php') as $filename) {
+            $functions[basename($filename, '.php')] = $filename;
+        }
+
+        $config->append(['functions' => $functions]);
 
         parent::_initialize($config);
     }
@@ -52,36 +54,57 @@ class ComPagesTemplateDefault extends KTemplate
 
         if(parse_url($url, PHP_URL_SCHEME) == 'page')
         {
+            //Locate the template
             if(!$file = $this->getObject('template.locator.factory')->locate($url)) {
                 throw new RuntimeException(sprintf('Cannot find layout: "%s"', $url));
             }
 
-            //Store the type
-            $this->_type = pathinfo($file, PATHINFO_EXTENSION);
-
-            //Load the layout
+            //Load the template
             $template = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
 
             //Set the parent layout
-            if($layout = KObjectConfig::unbox($template->layout))
+            if($template->has('layout'))
             {
-                if(is_array($layout)) {
-                    $this->_layout = $layout['path'];
+                if(is_string($template->layout)) {
+                    $layout = ['path' => $template->layout];
                 } else {
-                    $this->_layout = $layout;
+                    $layout = $template->layout;
                 }
+
+                $this->_layout = new ComPagesObjectConfig($layout);
             }
             else $this->_layout = false;
 
             //Store the data and remove the layout
             $this->_data = KObjectConfig::unbox($template->remove('layout'));
 
-            //Load the content
-            $result = $this->loadString($template->getContent(), $this->_type, $url);
+            //Store the type
+            $this->_type = pathinfo($file, PATHINFO_EXTENSION);
+
+            if(!in_array($this->_type, $this->_excluded_types))
+            {
+                //Create the template engine
+                $config = array(
+                    'template'  => $this,
+                    'functions' => $this->_functions
+                );
+
+                $this->_source = $this->getObject('template.engine.factory')->createEngine($this->_type, $config);
+
+                if($cache = $this->_source->isCached(crc32($url)))
+                {
+                    if($this->_source->getConfig()->cache_reload && filemtime($cache) < filemtime($file)) {
+                        unlink($cache);
+                    }
+                }
+
+                $this->_source->loadString($template->getContent(),  $url);
+            }
+            else $this->_source = $template->getContent();
         }
         else $result = parent::loadFile($url);
 
-        return $result;
+        return $this;
     }
 
     public function getLayout()
@@ -93,12 +116,17 @@ class ComPagesTemplateDefault extends KTemplate
     {
         unset($data['layout']);
 
+        //$display_errors = ini_get('display_errors');
+        //ini_set('display_errors', false);
+
         $result = parent::render($data);
 
         //Exception for html files
         if($this->_type == 'html') {
             $result = $this->filter();
         }
+
+        //ini_set('display_errors', $display_errors);
 
         return $result;
     }
@@ -143,17 +171,6 @@ class ComPagesTemplateDefault extends KTemplate
 
     public function createHelper($helper, $config = array())
     {
-        //Create the complete extension identifier if a partial identifier was passed
-        if (is_string($helper) && strpos($helper, ':') === false)
-        {
-            $identifier = 'ext:template.helper.'.$helper;
-
-            //Create the template helper
-            if($this->getObject('manager')->getClass($identifier)) {
-                $helper = $identifier;
-            }
-         }
-
         if(!isset($this->__helpers[$helper])) {
             $this->__helpers[$helper] = parent::createHelper($helper, $config);
         }
@@ -177,17 +194,26 @@ class ComPagesTemplateDefault extends KTemplate
     {
         if($exception instanceof KTemplateExceptionError)
         {
-            $file   = $exception->getFile();
-            $buffer = $exception->getPrevious()->getFile();
+            $file   = file($exception->getFile());
+            $buffer = file($exception->getPrevious()->getFile());
 
-            //Get the real file if it can be found
-            $line = count(file($file)) - count(file($buffer)) + $exception->getLine() - 1;
+            //Estimate the location of the error in the source file
+            $line = count($file) - count($buffer) + $exception->getLine() - 1;
+
+            //Try to find the specific line in the source file
+            foreach($file as $l => $text)
+            {
+                if($text == $buffer[$exception->getPrevious()->getLine()]) {
+                    $line = $l;
+                    break;
+                }
+            }
 
             $exception = new KTemplateExceptionError(
                 $exception->getMessage(),
                 $exception->getCode(),
                 $exception->getSeverity(),
-                $file,
+                $exception->getFile(),
                 $line,
                 $exception->getPrevious()
             );
@@ -258,7 +284,7 @@ class ComPagesTemplateDefault extends KTemplate
         return $result;
     }
 
-    protected function _fetchData($path)
+    protected function _fetchData($path, $cache = true)
     {
         $result = false;
         if(is_array($path))
@@ -268,9 +294,9 @@ class ComPagesTemplateDefault extends KTemplate
                 foreach($path as $directory)
                 {
                     if (!$result instanceof ComPagesDataObject) {
-                        $result = $this->getObject('data.registry')->getData($directory);
+                        $result = $this->getObject('data.registry')->fromPath($directory);
                     } else {
-                        $result->append($this->getObject('data.registry')->getData($directory));
+                        $result->append($this->getObject('data.registry')->fromPath($directory));
                     }
                 }
             }
@@ -281,7 +307,16 @@ class ComPagesTemplateDefault extends KTemplate
             }
 
         }
-        else $result = $this->getObject('data.registry')->getData($path);
+        else
+        {
+            $namespace = parse_url($path, PHP_URL_SCHEME);
+
+            if(!in_array($namespace, ['http', 'https'])) {
+                $result = $this->getObject('data.registry')->fromPath($path);
+            } else {
+                $result = $this->getObject('data.registry')->fromUrl($path, $cache);
+            }
+        }
 
         return $result;
     }

@@ -39,14 +39,13 @@ class ComPagesDispatcherBehaviorDecoratable extends ComKoowaDispatcherBehaviorDe
 
             $controller = $this->getObject('com:koowa.controller.page',  array('response' => $response));
 
+            //Configure the page view
             $controller->getView()
                 ->setDecorator($decorator)
                 ->setLayout($this->getLayout());
 
-            $content = $controller->render();
-
             //Set the result in the response
-            $response->setContent($content);
+            $response->setContent($controller->render());
         }
     }
 
@@ -85,5 +84,23 @@ class ComPagesDispatcherBehaviorDecoratable extends ComKoowaDispatcherBehaviorDe
         }
 
         return $result;
+    }
+
+    public function isDecorated()
+    {
+        return (bool) ($this->getDecorator() == 'joomla');
+    }
+
+    public function isSupported()
+    {
+        $mixer   = $this->getMixer();
+        $request = $mixer->getRequest();
+
+        // Support HTML GET requests and also form submits (so we can render errors on POST)
+        if(($request->isFormSubmit() || $request->isGet()) && $request->getFormat() == 'html') {
+            return true;
+        }
+
+        return false;
     }
 }

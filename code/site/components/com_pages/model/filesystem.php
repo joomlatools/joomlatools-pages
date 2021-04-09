@@ -9,7 +9,8 @@
 
 class ComPagesModelFilesystem extends ComPagesModelCollection
 {
-    protected $_data;
+    private $__data;
+
     protected $_path;
     protected $_base_path;
     protected $_identity_key_length;
@@ -27,6 +28,7 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
+            'persistable'         => true,
             'identity_key'        => null,
             'identity_key_length' =>  4,
             'path'         => '',
@@ -49,22 +51,32 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
         return bin2hex(random_bytes($this->_identity_key_length));
     }
 
-    public function setState(array $values)
+    public function fetchData()
     {
-        //Automatically create states that don't exist yet
-        foreach($values as $name => $value)
+        if(!isset($this->__data))
         {
-            if(!$this->getState()->has($name)) {
-                $this->getState()->insert($name, 'string');
+            $this->__data = array();
+            $path        = $this->getPath($this->getState()->getValues());
+
+            //Only fetch data if the file exists
+            if(file_exists($path)) {
+                $this->__data = $this->getObject('object.config.factory')->fromFile($path, false);
             }
         }
 
-        return parent::setState($values);
+       return $this->__data;
     }
 
-    public function getHash()
+    protected function _actionReset(KModelContext $context)
     {
-        $hahs = null;
+        $this->__data = null;
+
+        parent::_actionReset($context);
+    }
+
+    protected function _actionHash(KModelContext $context)
+    {
+        $hash = parent::_actionHash($context);
         $path = $this->getPath($this->getState()->getValues());
 
         if(file_exists($path)) {
@@ -72,29 +84,6 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
         }
 
         return $hash;
-    }
-
-    public function fetchData($count = false)
-    {
-        if(!isset($this->_data))
-        {
-            $this->_data = array();
-            $path        = $this->getPath($this->getState()->getValues());
-
-            //Only fetch data if the file exists
-            if(file_exists($path)) {
-                $this->_data = $this->getObject('object.config.factory')->fromFile($path, false);
-            }
-        }
-
-       return $this->_data;
-    }
-
-    protected function _actionReset(KModelContext $context)
-    {
-        $this->_data = null;
-
-        parent::_actionReset($context);
     }
 
     protected function _actionPersist(KModelContext $context)
@@ -135,12 +124,15 @@ class ComPagesModelFilesystem extends ComPagesModelCollection
 
                     if($identity_key)
                     {
-                        $identity = $this->createIdentity();
-                        $data[$identity] = [$identity_key => $identity] + $values;
+                        if(!$key)
+                        {
+                            $key = $this->createIdentity();
+                            $entity->setProperty($identity_key, $key, false);
+                        }
 
-                        //Set the identity in the entity
-                        $entity->setProperty($identity_key, $identity, false);
+                        $data[$key] = [$identity_key => $key] + $values;
                     }
+                    else $data[] = $values;
 
                     $result = self::PERSIST_SUCCESS;
                 }

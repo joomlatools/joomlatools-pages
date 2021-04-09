@@ -48,11 +48,23 @@ class ComPagesTemplateFilterMeta extends ComPagesTemplateFilterAbstract
         {
             if($page->metadata)
             {
-                $metadata = KObjectConfig::unbox($page->metadata);
-
-                if($page->metadata->has('og:type'))
+                if($page->isCollection() && $this->getTemplate()->state()->isUnique())
                 {
-                    if (strpos($metadata['og:image'], 'http') === false) {
+                    if($metadata = $this->getTemplate()->collection()->metadata) {
+                        $metadata->append($page->metadata);
+                    } else {
+                        $metadata = $page->metadata;
+                    }
+                }
+                else $metadata = $page->metadata;
+
+                $metadata = KObjectConfig::unbox($metadata);
+
+                if(isset($metadata['og:type']) && $metadata['og:type'])
+                {
+                    if (strpos($metadata['og:image'], 'http') === false)
+                    {
+                        $this->getTemplate()->getFilter('asset')->filter($metadata['og:image']);
                         $metadata['og:image'] = (string)$this->getTemplate()->url($metadata['og:image']);
                     }
 
@@ -75,8 +87,14 @@ class ComPagesTemplateFilterMeta extends ComPagesTemplateFilterAbstract
         $canonical = '';
         if($page = $this->getTemplate()->page())
         {
-            if($page->canonical) {
-                $canonical = sprintf('<link href="%s" rel="canonical" />', $page->canonical);
+            $canonical = $page->canonical ?: '';
+
+            if($page->isCollection() && $this->getTemplate()->state()->isUnique()) {
+                $canonical = $this->getTemplate()->collection()->get('canonical', $canonical);
+            }
+
+            if($canonical) {
+                $canonical = sprintf('<link href="%s" rel="canonical" />', $canonical);
             }
         }
 

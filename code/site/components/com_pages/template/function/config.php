@@ -7,14 +7,11 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesDatabaseTableRoles extends KDatabaseTableAbstract
+return function($identifier = 'com://site/pages.config')
 {
-    protected function _initialize(KObjectConfig $config)
-    {
-        $config->append([
-            'name' => defined('JOOMLATOOLS_PLATFORM') ? 'users_roles' : 'viewlevels'
-        ]);
-
-        parent::_initialize($config);
+    if (is_string($identifier) && strpos($identifier, ':') === false) {
+        $identifier = 'com://site/pages.'.$identifier;
     }
-}
+
+    return clone $this->getObject($identifier)->getConfig();
+};

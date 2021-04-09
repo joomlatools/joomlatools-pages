@@ -9,7 +9,7 @@
 
 interface ComPagesModelFilterable extends KModelInterface
 {
-    public function fetchData($count = false);
+    public function fetchData();
     public function filterData($data);
-    public function filterItem($item, KModelStateInterface $state);
+    public function filterItem(&$item, KModelStateInterface $state);
 }

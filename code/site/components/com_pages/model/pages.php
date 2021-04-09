@@ -14,21 +14,13 @@ class ComPagesModelPages extends ComPagesModelCollection
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
+
         $this->getState()
-            ->insert('folder', 'url')
-            ->insert('slug', 'cmd', '', true, array('folder'))
-            //Internal states
-            ->insert('recurse', 'cmd', null, false, array(), true)
-            ->insert('level', 'int', 0, false, array(), true)
-            ->insert('collection', 'boolean', null, false, array(), true)
-            ->insert('format', 'word', null, false, array(), true)
-            //Filter states
-            ->insert('visible', 'boolean')
-            ->insert('category', 'cmd')
-            ->insert('year', 'int')
-            ->insert('month', 'int')
-            ->insert('day', 'int')
-            ->insert('published', 'boolean');
+            ->insertComposite('slug', 'cmd', array('folder'), '')
+            ->insertInternal('folder', 'url')
+            ->insertInternal('recurse', 'cmd')
+            ->insertInternal('level', 'int', 0)
+            ->insertInternal('collection', 'boolean');
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -41,24 +33,15 @@ class ComPagesModelPages extends ComPagesModelCollection
         parent::_initialize($config);
     }
 
-    public function getHash()
-    {
-        return $this->getObject('page.registry')->getHash();
-    }
-
-    public function fetchData($count = false)
+    public function fetchData()
     {
         if(!isset($this->__data))
         {
             $this->__data = array();
-            $state       = $this->getState();
 
-            //Set the folder to the active page path if no folder is defined
-            if($state->folder === null) {
-                $folder = $this->getPage()->path;
-            } else {
-                $folder = $state->folder;
-            }
+            //If folder is not defined to set root path
+            $state  = $this->getState();
+            $folder = $state->folder ?? '.';
 
             if($folder)
             {
@@ -86,42 +69,13 @@ class ComPagesModelPages extends ComPagesModelCollection
         return $this->__data;
     }
 
-    public function filterItem($page, KModelStateInterface $state)
+    public function filterItem(&$page, KModelStateInterface $state)
     {
         $result = true;
 
         //Un-routable
         if($page['route'] === false) {
             $result = false;
-        }
-
-        //Format
-        if($result && !is_null($state->format)) {
-            $result = isset($page['format']) && $page['format'] == $state->format;
-        }
-
-        //Visible
-        if($result && !is_null($state->visible))
-        {
-            if($state->visible === true) {
-                $result = !isset($page['visible']) || $page['visible'] !== false;
-            }
-
-            if($state->visible === false) {
-                $result = isset($page['visible']) && $page['visible'] === false;
-            }
-        }
-
-        //Published
-        if($result &&  !is_null($state->published))
-        {
-            if($state->published === true) {
-                $result = !isset($page['published']) || $page['published'] !== false;
-            }
-
-            if($state->published === false) {
-                $result = isset($page['published']) && $page['published'] === false;
-            }
         }
 
         //Collection
@@ -136,68 +90,34 @@ class ComPagesModelPages extends ComPagesModelCollection
             }
         }
 
-        //Category
-        if($result && (bool) $state->category) {
-            $result =  isset($page['category']) && $page['category'] == $state->category;
-        }
-
-        //Date
-        if($result &&  (bool) ($state->year || $state->month || $state->day))
-        {
-            if(isset($page['date']))
-            {
-                //Get the timestamp
-                if(!is_integer($page['date'])) {
-                    $date = strtotime($page['date']);
-                } else {
-                    $date = $page['date'];
-                }
-
-                if($state->year) {
-                    $result = ($state->year == date('Y', $date));
-                }
-
-                if($result && $state->month) {
-                    $result = ($state->month == date('m', $date));
-                }
-
-                if($result && $state->day) {
-                    $result = ($state->day == date('d', $date));
-                }
-            }
-        }
-
         //Permissions
-        if($result)
-        {
-            //Goups
-            if(isset($page['access']['groups']))
-            {
-                $groups = $this->getObject('com://site/pages.database.table.groups')
-                    ->select($this->getObject('user')->getGroups(), KDatabase::FETCH_ARRAY_LIST);
-
-                $groups = array_map('strtolower', array_column($groups, 'title'));
-
-                if(!array_intersect($groups, $page['access']['groups'])) {
-                    $result = false;
-                }
-            }
-
-            //Roles
-            if($result && isset($page['access']['roles']))
-            {
-                $roles = $this->getObject('com://site/pages.database.table.roles')
-                    ->select($this->getObject('user')->getRoles(), KDatabase::FETCH_ARRAY_LIST);
-
-                $roles = array_map('strtolower', array_column($roles, 'title'));
-
-                if(!array_intersect($roles, $page['access']['roles'])) {
-                    $result = false;
-                }
-            }
+        if($result) {
+            $result = $this->getObject('page.registry')->isPageAccessible($page['path']);
         }
 
         return $result;
+    }
+
+    protected function _actionHash(KModelContext $context)
+    {
+        $data = array_column($context->data, 'hash', 'path');
+        return hash('crc32b', serialize($data));
+    }
+
+
+    protected function _actionFetch(KModelContext $context)
+    {
+        foreach($context->data as $page)
+        {
+            //Unset page attributes
+            unset($page['process']);
+            unset($page['collection']);
+            unset($page['form']);
+            unset($page['layout']);
+            unset($page['redirect']);
+        }
+
+        return parent::_actionFetch($context);
     }
 
     protected function _actionReset(KModelContext $context)

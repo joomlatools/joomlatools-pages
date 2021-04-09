@@ -24,7 +24,7 @@ class ComPagesDispatcherContext extends KDispatcherContext implements ComPagesDi
         return KObjectConfig::get('page');
     }
 
-    public function setPage(ComPagesPageObject $page)
+    public function setPage(ComPagesPageEntity $page)
     {
         return KObjectConfig::set('page', $page);
     }

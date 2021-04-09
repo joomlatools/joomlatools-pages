@@ -11,13 +11,17 @@ class ComPagesTemplateHelperSnippet extends ComPagesTemplateHelperAbstract
 {
     private $__snippets = array();
 
-    public function __invoke($name, $snippet)
+    public function __invoke(string $name, $snippet = null)
     {
-        if(is_string($snippet)) {
-            $result = $this->define($name, $snippet);
-        } else {
-            $result = $this->expand($name, $snippet);
+        if(!is_null($snippet))
+        {
+            if(is_string($snippet)) {
+                $result = $this->define($name, $snippet);
+            } else {
+                $result = $this->expand($name, $snippet);
+            }
         }
+        else $result = $this->exists($name);
 
         return $result;
     }

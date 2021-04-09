@@ -16,34 +16,42 @@ defined('KOOWA') or die; ?>
 
     <channel>
         <title><?= page()->title ?></title>
-        <description><?= page()->metadata->get('description'); ?></description>
-        <link><?= route(page()->path.'/'.page()->slug) ?></link>
-        <? if (page()->metadata->has('og:image')): ?>
+        <? if($description = page()->metadata->get('description')) : ?>
+            <description><?= $description ?></description>
+        <? endif; ?>
+        <link><?= route(page()) ?></link>
+        <? if (page()->image): ?>
             <image>
-                <url><?= url(page()->metadata->get('og:image')) ?></url>
-                <title><?= page()->title ?></title>
-                <link><?= route(page()->path.'/'.page()->slug) ?></link>
+                <url><?= url(page()->image->url) ?></url>
+                <title><?= page()->image->alt ?  page()->image->alt  : page()->title ?></title>
+                <link><?= route(page()->path) ?></link>
+                <? if($description = page()->image->caption) : ?>
+                    <description><?= $description ?></description>
+                <? endif ?>
             </image>
         <? endif; ?>
         <lastBuildDate><?= count(collection()) ? collection()->top()->date->format(DateTime::RSS) : '' ?></lastBuildDate>
         <atom:link href="<?=  url() ?>" rel="self" type="application/rss+xml"/>
         <language><?= language() ?></language>
-        <sy:updatePeriod><?= $update_period ?></sy:updatePeriod>
-        <sy:updateFrequency><?= $update_frequency ?></sy:updateFrequency>
+        <sy:updatePeriod><?= page()->get('update_period', $update_period) ?></sy:updatePeriod>
+        <sy:updateFrequency><?= page()->get('update_frequency', $update_frequency) ?></sy:updateFrequency>
 
-        <?foreach(collection() as $page):?>
+        <?foreach(collection() as $item):?>
             <item>
-                <title><?= escape($page->title); ?></title>
-                <link><?= route($page); ?></link>
-                <guid isPermaLink="true"><?= route($page); ?></guid>
-                <? if($page->image): ?>
-                    <media:content medium="image" url="<?= url($page->image) ?>" />
+                <title><?= escape($item->title); ?></title>
+                <? if($item->path) : ?>
+                    <link><?= route($item->path); ?></link>
+                    <guid isPermaLink="true"><?= route($item->path); ?></guid>
                 <? endif ?>
-                <description><?=  escape($page->summary) ?></description>
-                <? if($page->category): ?>
-                    <category><?= escape($page->category) ?></category>
+                <? if($item->image): ?>
+                    <media:content medium="image" url="<?= url($item->image->url) ?>" />
+                <? endif ?>
+                <description><?=  escape($item->summary) ?></description>
+                <? if($item->category): ?>
+                    <? $category = $item->category instanceof ComPagesModelEntityInterface ? $item->category->title : $item->category ?>
+                    <category><?= escape((string) $category) ?></category>
                 <? endif; ?>
-                <pubDate><?= $page->date->format(DateTime::RSS) ?></pubDate>
+                <pubDate><?= $item->date->format(DateTime::RSS) ?></pubDate>
             </item>
         <?endforeach?>
     </channel>

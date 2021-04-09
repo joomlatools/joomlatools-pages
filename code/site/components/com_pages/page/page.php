@@ -7,14 +7,13 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesDatabaseTableGroups extends KDatabaseTableAbstract
+class ComPagesPage extends ComPagesPageEntity implements KObjectSingleton
 {
-    protected function _initialize(KObjectConfig $config)
+    public function __construct(KObjectConfig $config)
     {
-        $config->append([
-            'name' => defined('JOOMLATOOLS_PLATFORM') ? 'users_groups' : 'usergroups'
-        ]);
+        parent::__construct($config);
 
-        parent::_initialize($config);
+        //Add a global object alias
+        $this->getObject('manager')->registerAlias($this->getIdentifier(), 'page');
     }
 }

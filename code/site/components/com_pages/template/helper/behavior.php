@@ -11,9 +11,9 @@ class ComPagesTemplateHelperBehavior extends ComKoowaTemplateHelperBehavior
 {
     public function anchor($config = array())
     {
-        $config = new KObjectConfigJson($config);
+        $config = new ComPagesObjectConfig($config);
         $config->append(array(
-            'debug' =>  JDEBUG ? true : false,
+            'debug' =>  JFactory::getApplication()->getCfg('debug'),
             'options'  => array(
                 'placement' => 'right',
                 'visibale'  => 'hover',
@@ -28,15 +28,47 @@ class ComPagesTemplateHelperBehavior extends ComKoowaTemplateHelperBehavior
         $html = '';
         if (!static::isLoaded('anchor'))
         {
-            $html .= '<ktml:script src="assets://com_pages/js/anchor-v4.2.1.'.($this->getConfig()->debug ? 'min.js' : 'js').'" />';
-            $html .= '<script>
-            anchors.options = '.$config->options.'   
-            // Add anchors on DOMContentLoaded
-            document.addEventListener("DOMContentLoaded", function(event) {
-                anchors.add('.json_encode($config->selector).');if(document.querySelector(\'.no-anchor\')!==null){anchors.remove(\'.no-anchor\');}
-            }); </script>';
+            $selector = json_encode($config->selector);
+
+            $html .= '<ktml:script src="assets://com_pages/js/anchor-v4.2.1.'.(!$config->debug ? 'min.js' : 'js').'" defer="defer" />';
+            $html .= <<<ANCHOR
+<script>
+document.addEventListener("DOMContentLoaded", function(event) {
+     anchors.options = $config->options  
+     anchors.add($selector);if(document.querySelector('.no-anchor')!==null){anchors.remove('.no-anchor');}
+})
+</script>
+ANCHOR;
 
             static::setLoaded('anchor');
+        }
+
+        return $html;
+    }
+
+    public function prefetcher($config = array())
+    {
+        $config = new KObjectConfigJson($config);
+        $config->append(array(
+            'debug'    =>  JFactory::getApplication()->getCfg('debug'),
+            'selector' => 'a.prefetch',
+            'onload'   => true,
+            'onhover'  => true,
+        ));
+
+        $html = '';
+        if (!static::isLoaded('prefetcher'))
+        {
+            $html .= '<ktml:script src="assets://com_pages/js/prefetcher-v1.1.1.'.(!$config->debug ? 'min.js' : 'js').'" defer="defer" />';
+            $html .= <<<PREFETCHER
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    new Prefetcher($config)
+})
+</script>
+PREFETCHER;
+
+            static::setLoaded('prefetcher');
         }
 
         return $html;

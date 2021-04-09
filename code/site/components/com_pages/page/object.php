@@ -7,8 +7,30 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesPageObject extends ComPagesObjectConfigFrontmatter
+class ComPagesPageObject extends ComPagesObjectConfigFrontmatter implements ComPagesPageInterface
 {
+    public function get($name, $default = null)
+    {
+        if(!is_array($name)) {
+            $segments = explode('/', $name);
+        } else {
+            $segments = $name;
+        }
+
+        $result = parent::get(array_shift($segments), $default);
+
+        if(!empty($segments) && $result instanceof KObjectConfigInterface) {
+            $result = $result->get($segments, $default);
+        }
+
+        return $result;
+    }
+
+    public function has($name)
+    {
+        return (bool) $this->get($name);
+    }
+
     public function getType()
     {
         $type = 'page';
@@ -21,7 +43,20 @@ class ComPagesPageObject extends ComPagesObjectConfigFrontmatter
             $type = 'form';
         }
 
+        if($this->isDecorator()) {
+            $type = 'decorator';
+        }
+
+        if($this->isRedirect()) {
+            $type = 'redirect';
+        }
+
         return $type;
+    }
+
+    public function isRedirect()
+    {
+        return isset($this->redirect) && $this->redirect !== false ? KObjectConfig::unbox($this->redirect) : false;
     }
 
     public function isForm()
@@ -34,14 +69,9 @@ class ComPagesPageObject extends ComPagesObjectConfigFrontmatter
         return isset($this->collection) && $this->collection !== false ? KObjectConfig::unbox($this->collection) : false;
     }
 
-    public function isReadable()
+    public function isDecorator()
     {
-        $result = true;
-        if($this->format == 'html' && $this->isForm()) {
-            $result = $this->layout || $this->getContent();
-        }
-
-        return $result;
+        return (bool) $this->process->get('decorate', false) !== false;
     }
 
     public function isSubmittable()
@@ -52,5 +82,10 @@ class ComPagesPageObject extends ComPagesObjectConfigFrontmatter
     public function isEditable()
     {
         return $this->isCollection() && isset($this->collection->schema);
+    }
+
+    public function __debugInfo()
+    {
+        return self::unbox($this);
     }
 }

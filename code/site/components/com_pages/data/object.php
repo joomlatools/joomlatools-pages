@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesDataObject extends KObjectConfig implements JsonSerializable
+class ComPagesDataObject extends ComPagesObjectConfig
 {
     public function shuffle()
     {
@@ -49,17 +49,45 @@ class ComPagesDataObject extends KObjectConfig implements JsonSerializable
         return new self($data);
     }
 
-    public function filter($key, $value = null)
+    public function filter($key, $value = null, $exclude = false)
     {
         $data = $this->toArray();
 
+        if(isset($data[$key])) {
+            $data = array($data);
+        }
+
         //Filter the array
-        $data = array_filter($data, function($v) use ($key, $value)
+        $data = array_filter($data, function($v) use ($key, $value, $exclude)
         {
-            if($value !== null) {
-                return (isset($v[$key]) && $v[$key] === $value);
-            } else {
-                return isset($v[$key]);
+            if($value !== null && isset($v[$key]))
+            {
+                if(is_array($value)  && is_array($v[$key]))
+                {
+                    if($exclude) {
+                        return (bool) array_diff_assoc($value, $v[$key]);
+                    } else {
+                        return (bool) !array_diff_assoc($value, $v[$key]);
+                    }
+
+                }
+                else
+                {
+                    if($exclude) {
+                        return ($v[$key] !== $value);
+                    } else {
+                        return ($v[$key] === $value);
+                    }
+                }
+            }
+            else
+            {
+                if($exclude) {
+                    return !isset($v[$key]);
+                } else {
+                    return isset($v[$key]);
+                }
+
             }
         });
 
@@ -68,55 +96,73 @@ class ComPagesDataObject extends KObjectConfig implements JsonSerializable
             $data = array_values($data);
         }
 
-        //Do no return an array if we only found one result
-        if(count($data) == 1) {
-           $data = $data[0];
+        //Do no return an array if we only found a single scalar result
+        if(count($data) == 1 && isset($data[0])) {
+            $data = $data[0];
         }
 
-        return new self($data);
+        return is_array($data) ? new self($data) : $data;
+    }
+
+    public function find($key)
+    {
+        $data = $this->toArray();
+
+        $array    = new RecursiveArrayIterator($data);
+        $iterator = new RecursiveIteratorIterator($array, \RecursiveIteratorIterator::SELF_FIRST);
+
+        $result = array();
+        foreach ($iterator as $k => $v)
+        {
+            if($key === $k)
+            {
+                if(is_array($v) && is_numeric(key($v))) {
+                    $result = array_merge($result, $v);
+                } else {
+                    $result[] = $v;
+                }
+            }
+        }
+
+        //Do no return an array if we only found one result
+        if(count($result) == 1  && isset($result[0])) {
+            $result = $result[0];
+        }
+
+        return is_array($result) ? new self($result) : $result;
     }
 
     public function toString()
     {
-        // Encode <, >, ', &, and " for RFC4627-compliant JSON, which may also be embedded into HTML.
-        $data = json_encode($this->toArray(), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $data = $this->toArray();
 
-        if (JSON_ERROR_NONE !== json_last_error())
+        if(is_array($data))
         {
-            throw new InvalidArgumentException(
-                'Cannot encode data to JSON string: ' . json_last_error_msg()
-            );
+            if(!isset($data['@value'])) {
+                $data = $this->toJson()->toString();
+            } else {
+                $data = $data['@value'];
+            }
         }
 
         return $data;
     }
 
-    public function jsonSerialize()
+    public function toHtml()
     {
-        return $this->toArray();
+        $html = new ComPagesObjectConfigHtml($this);
+        return $html->toDom();
     }
 
-    public function __debugInfo()
+    public function toXml()
     {
-        return self::unbox($this);
+        $html = new ComPagesObjectConfigXml($this);
+        return $html->toDom();
     }
 
-    /**
-     * Allow PHP casting of this object
-     *
-     * @return string
-     */
-    final public function __toString()
+    public function toJson()
     {
-        $result = '';
-
-        //Not allowed to throw exceptions in __toString() See : https://bugs.php.net/bug.php?id=53648
-        try {
-            $result = $this->toString();
-        } catch (Exception $e) {
-            trigger_error('KObjectConfigFormat::__toString exception: '. (string) $e, E_USER_ERROR);
-        }
-
-        return $result;
+        $html = new ComPagesObjectConfigJson($this);
+        return $html;
     }
 }
