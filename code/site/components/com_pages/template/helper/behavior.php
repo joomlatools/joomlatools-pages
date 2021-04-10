@@ -38,6 +38,25 @@ PREFETCHER;
         return $html;
     }
 
+    public function alpine($config = [])
+    {
+        $config = new KObjectConfigJson($config);
+        $config->append([
+            'debug'   => $this->getConfig('pages.config')->debug,
+            'version' => '2.8.2'
+        ]);
+
+        $html = '';
+
+        if (!static::isLoaded('alpine'))
+        {
+            $html .= '<ktml:script src="https://unpkg.com/alpinejs@'.$config->version.'/dist/alpine.js" defer="defer" />';
+            static::setLoaded('alpine');
+        }
+
+        return $html;
+    }
+
     public function highlight($config = array())
     {
         $config = new ComPagesObjectConfig($config);
