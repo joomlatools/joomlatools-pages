@@ -20,7 +20,9 @@ class ComPagesTemplateHelperPaginator extends KTemplateHelperPaginator
             'offset'     => 0,
             'limit'      => 0,
             'show_limit' => true,
-            'show_count' => false
+            'show_count' => false,
+            'show_first' => false,
+            'show_last'  => false,
         ))->append(array(
             'show_pages' => $config->count !== 1
         ));
@@ -47,7 +49,7 @@ class ComPagesTemplateHelperPaginator extends KTemplateHelperPaginator
             if ($config->show_pages)
             {
                 $html .= '<ul class="k-pagination__pages" itemscope itemtype="http://schema.org/SiteNavigationElement">';
-                $html .=  $this->_pages($items);
+                $html .=  $this->_pages($config);
                 $html .= '</ul>';
             }
 
@@ -70,6 +72,47 @@ class ComPagesTemplateHelperPaginator extends KTemplateHelperPaginator
             if($items['next']->active) {
                 $html .= $this->_rel($items['next']);
             }
+        }
+
+        return $html;
+    }
+
+    /**
+     * Render a list of page links
+     *
+     * @param   array   $pages An array of page data
+     * @return  string  Html
+     */
+    protected function _pages($config)
+    {
+        $html = '';
+
+        $pages = $this->_items($config);
+
+        if($config->show_last) {
+            $html .= $pages['first']->active ? '<li class="icon-first">' . $this->_link($pages['first'], '&laquo;') . '</li>' : '';
+        }
+
+        $html .= $pages['previous']->active ? '<li class="icon-prev">'.$this->_link($pages['previous'], '&lt;').'</li>' : '';
+
+        $previous = null;
+        foreach ($pages['pages'] as $page)
+        {
+            if ($previous && $page->page - $previous->page > 1) {
+                $html .= '<li class="k-is-disabled"><span>&hellip;</span></li>';
+            }
+
+            $html .= '<li class="'.($page->active && !$page->current ? '' : 'k-is-active').'">';
+            $html .= $this->_link($page, $page->page);
+            $html .= '</li>';
+
+            $previous = $page;
+        }
+
+        $html  .= $pages['next']->active ? '<li class="icon-next">'.$this->_link($pages['next'], '&gt;').'</li>' : '';
+
+        if($config->show_last) {
+            $html  .= $pages['last']->active ? '<li class="icon-last">'.$this->_link($pages['last'], '&raquo;').'</li>' : '';
         }
 
         return $html;
