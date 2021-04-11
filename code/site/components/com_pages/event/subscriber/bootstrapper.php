@@ -87,12 +87,12 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
         //Set config options
         foreach($options['identifiers'] as $identifier => $values) {
-            $this->getConfig($identifier)->append($values);
+            $this->getConfig($identifier)->merge($values);
         }
 
         //Set config options
         foreach($options['extensions'] as $identifier => $values) {
-            $this->getConfig($identifier)->append($values);
+            $this->getConfig($identifier)->merge($values);
         }
     }
 
@@ -144,7 +144,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                     if(is_array($identifiers))
                     {
                         foreach($identifiers as $identifier => $values) {
-                            $this->getConfig($identifier)->append($values);
+                            $this->getConfig($identifier)->merge($values);
                         }
                     }
                 }
