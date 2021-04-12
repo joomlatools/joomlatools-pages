@@ -34,7 +34,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         $config->append([
             'http'       => 'com://site/pages.http.cache',
             'cache'      => $this->getObject('pages.config')->debug ? false : true,
-            'cache_path' => $this->getObject('pages.config')->getSitePath('cache'),
+            'cache_path' => $this->getObject('pages.config')->getCachePath(),
             'cache_validation'  => true,
             'namespaces' => array(),
         ]);

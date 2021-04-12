@@ -43,9 +43,9 @@ return [
 
         ],
         'com://site/pages.http.cache' => [
-            'cache'       => $config['http_resource_cache'],
-            'cache_path'  => $config['http_resource_cache_path'],
-            'debug'       => $config['http_resource_cache_debug'],
+            'cache'       => $config['http_client_cache'],
+            'cache_path'  => $config['http_client_cache_path'],
+            'debug'       => $config['http_client_cache_debug'],
         ],
         'com://site/pages.model.cache' => [
             'cache_path' => $config['http_cache_path'],

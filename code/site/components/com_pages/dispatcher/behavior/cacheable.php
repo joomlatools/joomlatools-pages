@@ -58,7 +58,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         $config->append(array(
             'priority'   => self::PRIORITY_LOWEST,
             'cache'      => false,
-            'cache_path' =>  $this->getObject('pages.config')->getSitePath('cache'),
+            'cache_path' =>  $this->getObject('pages.config')->getCachePath(),
             'cache_time'        => false, //static
             'cache_time_shared' => false, //static
         ));
