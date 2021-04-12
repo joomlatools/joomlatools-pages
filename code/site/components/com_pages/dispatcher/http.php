@@ -177,6 +177,22 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
                 throw new KHttpExceptionNotAcceptable('Format not supported');
             }
         }
+
+        /**
+         * If Content-Location is included in a 2xx (Successful) response message and its value refers (after
+         * conversion to absolute form) to a URI that is the same as the effective request URI, then the recipient
+         * MAY consider the payload to be a current representation of that resource at the time indicated by the
+         * message origination date
+         *
+         * See: https://tools.ietf.org/html/rfc7231#section-3.1.4.2
+         */
+        if($context->request->isSafe())
+        {
+            $route    = $context->router->generate($route);
+            $location = $context->router->qualify($route);
+
+            $context->response->headers->set('Content-Location', (string) $location);
+        }
     }
 
     protected function _actionDispatch(KDispatcherContextInterface $context)
