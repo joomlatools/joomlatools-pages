@@ -18,7 +18,7 @@ class ComPagesEventSubscriberStaticcache extends ComPagesEventSubscriberAbstract
         $response   = $dispatcher->getResponse();
 
         //Only cache static pages without a query string
-        if($event->result && !$dispatcher->getContentLocation()->getQuery() && $this->getConfig()->cache_path)
+        if($event->result && !$dispatcher->getCacheUrl()->getQuery() && $this->getConfig()->cache_path)
         {
             $file = $this->getFilePath($dispatcher);
             $dir  = dirname($file);
@@ -89,7 +89,7 @@ class ComPagesEventSubscriberStaticcache extends ComPagesEventSubscriberAbstract
 
     public function getFilePath(ComPagesDispatcherHttp  $dispatcher)
     {
-        $path     = $dispatcher->getContentLocation()->getPath(true);
+        $path     = $dispatcher->getCacheUrl()->getPath(true);
         $filename = array_pop($path);
         $format   = pathinfo($filename, PATHINFO_EXTENSION);
 
