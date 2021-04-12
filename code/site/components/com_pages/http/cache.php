@@ -20,7 +20,7 @@ class ComPagesHttpCache extends KHttpClient
     {
         $config->append([
             'cache'      => false,
-            'cache_path' => $this->getObject('pages.config')->getSitePath('cache'),
+            'cache_path' => $this->getObject('pages.config')->getCachePath(),
             'debug'      => $this->getConfig('pages.config')->debug ? true : false,
 
         ]);
@@ -105,7 +105,7 @@ class ComPagesHttpCache extends KHttpClient
     public function locateCache($url)
     {
         $key   = crc32((string)$url);
-        $file  = $this->getConfig()->cache_path.'/resource_'.$key.'.php';
+        $file  = $this->getConfig()->cache_path.'/response_'.$key.'.php';
 
         return $file;
     }
