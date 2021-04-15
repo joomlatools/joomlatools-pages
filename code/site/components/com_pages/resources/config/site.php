@@ -57,7 +57,7 @@ return [
             }
         ],
         'com://site/pages.event.subscriber.staticcache' => [
-            'enable'     => $config['http_static_cache'] && $config['http_cache'],
+            'enabled'    => $config['http_static_cache'] && $config['http_cache'],
             'cache_path' => $config['http_static_cache_path'],
         ],
     ],
