@@ -9,12 +9,5 @@
 
 class ComPagesControllerPage extends ComPagesControllerAbstract
 {
-    protected function _initialize(KObjectConfig $config)
-    {
-        $config->append(array(
-            'behaviors' => ['breadcrumbable'],
-        ));
 
-        parent::_initialize($config);
-    }
 }

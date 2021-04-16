@@ -514,7 +514,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
             //Failsafe in case an error got cached
             if($cache = $this->loadCache()) {
-                $result = $cache['status'] >= 400 ? false : true;
+                $result = $cache['status'] >= 400 ? false : $result;
             }
         }
 
