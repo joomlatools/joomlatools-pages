@@ -235,52 +235,19 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
 
     public function getDispatcher()
     {
-        $menu = JFactory::getApplication()->getMenu()->getActive();
-
-        $component  = $menu ? $menu->component : '';
-        $menu_route = $menu ? $menu->route : '';
-
-        //Only decorate GET requests that are not routing to com_pages
-        if(is_null($this->__dispatcher) && $this->getObject('request')->isGet() && $component != 'com_pages')
+        if(is_null($this->__dispatcher))
         {
-            $page_route = $route = $this->getObject('com://site/pages.dispatcher.http')->getRoute();
-
-            if($page_route)
+            if($route = $this->getObject('com://site/pages.dispatcher.http')->getRoute())
             {
                 $this->__dispatcher = false;
-                $page_route = $page_route->getPath(false);
 
-                $base  = trim(dirname($menu_route), '.');
-                $route = trim(str_replace($base, '', $page_route), '/');
+                $page     = $this->getObject('com://site/pages.dispatcher.http')->getPage();
+                $decorate = $page->process->get('decorate', false);
 
-                $page = $base ? $base.'/'.$route : $route;
-
-                $level = 0;
-                while($page && !$this->getObject('page.registry')->isPage($page))
+                if($decorate === true)
                 {
-                    if($route = trim(dirname($route), '.'))
-                    {
-                        $page = $base ? $base.'/'.$route : $route;
-                        $level++;
-                    }
-                    else $page = false;
-                }
-
-                if($page !== false)
-                {
-                    $page     = $this->getObject('page.registry')->getPageEntity($page);
-                    $decorate = $page->process->get('decorate', false);
-
-                    if($decorate === true || (is_int($decorate) && ($decorate >= $level)))
-                    {
-                        $dispatcher = $this->getObject('com://site/pages.dispatcher.http')->setController('decorator');
-                        $dispatcher->getPage()->setProperties($page);
-
-                        $dispatcher->getResponse()->getHeaders()->set('Content-Location',  clone $dispatcher->getRequest()->getUrl());
-                        $dispatcher->getRequest()->getUrl()->setPath('/'.$page->path);
-
-                        $this->__dispatcher = $dispatcher;
-                    }
+                    $this->__dispatcher = $this->getObject('com://site/pages.dispatcher.http')
+                        ->setController('decorator');
                 }
             }
         }
@@ -290,6 +257,19 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
 
     public function isDecorated()
     {
-        return (bool) $this->getDispatcher();
+        $result = false;
+
+        //Only decorate GET requests that are not routing to com_pages
+        if($this->getObject('request')->isGet())
+        {
+            $menu = JFactory::getApplication()->getMenu()->getActive();
+            $component = $menu ? $menu->component : '';
+
+            if($component && $component != 'com_pages') {
+                $result = (bool) $this->getDispatcher();
+            }
+        }
+
+        return $result;
     }
 }
