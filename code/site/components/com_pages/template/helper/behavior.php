@@ -21,7 +21,7 @@ class ComPagesTemplateHelperBehavior extends ComKoowaTemplateHelperBehavior
         ));
 
         $html = '';
-        if (!static::isLoaded())
+        if (!static::isLoaded('prefetcher'))
         {
             $html .= '<ktml:script src="https://files.joomlatools.com/pages@'.$config->version.'/prefetcher.'.(!$config->debug ? 'min.js' : 'js').'" defer="defer" />';
             $html .= <<<PREFETCHER
@@ -32,6 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 PREFETCHER;
 
+            static::setLoaded('prefetcher');
         }
 
         return $html;
@@ -47,8 +48,10 @@ PREFETCHER;
 
         $html = '';
 
-        if (!static::isLoaded()) {
+        if (!static::isLoaded('alpine'))
+        {
             $html .= '<ktml:script src="https://unpkg.com/alpinejs@'.$config->version.'/dist/alpine.js" defer="defer" />';
+            static::setLoaded('alpine');
         }
 
         return $html;
@@ -79,7 +82,7 @@ PREFETCHER;
         }
 
         $html = '';
-        if (!static::isLoaded())
+        if (!static::isLoaded('highlight'))
         {
             $style_url = 'https://unpkg.com/@highlightjs/cdn-assets@'.$config->version.'/styles/'.$config->style.'.min.css';
             $hljs_url  = 'https://unpkg.com/@highlightjs/cdn-assets@'.$config->version.'/highlight.' . (!$config->debug ? 'min.js' : 'js');
@@ -163,23 +166,9 @@ pre .code-badge-check-icon {
 </style>
 
 HIGHLIGHT;
+            static::setLoaded('highlight');
         }
 
         return $html;
-    }
-
-    public static function isLoaded($key = null)
-    {
-        if(!$key)
-        {
-            $method = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,2);
-            $key    = $method[1]['function'];
-        }
-
-        if(!$result = !empty(static::$_loaded[$key])) {
-            self::setLoaded($key);
-        }
-
-        return $result;
     }
 }
