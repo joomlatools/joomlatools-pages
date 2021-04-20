@@ -11,7 +11,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
 {
     use ComKoowaEventTrait;
 
-    private $__dispatched;
+    private $__dispatchable;
 
     /**
      * Constructor.
@@ -24,9 +24,9 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
 
         //Disable dispatching if directly routing to a component
         if(isset($_REQUEST['option']) && substr($_REQUEST['option'], 0, 4) == 'com_') {
-            $this->__dispatched = false;
+            $this->__dispatchable = false;
         } else {
-            $this->__dispatched = true;
+            $this->__dispatchable = true;
         }
     }
 
@@ -48,7 +48,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
     {
         $dispatcher = $this->getDispatcher();
 
-        if($this->isDispatched())
+        if($this->isDispatchable() && !$this->isDecoratable())
         {
             $application = JFactory::getApplication();
 
@@ -118,7 +118,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         $dispatcher = $this->getDispatcher();
 
         //Get the page
-        if($this->isDispatched())
+        if($this->isDispatchable() && !$this->isDecoratable())
         {
             $page = $dispatcher->getPage();
             $menu = JFactory::getApplication()->getMenu()->getActive();
@@ -193,7 +193,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
 
     public function onAfterApplicationDispatch(KEventInterface $event)
     {
-        if($this->isDispatched())
+        if($this->isDispatchable())
         {
             //Set the path in the pathway to allow for module injection
             $page_route = $this->getDispatcher()->getRoute()->getPath(false);
@@ -247,7 +247,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
     public function onAfterApplicationRespond(KEventInterface $event)
     {
         //Cache and cleanup Joomla output if routing to a page
-        if($this->isDispatched())
+        if($this->isDispatchable())
         {
             $headers = array();
             foreach (headers_list() as $header)
@@ -275,7 +275,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
 
     public function onBeforeDispatcherCache(KEventInterface $event)
     {
-        if($this->isDispatched())
+        if($this->isDispatchable())
         {
             $dispatcher = $this->getDispatcher();
             $content    = $dispatcher->getResponse()->getContent();
@@ -300,7 +300,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
 
     public function filterTemplateModules(&$modules)
     {
-        if($this->isDispatched())
+        if($this->isDispatchable())
         {
             $page = $this->getDispatcher()->getPage();
 
@@ -346,8 +346,13 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         return $this->getObject('com://site/pages.dispatcher.http');
     }
 
-    public function isDispatched()
+    public function isDispatchable()
     {
-        return (bool) $this->__dispatched && $this->getDispatcher()->getRoute();
+        return (bool) $this->__dispatchable && $this->getDispatcher()->getRoute();
+    }
+
+    public function isDecoratable()
+    {
+        return (bool) $this->isDispatchable() && $this->getDispatcher()->getPage()->isDecorator();
     }
 }
