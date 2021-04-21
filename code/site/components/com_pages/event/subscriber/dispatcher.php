@@ -48,7 +48,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
     {
         $dispatcher = $this->getDispatcher();
 
-        if($this->isDispatchable() && !$this->isDecoratable())
+        if($this->isDispatchable() && !$this->isDecorator())
         {
             $application = JFactory::getApplication();
 
@@ -118,7 +118,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         $dispatcher = $this->getDispatcher();
 
         //Get the page
-        if($this->isDispatchable() && !$this->isDecoratable())
+        if($this->isDispatchable() && !$this->isDecorator())
         {
             $page = $dispatcher->getPage();
             $menu = JFactory::getApplication()->getMenu()->getActive();
@@ -351,7 +351,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         return (bool) $this->__dispatchable && $this->getDispatcher()->getRoute();
     }
 
-    public function isDecoratable()
+    public function isDecorator()
     {
         return (bool) $this->isDispatchable() && $this->getDispatcher()->getPage()->isDecorator();
     }
