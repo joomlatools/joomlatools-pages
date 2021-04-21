@@ -344,7 +344,7 @@ class ComPagesDecoratorMenu extends \Joomla\CMS\Menu\SiteMenu
         $item->access = $attributes['access'] ?? 1;
         $item->level  = $attributes['level'] ?? 1;
         $item->language  = $attributes['language'] ?? '*';
-        $item->parent_id = $attributes['parent_id'] ?? 1;
+        $item->parent_id = $attributes['parent'] ?? 1;
         $item->home = 0;
         $item->component = $query['option'];
         $item->component_id = JComponentHelper::getComponent($query['option'])->id;
