@@ -9,8 +9,7 @@
 
 class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstract
 {
-    private $__dispatcher;
-    private $__decorated;
+    protected $__dispatcher;
 
     protected function _initialize(KObjectConfig $config)
     {
@@ -21,31 +20,11 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
         parent::_initialize($config);
     }
 
-    public function onAfterApplicationInitialise(KEventInterface $event)
-    {
-        if($this->isDecoratable())
-        {
-            $page     = $this->getDispatcher()->getPage();
-            $decorate = $page->process->get('decorate', false);
-
-            if(is_object($decorate))
-            {
-                $decorate->title = $page->name;
-                $decorate->alias = $page->slug;
-                $decorate->route = $this->getDispatcher()->getRoute()->getPath();
-
-                ComPagesDecoratorMenu::getInstance()->addItem($decorate->toArray());
-            }
-        }
-    }
-
     public function onAfterApplicationRoute(KEventInterface $event)
     {
-        if($this->isDecoratable())
+        //Try to validate the cache
+        if($dispatcher = $this->getDispatcher())
         {
-            //Try to validate the cache
-            $dispatcher = $this->getDispatcher();
-
             if($dispatcher->isCacheable()) {
                 $dispatcher->validate();
             }
@@ -54,7 +33,7 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
 
     public function onAfterApplicationDispatch(KEventInterface $event)
     {
-        if($this->isDecoratable())
+        if($this->isDecorated())
         {
             $dispatcher = $this->getDispatcher();
 
@@ -69,14 +48,12 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
             $dispatcher->dispatch();
 
             ob_end_clean();
-
-            $this->__decorated = true;
         }
     }
 
     public function onBeforeKoowaPageControllerRender(KEventInterface $event)
     {
-        if($this->isDecoratable())
+        if($this->isDecorated())
         {
             $dispatcher = $this->getDispatcher();
 
@@ -84,7 +61,7 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
             {
                 $data    = JFactory::getDocument()->getHeadData();
                 $version = JFactory::getDocument()->getMediaVersion();
-                $options = JFactory::getDocument()->getScriptOptions();
+                $options =  JFactory::getDocument()->getScriptOptions();
 
                 $result = array();
 
@@ -239,7 +216,7 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
 
     public function onAfterKoowaPageControllerRender(KEventInterface $event)
     {
-        if($this->isDecoratable())
+        if($this->isDecorated())
         {
             $dispatcher = $this->getDispatcher();
 
@@ -267,7 +244,7 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
                 $page     = $this->getObject('com://site/pages.dispatcher.http')->getPage();
                 $decorate = $page->process->get('decorate', false);
 
-                if($decorate !== false)
+                if($decorate === true)
                 {
                     $this->__dispatcher = $this->getObject('com://site/pages.dispatcher.http')
                         ->setController('decorator');
@@ -278,90 +255,21 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
         return $this->__dispatcher;
     }
 
-    public function isDecoratable()
+    public function isDecorated()
     {
         $result = false;
 
         //Only decorate GET requests that are not routing to com_pages
-        if($this->getObject('request')->isGet()) {
-            $result = (bool) $this->getDispatcher();
+        if($this->getObject('request')->isGet())
+        {
+            $menu = JFactory::getApplication()->getMenu()->getActive();
+            $component = $menu ? $menu->component : '';
+
+            if($component && $component != 'com_pages') {
+                $result = (bool) $this->getDispatcher();
+            }
         }
 
         return $result;
-    }
-
-    public function isDecorated()
-    {
-        return (bool) $this->__decorated;
-    }
-}
-
-class ComPagesDecoratorMenu extends \Joomla\CMS\Menu\SiteMenu
-{
-    private static $__instance;
-
-    public static function getInstance($client = 'site', $options = array())
-    {
-        if(!self::$__instance instanceof ComPagesDecoratorMenu) {
-            self::$__instance = self::$instances[$client] = new ComPagesDecoratorMenu($options);
-        }
-
-        return self::$__instance;
-    }
-
-    public function addItem($attributes)
-    {
-        //Instantiate the site menu decorator
-        $query = [
-            'option' => 'com_'.$attributes['component']
-        ];
-
-        if(!empty($attributes['view'])) {
-            $query['view'] = $attributes['view'];
-        }
-
-        if(!empty($attributes['layout'])) {
-            $query['layout'] = $attributes['layout'];
-        }
-
-        if(!empty($attributes['layout'])) {
-            $query['layout'] = $attributes['layout'];
-        }
-
-        if(!empty($attributes['id'])) {
-            $query['id'] = $attributes['id'];
-        }
-
-        $item = new \Joomla\CMS\Menu\MenuItem();
-
-        $item->id = max(array_keys($this->_items)) + 1;
-        $item->route    = trim($attributes['route'], '/');
-        //$item->menutype = $attributes['menu'] ?? null;
-        $item->title = $attributes['title'] ?? null;
-        $item->alias = $attributes['alias'] ?? null;
-        $item->link = 'index.php?'.http_build_query($query);
-        $item->type = 'component';
-        $item->access = $attributes['access'] ?? 1;
-        $item->level  = $attributes['client'] ?? 1;
-        $item->language  = $attributes['client'] ?? '*';
-        $item->parent_id = $attributes['client'] ?? 1;
-        $item->home = 0;
-        $item->component = $query['option'];
-        $item->component_id = JComponentHelper::getComponent($query['option'])->id;
-        $item->query        = $query;
-
-        $this->_items = [$item->id => $item] + $this->_items;
-
-        foreach ($this->_items as &$item)
-        {
-            $parent_tree = array();
-            if (isset($this->_items[$item->parent_id])) {
-                $parent_tree  = $this->_items[$item->parent_id]->tree;
-            }
-
-            // Create tree.
-            $parent_tree[] = $item->id;
-            $item->tree = $parent_tree;
-        }
     }
 }
