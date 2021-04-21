@@ -6,14 +6,17 @@
  * @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl.html>
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
+class ComPagesVersion extends KObject implements KObjectSingleton
+{
+    const VERSION = '0.20.0';
 
-defined('_JEXEC') or die;
-if (!class_exists('Koowa')) {
-    return;
-}
+    public function getVersion()
+    {
+        return self::VERSION;
+    }
 
-try {
-    Koowa::getObject('com://site/pages.dispatcher.http')->dispatch();
-} catch(Exception $exception) {
-    Koowa::getObject('exception.handler')->handleException($exception);
+    public function __toString()
+    {
+        return $this->getVersion();
+    }
 }

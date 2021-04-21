@@ -33,7 +33,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
             }
 
             //Set the site path in the config
-            $config = $this->getObject('com://site/pages.config', ['site_path' => $route->getPath()]);
+            $config = $this->getObject('pages.config', ['site_path' => $route->getPath()]);
 
             //Get the config options
             $options = $config->getOptions();
@@ -45,12 +45,12 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
             $this->_bootstrapExtensions($config->getSitePath('extensions'), $options);
 
         }
-        else $this->getObject('com://site/pages.config', ['site_path' => false]);
+        else $this->getObject('pages.config', ['site_path' => false]);
     }
 
     public function onBeforeDispatcherDispatch(KEventInterface $event)
     {
-        $config = $this->getObject('com://site/pages.config')->getOptions();
+        $config = $this->getObject('pages.config')->getOptions();
 
         //Configure the Joomla template
         if(isset($config['template']) || isset($config['template_config']))
@@ -87,12 +87,12 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
         //Set config options
         foreach($options['identifiers'] as $identifier => $values) {
-            $this->getConfig($identifier)->append($values);
+            $this->getConfig($identifier)->merge($values);
         }
 
         //Set config options
         foreach($options['extensions'] as $identifier => $values) {
-            $this->getConfig($identifier)->append($values);
+            $this->getConfig($identifier)->merge($values);
         }
     }
 
@@ -144,7 +144,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                     if(is_array($identifiers))
                     {
                         foreach($identifiers as $identifier => $values) {
-                            $this->getConfig($identifier)->append($values);
+                            $this->getConfig($identifier)->merge($values);
                         }
                     }
                 }

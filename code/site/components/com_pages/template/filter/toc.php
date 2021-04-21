@@ -12,20 +12,10 @@ class ComPagesTemplateFilterToc extends ComPagesTemplateFilterAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'min_level' => 1,
+            'min_level' => 2,
             'max_level' => 6,
-            'anchor'     => [
-                'enabled'   => true,
-                'options' => [
-                    'placement' => 'right',
-                    'visibale'  => 'hover',
-                    'icon'      => "",
-                    'class'     => null,
-                    'truncate'  => null,
-                    'arialabel' => 'Anchor',
-                ],
-                'selector' => 'article h2, article h3, article h4, article h5, article h6',
-            ],
+            'anchor'     => true,
+            'icon'       => '#'
         ));
 
         parent::_initialize($config);
@@ -46,70 +36,107 @@ class ComPagesTemplateFilterToc extends ComPagesTemplateFilterAbstract
          */
 
         $matches = array();
-        if(preg_match_all('#<h(['.$attributes['min'].'-'.$attributes['max'].'])\s*[^>]*>(.+?)</h\1>#is', $text, $headers))
+        if($this->isEnabled())
         {
-            $toc = '<ul id="toc">';
+            preg_match_all('#<h(['.$attributes['min'].'-'.$attributes['max'].'])\s*[^>]*>(.+?)</h\1>#is', $text, $headers);
+
             foreach($headers[1] as $key => $level)
             {
                 $content = $headers[2][$key];
                 $id      = $this->_generateId($content);
 
-                $result = '<h'.$level.' id="'.$id.'">'.$content.'</h'.$level.'>';
+                $result = '<h'.$level.' id="'.$id.'" class="toc-anchor"><a href="#'.$id.'">'.$content.'</a></h'.$level.'>';
                 $text   = str_replace($headers[0][$key], $result, $text);
 
-                if($this->getConfig()->anchor->enabled) {
-                    $text .= $this->getTemplate()->helper('behavior.anchor', KObjectConfig::unbox($this->getConfig()->anchor));
-                }
-            }
-        }
-
-        /*
-         * Table of content
-         */
-        $matches = array();
-        if(preg_match_all('#<ktml:toc\s*([^>]*)>#siU', $text, $matches))
-        {
-            foreach($matches[0] as $key => $match)
-            {
-                $attributes = array_merge($attributes, $this->parseAttributes($matches[1][$key]));
-
-                $headers = array();
-                if(preg_match_all('#<h(['.$attributes['min'].'-'.$attributes['max'].'])\s*[^>]*>(.+?)</h\1>#is', $text, $headers))
+                if($this->getConfig()->anchor)
                 {
-                    $toc = '<ul id="toc">';
+                    $icon = $this->getConfig()->icon;
 
-                    foreach($headers[1] as $key => $level)
-                    {
-                        $content = $headers[2][$key];
-                        $id      = $this->_generateId($content);
-
-                        $toc .= '<li><a href="#'.$id.'">'.$content.'</a>';
-
-                        if(isset($headers[1][$key + 1])) {
-                            $next = $headers[1][$key + 1];
-                        } else {
-                            $next = $headers[1][0];
-                        }
-
-                        if($next > $level) {
-                            $toc .= '<ul>';
-                        }
-
-                        if($next < $level) {
-                            $toc .= str_repeat('</li></ul>', $level - $next);
-                        }
-
-                        if($next == $level) {
-                            $toc .= '</li>';
-                        }
+                    if(strlen($icon) == 1) {
+                        $icon = '"'.$icon.'"';
                     }
 
-                    $toc .= '</ul>';
+                    //Accessible anchor links, see https://codepen.io/johanjanssens/pen/PoWObpL
+                    $text .= <<<ANCHOR
+<style>
+@media (hover: hover) {
+  .toc-anchor  {
+    margin-left: -1em;
+    padding-left: 1em;
+  }
+  .toc-anchor a {
+    text-decoration: none;
+    pointer-events: none;
+    color: inherit !important;
+  }
+  .toc-anchor a::after  {
+    content: $icon;
+    font-size: 0.8em;
+    float: left;
+    padding: 0 .15em; /* to make the content a bigger target */
+    pointer-events: auto;
+    margin-left: -1em;
+    visibility: hidden;
+    display: inline-block;
+  }
+  .toc-anchor:hover a::after {
+    visibility: visible;
+  }
+}
+</style>
+ANCHOR;
+
+                }
+            }
+
+            /*
+             * Table of content
+            */
+            $matches = array();
+            if(preg_match_all('#<ktml:toc\s*([^>]*)>#siU', $text, $matches))
+            {
+                foreach($matches[0] as $key => $match)
+                {
+                    $toc = '';
+                    $attributes = array_merge($attributes, $this->parseAttributes($matches[1][$key]));
+
+                    if($headers[1])
+                    {
+                        $toc = '<ul class="toc" itemscope itemtype="http://www.schema.org/SiteNavigationElement">';
+
+                        foreach($headers[1] as $key => $level)
+                        {
+                            $content = $headers[2][$key];
+                            $id      = $this->_generateId($content);
+
+                            $toc .= '<li><a href="#'.$id.'" title="'.$content.'" itemprop="url"><span itemprop="name">'.$content.'</span></a>';
+
+                            if(isset($headers[1][$key + 1])) {
+                                $next = $headers[1][$key + 1];
+                            } else {
+                                $next = $headers[1][0];
+                            }
+
+                            if($next > $level) {
+                                $toc .= '<ul>';
+                            }
+
+                            if($next < $level) {
+                                $toc .= str_repeat('</li></ul>', $level - $next);
+                            }
+
+                            if($next == $level) {
+                                $toc .= '</li>';
+                            }
+                        }
+
+                        $toc .= '</ul>';
+                    }
+
                 }
 
                 //Remove the <khtml:toc> tags
                 $text = str_replace($match, $toc, $text);
-
             }
         }
     }

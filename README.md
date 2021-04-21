@@ -30,8 +30,8 @@ Joomlatools Pages is for website developers and designers who create bespoke Joo
 ## Requirements
 
 * Joomla 3.6.5
-* PHP7 
-* Joomlatools Framework 3.4.10
+* PHP7.3
+* Joomlatools Framework 3.5.0
 
 ## Installation
 
@@ -42,7 +42,7 @@ composer require joomlatools/pages --ignore-platform-reqs
 ```
 
 Note: You need to use the --ignore-platform-reqs flag if not the installation will fail due to a mismatch in the platform
-constraint. Joomla's requires PHP 5.3.10 as minimum while Joomlatools Pages is set to minimum PHP7
+constraint. Joomla's requires PHP 5.3.10 as minimum while Joomlatools Pages is set to minimum PHP7.3
 
 ## Documentation
 

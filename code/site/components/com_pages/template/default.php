@@ -31,7 +31,7 @@ class ComPagesTemplateDefault extends KTemplate
             'filters'         => ['partial'],
             'cache'           => false,
             'cache_namespace' => 'pages',
-            'excluded_types'  => ['html', 'txt', 'svg', 'css', 'js'],
+            'excluded_types' => ['html', 'txt', 'svg', 'css', 'js'],
         ]);
 
         //Register template functions (allows core functions to be overridden)
@@ -83,6 +83,8 @@ class ComPagesTemplateDefault extends KTemplate
 
             if(!in_array($this->_type, $this->_excluded_types))
             {
+                unset($this->_functions['import']); //prevent conflict
+
                 //Create the template engine
                 $config = array(
                     'template'  => $this,
@@ -190,6 +192,17 @@ class ComPagesTemplateDefault extends KTemplate
         return parent::registerFunction($name, $function);
     }
 
+    public function isFunction($name)
+    {
+        $result = false;
+
+        if(isset($this->_functions[$name])) {
+            $result = true;
+        }
+
+        return $result;
+    }
+
     public function handleException(Exception &$exception)
     {
         if($exception instanceof KTemplateExceptionError)
@@ -218,106 +231,5 @@ class ComPagesTemplateDefault extends KTemplate
                 $exception->getPrevious()
             );
         }
-    }
-
-    protected function _formatDate($date, $format = '')
-    {
-        if(!$date instanceof KDate)
-        {
-            if(empty($format)) {
-                $format = $this->getObject('translator')->translate('DATE_FORMAT_LC3');
-            }
-
-            $result = $this->createHelper('date')->format(array('date' => $date, 'format' => $format));
-        }
-        else $result = $date->format($format);
-
-        return $result;
-    }
-
-    protected function _createSlug($string)
-    {
-        return $this->getObject('filter.factory')->createFilter('slug')->sanitize($string);
-    }
-
-    protected function _createAttributes($name, $value = null)
-    {
-        $result = '';
-
-        if(!is_array($name) && $value) {
-            $name = array($name => $value);
-        }
-
-        if($name instanceof KObjectConfig) {
-            $name = KObjectConfig::unbox($name);
-        }
-
-        if(is_array($name))
-        {
-            $output = array();
-            foreach($name as $key => $item)
-            {
-                if(is_array($item))
-                {
-                    foreach($item as $k => $v)
-                    {
-                        if(empty($v)) {
-                            unset($item[$k]);
-                        }
-                    }
-
-                    $item = implode(' ', $item);
-                }
-
-                if (is_bool($item))
-                {
-                    if ($item === false) continue;
-                    $item = $key;
-                }
-
-                $output[] = $key.'="'.str_replace('"', '&quot;', $item).'"';
-            }
-
-            $result = ' '.implode(' ', $output);
-        }
-
-        return $result;
-    }
-
-    protected function _fetchData($path, $cache = true)
-    {
-        $result = false;
-        if(is_array($path))
-        {
-            if(is_numeric(key($path)))
-            {
-                foreach($path as $directory)
-                {
-                    if (!$result instanceof ComPagesDataObject) {
-                        $result = $this->getObject('data.registry')->fromPath($directory);
-                    } else {
-                        $result->append($this->getObject('data.registry')->fromPath($directory));
-                    }
-                }
-            }
-            else
-            {
-                $class = $this->getObject('manager')->getClass('com://site/pages.data.object');
-                $result = new $class($path);
-            }
-
-        }
-        else
-        {
-            $namespace = parse_url($path, PHP_URL_SCHEME);
-
-            if(!in_array($namespace, ['http', 'https'])) {
-                $result = $this->getObject('data.registry')->fromPath($path);
-            } else {
-                $result = $this->getObject('data.registry')->fromUrl($path, $cache);
-            }
-        }
-
-        return $result;
     }
 }

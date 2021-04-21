@@ -43,9 +43,9 @@ return [
 
         ],
         'com://site/pages.http.cache' => [
-            'cache'       => $config['http_resource_cache'],
-            'cache_path'  => $config['http_resource_cache_path'],
-            'debug'       => $config['http_resource_cache_debug'],
+            'cache'       => $config['http_client_cache'],
+            'cache_path'  => $config['http_client_cache_path'],
+            'debug'       => $config['http_client_cache_debug'],
         ],
         'com://site/pages.model.cache' => [
             'cache_path' => $config['http_cache_path'],
@@ -56,14 +56,8 @@ return [
                 return \Michelf\MarkdownExtra::defaultTransform($text);
             }
         ],
-        'com://site/pages.template.filter.highlight' => [
-            'highlighter' => function($source, $language) {
-                //See: https://github.com/scrivo/highlight.php
-                return (new \Highlight\Highlighter())->highlight($language, $source, false)->value;
-            }
-        ],
         'com://site/pages.event.subscriber.staticcache' => [
-            'enable'     => $config['http_static_cache'] && $config['http_cache'],
+            'enabled'    => $config['http_static_cache'] && $config['http_cache'],
             'cache_path' => $config['http_static_cache_path'],
         ],
     ],

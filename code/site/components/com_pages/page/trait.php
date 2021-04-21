@@ -23,7 +23,7 @@ trait ComPagesPageTrait
         {
             if(!$this->__page instanceof ComPagesPageInterface)
             {
-                $this->__page = $this->getObject($this->__page ?? 'com://site/pages.page');
+                $this->__page = $this->getObject($this->__page ?? 'page');
 
                 if(!$this->__page instanceof ComPagesPageInterface)
                 {

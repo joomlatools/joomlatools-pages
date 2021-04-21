@@ -10,12 +10,14 @@
 class ComPagesConfig extends KObject implements KObjectSingleton
 {
     protected $_site_path;
+    protected $_cache_path;
 
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
 
-        $this->_site_path = $config->site_path;
+        $this->_site_path  = $config->site_path;
+        $this->_cache_path = $config->cache_path;
 
         //Load the site specific options
         $this->_loadOptions();
@@ -24,23 +26,25 @@ class ComPagesConfig extends KObject implements KObjectSingleton
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'site_path' => Koowa::getInstance()->getRootPath().'/joomlatools-pages'
+            'site_path'  => Koowa::getInstance()->getRootPath().'/joomlatools-pages',
+        ))->append(array(
+            'cache_path'  => $config->site_path.'/cache',
         ))->append(array(
             'page_cache'            => true,
-            'page_cache_path'       =>  $config->site_path.'/cache/pages',
+            'page_cache_path'       =>  $config->cache_path,
             'page_cache_validation' => true,
 
             'data_namespaces'       => array(),
             'data_cache'            => true,
-            'data_cache_path'       => $config->site_path ? $config->site_path.'/cache/data' : false,
+            'data_cache_path'       => $config->cache_path ? $config->cache_path.'/data' : false,
             'data_cache_validation' => true,
 
             'template_cache'            => true,
-            'template_cache_path'       => $config->site_path ? $config->site_path.'/cache/templates' : false,
+            'template_cache_path'       => $config->cache_path ? $config->cache_path.'/templates' : false,
             'template_cache_validation' => true,
 
             'http_cache'                 => false,
-            'http_cache_path'            => $config->site_path ? $config->site_path.'/cache/responses': false,
+            'http_cache_path'            => $config->cache_path ? $config->cache_path.'/pages': false,
             'http_cache_time'            => false,
             'http_cache_time_browser'    => null,
             'http_cache_validation'      => true,
@@ -50,15 +54,16 @@ class ComPagesConfig extends KObject implements KObjectSingleton
             'http_static_cache'         => getenv('PAGES_STATIC_ROOT') ? true : false,
             'http_static_cache_path'    => getenv('PAGES_STATIC_ROOT') ? getenv('PAGES_STATIC_ROOT') : false,
 
-            'http_resource_cache'       => JFactory::getConfig()->get('caching'),
-            'http_resource_cache_path'  => $config->site_path ? $config->site_path.'/cache/resources' : false,
-            'http_resource_cache_debug' => (JDEBUG ? true : false),
+            'http_client_cache'       => JFactory::getConfig()->get('caching'),
+            'http_client_cache_path'  => $config->cache_path ? $config->cache_path.'/responses' : false,
+            'http_client_cache_debug' => (JDEBUG ? true : false),
 
             'collections' => array(),
             'redirects'   => array(),
             'page'        => array(),
             'sites'       => array('[*]' => JPATH_ROOT.'/joomlatools-pages'),
             'headers'     => array(),
+            'debug'       => JFactory::getConfig()->get('debug'),
 
             'composer_path' => $config->site_path.'/vendor',
         ));
@@ -74,6 +79,11 @@ class ComPagesConfig extends KObject implements KObjectSingleton
         }
 
         return $result;
+    }
+
+    public function getCachePath()
+    {
+        return $this->_cache_path;
     }
 
     public function get($option, $default = null)
@@ -124,5 +134,10 @@ class ComPagesConfig extends KObject implements KObjectSingleton
         }
 
         return $options;
+    }
+
+    final public function __get($key)
+    {
+        return $this->get($key);
     }
 }

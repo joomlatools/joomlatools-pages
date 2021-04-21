@@ -14,4 +14,5 @@ return function($identifier = 'com://site/pages.config')
     }
 
     return clone $this->getObject($identifier)->getConfig();
+
 };

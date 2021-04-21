@@ -9,6 +9,27 @@
 
 class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
 {
+    use ComKoowaEventTrait;
+
+    private $__dispatchable;
+
+    /**
+     * Constructor.
+     *
+     * @param KObjectConfig $config  An optional ObjectConfig object with configuration options
+     */
+    public function __construct(KObjectConfig $config)
+    {
+        parent::__construct($config);
+
+        //Disable dispatching if directly routing to a component
+        if(isset($_REQUEST['option']) && substr($_REQUEST['option'], 0, 4) == 'com_') {
+            $this->__dispatchable = false;
+        } else {
+            $this->__dispatchable = true;
+        }
+    }
+
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
@@ -18,48 +39,66 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         parent::_initialize($config);
     }
 
-    public function isEnabled()
+    public function onAfterKoowaBootstrap()
     {
-        $result = parent::isEnabled();
-
-        //Disable dispatcher if directly routing to a component
-        if(isset($_REQUEST['option']) && substr($_REQUEST['option'], 0, 4) == 'com_') {
-            $result = false;
-        }
-
-        return $result;
+        $this->attachEventHandler('onAfterModuleList', 'filterTemplateModules');
     }
 
     public function onAfterApplicationInitialise(KEventInterface $event)
     {
-        $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
-        $application = JFactory::getApplication();
+        $dispatcher = $this->getDispatcher();
 
-        //Turn off sh404sef for com_pages
-        if(JComponentHelper::isEnabled('com_sh404sef'))
+        if($this->isDispatchable() && !$this->isDecorator())
         {
-            //Tun route parsing
-            $application->getRouter()->attachParseRule(function($router, $url)
+            $application = JFactory::getApplication();
+
+            //Turn off component sef_advanced to bypass routing failure
+            //See: https://github.com/joomla/joomla-cms/blob/staging/libraries/src/Router/Router.php#L238
+            $application->getRouter()->attachParseRule(function($router, $url) use ($dispatcher)
             {
-                if(class_exists('Sh404sefClassRouterInternal'))
+                if($dispatcher->getRoute())
                 {
                     $page = $dispatcher->getPage();
 
-                    if($page !== false && !$page->isDecorator()) {
-                        Sh404sefClassRouterInternal::$parsedWithJoomlaRouter = true;
+                    if($page->path && !$page->isDecorator())
+                    {
+                        $option = $router->getVar('option');
+                        JComponentHelper::getParams($option)->set('sef_advanced', 0);
                     }
                 }
 
-            },  JRouter::PROCESS_BEFORE);
+            },  JRouter::PROCESS_AFTER);
 
-            //Tun off route building
-            $application->getRouter()->attachBuildRule(function($router, $url)
+
+            //Turn off sh404sef for com_pages
+            if(JComponentHelper::isEnabled('com_sh404sef'))
             {
-                if(class_exists('Sh404sefFactory')) {
-                    Sh404sefFactory::getConfig()->useJoomlaRouter[] = 'pages';
-                }
+                //Tun route parsing
+                $application->getRouter()->attachParseRule(function($router, $url) use ($dispatcher)
+                {
+                    if(class_exists('Sh404sefClassRouterInternal'))
+                    {
+                        if($dispatcher->getRoute())
+                        {
+                            $page = $dispatcher->getPage();
 
-            },  JRouter::PROCESS_BEFORE);
+                            if($page->path && !$page->isDecorator()) {
+                                Sh404sefClassRouterInternal::$parsedWithJoomlaRouter = true;
+                            }
+                        }
+                    }
+
+                },  JRouter::PROCESS_BEFORE);
+
+                //Tun off route building
+                $application->getRouter()->attachBuildRule(function($router, $url) use ($dispatcher)
+                {
+                    if(class_exists('Sh404sefFactory')) {
+                        Sh404sefFactory::getConfig()->useJoomlaRouter[] = 'pages';
+                    }
+
+                },  JRouter::PROCESS_BEFORE);
+            }
         }
 
         //Authenticate anonymous requests and inject form token dynamically
@@ -76,11 +115,12 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
 
     public function onAfterApplicationRoute(KEventInterface $event)
     {
-        $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
+        $dispatcher = $this->getDispatcher();
 
         //Get the page
-        if($page = $dispatcher->getPage())
+        if($this->isDispatchable() && !$this->isDecorator())
         {
+            $page = $dispatcher->getPage();
             $menu = JFactory::getApplication()->getMenu()->getActive();
 
             if($this->getObject('request')->isSafe())
@@ -117,20 +157,21 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
              * - Set a specific template by name
              * - Set the template parameters
              */
-            if($page->process->has('template'))
+            if($template = $page->get('process/template'))
             {
-                if($page->process->template->has('name')) {
-                    $template = $page->process->template->name;
-                } else {
-                    $template = JFactory::getApplication()->getTemplate();
-                }
-
                 $params = JFactory::getApplication()->getTemplate(true)->params;
 
-                if($page->process->template->has('config'))
+                if(!is_string($template))
                 {
-                    foreach($page->process->template->config as $name => $value) {
-                        $params->set($name, $value);
+                    if(!$template = $page->get('process/template/name')) {
+                        $template = JFactory::getApplication()->getTemplate();
+                    }
+
+                    if($config = $page->get('process/template/config'))
+                    {
+                        foreach($config as $name => $value) {
+                            $params->set($name, $value);
+                        }
                     }
                 }
 
@@ -150,6 +191,49 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         }
     }
 
+    public function onAfterApplicationDispatch(KEventInterface $event)
+    {
+        if($this->isDispatchable())
+        {
+            //Set the path in the pathway to allow for module injection
+            $page_route = $this->getDispatcher()->getRoute()->getPath(false);
+
+            if($menu = JFactory::getApplication()->getMenu()->getActive()) {
+                $menu_route = $menu->route;
+            } else {
+                $menu_route = '';
+            }
+
+            if($path = ltrim(str_replace($menu_route, '', $page_route), '/'))
+            {
+                $pathway = JFactory::getApplication()->getPathway();
+                $router = $this->getObject('router');
+
+                $segments = array();
+                foreach(explode('/', $path) as $segment)
+                {
+                    $segments[] = $segment;
+
+                    if($route = $router->generate('pages:'.implode('/', $segments)))
+                    {
+                        $page = $route->getPage();
+
+                        if(!$page->name) {
+                            $name = ucwords(str_replace(array('_', '-'), ' ', $page->slug));
+                        } else {
+                            $name = ucfirst($page->name);
+                        }
+
+                        $route = $router->qualify($route);
+                        $url   = $route->toString(KHttpUrl::PATH);
+
+                        $pathway->addItem($name, (string) $url);
+                    }
+                }
+            }
+        }
+    }
+
     public function onAfterApplicationRender(KEventInterface $event)
     {
         if(!headers_sent())
@@ -162,10 +246,8 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
 
     public function onAfterApplicationRespond(KEventInterface $event)
     {
-        $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
-
         //Cache and cleanup Joomla output if routing to a page
-        if($route = $dispatcher->getRoute())
+        if($this->isDispatchable())
         {
             $headers = array();
             foreach (headers_list() as $header)
@@ -178,23 +260,10 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
             unset($headers['Expires']);
 
             //Do not cache if Joomla is running in debug mode
+            $dispatcher = $this->getDispatcher();
             if(!JDEBUG && $dispatcher->isCacheable() && $dispatcher->isDecorated())
             {
                 $content = $event->getTarget()->getBody();
-
-                //Replace the session based form and csrf token with a fixed token
-                $token = $dispatcher->getCacheToken();
-
-                $search      = '#<input type="hidden" name="[0-9a-f]{32}" value="1" />#';
-                $replacement = '<input type="hidden" name="' . $token . '" value="1" />';
-
-                $content = preg_replace($search, $replacement, $content);
-
-                //Search for a csrf token in the content and refresh it
-                $search      = '#"csrf.token": "[0-9a-f]{32}"#';
-                $replacement = '"csrf.token": "' . $token . '"';
-
-                $content = preg_replace($search, $replacement, $content);
 
                 $dispatcher->getResponse()->setHeaders($headers);
                 $dispatcher->getResponse()->setContent($content);
@@ -204,19 +273,42 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         }
     }
 
-    public function onAfterTemplateModules(KEventInterface $event)
+    public function onBeforeDispatcherCache(KEventInterface $event)
     {
-        $dispatcher = $this->getObject('com://site/pages.dispatcher.http');
-
-        if($page = $dispatcher->getPage())
+        if($this->isDispatchable())
         {
-            if($page->process->has('template') && $page->process->template->has('modules'))
-            {
-                $modules = $page->process->template->modules;
+            $dispatcher = $this->getDispatcher();
+            $content    = $dispatcher->getResponse()->getContent();
 
-                if(count($modules))
+            //Replace the session based form and csrf token with a fixed token
+            $token = $dispatcher->getCacheToken();
+
+            $search      = '#<input type="hidden" name="[0-9a-f]{32}" value="1" />#';
+            $replacement = '<input type="hidden" name="' . $token . '" value="1" />';
+
+            $content = preg_replace($search, $replacement, $content);
+
+            //Search for a csrf token in the content and refresh it
+            $search      = '#"csrf.token":\s*"[0-9a-f]{32}"#';
+            $replacement = '"csrf.token": "' . $token . '"';
+
+            $content = preg_replace($search, $replacement, $content);
+
+            $dispatcher->getResponse()->setContent($content);
+        }
+    }
+
+    public function filterTemplateModules(&$modules)
+    {
+        if($this->isDispatchable())
+        {
+            $page = $this->getDispatcher()->getPage();
+
+            if($page->has('process/template/modules'))
+            {
+                if(count($page->get('process/template/modules')))
                 {
-                    foreach ($event->modules as $key => $module)
+                    foreach ($page->get('process/template/modules') as $key => $module)
                     {
                         $include = array();
                         $exclude = array();
@@ -233,19 +325,34 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
                         if ($include)
                         {
                             if (!in_array($module->title, $include) && !in_array($module->id, $include)) {
-                                unset($event->modules[$key]);
+                                unset($modules[$key]);
                             }
                         }
                         else
                         {
                             if (in_array($module->title, $exclude) || in_array($module->id, $exclude)) {
-                                unset($event->modules[$key]);
+                                unset($modules[$key]);
                             }
                         }
                     }
                 }
-                else $event->modules  = array();
+                else $modules = array();
             }
         }
+    }
+
+    public function getDispatcher()
+    {
+        return $this->getObject('com://site/pages.dispatcher.http');
+    }
+
+    public function isDispatchable()
+    {
+        return (bool) $this->__dispatchable && $this->getDispatcher()->getRoute();
+    }
+
+    public function isDecorator()
+    {
+        return (bool) $this->isDispatchable() && $this->getDispatcher()->getPage()->isDecorator();
     }
 }

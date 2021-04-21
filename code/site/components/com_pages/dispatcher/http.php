@@ -22,9 +22,6 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
         //Set the page
         $this->setPage($config->page);
-
-        //Re-register the exception event listener to run through pages scope
-        $this->addEventListener('onException', array($this, 'fail'),  KEvent::PRIORITY_NORMAL);
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -33,7 +30,9 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             'behaviors' => [
                 'redirectable',
                 'cacheable',
-                'validatable'
+                'validatable',
+                'prefetchable',
+                'crawlable'
             ],
             'page'    => 'com://site/pages.page',
             'router'  => 'com://site/pages.dispatcher.router',
@@ -71,7 +70,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     {
         $result = false;
 
-        if(!isset($this->__route) && $this->getObject('com://site/pages.config')->getSitePath() !== false)
+        if(!isset($this->__route) && $this->getObject('pages.config')->getSitePath() !== false)
         {
             $base  = $this->getRequest()->getBasePath();
             $url   = urldecode($this->getRequest()->getUrl()->getPath());
@@ -153,7 +152,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
     protected function _beforeDispatch(KDispatcherContextInterface $context)
     {
         //Throw 404 if the site was not found
-        if(false ===  $this->getObject('com://site/pages.config')->getSitePath()) {
+        if(false ===  $this->getObject('pages.config')->getSitePath()) {
             throw new KHttpExceptionNotFound('Site Not Found');
         }
 
@@ -164,9 +163,6 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
         //Set the query in the request
         $context->request->setQuery($route->query);
-
-        //Set the route in the context
-        $context->route = $this->getRoute();
 
         //Throw 415 if the media type is not allowed
         $format = strtolower($context->request->getFormat());
@@ -180,6 +176,22 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             } else {
                 throw new KHttpExceptionNotAcceptable('Format not supported');
             }
+        }
+
+        /**
+         * If Content-Location is included in a 2xx (Successful) response message and its value refers (after
+         * conversion to absolute form) to a URI that is the same as the effective request URI, then the recipient
+         * MAY consider the payload to be a current representation of that resource at the time indicated by the
+         * message origination date
+         *
+         * See: https://tools.ietf.org/html/rfc7231#section-3.1.4.2
+         */
+        if($context->request->isSafe())
+        {
+            $route    = $context->router->generate($route);
+            $location = $context->router->qualify($route);
+
+            $context->response->headers->set('Content-Location', (string) $location);
         }
     }
 
@@ -232,28 +244,6 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         return $result;
     }
 
-    protected function _beforeSend(KDispatcherContextInterface $context)
-    {
-        //Add a (self-referential) canonical URL (only to GET and HEAD requests)
-        if($context->page && $context->request->isCacheable())
-        {
-            if(!$context->page->canonical)
-            {
-                $route = $context->router->generate($this->getRoute());
-                $context->page->canonical = (string) $context->router->qualify($route);
-            }
-
-            $this->getResponse()->getHeaders()->set('Link', array($context->page->canonical => array('rel' => 'canonical')));
-
-            //Add X-Robots-Tag
-            if($context->page->metadata->has('robots'))
-            {
-                $tags = KObjectConfig::unbox($context->page->metadata->robots);
-                $this->getResponse()->getHeaders()->set('X-Robots-Tag', $tags);
-            }
-        }
-    }
-
     protected function _actionSend(KDispatcherContextInterface $context)
     {
         //Do not send the response if it was already send
@@ -262,52 +252,6 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
         } else {
             $this->terminate($context);
         }
-    }
-
-    protected function _renderError(KDispatcherContextInterface $context)
-    {
-        //Get the exception object
-        if($context->param instanceof KEventException) {
-            $exception = $context->param->getException();
-        } else {
-            $exception = $context->param;
-        }
-
-        //Context needs to be reset
-        if($page = $this->getPage()) {
-            $context->page = $page;
-        }
-
-        if(!JDEBUG && $this->getObject('request')->getFormat() == 'html')
-        {
-            //If the error code does not correspond to a status message, use 500
-            $code = $exception->getCode();
-            if(!isset(KHttpResponse::$status_messages[$code])) {
-                $code = '500';
-            }
-
-            foreach([(int) $code, '500'] as $code)
-            {
-                if($page = $this->getPage($code))
-                {
-                    //Set status code (before rendering the error)
-                    $context->response->setStatus($code);
-
-                    //Set the controller
-                    $this->setController($page->getType(), ['page' => $page]);
-
-                    //Render the error
-                    $content = $this->getController()->render($exception);
-
-                    //Set error in the response
-                    $context->response->setContent($content);
-
-                    return true;
-                }
-            }
-        }
-
-        return parent::_renderError($context);
     }
 
     public function getContext()

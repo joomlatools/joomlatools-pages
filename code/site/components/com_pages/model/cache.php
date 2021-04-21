@@ -23,7 +23,7 @@ class ComPagesModelCache extends ComPagesModelCollection
     {
         $config->append([
             'type'         => 'cache',
-            'cache_path'   =>  $this->getObject('com://site/pages.config')->getSitePath('cache'),
+            'cache_path'   =>  $this->getObject('pages.config')->getCachePath(),
             'identity_key' => 'id',
         ]);
 

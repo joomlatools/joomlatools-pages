@@ -66,7 +66,7 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
     protected function _initializeContext(KModelContext $context)
     {
         //Validate the state
-        $this->_validateState();
+        $this->_validateState($context->state);
 
         //Fetch the data
         $data = $this->fetchData();
@@ -229,18 +229,21 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         return true;
     }
 
-    protected function _validateState()
+    protected function _validateState(KModelStateInterface $state)
     {
-        foreach($this->getState() as $name => $state)
+        foreach($state as $name => $item)
         {
-            if($state->required === true && is_null($state->value))
+            if($item->required === true && is_null($item->value))
             {
-                $collection = $this->getName();
+                if($this->getName()) {
+                    $collection = $this->getName();
+                } else {
+                    $collection = (string) $this->getIdentifier();
+                }
 
                 throw new RuntimeException(
-                    sprintf('State "%s" is required for collection: %s', $state->name, $collection)
+                    sprintf('State "%s" is required for collection: %s', $item->name, $collection)
                 );
-
             }
         }
     }

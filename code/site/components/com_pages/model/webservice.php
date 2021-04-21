@@ -37,11 +37,11 @@ class ComPagesModelWebservice extends ComPagesModelCollection
             'persistable'  => true,
             'identity_key' => 'id',
             'http'         => 'com://site/pages.http.cache',
-            'entity'       => 'resource',
             'url'          => '',
             'data_path'    => '',
             'hash_key'     => array(),
             'cache'        => true,
+            'cache_path'   => null,
             'headers'      => array()
         ]);
 
@@ -225,6 +225,11 @@ class ComPagesModelWebservice extends ComPagesModelCollection
                 throw new UnexpectedValueException(
                     'Http client: '.get_class($this->__http).' does not implement  KHttpClientInterface'
                 );
+            }
+
+            //Set the cache path
+            if($this->getConfig()->cache_path) {
+                $this->__http->getConfig()->cache_path = $this->getConfig()->cache_path;
             }
         }
 

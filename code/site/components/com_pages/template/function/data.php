@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-return function($path)
+return function($path, $cache = trues)
 {
     $result = false;
     if(is_array($path))
@@ -19,7 +19,7 @@ return function($path)
                 if (!$result instanceof ComPagesDataObject) {
                     $result = $this->getObject('data.registry')->fromPath($directory);
                 } else {
-                    $result->append($this->getObject('data.registry')->formPath($directory));
+                    $result->append($this->getObject('data.registry')->fromPath($directory));
                 }
             }
         }
@@ -37,7 +37,7 @@ return function($path)
         if(!in_array($namespace, ['http', 'https'])) {
             $result = $this->getObject('data.registry')->fromPath($path);
         } else {
-            $result = $this->getObject('data.registry')->fromUrl($path);
+            $result = $this->getObject('data.registry')->fromUrl($path, $cache);
         }
     }
 

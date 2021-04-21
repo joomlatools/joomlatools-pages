@@ -1,4 +1,4 @@
-<?php
+ <?php
 /**
  * Joomlatools Pages
  *
@@ -69,14 +69,39 @@ class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
             //Render the layout
             $renderLayout = function($context, $layout) use(&$renderLayout)
             {
+                //Parse and disable filters
+                if($filters = $layout->get('process/filters'))
+                {
+                    $filters = (array) KObjectConfig::unbox($filters);
+
+                    foreach($filters as $key => $filter)
+                    {
+                        unset($filters[$key]);
+
+                        if (is_array($filter))
+                        {
+                            $config = current($filter);
+                            $filter  = key($filter);
+                        }
+                        else $config = array();
+
+                        if ($filter[0] == '-')
+                        {
+                            $config['enabled'] = false;
+                            $this->getTemplate()->addFilter(substr($filter, 1), $config);
+                        }
+                        else $filters[$filter] = $config;
+                    }
+                }
+
                 $template = clone $this->getTemplate();
 
                 //Load layout
                 $template->loadFile($layout->path);
 
                 //Add layout filters (only for active layout)
-                if($filters = $layout->get('process/filters')) {
-                    $template->addFilters((array) KObjectConfig::unbox($filters));
+                if($filters) {
+                    $template->addFilters($filters);
                 }
 
                 //Append the template layout data

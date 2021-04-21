@@ -21,10 +21,10 @@ return [
     'aliases' => [
         'router'        => 'com://site/pages.dispatcher.router',
         'page'          => 'com://site/pages.page',
+        'pages.config'  => 'com://site/pages.config',
         'page.registry' => 'com://site/pages.page.registry',
         'data.registry' => 'com://site/pages.data.registry',
         'model.factory' => 'com://site/pages.model.factory',
-        'com://site/pages.version' => 'com://admin/pages.version',
     ],
 
     'identifiers' => [
@@ -57,9 +57,8 @@ return [
                 'com://site/pages.event.subscriber.bootstrapper',
                 'com://site/pages.event.subscriber.dispatcher',
                 'com://site/pages.event.subscriber.pagedecorator',
-                'com://site/pages.event.subscriber.errorhandler',
+                'com://site/pages.event.subscriber.exception',
                 'com://site/pages.event.subscriber.staticcache',
-                'com://site/pages.event.subscriber.prefetcher',
             ]
         ],
         'com://site/pages.dispatcher.router.site' => [

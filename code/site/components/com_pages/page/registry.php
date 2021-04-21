@@ -42,8 +42,8 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'cache'         => JDEBUG ? false : true,
-            'cache_path'    => $this->getObject('com://site/pages.config')->getSitePath('cache'),
+            'cache'         => $this->getConfig('pages.config')->debug ? false : true,
+            'cache_path'    => $this->getObject('pages.config')->getCachePath(),
             'cache_validation' => true,
             'collections' => array('pages' => ['model' => 'com://site/pages.model.pages']),
             'redirects'   => array(),
@@ -55,6 +55,8 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
     public function getHash($path = null)
     {
+        $result = null;
+
         if($path)
         {
             $size = function($path) use(&$size)
@@ -79,11 +81,14 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 return $result;
             };
 
-            if(!isset($this->__hashes[$path])) {
-                $this->__hashes[$path] =  hash('crc32b', serialize($size($path)));
-            }
+            if(file_exists($path))
+            {
+                if(!isset($this->__hashes[$path])) {
+                    $this->__hashes[$path] =  hash('crc32b', serialize($size($path)));
+                }
 
-            $result = $this->__hashes[$path];
+                $result = $this->__hashes[$path];
+            }
         }
         else $result = $this->__data['hash'];
 
