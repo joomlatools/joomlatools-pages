@@ -26,8 +26,7 @@
         "php": ">=7.3.0",
         "joomlatools/composer": "*",
         "joomlatools/framework": "~3.5.0",
-        "michelf/php-markdown": "1.8.*",
-        "scrivo/highlight.php": "9.*"
+        "michelf/php-markdown": "1.8.*"
     },
     "extra": {
         "manifest": "code/administrator/components/com_pages/pages.xml"
