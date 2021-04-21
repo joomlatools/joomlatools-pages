@@ -343,12 +343,15 @@ class ComPagesDecoratorMenu extends \Joomla\CMS\Menu\SiteMenu
         $item->type = 'component';
         $item->access = $attributes['access'] ?? 1;
         $item->level  = $attributes['client'] ?? 1;
-        $item->language  = $attributes['client'] ?? '*';
-        $item->parent_id = $attributes['client'] ?? 1;
+        $item->language  = $attributes['language'] ?? '*';
+        $item->parent_id = $attributes['parent'] ?? 1;
         $item->home = 0;
         $item->component = $query['option'];
         $item->component_id = JComponentHelper::getComponent($query['option'])->id;
         $item->query        = $query;
+
+        //Set the params
+        $item->setParams($attributes['params'] ?? array());
 
         $this->_items = [$item->id => $item] + $this->_items;
 
