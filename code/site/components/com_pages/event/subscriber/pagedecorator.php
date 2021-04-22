@@ -296,75 +296,78 @@ class ComPagesEventSubscriberPagedecorator extends ComPagesEventSubscriberAbstra
     }
 }
 
-class ComPagesDecoratorMenu extends \Joomla\CMS\Menu\SiteMenu
+if(class_exists(' \Joomla\CMS\Menu\SiteMenu'))
 {
-    private static $__instance;
-
-    public static function getInstance($client = 'site', $options = array())
+    class ComPagesDecoratorMenu extends \Joomla\CMS\Menu\SiteMenu
     {
-        if(!self::$__instance instanceof ComPagesDecoratorMenu) {
-            self::$__instance = self::$instances[$client] = new ComPagesDecoratorMenu($options);
-        }
+        private static $__instance;
 
-        return self::$__instance;
-    }
-
-    public function addItem($attributes)
-    {
-        //Instantiate the site menu decorator
-        $query = [
-            'option' => 'com_'.$attributes['component']
-        ];
-
-        if(!empty($attributes['view'])) {
-            $query['view'] = $attributes['view'];
-        }
-
-        if(!empty($attributes['layout'])) {
-            $query['layout'] = $attributes['layout'];
-        }
-
-        if(!empty($attributes['layout'])) {
-            $query['layout'] = $attributes['layout'];
-        }
-
-        if(!empty($attributes['id'])) {
-            $query['id'] = $attributes['id'];
-        }
-
-        $item = new \Joomla\CMS\Menu\MenuItem();
-
-        $item->id = max(array_keys($this->_items)) + 1;
-        $item->route    = trim($attributes['route'], '/');
-        //$item->menutype = $attributes['menu'] ?? null;
-        $item->title = $attributes['title'] ?? null;
-        $item->alias = $attributes['alias'] ?? null;
-        $item->link = 'index.php?'.http_build_query($query);
-        $item->type = 'component';
-        $item->access = $attributes['access'] ?? 1;
-        $item->level  = $attributes['level'] ?? 1;
-        $item->language  = $attributes['language'] ?? '*';
-        $item->parent_id = $attributes['parent'] ?? 1;
-        $item->home = 0;
-        $item->component = $query['option'];
-        $item->component_id = JComponentHelper::getComponent($query['option'])->id;
-        $item->query        = $query;
-
-        //Set the params
-        $item->setParams($attributes['params'] ?? array());
-
-        $this->_items = [$item->id => $item] + $this->_items;
-
-        foreach ($this->_items as &$item)
+        public static function getInstance($client = 'site', $options = array())
         {
-            $parent_tree = array();
-            if (isset($this->_items[$item->parent_id])) {
-                $parent_tree  = $this->_items[$item->parent_id]->tree;
+            if(!self::$__instance instanceof ComPagesDecoratorMenu) {
+                self::$__instance = self::$instances[$client] = new ComPagesDecoratorMenu($options);
             }
 
-            // Create tree.
-            $parent_tree[] = $item->id;
-            $item->tree = $parent_tree;
+            return self::$__instance;
+        }
+
+        public function addItem($attributes)
+        {
+            //Instantiate the site menu decorator
+            $query = [
+                'option' => 'com_'.$attributes['component']
+            ];
+
+            if(!empty($attributes['view'])) {
+                $query['view'] = $attributes['view'];
+            }
+
+            if(!empty($attributes['layout'])) {
+                $query['layout'] = $attributes['layout'];
+            }
+
+            if(!empty($attributes['layout'])) {
+                $query['layout'] = $attributes['layout'];
+            }
+
+            if(!empty($attributes['id'])) {
+                $query['id'] = $attributes['id'];
+            }
+
+            $item = new \Joomla\CMS\Menu\MenuItem();
+
+            $item->id = max(array_keys($this->_items)) + 1;
+            $item->route    = trim($attributes['route'], '/');
+            //$item->menutype = $attributes['menu'] ?? null;
+            $item->title = $attributes['title'] ?? null;
+            $item->alias = $attributes['alias'] ?? null;
+            $item->link = 'index.php?'.http_build_query($query);
+            $item->type = 'component';
+            $item->access = $attributes['access'] ?? 1;
+            $item->level  = $attributes['level'] ?? 1;
+            $item->language  = $attributes['language'] ?? '*';
+            $item->parent_id = $attributes['parent'] ?? 1;
+            $item->home = 0;
+            $item->component = $query['option'];
+            $item->component_id = JComponentHelper::getComponent($query['option'])->id;
+            $item->query        = $query;
+
+            //Set the params
+            $item->setParams($attributes['params'] ?? array());
+
+            $this->_items = [$item->id => $item] + $this->_items;
+
+            foreach ($this->_items as &$item)
+            {
+                $parent_tree = array();
+                if (isset($this->_items[$item->parent_id])) {
+                    $parent_tree  = $this->_items[$item->parent_id]->tree;
+                }
+
+                // Create tree.
+                $parent_tree[] = $item->id;
+                $item->tree = $parent_tree;
+            }
         }
     }
 }
