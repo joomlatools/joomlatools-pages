@@ -14,6 +14,7 @@
     <files folder="site/components/com_pages">
         <filename>pages.php</filename>
         <filename>config.php</filename>
+        <filename>version.php</filename>
 
         <folder>class</folder>
         <folder>controller</folder>
