@@ -9,7 +9,7 @@ Joomlatools Pages is an easy to use [_just-in-time_ **page generator**](https://
 
 Make no mistake, Pages is **not** a static site generator (SSG), Pages works in a _dynamic, lazy and smart_ way. A page is just in time dynamically generated, cached and only re-generated when its content or layout has changed.
 
-> Pages is more than a page generator, _it's an engine for creating websites_ 
+> Pages is more than a page generator, _it's an engine for creating websites_, combining the power of a dynamic web application, with the performance of a static site generator. 
 
 Pages takes your custom HTML/CSS/JS and churns through layouts to create a page. Throughout that process, you can tweak how you want the page to look, what data gets displayed in the layout, all that is required is a little bit of PHP logic to bring it all together.
 
