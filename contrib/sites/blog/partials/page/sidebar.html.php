@@ -8,13 +8,15 @@
 			<ul class="list-reset leading-normal">
 			<?
 				$categories = collection('ext:joomla.model.categories', [
-				'limit' => 0,
-				'published' => 1,
-				'order' => 'desc',
+				    'limit'     => 0,
+				    'published' => 1,
+				    'order'     => 'desc',
 			]); ?>
+
 			<? foreach($categories as $category): ?>
 				<li><a href="#" class="text-gray-darkest text-sm"><?= $category->title; ?></a></li>
 			<? endforeach ;?>
+
 			</ul>
 		</div>
 	</aside>
@@ -24,16 +26,15 @@
 
 		<div class="p-4">
 			<ul class="list-reset leading-normal">
-			<?
-				$articles = collection('ext:joomla.model.articles', [
-				'limit' => 0,
-				'published' => 1,
-				'sort' => 'date',
-				'order' => 'desc',
-				'category' => ['blog'],
-			]); ?>
+
+			<? $articles = collection('blog', ['limit' => 0]); ?>
+
 			<? foreach($articles as $article): ?>
-				<li><a href="<?= route('blog/article', ['slug' => $article->slug]) ?>" class="text-gray-darkest text-sm"><?= $article->title; ?></a></li>
+				<li>
+				    <a href="<?= route('blog/article', ['slug' => $article->slug]) ?>" class="text-gray-darkest text-sm">
+				        <?= $article->title; ?>
+				    </a>
+                </li>
 			<? endforeach ;?>
 			</ul>
 		</div>

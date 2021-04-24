@@ -1,0 +1,11 @@
+---
+collection:
+  model: cache
+  state:
+    sort: date
+    order: desc
+    limit: 0
+visible: false
+process:
+    cache: false
+---

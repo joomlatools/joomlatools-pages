@@ -1,14 +1,10 @@
 [
   {
-    "title": " Privacy Policy",
-    "route": "/"
-  },
-  {
-    "title": "Terms & Conditions",
-    "route": "/"
-  },
-  {
     "title": "Contact Us",
-    "url": "#"
+    "route": "contact"
+  },
+  {
+    "title": "Created by Joomlatools.com",
+    "url": "https://www.joomlatools.com"
   }
 ]

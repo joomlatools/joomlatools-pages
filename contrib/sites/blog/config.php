@@ -2,9 +2,14 @@
 
 return array(
 
+    //'http_cache' => true,
+    //'http_cache_time_browser' => 0,
+
+    'page_cache' => false,
+
     // Site
     'site' => [
-        'name'  => 'Joomlatools Pages - Blog example',
+        'name'  => 'Joomlatools Pages - A blog site',
     ],
 
     // Page
@@ -27,11 +32,20 @@ return array(
 
     // Aliases
     'aliases' => [
-        'theme://'   => '/joomlatools-pages/theme/',
-        'images://'  => '/joomlatools-pages/images/',
+        'theme://'  => '/joomlatools-pages/theme/',
+        'images://' => '/joomlatools-pages/images/',
     ],
 
     // Google Analytics
     'ga_code' => '',
 
+    // Extensions
+    'extensions' => [
+
+        'ext:joomla.model.articles'  => [
+            'aliases' => [
+                'about-us' => 1
+            ]
+        ]
+    ]
 );
