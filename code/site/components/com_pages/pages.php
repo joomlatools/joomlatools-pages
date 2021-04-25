@@ -13,7 +13,7 @@ if (!class_exists('Koowa')) {
 }
 
 try {
-    KObjectManager::getInstance()->getObject('com://site/pages.dispatcher.http')->dispatch();
+    Koowa::getObject('com://site/pages.dispatcher.http')->dispatch();
 } catch(Exception $exception) {
-    KObjectManager::getInstance()->getObject('exception.handler')->handleException($exception);
+    Koowa::getObject('exception.handler')->handleException($exception);
 }

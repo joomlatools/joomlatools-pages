@@ -15,11 +15,5 @@ spl_autoload_register(function ($class)
 		return true;
 	}
 
-	if (strpos($class, 'Highlight\\') === 0)
-	{
-		require_once __DIR__.'/highlight/Autoloader.php';
-		return \Highlight\Autoloader::load($class);
-	}
-
 	return false;
 });

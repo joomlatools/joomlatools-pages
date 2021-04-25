@@ -9,7 +9,7 @@
 
 class ComPagesControllerAbstract extends KControllerModel
 {
-    private $__page;
+    use ComPagesPageTrait;
 
     public function __construct(KObjectConfig $config)
     {
@@ -22,22 +22,11 @@ class ComPagesControllerAbstract extends KControllerModel
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'page'  => null,
+            'page'  => 'com://site/pages.page',
             'model' => 'com://site/pages.model.pages',
         ]);
 
         parent::_initialize($config);
-    }
-
-    public function setPage(ComPagesPageEntity $page)
-    {
-        $this->__page = $page;
-        return $this;
-    }
-
-    public function getPage()
-    {
-        return $this->__page;
     }
 
     public function getFormats()
@@ -59,50 +48,21 @@ class ComPagesControllerAbstract extends KControllerModel
         return parent::getView();
     }
 
-    public function setModel($model)
+    public function getModel()
     {
-        if(!$model instanceof KModelInterface) {
-            $model = $this->getObject('com://site/pages.model.pages');
-        }
-
-        $model->addBehavior('com://site/pages.model.behavior.pageable', ['page' => $this->getPage()]);
-
-        return parent::setModel($model);
-    }
-
-    public function getContext()
-    {
-        $context = new ComPagesControllerContext();
-        $context->setSubject($this);
-        $context->setRequest($this->getRequest());
-        $context->setResponse($this->getResponse());
-        $context->setUser($this->getUser());
-        $context->setPage($this->getPage());
-
-        return $context;
-    }
-
-    protected function _actionRender(KControllerContextInterface $context)
-    {
-        if(!$context->response->isError())
+        if(!$this->_model instanceof KModelInterface)
         {
-            $route    = $context->router->generate($context->route);
-            $location = $context->router->qualify($route);
+            //Get the model
+            $model = parent::getModel();
 
-            /**
-             * If Content-Location is included in a 2xx (Successful) response message and its value refers (after
-             * conversion to absolute form) to a URI that is the same as the effective request URI, then the recipient
-             * MAY consider the payload to be a current representation of that resource at the time indicated by the
-             * message origination date
-             *
-             * See: https://tools.ietf.org/html/rfc7231#section-3.1.4.2
-             */
-            $context->response->headers->set('Content-Location', $location);
+            //Set the folder to the active page path if no folder is defined
+            if($model->getState()->folder === null) {
+                $model->getState()->folder = $this->getPage()->path;
+            }
         }
 
-        return parent::_actionRender($context);
+        return $this->_model;
     }
-
 
     protected function _actionBrowse(KControllerContextInterface $context)
     {
@@ -127,5 +87,17 @@ class ComPagesControllerAbstract extends KControllerModel
         else $entity = $context->result;
 
         return $entity;
+    }
+
+    public function getContext()
+    {
+        $context = new ComPagesControllerContext();
+        $context->setSubject($this);
+        $context->setRequest($this->getRequest());
+        $context->setResponse($this->getResponse());
+        $context->setUser($this->getUser());
+        $context->setPage($this->getPage());
+
+        return $context;
     }
 }

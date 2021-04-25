@@ -10,8 +10,6 @@
 class ComPagesTemplateDefault extends KTemplate
 {
     protected $_layout;
-    protected $_layout_data;
-
     protected $_type;
 
     private $__helpers = array();
@@ -30,19 +28,19 @@ class ComPagesTemplateDefault extends KTemplate
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'filters'   => ['partial'],
-            'functions' => [
-                'date'       => [$this, '_formatDate'],
-                'data'       => [$this, '_fetchData'],
-                'slug'       => [$this, '_createSlug'],
-                'attributes' => [$this, '_createAttributes'],
-                'config'     => [$this, '_getConfig'],
-                'unbox'      => [$this, '_unboxObject']
-            ],
+            'filters'         => ['partial'],
             'cache'           => false,
             'cache_namespace' => 'pages',
             'excluded_types' => ['html', 'txt', 'svg', 'css', 'js'],
         ]);
+
+        //Register template functions (allows core functions to be overridden)
+        $functions = array();
+        foreach (glob(__DIR__.'/function/[!_]*.php') as $filename) {
+            $functions[basename($filename, '.php')] = $filename;
+        }
+
+        $config->append(['functions' => $functions]);
 
         parent::_initialize($config);
     }
@@ -65,16 +63,15 @@ class ComPagesTemplateDefault extends KTemplate
             $template = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
 
             //Set the parent layout
-            if($layout = KObjectConfig::unbox($template->layout))
+            if($template->has('layout'))
             {
-                if(is_array($layout))
-                {
-                    $this->_layout      = $layout['path'];
-                    $this->_layout_data = $layout;
-
-                    unset($this->_layout_data['path']);
+                if(is_string($template->layout)) {
+                    $layout = ['path' => $template->layout];
+                } else {
+                    $layout = $template->layout;
                 }
-                else $this->_layout = $layout;
+
+                $this->_layout = new ComPagesObjectConfig($layout);
             }
             else $this->_layout = false;
 
@@ -86,6 +83,8 @@ class ComPagesTemplateDefault extends KTemplate
 
             if(!in_array($this->_type, $this->_excluded_types))
             {
+                unset($this->_functions['import']); //prevent conflict
+
                 //Create the template engine
                 $config = array(
                     'template'  => $this,
@@ -115,14 +114,12 @@ class ComPagesTemplateDefault extends KTemplate
         return $this->_layout;
     }
 
-    public function getLayoutData()
-    {
-        return new KObjectConfigJson($this->_layout_data);
-    }
-
     public function render(array $data = array())
     {
         unset($data['layout']);
+
+        //$display_errors = ini_get('display_errors');
+        //ini_set('display_errors', false);
 
         $result = parent::render($data);
 
@@ -130,6 +127,8 @@ class ComPagesTemplateDefault extends KTemplate
         if($this->_type == 'html') {
             $result = $this->filter();
         }
+
+        //ini_set('display_errors', $display_errors);
 
         return $result;
     }
@@ -193,151 +192,44 @@ class ComPagesTemplateDefault extends KTemplate
         return parent::registerFunction($name, $function);
     }
 
+    public function isFunction($name)
+    {
+        $result = false;
+
+        if(isset($this->_functions[$name])) {
+            $result = true;
+        }
+
+        return $result;
+    }
+
     public function handleException(Exception &$exception)
     {
         if($exception instanceof KTemplateExceptionError)
         {
-            $file   = $exception->getFile();
-            $buffer = $exception->getPrevious()->getFile();
+            $file   = file($exception->getFile());
+            $buffer = file($exception->getPrevious()->getFile());
 
-            //Get the real file if it can be found
-            $line = count(file($file)) - count(file($buffer)) + $exception->getLine() - 1;
+            //Estimate the location of the error in the source file
+            $line = count($file) - count($buffer) + $exception->getLine() - 1;
+
+            //Try to find the specific line in the source file
+            foreach($file as $l => $text)
+            {
+                if($text == $buffer[$exception->getPrevious()->getLine()]) {
+                    $line = $l;
+                    break;
+                }
+            }
 
             $exception = new KTemplateExceptionError(
                 $exception->getMessage(),
                 $exception->getCode(),
                 $exception->getSeverity(),
-                $file,
+                $exception->getFile(),
                 $line,
                 $exception->getPrevious()
             );
         }
-    }
-
-    protected function _formatDate($date, $format = '')
-    {
-        if(!$date instanceof KDate)
-        {
-            if(empty($format)) {
-                $format = $this->getObject('translator')->translate('DATE_FORMAT_LC3');
-            }
-
-            $result = $this->createHelper('date')->format(array('date' => $date, 'format' => $format));
-        }
-        else $result = $date->format($format);
-
-        return $result;
-    }
-
-    protected function _createSlug($string)
-    {
-        return $this->getObject('filter.factory')->createFilter('slug')->sanitize($string);
-    }
-
-    protected function _createAttributes($name, $value = null)
-    {
-        $result = '';
-
-        if(!is_array($name) && $value) {
-            $name = array($name => $value);
-        }
-
-        if($name instanceof KObjectConfig) {
-            $name = KObjectConfig::unbox($name);
-        }
-
-        if(is_array($name))
-        {
-            $output = array();
-            foreach($name as $key => $item)
-            {
-                if(is_array($item))
-                {
-                    foreach($item as $k => $v)
-                    {
-                        if(empty($v)) {
-                            unset($item[$k]);
-                        }
-                    }
-
-                    $item = implode(' ', $item);
-                }
-
-                if (is_bool($item))
-                {
-                    if ($item === false) continue;
-                    $item = $key;
-                }
-
-                $output[] = $key.'="'.str_replace('"', '&quot;', $item).'"';
-            }
-
-            $result = ' '.implode(' ', $output);
-        }
-
-        return $result;
-    }
-
-    protected function _fetchData($path, $cache = true)
-    {
-        $result = false;
-        if(is_array($path))
-        {
-            if(is_numeric(key($path)))
-            {
-                foreach($path as $directory)
-                {
-                    if (!$result instanceof ComPagesDataObject) {
-                        $result = $this->getObject('data.registry')->fromPath($directory);
-                    } else {
-                        $result->append($this->getObject('data.registry')->fromPath($directory));
-                    }
-                }
-            }
-            else
-            {
-                $class = $this->getObject('manager')->getClass('com://site/pages.data.object');
-                $result = new $class($path);
-            }
-
-        }
-        else
-        {
-            $namespace = parse_url($path, PHP_URL_SCHEME);
-
-            if(!in_array($namespace, ['http', 'https'])) {
-                $result = $this->getObject('data.registry')->fromPath($path);
-            } else {
-                $result = $this->getObject('data.registry')->fromUrl($path, $cache);
-            }
-        }
-
-        return $result;
-    }
-
-    protected function _getConfig($identifier = 'com://site/pages.config')
-    {
-        if (is_string($identifier) && strpos($identifier, ':') === false) {
-            $identifier = 'com://site/pages.'.$identifier;
-        }
-
-        return clone $this->getObject($identifier)->getConfig();
-    }
-
-    protected function _unboxObject($object)
-    {
-        if(is_object($object))
-        {
-            if(method_exists($object, 'toArray')) {
-                $properties = $object->toArray();
-            } elseif($object instanceof Traversable) {
-                $properties = iterator_to_array($object);
-            } else {
-                $properties = get_object_vars($object);
-            }
-        }
-        else $properties = $object;
-
-        return $properties;
     }
 }

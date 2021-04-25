@@ -31,8 +31,33 @@ class ComPagesObjectConfigFrontmatter extends KObjectConfigYaml
 
         if (strpos($string, "---") !== false)
         {
-            if(preg_match('#^\s*---(.*|[\s\S]*)\s*---#siU', $string, $matches)) {
-                $this->merge(parent::fromString($matches[1], false));
+            if(preg_match('#^\s*---(.*|[\s\S]*)\s*---#siU', $string, $matches))
+            {
+                $data = parent::fromString($matches[1], false);
+
+                //Handle dynamic data
+                array_walk_recursive ($data, function(&$value, $key)
+                {
+                    if(is_string($value) && strpos($value, 'data://') === 0)
+                    {
+                        $matches = array();
+                        preg_match('#data\:\/\/([^\[]+)(?:\[(.*)\])*#si', $value, $matches);
+
+                        if(!empty($matches[0]))
+                        {
+                            $data = Koowa::getObject('data.registry')
+                                ->fromPath($matches[1]);
+
+                            if($data && !empty($matches[2])) {
+                                $data = $data->get($matches[2]);
+                            }
+
+                            $value = $data;
+                        }
+                    }
+                });
+
+                $this->merge($data);
             }
 
             $this->setContent(str_replace($matches[0], '', $string));

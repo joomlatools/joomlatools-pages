@@ -9,10 +9,15 @@
 
 class ComPagesModelWebservice extends ComPagesModelCollection
 {
+    static private $__resource_cache = array();
+
     private $__http;
     private $__data;
 
     protected $_url;
+    protected $_cache_time;
+    protected $_data_path;
+    protected $_hash_key;
 
     public function __construct(KObjectConfig $config)
     {
@@ -20,6 +25,10 @@ class ComPagesModelWebservice extends ComPagesModelCollection
 
         $this->__http = $config->http;
         $this->_url   = $config->url;
+
+        $this->_cache_time = $config->cache;
+        $this->_data_path  = $config->data_path;
+        $this->_hash_key   = (array) KObjectConfig::unbox($config->hash_key);
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -28,14 +37,25 @@ class ComPagesModelWebservice extends ComPagesModelCollection
             'persistable'  => true,
             'identity_key' => 'id',
             'http'         => 'com://site/pages.http.cache',
-            'entity'       => 'resource',
             'url'          => '',
-            'data'         => '',
+            'data_path'    => '',
+            'hash_key'     => array(),
             'cache'        => true,
+            'cache_path'   => null,
             'headers'      => array()
         ]);
 
         parent::_initialize($config);
+    }
+
+    protected function _initializeContext(KModelContext $context)
+    {
+        //Set a minimum cache time of 1min if refreshing
+        if($context->action == 'hash' && $this->_cache_time !== false) {
+            $this->_cache_time = $context->refresh ? 60 : $this->_cache_time;
+        }
+
+        parent::_initializeContext($context);
     }
 
     public function getUrl(array $variables = array())
@@ -43,89 +63,42 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         return KHttpUrl::fromTemplate($this->_url, $variables);
     }
 
-    public function getHeaders()
+    public function getHeaders($cache = true)
     {
-        return KObjectConfig::unbox($this->getConfig()->headers);
-    }
+        $headers = KObjectConfig::unbox($this->getConfig()->headers);
 
-    public function getHash($refresh = false)
-    {
-        $hash = null;
-
-        if($url = $this->getUrl($this->getState()->getValues()))
+        if($cache !== true)
         {
-            $http = $this->_getHttpClient();
-
-            $cache   = $refresh ? 0 : $this->getConfig()->cache;
-            $headers = $this->getHeaders();
-            $headers['Cache-Control'] = $this->_getCacheControl($cache);
-
-            try
+            if($cache !== false)
             {
-                $content = $http->get($url, $headers);
-                $hash    = hash('crc32b', json_encode($content).$url);
-            }
-            catch(KHttpException $e)
-            {
-                //Re-throw exception if in debug mode
-                if($http->isDebug()) {
-                    throw $e;
-                } else {
-                    $hash = null;
+                //Convert max_age to seconds
+                if(!is_numeric($cache))
+                {
+                    if($max_age = strtotime($cache)) {
+                        $max_age = $max_age - strtotime('now');
+                    }
                 }
+                else $max_age = $cache;
+
+                $headers['Cache-Control'] = ['max-age' => (int) $max_age];
             }
+            else  $headers['Cache-Control'] = ['no-store'];
         }
 
-        return $hash;
+        return $headers;
     }
 
-    public function fetchData($count = false)
+    public function fetchData()
     {
         if(!isset($this->__data))
         {
-            $this->__data = array();
+            $data = array();
 
-            if($url = $this->getUrl($this->getState()->getValues()))
-            {
-                $http    = $this->_getHttpClient();
-
-                $max_age = $this->getConfig()->cache;
-
-                $headers = $this->getHeaders();
-                $headers['Cache-Control'] = $this->_getCacheControl($max_age);
-
-                try {
-                    $this->__data = $http->get($url, $headers);
-                }
-                catch(KHttpException $e)
-                {
-                    //Re-throw exception if in debug mode
-                    if($http->isDebug()) {
-                        throw $e;
-                    } else {
-                        $this->__data = array();
-                    }
-                }
+            if($url = $this->getUrl($this->getState()->getValues())) {
+                $data = $this->_getHttpData($url, $this->_cache_time, $this->_data_path);
             }
 
-            if($path = $this->getConfig()->data)
-            {
-                if(is_string($path)) {
-                    $segments = explode('/', $path);
-                } else {
-                    $segments = KObjectConfig::unbox($path);
-                }
-
-                foreach($segments as $segment)
-                {
-                    if(!isset($this->__data[$segment]))
-                    {
-                        $this->__data = array();
-                        break;
-                    }
-                    else $this->__data = $this->__data[$segment];
-                }
-            }
+            $this->__data = $data;
         }
 
         return $this->__data;
@@ -138,6 +111,36 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         parent::_actionReset($context);
     }
 
+    protected function _actionHash(KModelContext $context)
+    {
+        $hash = parent::_actionHash($context);
+
+        $data = $context->data;
+
+        $url      = $this->getUrl($this->getState()->getValues());
+        $identity = $this->getState()->get($this->getIdentityKey());
+
+        if($this->_hash_key)
+        {
+            $result = array();
+            foreach($this->_hash_key as $key)
+            {
+                $column = array_column($data, $key, $this->getIdentityKey());
+
+                if($this->getState()->isUnique() && isset($column[$identity])) {
+                    $column = $column[$identity];
+                }
+
+                $result[$key] = $column;
+            }
+
+            $data = $result;
+        }
+
+        $hash = hash('crc32b', serialize($data).$url);
+        return $hash;
+    }
+
     protected function _actionPersist(KModelContext $context)
     {
         $result = true;
@@ -145,6 +148,7 @@ class ComPagesModelWebservice extends ComPagesModelCollection
 
         $http    = $this->_getHttpClient();
         $url     = $this->getUrl($this->getState()->getValues());
+        $headers = ['Origin' => $url->toString(KHttpUrl::AUTHORITY)];
 
         $headers = $this->getHeaders();
         $headers['Origin'] = $url->toString(KHttpUrl::AUTHORITY);
@@ -210,7 +214,7 @@ class ComPagesModelWebservice extends ComPagesModelCollection
         return $result;
     }
 
-    public function _getHttpClient()
+    protected function _getHttpClient()
     {
         if(!($this->__http instanceof KHttpClientInterface))
         {
@@ -222,33 +226,61 @@ class ComPagesModelWebservice extends ComPagesModelCollection
                     'Http client: '.get_class($this->__http).' does not implement  KHttpClientInterface'
                 );
             }
+
+            //Set the cache path
+            if($this->getConfig()->cache_path) {
+                $this->__http->getConfig()->cache_path = $this->getConfig()->cache_path;
+            }
         }
 
         return $this->__http;
     }
 
-    protected function _getCacheControl($cache)
+    protected function _getHttpData($url, $cache = true, $path = null)
     {
-        $cache_control = array();
+        $http = $this->_getHttpClient();
 
-        if($cache !== true)
+        try
         {
-            if($cache !== false)
-            {
-                //Convert max_age to seconds
-                if(!is_numeric($cache))
-                {
-                    if($max_age = strtotime($cache)) {
-                        $max_age = $max_age - strtotime('now');
-                    }
-                }
-                else $max_age = $cache;
+            $key = md5((string) $url);
 
-                $cache_control = ['max-age' => (int) $max_age];
+            if(!isset(self::$__resource_cache[$key]))
+            {
+                $headers = $this->getHeaders($cache);
+                $data    = $http->get($url, $headers);
+
+                self::$__resource_cache[$key] = $data;
             }
-            else $cache_control = ['no-store'];
+            else $data = self::$__resource_cache[$key];
+        }
+        catch(KHttpException $e)
+        {
+            //Re-throw exception if in debug mode
+            if($http->isDebug()) {
+                throw $e;
+            } else {
+                $data = array();
+            }
         }
 
-        return $cache_control;
+        if($path)
+        {
+            if(is_string($path)) {
+                $segments = explode('/', $path);
+            } else {
+                $segments = KObjectConfig::unbox($path);
+            }
+
+            foreach($segments as $segment)
+            {
+                if(!isset($data[$segment])) {
+                    $data = array(); break;
+                } else {
+                    $data = $data[$segment];
+                }
+            }
+        }
+
+        return $data;
     }
 }

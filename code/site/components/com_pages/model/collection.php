@@ -19,13 +19,15 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
 
         //Insert the identity_key
         if($config->identity_key) {
-            $this->getState()->insert($config->identity_key, 'url', null, true);
+            $this->getState()->insertUnique($config->identity_key, 'url');
         }
 
         //Setup callbacks
-        $this->addCommandCallback('before.fetch'  , '_prepareContext');
-        $this->addCommandCallback('before.count'  , '_prepareContext');
-        $this->addCommandCallback('before.persist', '_prepareContext');
+        $this->addCommandCallback('before.fetch'  , '_initializeContext');
+        $this->addCommandCallback('before.count'  , '_initializeContext');
+        $this->addCommandCallback('before.persist', '_initializeContext');
+        $this->addCommandCallback('before.hash'   , '_initializeContext');
+
         $this->addCommandCallback('before.persist', '_beforePersist');
 
         //Set the type
@@ -42,11 +44,12 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
     {
         $config->append([
             'entity'        => $this->getIdentifier()->getName(),
-            'type'          => '', //the collection type used when generating JSDNAPI
+            'type'          => $this->getIdentifier()->getPackage() .'-'. KStringInflector::pluralize($this->getIdentifier()->getName()),
             'name'          => '', //the collection name used to generate this model
             'search'        => [], //properties to allow searching on
             'identity_key'  => null,
             'persistable'   => false,
+            'state'         => 'com://site/pages.model.state',
         ])->append([
             'behaviors'   => [
                 'com://site/pages.model.behavior.paginatable',
@@ -60,6 +63,18 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         parent::_initialize($config);
     }
 
+    protected function _initializeContext(KModelContext $context)
+    {
+        //Validate the state
+        $this->_validateState($context->state);
+
+        //Fetch the data
+        $data = $this->fetchData();
+
+        //Filter the data
+        $context->data = $this->filterData($data);
+    }
+
     public function setState(array $values)
     {
         //Automatically create states that don't exist yet
@@ -71,6 +86,20 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         }
 
         return parent::setState($values);
+    }
+
+    final public function hash($refresh = false)
+    {
+        $context = $this->getContext();
+        $context->refresh = $refresh;
+
+        if ($this->invokeCommand('before.hash', $context) !== false)
+        {
+            $context->result = $this->_actionHash($context);
+            $this->invokeCommand('after.hash', $context);
+        }
+
+        return $context->result;
     }
 
     final public function persist()
@@ -128,9 +157,17 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         return (array) $keys;
     }
 
-    public function getHash($refresh = false)
+    public function getHashState()
     {
-        return null;
+        $states = array();
+        foreach($this->getState() as $state)
+        {
+            if(($state->required === true || $state->unique === true || $state->internal === true) && !is_null($state->value)) {
+                $states[$state->name] = KObjectConfig::unbox($state->value);
+            }
+        }
+
+        return $states;
     }
 
     public function isAtomic()
@@ -152,7 +189,7 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         return $atomic;
     }
 
-    public function fetchData($count = false)
+    public function fetchData()
     {
         return array();
     }
@@ -192,13 +229,23 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         return true;
     }
 
-    protected function _prepareContext(KModelContext $context)
+    protected function _validateState(KModelStateInterface $state)
     {
-        //Fetch the data
-        $data = $this->fetchData($context->getName() == 'before.count');
+        foreach($state as $name => $item)
+        {
+            if($item->required === true && is_null($item->value))
+            {
+                if($this->getName()) {
+                    $collection = $this->getName();
+                } else {
+                    $collection = (string) $this->getIdentifier();
+                }
 
-        //Filter the data
-        $context->data = $this->filterData($data);
+                throw new RuntimeException(
+                    sprintf('State "%s" is required for collection: %s', $item->name, $collection)
+                );
+            }
+        }
     }
 
     protected function _actionFetch(KModelContext $context)
@@ -270,6 +317,11 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
     protected function _actionPersist(KModelContext $context)
     {
         return false;
+    }
+
+    protected function _actionHash(KModelContext $context)
+    {
+        return null;
     }
 
     public function getContext()

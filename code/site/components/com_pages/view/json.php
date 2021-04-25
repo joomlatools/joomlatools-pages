@@ -9,7 +9,7 @@
 
 class ComPagesViewJson extends KViewAbstract
 {
-    use ComPagesViewTraitLocatable;
+    use ComPagesViewTraitUrl, ComPagesViewTraitRoute, ComPagesViewTraitPage;
 
     /**
      * JSON API version
@@ -107,7 +107,7 @@ class ComPagesViewJson extends KViewAbstract
                 $document['data'][] = $this->_createResource($entity);
             }
 
-            $page = $this->getModel()->getPage();
+            $page = $this->getPage();
 
             $document['meta'] = array();
             $document['meta']['total'] = $this->getModel()->count();
@@ -309,7 +309,7 @@ class ComPagesViewJson extends KViewAbstract
 
             if(!empty($query))
             {
-                $url = $this->getRoute($this->getModel()->getPage(), $query);
+                $url = $this->getRoute($this->getPage(), $query);
                 $links = ['self' => (string) $url];
             }
         }

@@ -9,24 +9,14 @@
 
 class ComPagesTemplateFilterHighlight extends ComPagesTemplateFilterAbstract
 {
-    protected $_highlighter;
-
-    public function __construct(KObjectConfig $config)
-    {
-        parent::__construct($config);
-
-        //Set the markdown compiler
-        if($config->highlighter) {
-            $this->setHighlighter($config->highlighter);
-        }
-    }
-
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'debug'            =>  JDEBUG ? true : false,
-            'highlighter'      => null,
-            'default_language' => 'php',
+            'debug'    => $this->getConfig('pages.config')->debug,
+            'selector'   => 'body',
+            'style'      => 'atom-one-light',
+            'badge_icon' => true,
+            'badge_lang' => true,
         ));
 
         parent::_initialize($config);
@@ -34,55 +24,10 @@ class ComPagesTemplateFilterHighlight extends ComPagesTemplateFilterAbstract
 
     public function filter(&$text)
     {
-        if(preg_match_all('#<pre>\s*<code\s*([^>]*)>(.*)<\/code>\s*</pre>#siU', $text, $matches))
+        if ($this->isEnabled() && preg_match_all('#<pre>\s*<code\s*([^>]*)>(.*)<\/code>\s*</pre>#siU', $text, $matches))
         {
-            foreach($matches[2] as $key => $code)
-            {
-                //Create attributes array
-                $attributes = array(
-                    'class' => $this->getConfig()->default_language,
-                );
-
-                $attributes = array_merge($attributes, $this->parseAttributes($matches[1][$key]));
-
-                //Ensure entities are not encoded when passing to the highlighter.
-                $code = htmlspecialchars_decode($code, ENT_HTML5);
-
-                if($result = $this->_highlight(trim($code), $attributes['class']))
-                {
-                    $html = '<ktml:style src="assets://com_pages/css/highlight-v1.8.4.'.($this->getConfig()->debug ? 'min.css' : 'css').'" />';
-                    $html .= '<pre><code class="hljs ' . $attributes['class'] . '">';
-                    $html .=  $result;
-                    $html .= '</code></pre>';
-
-                    $text = str_replace($matches[0][$key], $html, $text);
-                }
-            }
+            $html = $this->helper('behavior.highlight', $this->getConfig());
+            $text = $text."\n".$html;
         }
-    }
-
-    public function getHighlighter()
-    {
-        return $this->_highlighter;
-    }
-
-    public function setHighlighter(callable $highlighter)
-    {
-        $this->_highlighter = $highlighter;
-        return $this;
-    }
-
-    protected function _highlight($source, $language = 'php')
-    {
-        $result = false;
-        if(is_callable($this->_highlighter))
-        {
-            try {
-                $result = call_user_func($this->_highlighter, $source, $language);
-            }
-            catch (DomainException $e) {};
-        }
-
-        return $result;
     }
 }

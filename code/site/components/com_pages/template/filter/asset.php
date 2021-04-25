@@ -11,12 +11,13 @@ class ComPagesTemplateFilterAsset extends ComKoowaTemplateFilterAsset
 {
     protected function _initialize(KObjectConfig $config)
     {
-        $site_path = $this->getObject('com://site/pages.config')->getSitePath();
+        $site_path = $this->getObject('pages.config')->getSitePath();
         $root_path = Koowa::getInstance()->getRootPath();
 
         $config->append(array(
             'priority' => self::PRIORITY_LOW,
             'schemes' => array(
+                'host://'   =>  $this->getObject('request')->getBaseUrl()->toString(KHttpUrl::AUTHORITY),
                 'theme://'  => 'site://theme/',
                 'site://'   => 'base://'.trim(str_replace($root_path, '', $site_path), '/').'/',
             ),

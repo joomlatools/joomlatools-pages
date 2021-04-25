@@ -59,6 +59,22 @@ class ComPagesModelBehaviorSortable extends ComPagesModelBehaviorQueryable
         }
     }
 
+    protected function _beforeCreate(KModelContextInterface $context)
+    {
+        if(!$context->state->isUnique())
+        {
+            $entity = $context->entity;
+
+            //Add ordering property
+            $ordering = 0;
+            foreach($entity as $key => $item) {
+                $entity[$key]['ordering'] = ++$ordering;
+            }
+
+            $context->entity = $entity;
+        }
+    }
+
     protected function _queryArray(array $data, KModelStateInterface $state)
     {
         if($state->sort && $state->sort != 'order')

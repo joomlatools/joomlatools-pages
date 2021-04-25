@@ -10,6 +10,7 @@
 class ComPagesModelEntityPage extends ComPagesModelEntityItem
 {
     private $__parent;
+    private $__content;
 
     protected function _initialize(KObjectConfig $config)
     {
@@ -89,93 +90,12 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         return $text;
     }
 
-    public function getPropertyMetadata()
-    {
-        $metadata = $this->getConfig()->data->metadata;
-
-        if(!isset($metadata->description) && $this->summary) {
-            $metadata->set('description', $this->summary);
-        }
-
-        if($this->image && $this->image->url) {
-            $metadata->set('og:image', $this->image->url);
-        }
-
-        //Type and image are required. If they are not set remove any opengraph properties
-        if(!empty($metadata->get('og:type')) && !empty($metadata->get('og:image')))
-        {
-            if($this->title) {
-                $metadata->set('og:title', $this->title);
-            }
-
-            if($this->summary) {
-                $metadata->set('og:description', $this->summary);
-            }
-
-            if($this->language) {
-                $metadata->set('og:locale', $this->language);
-            }
-        }
-        else
-        {
-            foreach($metadata as $name => $value)
-            {
-                if(strpos($name, 'og:') === 0 || strpos($name, 'twitter:') === 0) {
-                    $metadata->remove($name);
-                }
-            }
-        }
-
-        return $metadata;
-    }
-
-    public function setPropertyName($name)
-    {
-        if(empty($name)) {
-            $name = ucwords(str_replace(array('_', '-'), ' ', $this->slug));
-        }
-
-        return $name;
-    }
-
-    public function setPropertyAccess($value)
-    {
-        return new KObjectConfig($value);
-    }
-
-    public function setPropertyProcess($value)
-    {
-        return new KObjectConfig($value);
-    }
-
-    public function setPropertyCollection($value)
-    {
-        return new KObjectConfig($value);
-    }
-
-    public function setPropertyForm($value)
-    {
-        return new KObjectConfig($value);
-    }
-
-    public function setPropertyDate($value)
-    {
-        //Set the date based on the modified time of the file
-        if(is_integer($value)) {
-            $date = $this->getObject('date')->setTimestamp($value);
-        } else {
-            $date = $this->getObject('date', array('date' => trim($value)));
-        }
-
-        return $date;
-    }
-
     public function setPropertyImage($value)
     {
         //Normalize images
         $image = null;
 
-        if(!empty($value))
+        if(!empty($value) && !$value instanceof ComPagesObjectConfig)
         {
             if(is_array($value)) {
                 $url = $value['url'] ?? '';
@@ -198,10 +118,109 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                 ];
             }
 
-            $image = new KObjectConfigJson($image);
+            $image = new ComPagesObjectConfig($image);
         }
+        else $image = new ComPagesObjectConfig($value);
 
         return $image;
+    }
+
+    public function setPropertyMetadata($metadata)
+    {
+        if(!$metadata instanceof ComPagesObjectConfig)
+        {
+            $metadata = new ComPagesObjectConfig($metadata);
+
+            if(!isset($metadata->description) && $this->summary) {
+                $metadata->set('description', $this->summary);
+            }
+
+            if($this->image && $this->image->url) {
+                $metadata->set('og:image', $this->image->url);
+            }
+
+            //Type and image are required. If they are not set remove any opengraph properties
+            if(!empty($metadata->get('og:type')) && !empty($metadata->get('og:image')))
+            {
+                if($this->title) {
+                    $metadata->set('og:title', $this->title);
+                }
+
+                if($this->summary) {
+                    $metadata->set('og:description', $this->summary);
+                }
+
+                if($this->language) {
+                    $metadata->set('og:locale', $this->language);
+                }
+            }
+            else
+            {
+                foreach($metadata as $name => $value)
+                {
+                    if(strpos($name, 'og:') === 0 || strpos($name, 'twitter:') === 0) {
+                        $metadata->remove($name);
+                    }
+                }
+            }
+        }
+
+        return $metadata;
+    }
+
+    public function setPropertyName($name)
+    {
+        if(empty($name)) {
+            $name = ucwords(str_replace(array('_', '-'), ' ', $this->slug));
+        }
+
+        return $name;
+    }
+
+    public function setPropertyAccess($value)
+    {
+        return new ComPagesObjectConfig($value);
+    }
+
+    public function setPropertyProcess($value)
+    {
+        return new ComPagesObjectConfig($value);
+    }
+
+    public function setPropertyCollection($value)
+    {
+        return new ComPagesObjectConfig($value);
+    }
+
+    public function setPropertyForm($value)
+    {
+        if($value)
+        {
+            $value = new ComPagesObjectConfig($value);
+
+            $name = $value->honeypot ?? 'name';
+
+            if($value->schema->has($name))
+            {
+                $hash = $this->hash;
+                $value->honeypot = sprintf('%s_%s', $name, $hash);
+            }
+            else $value->honeypot = $name;
+        }
+
+        return $value;
+    }
+
+    public function setPropertyDate($value)
+    {
+        //Set the date based on the modified time of the file
+        if(is_integer($value)) {
+            $date = $this->getObject('date')->setTimestamp($value);
+        } else {
+            $date = $this->getObject('date', array('date' => trim($value)));
+        }
+
+        return $date;
     }
 
     public function getParent()
@@ -239,6 +258,10 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
 
     public function __toString()
     {
-        return $this->getObject('page.registry')->getPageContent($this->path, true);
+        if(!isset($this->__content)) {
+            $this->__content = $this->getObject('page.registry')->getPageContent($this->path, true);
+        }
+
+        return $this->__content;
     }
 }

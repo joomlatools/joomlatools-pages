@@ -12,7 +12,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     const PAGES_TREE = \RecursiveIteratorIterator::SELF_FIRST;
     const PAGES_ONLY = \RecursiveIteratorIterator::CHILD_FIRST;
 
-    private $__locator   = null;
+    private $__locator = null;
 
     private $__pages  = array();
     private $__data   = null;
@@ -42,8 +42,8 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'cache'         => JDEBUG ? false : true,
-            'cache_path'    => $this->getObject('com://site/pages.config')->getSitePath('cache'),
+            'cache'         => $this->getConfig('pages.config')->debug ? false : true,
+            'cache_path'    => $this->getObject('pages.config')->getCachePath(),
             'cache_validation' => true,
             'collections' => array('pages' => ['model' => 'com://site/pages.model.pages']),
             'redirects'   => array(),
@@ -55,6 +55,8 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
     public function getHash($path = null)
     {
+        $result = null;
+
         if($path)
         {
             $size = function($path) use(&$size)
@@ -79,11 +81,14 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 return $result;
             };
 
-            if(!isset($this->__hashes[$path])) {
-                $this->__hashes[$path] =  hash('crc32b', serialize($size($path)));
-            }
+            if(file_exists($path))
+            {
+                if(!isset($this->__hashes[$path])) {
+                    $this->__hashes[$path] =  hash('crc32b', serialize($size($path)));
+                }
 
-            $result = $this->__hashes[$path];
+                $result = $this->__hashes[$path];
+            }
         }
         else $result = $this->__data['hash'];
 
@@ -101,12 +106,17 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
         if(isset($this->__collections[$name]))
         {
-            $result = new KObjectConfig($this->__collections[$name]);
+            $result = new ComPagesObjectConfig($this->__collections[$name]);
 
             //If the collections extends another collection merge it
             if(isset($result->extend))
             {
-                $extend = $this->getCollection($result->extend);
+                if(!$extend = $this->getCollection($result->extend))
+                {
+                    throw new RuntimeException(
+                        sprintf('Cannot extend from collection. No collection defined in: %s', $result->extend)
+                    );
+                }
 
                 //Merge state
                 if($extend->has('state')) {
@@ -122,6 +132,11 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     $extend->page = $result->get('page');
                 }
 
+                //Merge type
+                if($result->has('type')) {
+                    $extend->type = $result->get('type');
+                }
+
                 $result = $extend;
             }
 
@@ -132,11 +147,8 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         else
         {
             //Assume we are being passed a fully qualified identifier
-            if(is_string($name) && strpos($name, ':') !== false)
-            {
-                $result = new KObjectConfig([
-                    'model' => $name
-                ]);
+            if(is_string($name) && strpos($name, ':') !== false) {
+                $result = new ComPagesObjectConfig(['model' => $name]);
             }
         }
 
@@ -220,20 +232,27 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 //Set page default properties from parent collection
                 if(!$page->isCollection() && $parent_path && $parent_page = $this->getPage($parent_path))
                 {
-                    if(($collection = $parent_page->isCollection()) && isset($collection['page']))
+                    if($parent_page->isCollection() && $parent_page->has('collection/page'))
                     {
-                        foreach($collection['page'] as $property => $value)
-                        {
-                            if(!$page->has($property)) {
-                                $page->set($property, $value);
-                            }
+                        foreach($parent_page->get('collection/page') as $property => $value) {
+                            $page->set($property, $value);
                         }
                     }
                 }
 
                 //Set the layout (if not set yet)
-                if($page->has('layout') && is_string($page->layout)) {
-                    $page->layout = array('path' => $page->layout);
+                if($page->has('layout'))
+                {
+                    if (is_string($page->layout)) {
+                        $page->layout = new ComPagesObjectConfig(['path' => $page->layout]);
+                    } else {
+                        $page->layout = new ComPagesObjectConfig($page->layout);
+                    }
+                }
+
+                //Get the collection
+                if($page->isCollection()) {
+                    $page->collection = $this->getCollection($page->path);
                 }
 
                 $this->__pages[$path] = $page;
@@ -314,6 +333,27 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         } else {
             $result = ($this->__pages[$path] === false) ? false : true;
         }
+
+        return $result;
+    }
+
+    public function isPageAccessible($path)
+    {
+        $result = true;
+
+        if($page = $this->getPage($path))
+        {
+            //Groups
+            if(isset($page['access']['groups'])) {
+                $result = $this->getObject('user')->hasGroup($page['access']['groups']);
+            }
+
+            //Roles
+            if($result && isset($page['access']['roles'])) {
+                $result = $this->getObject('user')->hasRole($page['access']['roles']);
+            }
+        }
+        else $result = false;
 
         return $result;
     }
@@ -437,30 +477,15 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     }
 
                                     //Set robots metadata
-                                    if(!isset($page->metadata['robots']) && !$page->getContent() && !$page->layout) {
-                                        $page->metadata['robots'] = ['none'];
-                                    }
-
-                                    //Handle dynamic data
-                                    array_walk_recursive ($page, function(&$value, $key)
+                                    if(!isset($page->metadata['robots']))
                                     {
-                                        if(is_string($value) && strpos($value, 'data://') === 0)
-                                        {
-                                            $matches = array();
-                                            preg_match('#data\:\/\/([^\[]+)(?:\[(.*)\])*#si', $value, $matches);
-
-                                            if(!empty($matches[0]))
-                                            {
-                                                $data = $this->getObject('data.registry')->fromPath($matches[1]);
-
-                                                if($data && !empty($matches[2])) {
-                                                    $data = $data->get($matches[2]);
-                                                }
-
-                                                $value = $data;
-                                            }
+                                        if (!$page->getContent() && !$page->layout) {
+                                            $page->metadata['robots'] = ['none'];
+                                        } else {
+                                            $page->metadata['robots'] = array();
                                         }
-                                    });
+                                    }
+                                    else $page->metadata['robots'] = (array) $page->metadata['robots'];
 
                                     /**
                                      * Cache

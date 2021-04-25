@@ -40,17 +40,8 @@ class ComPagesDispatcherBehaviorDecoratable extends ComKoowaDispatcherBehaviorDe
             $controller = $this->getObject('com:koowa.controller.page',  array('response' => $response));
 
             //Configure the page view
-            $view = $controller->getView();
-
-            //Do not include the style and script filters, keep both inline
-            if($context->page && $context->page->isDecorator())
-            {
-                $view->getConfig()->template_filters = [
-                    'module', 'link', 'meta', 'title', 'message', 'version', 'form', 'asset', 'decorator'
-                ];
-            }
-
-            $view->setDecorator($decorator)
+            $controller->getView()
+                ->setDecorator($decorator)
                 ->setLayout($this->getLayout());
 
             //Set the result in the response
@@ -62,7 +53,7 @@ class ComPagesDispatcherBehaviorDecoratable extends ComKoowaDispatcherBehaviorDe
     {
         $result = 'joomla';
 
-        if(JDEBUG && $this->getResponse()->isError()) {
+        if($this->getConfig('pages.config')->debug && $this->getResponse()->isError()) {
             $result = 'koowa';
         }
 
@@ -88,7 +79,7 @@ class ComPagesDispatcherBehaviorDecoratable extends ComKoowaDispatcherBehaviorDe
             }
         }
 
-        if(JDEBUG && $this->getResponse()->isError()) {
+        if($this->getConfig('pages.config')->debug && $this->getResponse()->isError()) {
             $result = 'koowa';
         }
 

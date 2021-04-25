@@ -9,5 +9,5 @@
 
 abstract class ComPagesTemplateHelperAbstract extends KTemplateHelperAbstract
 {
-
+    use ComPagesTemplateTraitFunction;
 }

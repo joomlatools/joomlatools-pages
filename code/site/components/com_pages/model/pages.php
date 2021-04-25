@@ -16,12 +16,11 @@ class ComPagesModelPages extends ComPagesModelCollection
         parent::__construct($config);
 
         $this->getState()
-            ->insert('folder', 'url')
-            ->insert('slug', 'cmd', '', true, array('folder'))
-            //Internal states
-            ->insert('recurse', 'cmd', null, false, array(), true)
-            ->insert('level', 'int', 0, false, array(), true)
-            ->insert('collection', 'boolean', null, false, array(), true);
+            ->insertComposite('slug', 'cmd', array('folder'), '')
+            ->insertInternal('folder', 'url')
+            ->insertInternal('recurse', 'cmd')
+            ->insertInternal('level', 'int', 0)
+            ->insertInternal('collection', 'boolean');
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -34,24 +33,15 @@ class ComPagesModelPages extends ComPagesModelCollection
         parent::_initialize($config);
     }
 
-    public function getHash($refresh = false)
-    {
-        return $this->getObject('page.registry')->getHash();
-    }
-
-    public function fetchData($count = false)
+    public function fetchData()
     {
         if(!isset($this->__data))
         {
             $this->__data = array();
-            $state       = $this->getState();
 
-            //Set the folder to the active page path if no folder is defined
-            if($state->folder === null && $this->isPageable()) {
-                $folder = $this->getPage()->path;
-            } else {
-                $folder = $state->folder ?? '.';
-            }
+            //If folder is not defined to set root path
+            $state  = $this->getState();
+            $folder = $state->folder ?? '.';
 
             if($folder)
             {
@@ -101,37 +91,19 @@ class ComPagesModelPages extends ComPagesModelCollection
         }
 
         //Permissions
-        if($result)
-        {
-            //Goups
-            if(isset($page['access']['groups']))
-            {
-                $groups = $this->getObject('com://site/pages.database.table.groups')
-                    ->select($this->getObject('user')->getGroups(), KDatabase::FETCH_ARRAY_LIST);
-
-                $groups = array_map('strtolower', array_column($groups, 'title'));
-
-                if(!array_intersect($groups, $page['access']['groups'])) {
-                    $result = false;
-                }
-            }
-
-            //Roles
-            if($result && isset($page['access']['roles']))
-            {
-                $roles = $this->getObject('com://site/pages.database.table.roles')
-                    ->select($this->getObject('user')->getRoles(), KDatabase::FETCH_ARRAY_LIST);
-
-                $roles = array_map('strtolower', array_column($roles, 'title'));
-
-                if(!array_intersect($roles, $page['access']['roles'])) {
-                    $result = false;
-                }
-            }
+        if($result) {
+            $result = $this->getObject('page.registry')->isPageAccessible($page['path']);
         }
 
         return $result;
     }
+
+    protected function _actionHash(KModelContext $context)
+    {
+        $data = array_column($context->data, 'hash', 'path');
+        return hash('crc32b', serialize($data));
+    }
+
 
     protected function _actionFetch(KModelContext $context)
     {

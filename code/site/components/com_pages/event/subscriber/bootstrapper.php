@@ -33,23 +33,24 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
             }
 
             //Set the site path in the config
-            $config = $this->getObject('com://site/pages.config', ['site_path' => $route->getPath()]);
+            $config = $this->getObject('pages.config', ['site_path' => $route->getPath()]);
 
             //Get the config options
             $options = $config->getOptions();
 
+            //Bootstrap the site configuration (before extensions to allow overriding)
+            $this->_bootstrapSite($config->getSitePath(), $options);
+
             //Bootstrap the extensions
             $this->_bootstrapExtensions($config->getSitePath('extensions'), $options);
 
-            //Bootstrap the site configuration (after extensions to allow overriding)
-            $this->_bootstrapSite($config->getSitePath(), $options);
         }
-        else $this->getObject('com://site/pages.config', ['site_path' => false]);
+        else $this->getObject('pages.config', ['site_path' => false]);
     }
 
     public function onBeforeDispatcherDispatch(KEventInterface $event)
     {
-        $config = $this->getObject('com://site/pages.config')->getOptions();
+        $config = $this->getObject('pages.config')->getOptions();
 
         //Configure the Joomla template
         if(isset($config['template']) || isset($config['template_config']))
@@ -125,11 +126,6 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                         ->registerSubscriber('ext:'.$name.'.subscriber.'.basename($filename, '.php'));
                 }
 
-                //Find template filters
-                foreach (glob($directory.'/template/filter/[!_]*.php') as $filename) {
-                    $filters[] = 'ext:'.$name.'.template.filter.'.basename($filename, '.php');
-                }
-
                 //Find template functions
                 foreach (glob($directory.'/template/function/[!_]*.php') as $filename) {
                     $functions[basename($filename, '.php')] = $filename;
@@ -157,11 +153,6 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
             //Register template functions
             if($functions) {
                 $this->getConfig('com://site/pages.template.default')->merge(['functions' => $functions]);
-            }
-
-            //Register template filters
-            if($filters) {
-                $this->getConfig('com://site/pages.template.default')->merge(['filters' => $filters]);
             }
         }
 

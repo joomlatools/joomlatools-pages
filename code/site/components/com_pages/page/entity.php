@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesPageEntity extends ComPagesModelEntityPage
+class ComPagesPageEntity extends ComPagesModelEntityPage implements ComPagesPageInterface
 {
     protected function _initialize(KObjectConfig $config)
     {
@@ -18,7 +18,7 @@ class ComPagesPageEntity extends ComPagesModelEntityPage
                     'filters' => [],
                 ],
                 'layout'      => array(),
-                'colllection' => null,
+                'collection' => null,
                 'form'        => null,
             ],
         ]);
@@ -26,10 +26,32 @@ class ComPagesPageEntity extends ComPagesModelEntityPage
         parent::_initialize($config);
     }
 
+    public function get($name, $default = null)
+    {
+        if(!is_array($name)) {
+            $segments = explode('/', $name);
+        } else {
+            $segments = $name;
+        }
+
+        $result = parent::get(array_shift($segments), $default);
+
+        if(!empty($segments) && $result instanceof KObjectConfigInterface) {
+            $result = $result->get($segments, $default);
+        }
+
+        return $result;
+    }
+
+    public function has($name)
+    {
+        return (bool) $this->get($name);
+    }
+
     public function setPropertyLayout($value)
     {
         if($value) {
-            $value = new KObjectConfig($value);
+            $value = new ComPagesObjectConfig($value);
         }
 
         return $value;
@@ -38,7 +60,7 @@ class ComPagesPageEntity extends ComPagesModelEntityPage
     public function setPropertyCollection($value)
     {
         if($value) {
-            $value = new KObjectConfig($value);
+            $value = new ComPagesObjectConfig($value);
         }
 
         return $value;
@@ -46,8 +68,27 @@ class ComPagesPageEntity extends ComPagesModelEntityPage
 
     public function setPropertyForm($value)
     {
+        if($value)
+        {
+            $value = new ComPagesObjectConfig($value);
+
+            $name = $value->honeypot ?? 'name';
+
+            if($value->schema->has($name))
+            {
+                $hash = $this->hash;
+                $value->honeypot = sprintf('%s_%s', $name, $hash);
+            }
+            else $value->honeypot = $name;
+        }
+
+        return $value;
+    }
+
+    public function setPropertyProcess($value)
+    {
         if($value) {
-            $value = new KObjectConfig($value);
+            $value = new ComPagesObjectConfig($value);
         }
 
         return $value;

@@ -23,7 +23,7 @@ class ComPagesDispatcherRouterResolverState extends ComPagesDispatcherRouterReso
             if($page->isCollection())
             {
                 $state = $this->getObject('model.factory')
-                    ->createModel($page->path)
+                    ->createModel($page->path, $route->query)
                     ->getState();
 
                 $route->query = array_intersect_key($route->query, $state->toArray());

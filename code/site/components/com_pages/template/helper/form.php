@@ -13,21 +13,21 @@ class ComPagesTemplateHelperForm extends ComPagesTemplateHelperAbstract
     {
         parent::__construct($config);
 
-        $this->getTemplate()->helper('snippet.define', 'form.honeypot',
+        $this->helper('snippet.define', 'form.honeypot',
             '<div style="display:none !important;">
                 <input type="text" name="$name" value="" autocomplete="false" tabindex="-1">
             </div>'
         );
     }
 
-    public function honeypot(string $name)
+    public function honeypot()
     {
-        $config = new KObjectConfigJson();
+        $config = new ComPagesObjectConfig();
         $config->append(array(
-            'name'     => $name,
-            'snippet'  => 'form.honeypot',
+            'name'    => $this->getTemplate()->page()->form->honeypot,
+            'snippet' => 'form.honeypot',
         ));
 
-        return $this->getTemplate()->helper('snippet.expand', $config->snippet, $config->toArray());
+        return $this->helper('snippet.expand', $config->snippet, $config->toArray());
     }
 }

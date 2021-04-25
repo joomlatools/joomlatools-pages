@@ -33,8 +33,8 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
     {
         $config->append([
             'http'       => 'com://site/pages.http.cache',
-            'cache'      => JDEBUG ? false : true,
-            'cache_path' => $this->getObject('com://site/pages.config')->getSitePath('cache'),
+            'cache'      => $this->getObject('pages.config')->debug ? false : true,
+            'cache_path' => $this->getObject('pages.config')->getCachePath(),
             'cache_validation'  => true,
             'namespaces' => array(),
         ]);
@@ -107,7 +107,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
                 if($http->isDebug()) {
                     throw $e;
                 } else {
-                    $hash = null;
+                    $data = null;
                 }
             }
 
