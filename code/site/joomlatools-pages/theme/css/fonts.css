@@ -1,0 +1,30 @@
+/**
+ * @license
+ * MyFonts Webfont Build ID 3961211, 2020-10-15T18:13:17-0400
+ * 
+ * The fonts listed in this notice are subject to the End User License
+ * Agreement(s) entered into by the website owner. All other parties are 
+ * explicitly restricted from using the Licensed Webfonts(s).
+ * 
+ * You may obtain a valid license at the URLs below.
+ * 
+ * Webfont: VAGRoundedTL-Regular by Tilde
+ * URL: https://www.myfonts.com/fonts/tilde/vag-rounded/regular/
+ * Copyright: Copyright 1990-2007 Bitstream Inc. All rights reserved. Modification for European languages. Copyright 1995-2007 Tilde, SIA.
+ * 
+ * 
+ * 
+ * © 2020 MyFonts Inc
+*/
+
+
+/* @import must be at top of file, otherwise CSS will not work */
+@import url("//hello.myfonts.net/count/3c717b");
+  
+@font-face {
+  font-family: 'VAGRoundedTL-Regular';
+  font-display: swap;
+  src: local(''),
+  url('../fonts/vag-rounded-tl-regular/vag-rounded-tl-regular.woff2') format('woff2'), 
+  url('../fonts/vag-rounded-tl-regular/vag-rounded-tl-regular.woff') format('woff');
+}
