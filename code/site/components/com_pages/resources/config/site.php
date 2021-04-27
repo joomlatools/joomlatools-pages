@@ -29,6 +29,7 @@ return [
             'cache_validation' => $config['data_cache_validation'],
         ],
         'template.engine.factory' => [
+            'debug'         => $config['template_debug'],
             'cache'         => $config['template_cache'],
             'cache_path'    => $config['template_cache_path'],
             'cache_reload'  => $config['template_cache_validation'],

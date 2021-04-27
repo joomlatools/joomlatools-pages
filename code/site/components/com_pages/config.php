@@ -29,6 +29,7 @@ class ComPagesConfig extends KObject implements KObjectSingleton
             'site_path'  => Koowa::getInstance()->getRootPath().'/joomlatools-pages',
         ))->append(array(
             'cache_path'  => $config->site_path.'/cache',
+            'debug'       => JFactory::getConfig()->get('debug'),
         ))->append(array(
             'page_cache'            => true,
             'page_cache_path'       =>  $config->cache_path,
@@ -39,6 +40,7 @@ class ComPagesConfig extends KObject implements KObjectSingleton
             'data_cache_path'       => $config->cache_path ? $config->cache_path.'/data' : false,
             'data_cache_validation' => true,
 
+            'template_debug'            => $config->template_debug ?? $config->debug,
             'template_cache'            => true,
             'template_cache_path'       => $config->cache_path ? $config->cache_path.'/templates' : false,
             'template_cache_validation' => true,
@@ -56,14 +58,13 @@ class ComPagesConfig extends KObject implements KObjectSingleton
 
             'http_client_cache'       => JFactory::getConfig()->get('caching'),
             'http_client_cache_path'  => $config->cache_path ? $config->cache_path.'/responses' : false,
-            'http_client_cache_debug' => (JDEBUG ? true : false),
+            'http_client_cache_debug' => $config->http_client_cache_debug ?? $config->debug,
 
             'collections' => array(),
             'redirects'   => array(),
             'page'        => array(),
             'sites'       => array('[*]' => JPATH_ROOT.'/joomlatools-pages'),
             'headers'     => array(),
-            'debug'       => JFactory::getConfig()->get('debug'),
 
             'composer_path' => $config->site_path.'/vendor',
         ));
