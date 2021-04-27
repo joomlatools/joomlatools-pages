@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-return function($path, $cache = trues)
+return function($path, $cache = true)
 {
     $result = false;
     if(is_array($path))
