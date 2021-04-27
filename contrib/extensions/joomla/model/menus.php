@@ -19,6 +19,7 @@ class ExtJoomlaModelMenus extends ComPagesModelDatabase
             ->insertInternal('recurse', 'cmd')
             ->insertInternal('level', 'int')
 
+            ->insert('menutype', 'cmd')
             ->insert('published' , 'boolean')
             ->insert('language', 'cmd')
             ->insert('access' , 'cmd', array_unique($this->getObject('user')->getRoles()))
