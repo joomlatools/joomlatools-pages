@@ -113,6 +113,16 @@ class ExtJoomlaModelMenus extends ComPagesModelDatabase
             }
         }
 
+        if(!is_null($state->menutype))
+        {
+            if(is_string($state->menutype)) {
+                $menutypes = array_unique(explode(',',  $state->menutype));
+            } else {
+                $menutypes = (array) $state->menutype;
+            }
+            $query->where('(tbl.menutype IN :menutype)')->bind(['menutype' => $menutypes]);
+        }
+
         if (!is_null($state->language)) {
             $query->where('(SUBSTRING_INDEX(tbl.language, "-", 1) = :language)')->bind(['language' => $state->language]);
         } else {
