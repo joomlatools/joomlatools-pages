@@ -45,26 +45,29 @@ class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract implemen
     {
         $result = false;
 
-        //Find router package
+        //Find router
         if($route instanceof KObjectInterface)
         {
-            if($route instanceof ComPagesDispatcherRouterRouteInterface) {
-                $package = $route->getScheme();
+            $identifier			= $route->getIdentifier()->toArray();
+            $identifier['path']	= array('dispatcher', 'router');
+
+            if(!$route instanceof ComPagesDispatcherRouterRouteInterface) {
+                $identifier['name']	= $route->getIdentifier()->getPackage();
             } else {
-                $package = $route->getIdentifier()->getPackage();
+                $identifier['name']	=  $route->getScheme();
             }
+
+            $identifier = (string) $this->getIdentifier($identifier);
         }
         else
         {
-            $parts   = explode(':', $route);
-            $package = $parts[0];
+            $package  = parse_url($route, PHP_URL_SCHEME);
+            $identifier = 'com://site/'.$package.'.dispatcher.router.'.$package;
         }
 
         //Get router instance
-        if(!isset($this->__routers[$package]))
+        if(!isset($this->__routers[$identifier]))
         {
-            $identifier = 'com://site/'.$package.'.dispatcher.router.'.$package;
-
             $config = [
                 'request'   => $this->getRequest(),
                 'resolvers' => $this->getResolvers()
@@ -72,9 +75,9 @@ class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract implemen
 
             $router =  $this->getObject($identifier, $config);
 
-            $this->__routers[$package] = $router;
+            $this->__routers[$identifier] = $router;
         }
-        else $router = $this->__routers[$package];
+        else $router = $this->__routers[$identifier];
 
         return $router->resolve($route, $parameters);
     }
@@ -92,22 +95,29 @@ class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract implemen
     {
         $result = false;
 
-        //Find router package
+        //Find router
         if($route instanceof KObjectInterface)
         {
-            if($route instanceof ComPagesDispatcherRouterRouteInterface) {
-                $package = $route->getScheme();
+            $identifier			= $route->getIdentifier()->toArray();
+            $identifier['path']	= array('dispatcher', 'router');
+
+            if(!$route instanceof ComPagesDispatcherRouterRouteInterface) {
+                $identifier['name']	= $route->getIdentifier()->getPackage();
             } else {
-                $package = $route->getIdentifier()->getPackage();
+                $identifier['name']	=  $route->getScheme();
             }
+
+            $identifier = (string) $this->getIdentifier($identifier);
         }
-        else $package = parse_url($route, PHP_URL_SCHEME);
+        else
+        {
+            $package  = parse_url($route, PHP_URL_SCHEME);
+            $identifier = 'com://site/'.$package.'.dispatcher.router.'.$package;
+        }
 
         //Get router instance
-        if(!isset($this->__routers[$package]))
+        if(!isset($this->__routers[$identifier]))
         {
-            $identifier = 'com://site/'.$package.'.dispatcher.router.'.$package;
-
             $config = [
                 'request'   => $this->getRequest(),
                 'resolvers' => $this->getResolvers()
@@ -115,9 +125,9 @@ class ComPagesDispatcherRouter extends ComPagesDispatcherRouterAbstract implemen
 
             $router =  $this->getObject($identifier, $config);
 
-            $this->__routers[$package] = $router;
+            $this->__routers[$identifier] = $router;
         }
-        else $router = $this->__routers[$package];
+        else $router = $this->__routers[$identifier];
 
         return $router->generate($route, $parameters);
     }
