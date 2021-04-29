@@ -59,44 +59,50 @@ async function buildExtensions({ config = {} }) {
   }
 
   const extensionFolder = `${contribFolder}/extensions`;
-  const extensionFolders = await fs.readdir(extensionFolder, {
-    withFileTypes: true,
-  });
+  if (require("fs").existsSync(extensionFolder)) {
+    const extensionFolders = await fs.readdir(extensionFolder, {
+      withFileTypes: true,
+    });
 
-  await Promise.all(
-    extensionFolders
-      .filter((dirent) => dirent.isDirectory())
-      .map((dirent) => {
-        const folder = dirent.name;
+    await Promise.all(
+        extensionFolders
+            .filter((dirent) => dirent.isDirectory())
+            .map((dirent) => {
+              const folder = dirent.name;
 
-        mason.log.debug(`Building extension: ${folder}…`);
+              mason.log.debug(`Building extension: ${folder}…`);
 
-        return mason.fs.archiveDirectory(
-          path.join(extensionFolder, folder),
-          `${config.location}/com_pages-extension-${folder}.zip`
-        );
-      })
-  );
+              return mason.fs.archiveDirectory(
+                  path.join(extensionFolder, folder),
+                  `${config.location}/com_pages-extension-${folder}.zip`
+              );
+            })
+    );
+
+  }
 
   const siteFolder = `${contribFolder}/sites`;
-  const siteFolders = await fs.readdir(siteFolder, {
-    withFileTypes: true,
-  });
+  if (require("fs").existsSync(siteFolder)) {
+    const siteFolders = await fs.readdir(siteFolder, {
+      withFileTypes: true,
+    });
 
-  await Promise.all(
-      siteFolders
-          .filter((dirent) => dirent.isDirectory())
-          .map((dirent) => {
-            const folder = dirent.name;
+    await Promise.all(
+        siteFolders
+            .filter((dirent) => dirent.isDirectory())
+            .map((dirent) => {
+              const folder = dirent.name;
 
-            mason.log.debug(`Building site: ${folder}…`);
+              mason.log.debug(`Building site: ${folder}…`);
 
-            return mason.fs.archiveDirectory(
-                path.join(siteFolder, folder),
-                `${config.location}/com_pages-site-${folder}.zip`
-            );
-          })
-  );
+              return mason.fs.archiveDirectory(
+                  path.join(siteFolder, folder),
+                  `${config.location}/com_pages-site-${folder}.zip`
+              );
+            })
+    );
+  }
+
 }
 
 async function buildFramework({ config = {} }) {
