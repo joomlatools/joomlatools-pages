@@ -186,7 +186,8 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
                     $value = (array) $value;
                 }
 
-                $query->where('((f.name = :'.$key.') AND (v.value IN :'.$key.'_value))')->bind([$key => $key, $key.'_value' => $value]);
+                $name = hash('crc32b', $key);
+                $query->where('((f.name = :'.$name.') AND (v.value IN :'.$name.'_value))')->bind([$name => $key, $name.'_value' => $value]);
             }
         }
 
