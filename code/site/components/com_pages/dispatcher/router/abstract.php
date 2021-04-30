@@ -71,7 +71,7 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
     {
         $config->append(array(
             'request'   => null,
-            'route'     => 'default',
+            'route'     => 'com://site/pages.dispatcher.router.route.default',
             'resolvers' => [],
         ));
 

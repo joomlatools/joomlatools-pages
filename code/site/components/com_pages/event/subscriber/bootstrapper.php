@@ -27,6 +27,9 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         {
             define('PAGES_SITE_ROOT', $route->getPath());
 
+            //Restore phar stream wrapper (Joomla uses the TYPO3 wrapper)
+            stream_wrapper_restore('phar');
+
             //Set PAGES_PATH based on Joomla configuration
             if(JFactory::getApplication()->getCfg('sef_rewrite')) {
                 $_SERVER['PAGES_PATH'] = JFactory::getApplication()->getCfg('live_site') ?? '/';
@@ -99,7 +102,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
     protected function _bootstrapExtensions($path, $config = array())
     {
         //Register 'ext:[package]' locations
-        if($directories = glob($path.'/*', GLOB_ONLYDIR))
+        if($directories = glob($path.'/*'))
         {
             //Register 'ext' fallback location
             $locator = new ComPagesClassLocatorExtension();
@@ -114,21 +117,38 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
             foreach ($directories as $directory)
             {
                 //The extension name
-                $name = strtolower(basename($directory));
+                $name = strtolower(basename($directory, '.zip'));
+
+                if(pathinfo($directory, PATHINFO_EXTENSION) == 'zip') {
+                    $directory = 'phar://'.$directory;
+                }
 
                 //Register the extension namespace
                 $locator->registerNamespace(ucfirst($name), $directory);
 
                 //Register event subscribers
-                foreach (glob($directory.'/subscriber/[!_]*.php') as $filename)
+
+                if(is_dir($directory.'/subscriber'))
                 {
-                    $this->getObject('event.subscriber.factory')
-                        ->registerSubscriber('ext:'.$name.'.subscriber.'.basename($filename, '.php'));
+                    foreach(scandir($directory.'/subscriber') as $filename)
+                    {
+                        if(!str_starts_with($filename, '_') && str_ends_with($filename, '.php'))
+                        {
+                            $this->getObject('event.subscriber.factory')
+                                ->registerSubscriber('ext:'.$name.'.subscriber.'.basename($filename, '.php'));
+                        }
+                    }
                 }
 
                 //Find template functions
-                foreach (glob($directory.'/template/function/[!_]*.php') as $filename) {
-                    $functions[basename($filename, '.php')] = $filename;
+                if(is_dir($directory.'/template/function'))
+                {
+                    foreach(scandir($directory.'/template/function') as $filename)
+                    {
+                        if(!str_starts_with($filename, '_') && str_ends_with($filename, '.php')) {
+                            $functions[basename($filename, '.php')] = $directory.'/template/function/'.$filename;
+                        }
+                    }
                 }
 
                 //Include autoloader
@@ -136,7 +156,6 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                     include $directory.'/resources/vendor/autoload.php';
                 }
 
-                //Set config options
                 if(file_exists($directory.'/config.php'))
                 {
                     $identifiers = include $directory.'/config.php';

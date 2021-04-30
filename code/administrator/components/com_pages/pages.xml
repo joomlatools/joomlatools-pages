@@ -15,6 +15,7 @@
         <filename>pages.php</filename>
         <filename>config.php</filename>
         <filename>version.php</filename>
+        <filename>apache.txt</filename>
 
         <folder>class</folder>
         <folder>controller</folder>

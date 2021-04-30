@@ -35,7 +35,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
                 'crawlable'
             ],
             'page'    => 'com://site/pages.page',
-            'router'  => 'com://site/pages.dispatcher.router',
+            'router'  => 'com://site/pages.dispatcher.router.factory',
         ]);
 
         parent::_initialize($config);
