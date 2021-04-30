@@ -1,6 +1,7 @@
 const mason = require("@joomlatools/mason-tools-v1");
 const path = require("path");
 const fs = require("fs").promises;
+const exec = require('child_process').exec;
 
 const pagesRoot = process.cwd();
 
@@ -8,7 +9,7 @@ async function build({ config = {} }) {
   config = mason.config.merge(
     {
       location: pagesRoot,
-      destination: `${pagesRoot}/com_pages.zip`,
+      destination: `${pagesRoot}/artifacts/com_pages.zip`,
       compress: true,
     },
     config
@@ -30,6 +31,8 @@ async function build({ config = {} }) {
     `${pkg}/pages.xml`
   );
 
+  await mason.fs.ensureDir(`${config.location}/artifacts`);
+
   if (config.compress) {
     mason.log.debug(`Creating ZIP file in ${config.destination}`);
 
@@ -41,6 +44,17 @@ async function build({ config = {} }) {
   }
 
   await cleanup();
+}
+
+function execShellCommand(cmd) {
+  return new Promise((resolve, reject) => {
+    exec(cmd, (error, stdout, stderr) => {
+      if (error) {
+        reject(error);
+      }
+      resolve(stdout ? stdout : stderr);
+    });
+  });
 }
 
 async function buildExtensions({ config = {} }) {
@@ -58,6 +72,8 @@ async function buildExtensions({ config = {} }) {
     mason.log.error(`${contribFolder} does not exist.`);
   }
 
+  await mason.fs.ensureDir(`${config.location}/artifacts`);
+
   const extensionFolder = `${contribFolder}/extensions`;
   if (require("fs").existsSync(extensionFolder)) {
     const extensionFolders = await fs.readdir(extensionFolder, {
@@ -67,15 +83,20 @@ async function buildExtensions({ config = {} }) {
     await Promise.all(
         extensionFolders
             .filter((dirent) => dirent.isDirectory())
-            .map((dirent) => {
+            .map(async (dirent) => {
               const folder = dirent.name;
 
               mason.log.debug(`Building extension: ${folder}…`);
 
-              return mason.fs.archiveDirectory(
-                  path.join(extensionFolder, folder),
-                  `${config.location}/com_pages-extension-${folder}.zip`
-              );
+              const cmd = `<?php
+              $phar = new PharData('${config.location}/artifacts/extension-${folder}.zip');
+              $phar->buildFromDirectory('${config.location}/contrib/extensions/${folder}');
+              $phar->compressFiles(Phar::GZ);
+              $phar->setSignatureAlgorithm(Phar::SHA256);`
+                  .replace(/\s+/g, ' ')
+                  .replace(/[\$]+/g, '\\$');
+
+              return execShellCommand(`echo "${cmd}" | php`);
             })
     );
 
@@ -97,7 +118,7 @@ async function buildExtensions({ config = {} }) {
 
               return mason.fs.archiveDirectory(
                   path.join(siteFolder, folder),
-                  `${config.location}/com_pages-site-${folder}.zip`
+                  `${config.location}/artifacts/site-${folder}.zip`
               );
             })
     );
@@ -211,9 +232,11 @@ async function bundle({ config = {} }) {
   ).toString();
   const version = xmlManifest.match(/<version>(.*?)<\/version>/);
 
+
+  await mason.fs.ensureDir(`${pagesRoot}/artifacts`);
   await mason.fs.archiveDirectory(
     installer,
-    `${pagesRoot}/com_pages${version ? "_v" + version[1] : "_bundle"}.zip`
+    `${pagesRoot}/artifacts/com_pages${version ? "_v" + version[1] : "_bundle"}.zip`
   );
 
   await cleanup();
@@ -232,6 +255,6 @@ module.exports = {
     buildExtensions,
     buildFramework,
     bundle,
-    default: ["bundle" /*, 'buildExtensions'*/],
+    default: ["bundle" , 'buildExtensions'],
   },
 };
