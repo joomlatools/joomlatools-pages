@@ -51,7 +51,7 @@ class ExtJoomlaModelFields extends ComPagesModelDatabase
                 'type'      => 'tbl.type',
                 'label'     => 'tbl.label',
                 'default'   => 'tbl.default_value',
-                'value'     => 'v.value',
+                'value'     => 'GROUP_CONCAT(v.value)',
                 'published' => 'IF(tbl.state = 1, 1, 0)',
                 'required'  => 'tbl.required',
                 'params'    => 'tbl.fieldparams',
@@ -123,6 +123,8 @@ class ExtJoomlaModelFields extends ComPagesModelDatabase
         } else {
             $query->where('tbl.language = :language')->bind(['language' => '*']);
         }
+
+        $query->group('tbl.id');
 
         return $query;
     }
