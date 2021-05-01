@@ -196,7 +196,7 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
                     ->where('f.name = :name')->bind(['name' => $name])
                     ->where('v.value IN :value')->bind(['value' => $value]);
 
-                $name = hash('crc32b', $name);
+                $name = hash('crc32b', $name); //name needs to be unique
                 $query->where('(tbl.id IN :'.$name.')')->bind([$name => $select]);
             }
         }
