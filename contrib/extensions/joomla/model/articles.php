@@ -64,7 +64,7 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
             //#__tags
             $query->columns([
                 'tags'	=> $this->getObject('database.query.select')
-                    ->table(array('t' => 'tags'))
+                    ->table(['t' => 'tags'])
                     ->columns('GROUP_CONCAT(t.title)')
                     ->join(['m' => 'contentitem_tag_map'], 'm.tag_id = t.id')
                     ->where('m.content_item_id = tbl .id')
@@ -108,7 +108,7 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
                 'language'    => 'SUBSTRING_INDEX(tbl.language, "-", 1)',
 
                 //Protected properties (for getters)
-                '_metadata'   => 'tbl.metadata',
+                '_metadata'     => 'tbl.metadata',
             ]);
         }
 
@@ -173,12 +173,13 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
             $query->where('(t.title IN :tags)')->bind(['tags' => $tags]);
         }
 
+
         if(!is_null($state->field) && is_array($state->field))
         {
-            $query->join(['v' => 'fields_values'], 'tbl.id = v.item_id');
-            $query->join(['f' => 'fields'], 'f.id = v.field_id');
+            $query->join(['v' => 'fields_values'], 'tbl.id = v.item_id', 'INNER');
+            $query->join(['f' => 'fields'], 'f.id = v.field_id', 'INNER');
 
-            foreach($state->field as $key => $value)
+            foreach($state->field as $name => $value)
             {
                 if(is_string($state->value)) {
                     $value = array_unique(explode(',',  $value));
@@ -186,8 +187,17 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
                     $value = (array) $value;
                 }
 
-                $name = hash('crc32b', $key);
-                $query->where('((f.name = :'.$name.') AND (v.value IN :'.$name.'_value))')->bind([$name => $key, $name.'_value' => $value]);
+                $select = $this->getObject('database.query.select')
+                    ->distinct()
+                    ->columns(['v.item_id'])
+                    ->table(['v' => 'fields_values'])
+                    ->join(['f' => 'fields'], 'f.id = v.field_id')
+                    //->where('v.item_id = tbl.id')
+                    ->where('f.name = :name')->bind(['name' => $name])
+                    ->where('v.value IN :value')->bind(['value' => $value]);
+
+                $name = hash('crc32b', $name);
+                $query->where('(tbl.id IN :'.$name.')')->bind([$name => $select]);
             }
         }
 
@@ -262,6 +272,8 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
         } else {
             $query->where('tbl.language = :language')->bind(['language' => '*']);
         }
+
+        $query->group('tbl.id');
 
         return $query;
     }
