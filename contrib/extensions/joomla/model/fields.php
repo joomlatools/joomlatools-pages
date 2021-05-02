@@ -56,7 +56,7 @@ class ExtJoomlaModelFields extends ComPagesModelDatabase
                 'params'    => 'tbl.fieldparams',
                 'group'     => 'g.title',
                 'language'  => 'SUBSTRING_INDEX(tbl.language, "-", 1)',
-                'multi'     => 'COUNT(tbl.id) > 1',
+                'multi'     => 'COUNT(*) > 1',
 
                 //Protected properties (for getters)
                 '_value'     => 'GROUP_CONCAT(v.value)',
@@ -127,7 +127,7 @@ class ExtJoomlaModelFields extends ComPagesModelDatabase
             $query->where('tbl.language = :language')->bind(['language' => '*']);
         }
 
-        $query->group('tbl.id');
+        $query->group(['v.field_id', 'v.item_id']);
 
         return $query;
     }
