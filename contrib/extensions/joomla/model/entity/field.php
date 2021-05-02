@@ -20,19 +20,6 @@ class ExtJoomlaModelEntityField extends ComPagesModelEntityItem
         return new ComPagesObjectConfig($value);
     }
 
-    public function setPropertyValue($value)
-    {
-        if($value)
-        {
-            if(is_string($value)) {
-                $value = explode(',', $value);
-            }
-        }
-        else $value = [];
-
-        return $value;
-    }
-
     public function getContent()
     {
         if(!$this->__prepared_value)
