@@ -67,7 +67,6 @@ class ExtJoomlaModelFields extends ComPagesModelDatabase
         $context->entity = $fields;
     }
 
-
     public function getQuery($columns = true)
     {
         $state = $this->getState();
