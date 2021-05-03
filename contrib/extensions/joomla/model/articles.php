@@ -70,7 +70,7 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
                     ->where('m.content_item_id = tbl .id')
             ]);
 
-            //#__tags
+            //#__fields
             /*$query->columns([
                 'fields'	=> $this->getObject('database.query.select')
                     ->table(array('f' => 'fields'))
@@ -114,9 +114,8 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
 
         //Joins
         $query
-            ->join(['c' => 'categories']         , 'tbl.catid = c.id')
-            ->join(['g' => 'usergroups']         , 'tbl.access = g.id')
-            ->join(['m' => 'contentitem_tag_map'], 'tbl.id = m.content_item_id');
+            ->join(['c' => 'categories'], 'tbl.catid = c.id')
+            ->join(['g' => 'usergroups'], 'tbl.access = g.id');
 
         if(!is_null($state->id))
         {
@@ -163,16 +162,33 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
 
         if(!is_null($state->tags))
         {
-            if(is_string($state->tags)) {
-                $tags = array_unique(explode(',',  $state->tags));
-            } else {
-                $tags = (array) $state->tags;
+            $select = $this->getObject('database.query.select')
+                ->columns(['m.content_item_id'])
+                ->table(['t' => 'tags'])
+                ->join(['m' => 'contentitem_tag_map'], 't.id = m.tag_id');
+
+            //AND - check if all tags exists
+            if(!is_string($state->tags))
+            {
+                $tags = array_unique((array) $state->tags);
+
+                $select
+                    ->where('(t.title IN :tags)')->bind(['tags' => $tags])
+                    ->group(['m.content_item_id'])
+                    ->having('COUNT(*) = :count')->bind(['count' => count($tags)]);
+            }
+            //OR - check if a tag exists
+            else
+            {
+                $tags = array_unique(array_map('trim', explode(',',  $state->tags)));
+
+                $select
+                    ->distinct()
+                    ->where('(t.title IN :tags)')->bind(['tags' => $tags]);
             }
 
-            $query->join(['t' => 'tags'], 't.id = m.tag_id');
-            $query->where('(t.title IN :tags)')->bind(['tags' => $tags]);
+            $query->where('(tbl.id IN :tags)')->bind(['tags' => $select]);
         }
-
 
         if(!is_null($state->field) && is_array($state->field))
         {
@@ -181,23 +197,37 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
 
             foreach($state->field as $name => $value)
             {
-                if(is_string($state->value)) {
-                    $value = array_unique(explode(',',  $value));
-                } else {
-                    $value = (array) $value;
-                }
-
                 $select = $this->getObject('database.query.select')
-                    ->distinct()
+
                     ->columns(['v.item_id'])
                     ->table(['v' => 'fields_values'])
-                    ->join(['f' => 'fields'], 'f.id = v.field_id')
-                    //->where('v.item_id = tbl.id')
-                    ->where('f.name = :name')->bind(['name' => $name])
-                    ->where('v.value IN :value')->bind(['value' => $value]);
+                    ->join(['f' => 'fields'], 'f.id = v.field_id');
 
-                $name = hash('crc32b', $name); //name needs to be unique
+                //AND - check if all field values exists
+                if(!is_string($value))
+                {
+                    $value = array_unique((array) $value);
+
+                    $select
+                        ->where('f.name = :name')->bind(['name' => $name])
+                        ->where('v.value IN :value')->bind(['value' => $value])
+                        ->group(['v.item_id'])
+                        ->having('COUNT(*) = :count')->bind(['count' => count($value)]);
+                }
+                //OR - check if a field value exists
+                else
+                {
+                    $value = array_unique(array_map('trim', explode(',',  $value)));
+
+                    $select
+                        ->where('f.name = :name')->bind(['name' => $name])
+                        ->where('v.value IN :value')->bind(['value' => $value]);
+
+                }
+
+                $name = 'field_'.hash('crc32b', $name);
                 $query->where('(tbl.id IN :'.$name.')')->bind([$name => $select]);
+
             }
         }
 
