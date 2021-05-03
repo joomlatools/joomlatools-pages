@@ -119,8 +119,13 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                 //The extension name
                 $name = strtolower(basename($directory, '.zip'));
 
-                if(pathinfo($directory, PATHINFO_EXTENSION) == 'zip') {
-                    $directory = 'phar://'.$directory;
+                if(pathinfo($directory, PATHINFO_EXTENSION) == 'zip')
+                {
+                    if(!is_dir($path.'/'.$name)) {
+                        $directory = 'phar://'.$directory;
+                    } else {
+                        continue;
+                    }
                 }
 
                 //Register the extension namespace
