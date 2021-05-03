@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesEventSubscriberDecorator extends ComPagesEventSubscriberAbstract
+class ExtJoomlaEventSubscriberDecorator extends ComPagesEventSubscriberAbstract
 {
     private $__dispatcher;
     private $__decorated;

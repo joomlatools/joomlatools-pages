@@ -6,9 +6,4 @@ return [
             'menus'    => ['model' => 'ext:joomla.model.menus']
         ]
     ],
-    'event.subscriber.factory' => [
-        'subscribers' => [
-            'ext:joomla.event.subscriber.pagedecorator',
-        ]
-    ],
 ];
