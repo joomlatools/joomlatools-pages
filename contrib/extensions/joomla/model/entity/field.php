@@ -30,7 +30,6 @@ class ExtJoomlaModelEntityField extends ComPagesModelEntityItem
                 $value = explode(',', $value);
             }
         }
-        else $value = [];
 
         return $value;
     }
