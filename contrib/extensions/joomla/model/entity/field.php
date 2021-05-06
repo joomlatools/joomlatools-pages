@@ -24,17 +24,16 @@ class ExtJoomlaModelEntityField extends ComPagesModelEntityItem
     {
         $value = $this->_value;
 
-        if($value && $this->multi)
+        if($value)
         {
-            if(is_string($value))
-            {
-                $value = trim($value);
+            //Decode repetable fields
+            if(is_string($value) && $this->type == 'repeatable') {
+                $value = array_values(json_decode($value, true));
+            }
 
-                if($value[0] == '{') {
-                    $value = json_decode('['.$value.']', true);
-                } else {
-                    $value = explode(',', $value);
-                }
+            //Explode multi fields
+            if(is_string($value) && $this->multi) {
+                $value = explode(',', $value);
             }
         }
 
