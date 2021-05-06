@@ -26,8 +26,15 @@ class ExtJoomlaModelEntityField extends ComPagesModelEntityItem
 
         if($value && $this->multi)
         {
-            if(is_string($value)) {
-                $value = explode(',', $value);
+            if(is_string($value))
+            {
+                $value = trim($value);
+
+                if($value[0] == '{') {
+                    $value = json_decode('['.$value.']', true);
+                } else {
+                    $value = explode(',', $value);
+                }
             }
         }
 
