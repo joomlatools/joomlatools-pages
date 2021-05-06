@@ -239,6 +239,8 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
                     $query->where('(tbl.id IN :'.$key.')')->bind([$key => $select]);
                 }
             }
+
+            $query->group('tbl.id');
         }
 
         if(!is_null($state->author))
@@ -312,8 +314,6 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
         } else {
             $query->where('tbl.language = :language')->bind(['language' => '*']);
         }
-
-        $query->group('tbl.id');
 
         return $query;
     }
