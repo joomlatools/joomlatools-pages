@@ -42,7 +42,7 @@ class ComPagesEventSubscriberException extends ComPagesEventSubscriberAbstract
             }
         }
 
-        if(!$this->getConfig('pages.config')->debug && $this->getObject('request')->getFormat() == 'html')
+        if(!$this->getObject('pages.config')->debug && $this->getObject('request')->getFormat() == 'html')
         {
             //If the error code does not correspond to a status message, use 500
             $code = $exception->getCode();

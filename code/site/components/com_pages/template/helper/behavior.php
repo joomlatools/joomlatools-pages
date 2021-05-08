@@ -13,7 +13,7 @@ class ComPagesTemplateHelperBehavior extends ComKoowaTemplateHelperBehavior
     {
         $config = new ComPagesObjectConfig($config);
         $config->append(array(
-            'debug'    =>  $this->getConfig('pages.config')->debug,
+            'debug'    =>  $this->getObject('pages.config')->debug,
             'selector' => 'a.prefetch',
             'onload'   => true,
             'onhover'  => true,
@@ -42,7 +42,7 @@ PREFETCHER;
     {
         $config = new KObjectConfigJson($config);
         $config->append([
-            'debug'   => $this->getConfig('pages.config')->debug,
+            'debug'   => $this->getObject('pages.config')->debug,
             'version' => '2.8.2'
         ]);
 
@@ -61,7 +61,7 @@ PREFETCHER;
     {
         $config = new ComPagesObjectConfig($config);
         $config->append(array(
-            'debug'    => $this->getConfig('pages.config')->debug,
+            'debug'    => $this->getObject('pages.config')->debug,
             'selector' => 'body',
             'style'    => 'atom-one-light',
             'badge_icon' => true,

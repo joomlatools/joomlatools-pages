@@ -53,7 +53,7 @@ class ComPagesDispatcherBehaviorDecoratable extends ComKoowaDispatcherBehaviorDe
     {
         $result = 'joomla';
 
-        if($this->getConfig('pages.config')->debug && $this->getResponse()->isError()) {
+        if($this->getObject('pages.config')->debug && $this->getResponse()->isError()) {
             $result = 'koowa';
         }
 
@@ -79,7 +79,7 @@ class ComPagesDispatcherBehaviorDecoratable extends ComKoowaDispatcherBehaviorDe
             }
         }
 
-        if($this->getConfig('pages.config')->debug && $this->getResponse()->isError()) {
+        if($this->getObject('pages.config')->debug && $this->getResponse()->isError()) {
             $result = 'koowa';
         }
 
