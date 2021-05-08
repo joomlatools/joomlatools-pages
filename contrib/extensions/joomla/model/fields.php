@@ -38,6 +38,9 @@ class ExtJoomlaModelFields extends ComPagesModelDatabase
     {
         $state = $this->getState();
 
+        //Increase group_concat limit to 4.096 for the SESSION
+        $this->getTable()->getAdapter()->execute('SET SESSION group_concat_max_len = 4096');
+
         $query = $this->getObject('database.query.select')
             ->table(array('tbl' => $this->getTable()->getName()));
 
@@ -59,7 +62,7 @@ class ExtJoomlaModelFields extends ComPagesModelDatabase
                 'multi'     => 'COUNT(*) > 1',
 
                 //Protected properties (for getters)
-                '_value'     => 'GROUP_CONCAT(v.value)',
+                '_value'     => 'IF(COUNT(*) > 1, GROUP_CONCAT(v.value), v.value)',
             ]);
         }
 
