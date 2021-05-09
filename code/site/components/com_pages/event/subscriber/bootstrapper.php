@@ -131,15 +131,14 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                 $locator->registerNamespace(ucfirst($name), $directory);
 
                 //Register event subscribers
-
-                if(is_dir($directory.'/subscriber'))
+                if(is_dir($directory.'/event/subscriber'))
                 {
-                    foreach(scandir($directory.'/subscriber') as $filename)
+                    foreach(scandir($directory.'/event/subscriber') as $filename)
                     {
                         if(!str_starts_with($filename, '_') && str_ends_with($filename, '.php'))
                         {
                             $this->getObject('event.subscriber.factory')
-                                ->registerSubscriber('ext:'.$name.'.subscriber.'.basename($filename, '.php'));
+                                ->registerSubscriber('ext:'.$name.'.event.subscriber.'.basename($filename, '.php'));
                         }
                     }
                 }
