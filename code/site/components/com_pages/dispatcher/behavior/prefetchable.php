@@ -17,7 +17,7 @@ class ComPagesDispatcherBehaviorPrefetchable extends KControllerBehaviorAbstract
                 'selector' => 'a.prefetch',
                 'onload'   => true,
                 'onhover'  => true,
-                'debug'    => $this->getConfig('pages.config')->debug
+                'debug'    => $this->getObject('pages.config')->debug
             ],
         ));
 

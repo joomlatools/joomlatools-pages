@@ -12,7 +12,7 @@ class ComPagesTemplateFilterHighlight extends ComPagesTemplateFilterAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'debug'    => $this->getConfig('pages.config')->debug,
+            'debug'    => $this->getObject('pages.config')->debug,
             'selector'   => 'body',
             'style'      => 'atom-one-light',
             'badge_icon' => true,
