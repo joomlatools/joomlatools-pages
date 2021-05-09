@@ -64,10 +64,9 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                 $template = JFactory::getApplication()->getTemplate();
             }
 
+            $params = JFactory::getApplication()->getTemplate(true)->params;
             if(isset($config['template_config']) && is_array($config['template_config']))
             {
-                $params = JFactory::getApplication()->getTemplate(true)->params;
-
                 foreach($config['template_config'] as $name => $value) {
                     $params->set($name, $value);
                 }
