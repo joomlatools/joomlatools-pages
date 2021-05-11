@@ -87,17 +87,20 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
             $_SERVER['PAGES_PATH'] = JFactory::getApplication()->getCfg('live_site') ?? '/';
         }
 
-        //Add com_pages to Joomla components
-        $install = Closure::bind(function()
+        if (!defined('JOOMLATOOLS_PLATFORM'))
         {
-            static::$components['com_pages'] = new Joomla\CMS\Component\ComponentRecord([
-                'option'  => 'com_pages',
-                'enabled' => 1
-            ]);
+            //Add com_pages to Joomla components
+            $install = Closure::bind(function()
+            {
+                static::$components['com_pages'] = new Joomla\CMS\Component\ComponentRecord([
+                    'option'  => 'com_pages',
+                    'enabled' => 1
+                ]);
 
-        }, null, '\Joomla\CMS\Component\ComponentHelper');
+            }, null, '\Joomla\CMS\Component\ComponentHelper');
 
-        $install();
+            $install();
+        }
     }
 
     protected function _installExtensions($path, $config = array())
