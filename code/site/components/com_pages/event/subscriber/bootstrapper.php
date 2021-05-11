@@ -21,19 +21,11 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
     public function onAfterKoowaBootstrap(KEventInterface $event)
     {
         $request = $this->getObject('request');
-        $router  = $this->getObject('com://site/pages.dispatcher.router.site', ['request' => $request]);
+        $router  = $this->getObject('com:pages.dispatcher.router.site', ['request' => $request]);
 
         if(false !== $route = $router->resolve())
         {
             define('PAGES_SITE_ROOT', $route->getPath());
-
-            //Restore phar stream wrapper (Joomla uses the TYPO3 wrapper)
-            @stream_wrapper_restore('phar');
-
-            //Set PAGES_PATH based on Joomla configuration
-            if(JFactory::getApplication()->getCfg('sef_rewrite')) {
-                $_SERVER['PAGES_PATH'] = JFactory::getApplication()->getCfg('live_site') ?? '/';
-            }
 
             //Set the site path in the config
             $config = $this->getObject('pages.config', ['site_path' => $route->getPath()]);
@@ -43,6 +35,9 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
             //Bootstrap the site configuration (before extensions to allow overriding)
             $this->_bootstrapSite($config->getSitePath(), $options);
+
+            //Bootstrap Joomla
+            $this->_bootstrapJoomla($config->getSitePath(), $options);
 
             //Install the extensions
             $this->_installExtensions($config->getSitePath('extensions'), $options);
@@ -58,31 +53,6 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
         }
         else $this->getObject('pages.config', ['site_path' => false]);
-    }
-
-    public function onBeforeDispatcherDispatch(KEventInterface $event)
-    {
-        $config = $this->getObject('pages.config')->getOptions();
-
-        //Configure the Joomla template
-        if(isset($config['template']) || isset($config['template_config']))
-        {
-            if(isset($config['template'])) {
-                $template = $config['template'];
-            } else {
-                $template = JFactory::getApplication()->getTemplate();
-            }
-
-            $params = JFactory::getApplication()->getTemplate(true)->params;
-            if(isset($config['template_config']) && is_array($config['template_config']))
-            {
-                foreach($config['template_config'] as $name => $value) {
-                    $params->set($name, $value);
-                }
-            }
-
-            JFactory::getApplication()->setTemplate($template, $params);
-        }
     }
 
     protected function _bootstrapSite($path, $config = array())
@@ -105,6 +75,29 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         foreach($options['extensions'] as $identifier => $values) {
             $this->getConfig($identifier)->merge($values);
         }
+    }
+
+    protected function _bootstrapJoomla($path, $config = array())
+    {
+        //Restore phar stream wrapper (Joomla uses the TYPO3 wrapper)
+        @stream_wrapper_restore('phar');
+
+        //Set PAGES_PATH based on Joomla configuration
+        if(JFactory::getApplication()->getCfg('sef_rewrite')) {
+            $_SERVER['PAGES_PATH'] = JFactory::getApplication()->getCfg('live_site') ?? '/';
+        }
+
+        //Add com_pages to Joomla components
+        $install = Closure::bind(function()
+        {
+            static::$components['com_pages'] = new Joomla\CMS\Component\ComponentRecord([
+                'option'  => 'com_pages',
+                'enabled' => 1
+            ]);
+
+        }, null, '\Joomla\CMS\Component\ComponentHelper');
+
+        $install();
     }
 
     protected function _installExtensions($path, $config = array())
@@ -311,7 +304,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
             //Register the extension locator
             $this->getObject('manager')->getClassLoader()->registerLocator($locator);
-            $this->getObject('manager')->registerLocator('com://site/pages.object.locator.extension');
+            $this->getObject('manager')->registerLocator('com:pages.object.locator.extension');
 
             $filters    = array();
             $functions  = array();
@@ -377,7 +370,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
             //Register template functions
             if($functions) {
-                $this->getConfig('com://site/pages.template.default')->merge(['functions' => $functions]);
+                $this->getConfig('com:pages.template.default')->merge(['functions' => $functions]);
             }
         }
 
@@ -398,7 +391,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
                     $this->getObject('manager')->registerAlias(
                         'ext:pages.'.$path,
-                        'com://site/pages.'.$path
+                        'com:pages.'.$path
                     );
                 }
             }
