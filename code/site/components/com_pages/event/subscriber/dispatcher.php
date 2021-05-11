@@ -104,6 +104,8 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         //Get the page
         if($this->isDispatchable() && !$this->isDecorator())
         {
+            $dispatch = false;
+
             $page = $dispatcher->getPage();
             $menu = JFactory::getApplication()->getMenu()->getActive();
 
@@ -117,9 +119,9 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
                  */
 
                 if($menu && $menu->home && !empty($page->path)) {
-                    $event->getTarget()->input->set('option', 'com_pages');
+                    $dispatch = true;
                 } elseif(!$page->isDecorator()) {
-                    $event->getTarget()->input->set('option', 'com_pages');
+                    $dispatch = true;
                 }
             }
             else
@@ -131,35 +133,19 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
                  *  - Joomla fell back to the default menu item because the page route couldn't be resolved
                  */
                 if($page->isForm() || ($menu && $menu->home && !empty($page->path))) {
-                    $event->getTarget()->input->set('option', 'com_pages');
+                    $dispatch = true;
                 }
             }
 
-            /*
-             * Configure the template
-             *
-             * - Set a specific template by name
-             * - Set the template parameters
-             */
-            if($template = $page->get('process/template'))
+            if($dispatch)
             {
-                $params = JFactory::getApplication()->getTemplate(true)->params;
+                $event->getTarget()->input->set('option', 'com_pages');
 
-                if(!is_string($template))
-                {
-                    if(!$template = $page->get('process/template/name')) {
-                        $template = JFactory::getApplication()->getTemplate();
-                    }
+                $path = JPATH_LIBRARIES.'/joomlatools-components/pages';
 
-                    if($config = $page->get('process/template/config'))
-                    {
-                        foreach($config as $name => $value) {
-                            $params->set($name, $value);
-                        }
-                    }
-                }
-
-                JFactory::getApplication()->setTemplate($template, $params);
+                define('JPATH_COMPONENT', $path);
+                define('JPATH_COMPONENT_SITE', $path);
+                define('JPATH_COMPONENT_ADMINISTRATOR', $path);
             }
         }
         else
@@ -177,7 +163,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
 
     public function getDispatcher()
     {
-        return $this->getObject('com://site/pages.dispatcher.http');
+        return $this->getObject('com:pages.dispatcher.http');
     }
 
     public function isDispatchable()
