@@ -27,7 +27,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         {
             define('PAGES_SITE_ROOT', $route->getPath());
 
-            //Restore phar stream wrapper
+            //Restore phar stream wrapper (Joomla uses the TYPO3 wrapper)
             @stream_wrapper_restore('phar');
 
             //Set PAGES_PATH based on Joomla configuration

@@ -56,7 +56,6 @@ return [
             'subscribers' => [
                 'com://site/pages.event.subscriber.bootstrapper',
                 'com://site/pages.event.subscriber.dispatcher',
-                'com://site/pages.event.subscriber.pagedecorator',
                 'com://site/pages.event.subscriber.exception',
                 'com://site/pages.event.subscriber.staticcache',
             ]
