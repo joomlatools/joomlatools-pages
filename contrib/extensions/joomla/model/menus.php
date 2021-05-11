@@ -36,7 +36,7 @@ class ExtJoomlaModelMenus extends ComPagesModelDatabase
             'filters' => [
                 'params' => 'json'
             ],
-            'behaviors' => ['com://site/pages.model.behavior.recursable' => ['key' => 'parent']]
+            'behaviors' => ['com:pages.model.behavior.recursable' => ['key' => 'parent']]
         ));
 
         parent::_initialize($config);
