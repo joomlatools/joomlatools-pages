@@ -9,8 +9,6 @@
 
 class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
 {
-    use ComKoowaEventTrait;
-
     private $__dispatchable;
 
     /**
