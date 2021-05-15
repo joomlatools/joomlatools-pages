@@ -11,7 +11,7 @@ return function($format = '', $date = 'now')
     if(!$date instanceof KDate)
     {
         if(empty($format)) {
-            $format = $this->getObject('translator')->translate('DATE_FORMAT_LC3');
+            $format = 'd F Y';
         }
 
         $result = $this->createHelper('date')->format(array('date' => $date, 'format' => $format));
