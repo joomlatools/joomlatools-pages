@@ -24,7 +24,7 @@ class ComPagesEventSubscriberException extends ComPagesEventSubscriberAbstract
     public function onAfterKoowaBootstrap(KEventInterface $event)
     {
         //Catch all Joomla exceptions
-        if(!defined('JOOMLATOOLS_PLATFORM')) {
+        if(class_exists('JError')) {
             JError::setErrorHandling(E_ERROR, 'callback', array($this, 'handleException'));
         }
     }
