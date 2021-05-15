@@ -79,16 +79,16 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
     protected function _bootstrapJoomla($path, $config = array())
     {
-        //Restore phar stream wrapper (Joomla uses the TYPO3 wrapper)
-        @stream_wrapper_restore('phar');
-
-        //Set PAGES_PATH based on Joomla configuration
-        if(JFactory::getApplication()->getCfg('sef_rewrite')) {
-            $_SERVER['PAGES_PATH'] = JFactory::getApplication()->getCfg('live_site') ?? '/';
-        }
-
-        if (!defined('JOOMLATOOLS_PLATFORM'))
+        if(class_exists('\Joomla\CMS\Component\ComponentHelper'))
         {
+            //Restore phar stream wrapper (Joomla uses the TYPO3 wrapper)
+            @stream_wrapper_restore('phar');
+
+            //Set PAGES_PATH based on Joomla configuration
+            if(JFactory::getApplication()->getCfg('sef_rewrite')) {
+                $_SERVER['PAGES_PATH'] = JFactory::getApplication()->getCfg('live_site') ?? '/';
+            }
+
             //Add com_pages to Joomla components
             $install = Closure::bind(function()
             {
