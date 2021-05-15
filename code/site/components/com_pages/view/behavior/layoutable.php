@@ -69,10 +69,15 @@ class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
             //Render the layout
             $renderLayout = function($context, $layout) use(&$renderLayout)
             {
+                $template = clone $this->getTemplate();
+
+                //Load layout
+                $template->loadFile($layout->path);
+
                 //Parse and disable filters
-                if($filters = $layout->get('process/filters'))
+                if($process = $template->get('process'))
                 {
-                    $filters = (array) KObjectConfig::unbox($filters);
+                    $filters = $process['filters'] ?? array();
 
                     foreach($filters as $key => $filter)
                     {
@@ -88,19 +93,11 @@ class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
                         if ($filter[0] == '-')
                         {
                             $config['enabled'] = false;
-                            $this->getTemplate()->addFilter(substr($filter, 1), $config);
+                            $template->addFilter(substr($filter, 1), $config);
                         }
                         else $filters[$filter] = $config;
                     }
-                }
 
-                $template = clone $this->getTemplate();
-
-                //Load layout
-                $template->loadFile($layout->path);
-
-                //Add layout filters (only for active layout)
-                if($filters) {
                     $template->addFilters($filters);
                 }
 
