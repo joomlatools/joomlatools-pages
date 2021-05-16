@@ -108,7 +108,7 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
                                     {
                                         if(copy($src, $base . $dest) == false)
                                         {
-                                            $log = $this->getConfig()->log_path.'/.error_log';
+                                            $log = $this->getConfig()->log_path.'/image.log';
                                             error_log(sprintf('Could copy image: %s'."\n", $src), 3, $log);
                                         }
                                         else $src = $dest;

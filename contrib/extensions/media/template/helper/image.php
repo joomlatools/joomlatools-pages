@@ -280,7 +280,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
                     //Failsafe: Ensure file is smaller then 10kb
                     if(strlen($data) > 10000)
                     {
-                        $log = $this->getConfig()->log_path.'/.error_log';
+                        $log = $this->getConfig()->log_path.'/image.log';
                         error_log(sprintf('Could not generate LQI image: %s'."\n", $url), 3, $log);
                     }
                     else $result = 'data:image/jpg;base64,'.base64_encode($data);
