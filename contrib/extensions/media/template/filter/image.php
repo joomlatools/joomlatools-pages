@@ -15,6 +15,7 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
             'priority' => self::PRIORITY_LOW,
             'enabled'  => JDEBUG ? false : true,
             'origins'  => [],
+            'log_path' => $this->getObject('com:pages.config')->getSitePath('logs'),
         ));
 
         parent::_initialize($config);
@@ -105,11 +106,9 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
 
                                     if(!file_exists($base . $dest))
                                     {
-                                        if(copy($src, $base . $dest) == false) {
-
-                                            $cache_root = isset($_SERVER['PAGES_CACHE_ROOT']) ? $_SERVER['PAGES_CACHE_ROOT'] : false;
-                                            $log        = $cache_root.'/.error_log';
-
+                                        if(copy($src, $base . $dest) == false)
+                                        {
+                                            $log = $this->getConfig()->log_path.'/.error_log';
                                             error_log(sprintf('Could copy image: %s'."\n", $src), 3, $log);
                                         }
                                         else $src = $dest;

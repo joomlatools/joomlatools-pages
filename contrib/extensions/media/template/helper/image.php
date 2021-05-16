@@ -17,6 +17,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
             'max_dpr'   => 3,
             'base_url'  => $this->getObject('request')->getBaseUrl(),
             'base_path' => $this->getObject('com://site/pages.config')->getSitePath().'/images',
+            'log_path'  => $this->getObject('com:pages.config')->getSitePath('logs'),
             'exclude'    => ['svg'],
             'lazyload'   => true,
             'preload'    => false,
@@ -279,9 +280,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
                     //Failsafe: Ensure file is smaller then 10kb
                     if(strlen($data) > 10000)
                     {
-                        $cache_root = isset($_SERVER['PAGES_CACHE_ROOT']) ? $_SERVER['PAGES_CACHE_ROOT'] : false;
-                        $log        = $cache_root.'/.error_log';
-
+                        $log = $this->getConfig()->log_path.'/.error_log';
                         error_log(sprintf('Could not generate LQI image: %s'."\n", $url), 3, $log);
                     }
                     else $result = 'data:image/jpg;base64,'.base64_encode($data);
