@@ -12,7 +12,8 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'priority' => KEvent::PRIORITY_HIGH
+            'priority' => KEvent::PRIORITY_HIGH,
+            'log_path' => $this->getObject('com:pages.config')->getSitePath('logs'),
         ));
 
         parent::_initialize($config);
@@ -126,7 +127,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                     ],
                 ]);
 
-                $log  = $path.'/package.log';
+                $log  = $this->getConfig()->log_path.'/extension.log';
                 $date = date('y:m:d h:i:s');
                 if(copy($url, $path.'/'.$archive, $context))
                 {
@@ -181,7 +182,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                     ],
                 ]);
 
-                $log  = $path.'/package.log';
+                $log  = $this->getConfig()->log_path.'/extension.log';
                 $date = date('y:m:d h:i:s');
                 if(copy($url, $path.'/'.$archive, $context))
                 {
@@ -219,7 +220,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
             {
                 $name = basename(dirname($file));
 
-                $log = $path . '/package.log';
+                $log = $this->getConfig()->log_path . '/extension.log';
                 $date = date('y:m:d h:i:s');
 
                 $size = function ($path) use (&$size)
