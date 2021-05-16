@@ -9,55 +9,158 @@
 
 class ComPagesControllerProcessorEmail extends ComPagesControllerProcessorAbstract
 {
+    private $__mailer;
+
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
+            'log_file'   => $this->getObject('com:pages.config')->getSitePath('logs').'/mailer.log',
             'html'       => true,
-            'sender'     => null,
-            'recipients' => [],
             'title'      => '',
             'subject'    => '',
+            'sender'     => [
+                'email' => JFactory::getConfig()->get('mailfrom'),
+                'name'  => JFactory::getConfig()->get('fromname'),
+            ],
+            'recipients' => [],
+            'smtp' => [
+                'auth'   => JFactory::getConfig()->get('smtpauth'),
+                'user'   => JFactory::getConfig()->get('smtpuser'),
+                'pass'   => JFactory::getConfig()->get('smtppass'),
+                'host'   => JFactory::getConfig()->get('smtphost'),
+                'secure' => JFactory::getConfig()->get('smtpsecure'),
+                'port'   => JFactory::getConfig()->get('smtpport'),
+             ],
+             'mailer'   => JFactory::getConfig()->get('mailer'),
         ]);
 
         parent::_initialize($config);
     }
 
+    public function getMailer()
+    {
+        if(class_exists('PHPMailer') && !isset($this->__mailer))
+        {
+            $config = $this->getConfig();
+
+            $mailer = new \PHPMailer();
+
+            $from_email = $config->get('sender')->email;
+            $from_name  = $config->get('sender')->name;
+
+            if ($from_email) {
+                $mailer->setFrom($from_email, $from_name, false);
+            }
+
+            if($config->html) {
+                $mailer->isHtml(true);
+            }
+
+            // Default mailer is to use PHP's mail function
+            switch ($config->get('mailer'))
+            {
+                case 'smtp':
+                    $smtp = $config->get('smtp');
+
+                    $mailer->SMTPAuth = $smtp->auth == 0 ? null : 1;
+                    $mailer->Host     = $smtp->host;
+                    $mailer->Username = $smtp->user;
+                    $mailer->Password = $smtp->pass;
+                    $mailer->Port     = $smtp->port;
+
+                    if ($smtp->secure == 'ssl' || $smtp->secure == 'tls') {
+                        $mailer->SMTPSecure = $smtp->secure;
+                    }
+
+                    $mailer->isSMTP();
+
+                    break;
+
+                case 'sendmail':
+                    $mailer->isSendmail();
+                    break;
+
+                default:
+                    $mailer->isMail();
+                    break;
+            }
+
+            if ($this->getObject('pages.config')->debug)
+            {
+                $mailer->SMTPDebug = 4;
+
+                if(is_dir(dirname($config->log_file)))
+                {
+                    $mailer->Debugoutput = function ($message, $level) use ($config) {
+                        error_log(sprintf('Error in Mail API: %s'."\n", $message), 3, $config->log_file);
+                    };
+                }
+            }
+            else $mailer->XMailer = ' '; // Don't disclose the PHPMailer version
+
+            if (version_compare(PHP_VERSION, '7.3.0', '>=')) {
+                \PHPMailer::$validator = 'php';
+            }
+
+            $this->__mailer = $mailer;
+        }
+
+        return $this->__mailer;
+    }
+
     public function processData(array $data)
     {
-        $mailer = JFactory::getMailer();
-
-        if($this->getConfig()->html) {
-            $mailer->isHtml(true);
-        }
-
-        if($this->getConfig()->sender) {
-            $mailer->setSender($this->getConfig()->sender);
-        }
-
-        //Set the reply to
-        if($email = $this->getEmail($data))
+        if($mailer = $this->getMailer())
         {
-            $name = $this->getName($data);
-            $mailer->addReplyTo($email, $name);
-        }
+            //Set the reply to
+            if($email = $this->getEmail($data))
+            {
+                $name = $this->getName($data);
+                $mailer->addReplyTo($email, $name);
+            }
 
-        //Add the recipients
-        $recipients = (array) $this->getRecipients();
-        foreach($recipients as $recipient) {
-            $mailer->addRecipient($recipient);
-        }
+            //Add the recipients
+            $recipients = $this->getRecipients();
+            foreach($recipients as $recipient) {
+                $mailer->addAddress($recipient);
+            }
 
-        //Set the subject
-        $subject = $this->getSubject();
-        $mailer->setSubject($subject);
+            //Set the subject
+            $subject = $this->getSubject();
+            $mailer->Subject = $subject;
 
-        //Set the body
-        $body = $this->getMessage($data);
-        $mailer->setBody($body);
+            //Set the body
+            $body = $this->getMessage($data);
+            $mailer->Body = $body;
 
-        //Send the mail
-        if(!$mailer->send()) {
-            throw new RuntimeException($mailer->ErrorInfo);
+            try
+            {
+                $result = $mailer->send();
+            }
+            catch (\PHPMailerException $e)
+            {
+                $result = false;
+
+                if ($mailer->SMTPAutoTLS)
+                {
+                    /**
+                     * PHPMailer has an issue with servers with invalid certificates
+                     *
+                     * See: https://github.com/PHPMailer/PHPMailer/wiki/Troubleshooting#opportunistic-tls
+                     */
+                    $mailer->SMTPAutoTLS = false;
+
+                    try {
+                        $result = $mailer->send();
+                    }  catch (\PHPMailerException $e) {
+                        $result = false;
+                    }
+                }
+            }
+
+            if(!$result) {
+                throw new RuntimeException($mailer->ErrorInfo);
+            }
         }
     }
 
