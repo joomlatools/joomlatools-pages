@@ -24,13 +24,6 @@ async function build({ config = {} }) {
 
   await mason.fs.copyWithoutHiddenFiles(`${config.location}/code`, pkg);
 
-  await mason.fs.copy(`${config.location}/LICENSE.txt`, `${pkg}/LICENSE.txt`);
-
-  await fs.rename(
-    `${pkg}/administrator/components/com_pages/pages.xml`,
-    `${pkg}/pages.xml`
-  );
-
   await mason.fs.ensureDir(`${config.location}/artifacts`);
 
   if (config.compress) {
@@ -192,50 +185,33 @@ async function bundle({ config = {} }) {
 
   mason.log.debug(`Using ${tmp} folder for bundle`);
 
-  const installer = `${tmp}/installer`;
-
-  await mason.github.download({
-    token: config.githubToken,
-    repo: "joomlatools/joomlatools-extension-installer",
-    branch: "master",
-    destination: installer,
+  await buildFramework({
+    config: {
+      ...config.framework,
+      compress: false,
+      destination: `${tmp}`,
+    },
   });
 
-  await Promise.all([
-    build({
-      config: {
-        ...config,
-        compress: false,
-        destination: `${installer}/payload/pages`,
-      },
-    }),
-    buildFramework({
-      config: {
-        ...config.framework,
-        compress: false,
-        destination: `${installer}/payload/framework`,
-      },
-    }),
-  ]);
+  await build({
+    config: {
+      ...config,
+      compress: false,
+      destination: `${tmp}/libraries/joomlatools-components/pages`,
+    },
+  });
 
-  await fs.unlink(`${installer}/.gitignore`);
-  await fs.unlink(`${installer}/README.md`);
-  await fs.unlink(`${installer}/LICENSE`);
-
-  await fs.writeFile(
-    `${installer}/payload/manifest.json`,
-    JSON.stringify(config.bundle.manifest, null, 4)
-  );
 
   const xmlManifest = (
-    await fs.readFile(`${installer}/payload/pages/pages.xml`)
+    await fs.readFile(`${tmp}/libraries/joomlatools-components/pages/version/version.php`)
   ).toString();
-  const version = xmlManifest.match(/<version>(.*?)<\/version>/);
+
+  const version = xmlManifest.match(/VERSION\s*=\s*'(.*?)'/);
 
 
   await mason.fs.ensureDir(`${pagesRoot}/artifacts`);
   await mason.fs.archiveDirectory(
-    installer,
+    tmp,
     `${pagesRoot}/artifacts/com_pages${version ? "_v" + version[1] : "_bundle"}.zip`
   );
 
