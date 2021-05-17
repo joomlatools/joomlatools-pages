@@ -108,9 +108,10 @@ class ComPagesConfig extends KObject implements KObjectSingleton
             $options = KObjectConfig::unbox($this->getConfig());
 
             //Load default config options
-            if(file_exists(JPATH_CONFIGURATION.'/configuration-pages.php'))
+            $files = glob(JPATH_CONFIGURATION.'/*pages.php');
+            if(!empty($files) && file_exists($files[0]))
             {
-                $config = (array) include JPATH_CONFIGURATION.'/configuration-pages.php';
+                $config = (array) include $files[0];
                 $options = array_replace_recursive($options, $config);
             }
 
