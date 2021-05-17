@@ -42,36 +42,69 @@ class ComPagesEventSubscriberException extends ComPagesEventSubscriberAbstract
             }
         }
 
-        if(!$this->getObject('pages.config')->debug && $this->getObject('request')->getFormat() == 'html')
-        {
-            //If the error code does not correspond to a status message, use 500
-            $code = $exception->getCode();
-            if(!isset(KHttpResponse::$status_messages[$code])) {
-                $code = '500';
-            }
+        //If the error code does not correspond to a status message, use 500
+        $code = $exception->getCode();
+        if(!isset(KHttpResponse::$status_messages[$code])) {
+            $code = '500';
+        }
 
+        //Set status code (before rendering the error)
+        $dispatcher->getResponse()->setStatus($code);
+
+        if($this->getObject('pages.config')->debug) {
+            $content = $this->_renderBackTrace($exception, $code);
+        } else {
+            $content = $this->_renderErrorPage($exception, $code);
+        }
+
+        //Set error in the response
+        if($content)
+        {
+            $dispatcher->getResponse()->setContent($content);
+            $dispatcher->send();
+        }
+
+    }
+
+    public function handleException(\Exception $exception)
+    {
+        $this->getObject('exception.handler')->handleException($exception);
+    }
+
+    protected function _renderErrorPage($exception, $code = 500)
+    {
+        $content = '';
+        $dispatcher = $this->getObject('dispatcher');
+
+        if($dispatcher->getRequest()->getFormat() == 'html')
+        {
             foreach([(int) $code, '500'] as $code)
             {
                 if($page = $dispatcher->getPage($code))
                 {
                     $dispatcher->getPage()->setProperties($page);
 
-                    //Set status code (before rendering the error)
-                    $dispatcher->getResponse()->setStatus($code);
-
-                    //Render the error
                     $content = $dispatcher->getController()->render($exception);
-
-                    //Set error in the response
-                    $dispatcher->getResponse()->setContent($content);
-                    $dispatcher->send();
+                    break;
                 }
             }
         }
+
+        return $content;
     }
 
-    public function handleException(\Exception $exception)
+    protected function _renderBackTrace($exception, $code = 500)
     {
-        $this->getObject('exception.handler')->handleException($exception);
+        $content = '';
+        $dispatcher = $this->getObject('dispatcher');
+
+        //Render the exception if debug mode is enabled or if we are returning json
+        if(in_array($dispatcher->getRequest()->getFormat(), array('json', 'html')))
+        {
+            $content = $this->getObject('com:koowa.controller.error',  ['request'  => $dispatcher->getRequest()])
+                ->render($exception);
+        }
+
+        return $content;
     }
 }

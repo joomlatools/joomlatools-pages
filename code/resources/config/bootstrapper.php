@@ -25,6 +25,9 @@ return [
         'page.registry' => 'com:pages.page.registry',
         'data.registry' => 'com:pages.data.registry',
         'model.factory' => 'com:pages.model.factory',
+
+        //Aliases for com:koowa
+        'com:koowa.template.filter.asset' => 'com:pages.template.filter.asset',
     ],
 
     'identifiers' => [
