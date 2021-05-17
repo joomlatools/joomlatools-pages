@@ -13,7 +13,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
     {
         $config->append(array(
             'priority' => KEvent::PRIORITY_HIGH,
-            'log_path' => $this->getObject('com:pages.config')->getSitePath('logs'),
+            'log_path' => null,
         ));
 
         parent::_initialize($config);
@@ -127,7 +127,12 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                     ],
                 ]);
 
-                $log  = $this->getConfig()->log_path.'/extension.log';
+                if($this->getConfig()->log_path) {
+                    $log  = $this->getConfig()->log_path.'/extension.log';
+                } else {
+                    $log  = $this->getObject('com:pages.config')->getSitePath('logs').'/extension.log';
+                }
+
                 $date = date('y:m:d h:i:s');
                 if(copy($url, $path.'/'.$archive, $context))
                 {
@@ -182,7 +187,12 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                     ],
                 ]);
 
-                $log  = $this->getConfig()->log_path.'/extension.log';
+                if($this->getConfig()->log_path) {
+                    $log  = $this->getConfig()->log_path.'/extension.log';
+                } else {
+                    $log  = $this->getObject('com:pages.config')->getSitePath('logs').'/extension.log';
+                }
+
                 $date = date('y:m:d h:i:s');
                 if(copy($url, $path.'/'.$archive, $context))
                 {
@@ -220,7 +230,12 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
             {
                 $name = basename(dirname($file));
 
-                $log = $this->getConfig()->log_path . '/extension.log';
+                if($this->getConfig()->log_path) {
+                    $log  = $this->getConfig()->log_path.'/extension.log';
+                } else {
+                    $log  = $this->getObject('com:pages.config')->getSitePath('logs').'/extension.log';
+                }
+
                 $date = date('y:m:d h:i:s');
 
                 $size = function ($path) use (&$size)
