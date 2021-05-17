@@ -260,16 +260,16 @@ class ExtJoomlaEventSubscriberDecorator extends ComPagesEventSubscriberAbstract
     {
         if(is_null($this->__dispatcher))
         {
-            if($route = $this->getObject('com://site/pages.dispatcher.http')->getRoute())
+            if($route = $this->getObject('com:pages.dispatcher.http')->getRoute())
             {
                 $this->__dispatcher = false;
 
-                $page     = $this->getObject('com://site/pages.dispatcher.http')->getPage();
+                $page     = $this->getObject('com:pages.dispatcher.http')->getPage();
                 $decorate = $page->process->get('decorate', false);
 
                 if($decorate !== false)
                 {
-                    $this->__dispatcher = $this->getObject('com://site/pages.dispatcher.http')
+                    $this->__dispatcher = $this->getObject('com:pages.dispatcher.http')
                         ->setController('decorator');
                 }
             }

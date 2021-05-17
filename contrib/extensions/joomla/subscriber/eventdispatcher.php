@@ -12,7 +12,7 @@ class ExtJoomlaSubscriberEventdispatcher extends ComPagesEventSubscriberAbstract
     public function onAfterApplicationInitialise(KEventInterface $event)
     {
         //Set the site path in the config
-        if($path = $this->getObject('com://site/pages.config')->getSitePath('extensions'))
+        if($path = $this->getObject('com:pages.config')->getSitePath('extensions'))
         {
             //Find extensions
             if($directories = glob($path.'/*', GLOB_ONLYDIR))

@@ -9,6 +9,8 @@
 
 class ExtJoomlaEventSubscriberDispatcher extends ComPagesEventSubscriberDispatcher
 {
+    use ComKoowaEventTrait;
+
     public function onAfterKoowaBootstrap()
     {
         $this->attachEventHandler('onAfterModuleList', 'filterTemplateModules');
