@@ -5,7 +5,7 @@
 
 ### What is Joomlatools Pages?
 
-Joomlatools Pages is an easy to use [_just-in-time_ **page generator**](https://github.com/joomlatools/joomlatools-pages/discussions/655) for [Joomla](http://www.joomla.org) inspired by the ideas and concepts of flat-file CMS systems like [Grav](https://getgrav.org/) and [Statamic](statamic.com), static site generators like [Jekyll]( https://jekyllrb.com), [Hugo](https://gohugo.io), [Gatsby](https://www.gatsbyjs.org/) and Headless CMS system like [Strapi](https://strapi.io/) and [Prismic](https://prismic.io/) etc. 
+Joomlatools Pages is an easy to use [_just-in-time_ **page generator**](https://github.com/joomlatools/joomlatools-pages/discussions/655) inspired by the ideas and concepts of flat-file CMS systems like [Grav](https://getgrav.org/) and [Statamic](statamic.com), static site generators like [Jekyll]( https://jekyllrb.com), [Hugo](https://gohugo.io), [Gatsby](https://www.gatsbyjs.org/) and Headless CMS system like [Strapi](https://strapi.io/) and [Prismic](https://prismic.io/) etc. 
 
 Make no mistake, Pages is **not** a static site generator (SSG), Pages works in a _dynamic, lazy and smart_ way. A page is just in time dynamically generated, cached and only re-generated when its content or layout has changed.
 
@@ -15,33 +15,32 @@ Pages takes your custom HTML/CSS/JS and churns through layouts to create a page.
 
 Pages is **datasource agnostic**, your data can come from anywhere, for example you could use, a Joomla component, a database table, a headless CMS or even a webservice like [Airtable](https://airtable.com) or [Google Sheets](https://www.google.com/sheets/about/).
 
-Pages works just like any regular frontend Joomla component, it's 100% compatible with every Joomla template, and also offers it's own a very powerful [theme'ing system](https://github.com/joomlatools/joomlatools-pages/wiki/Themes). 
+Pages works can both be installed in Joomla and be used standalone, it's 100% compatible with every Joomla template, and also offers it's own a very powerful [theme'ing system](https://github.com/joomlatools/joomlatools-pages/wiki/Themes). 
 
 We built it to be your perfect buddy, and [bring joy to Joomla development](https://github.com/joomlatools/joomlatools-pages/wiki/Developer-Joy), it doesn't get in your way and it's always there if you need it.
 
 ### Why Joomlatools Pages?
 
-For the rebuild of [Joomlatools.com](http://joomlatools.com/blog/services/introducing-our-brand-new-website) we needed a solution that would allow us to easily include, and update, content on our site. Using Joomla articles and modules would make the site very hard to manage. Pages solves this in an elegant and simple way, not to mention it's super fast and easy to work with too!
+For the rebuild of [Joomlatools.com](http://joomlatools.com/blog/services/introducing-our-brand-new-website) we needed a solution that would allow us to easily include, and update, content on our site. Using Joomla would make the site very hard to manage. Pages solves this in an elegant and simple way, not to mention it's super fast and easy to work with too!
 
 ### Who is Joomlatools Pages for?
 
-Joomlatools Pages is for website developers and designers who create bespoke Joomla sites and have experience with html, markdown, etc. If you know how to use notepad you can work with Pages, knowledge of PHP is not required to get started.
+Joomlatools Pages is for website developers and designers who create bespoke (Joomla) sites and have experience with html, markdown, etc. If you know how to use notepad you can work with Pages, knowledge of PHP is not required to get started.
 
 ## Requirements
 
-* Joomla 3.6.5
 * PHP7.3
 * Joomlatools Framework 3.5.0
 
 ## Installation
 
-Go to the root directory of your Joomla installation in command line and execute this command:
+Go to the root directory of your installation in command line and execute this command:
 
 ```
 composer require joomlatools/pages --ignore-platform-reqs
 ```
 
-Note: You need to use the --ignore-platform-reqs flag if not the installation will fail due to a mismatch in the platform
+Note: When installing in Joomla You need to use the --ignore-platform-reqs flag if not the installation will fail due to a mismatch in the platform
 constraint. Joomla's requires PHP 5.3.10 as minimum while Joomlatools Pages is set to minimum PHP7.3
 
 ## Documentation
@@ -66,6 +65,5 @@ Joomlatools Pages is open-source software licensed under the [GPLv3 license](LIC
 Keep track of development and community news.
 
 * Follow [@joomlatoolsdev on Twitter](https://twitter.com/joomlatoolsdev)
-* Join [joomlatools/dev on Gitter](http://gitter.im/joomlatools/dev)
 * Read the [Joomlatools Developer Blog](https://www.joomlatools.com/developer/blog/)
 * Subscribe to the [Joomlatools Developer Newsletter](https://www.joomlatools.com/developer/newsletter/)
