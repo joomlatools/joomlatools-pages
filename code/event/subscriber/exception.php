@@ -9,6 +9,15 @@
 
 class ComPagesEventSubscriberException extends ComPagesEventSubscriberAbstract
 {
+    protected function _initialize(KObjectConfig $config)
+    {
+        $config->append(array(
+            'priority' => KEvent::PRIORITY_LOW
+        ));
+
+        parent::_initialize($config);
+    }
+
     public function isEnabled()
     {
         $result = parent::isEnabled();
@@ -58,12 +67,11 @@ class ComPagesEventSubscriberException extends ComPagesEventSubscriberAbstract
         }
 
         //Set error in the response
-        if($content)
-        {
+        if($content) {
             $dispatcher->getResponse()->setContent($content);
-            $dispatcher->send();
         }
 
+        $dispatcher->send();
     }
 
     public function handleException(\Exception $exception)
@@ -95,15 +103,11 @@ class ComPagesEventSubscriberException extends ComPagesEventSubscriberAbstract
 
     protected function _renderBackTrace($exception, $code = 500)
     {
-        $content = '';
-        $dispatcher = $this->getObject('dispatcher');
+        $request = $this->getObject('dispatcher')->getRequest();
+        $request->setFormat('html');
 
-        //Render the exception if debug mode is enabled or if we are returning json
-        if(in_array($dispatcher->getRequest()->getFormat(), array('json', 'html')))
-        {
-            $content = $this->getObject('com:koowa.controller.error',  ['request'  => $dispatcher->getRequest()])
+        $content = $this->getObject('com:koowa.controller.error',  ['request' => $request])
                 ->render($exception);
-        }
 
         return $content;
     }
