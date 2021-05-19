@@ -48,7 +48,8 @@ return [
             'locators' => [
                 'com:pages.data.locator',
                 'com:pages.page.locator',
-                'com:pages.template.locator.theme'
+                'com:pages.template.locator.theme',
+                'com:pages.template.locator.template'
             ]
         ],
         'template.engine.factory' => [
