@@ -31,7 +31,7 @@ collection:
 <!-- articles -->
 <div class="w-full md:pr-12 mb-12 prose">
 
-    <?= import('/partials/articles/list.html', [
+    <?= partial('articles/list.html', [
          'articles' => collection(),
     ]); ?>
 

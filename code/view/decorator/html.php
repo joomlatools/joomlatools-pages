@@ -11,7 +11,7 @@ class ComPagesViewDecoratorHtml extends ComPagesViewHtml
 {
     protected function _actionRender(KViewContext $context)
     {
-        $context->layout = 'page://pages/'.$this->getPage()->path;
+        $context->layout = 'page:'.$this->getPage()->path;
 
         return parent::_actionRender($context);
     }

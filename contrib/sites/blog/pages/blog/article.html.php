@@ -8,6 +8,6 @@ metadata:
 visible: false
 ---
 
-<?= import('/partials/articles/single.html', [
+<?= partial('articles/single.html', [
     'article' => collection(),
 ]); ?>

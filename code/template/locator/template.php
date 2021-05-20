@@ -7,14 +7,14 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesPageLocator extends KTemplateLocatorFile
+class ComPagesTemplateLocatorTemplate extends KTemplateLocatorFile
 {
-    protected static $_name = 'page';
+    protected static $_name = 'template';
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'base_path' => $this->getObject('pages.config')->getSitePath('pages'),
+            'base_path' => $this->getObject('com://site/pages.config')->getSitePath('templates')
         ]);
 
         parent::_initialize($config);
@@ -27,14 +27,42 @@ class ComPagesPageLocator extends KTemplateLocatorFile
 
         $file   = pathinfo($path, PATHINFO_FILENAME);
         $format = pathinfo($path, PATHINFO_EXTENSION) ?: 'html';
-        $path   = ltrim(pathinfo($path, PATHINFO_DIRNAME), '.');
 
-        //Prepend the base path
-        if($path) {
-            $path = $this->getBasePath().'/'.$path;
+        if($path = ltrim(pathinfo($path, PATHINFO_DIRNAME), '.')) {
+            $path = explode('/', $path);
         } else {
-            $path = $this->getBasePath();
+            $path = [];
         }
+
+        $base = $this->getBasePath();
+        if($extension = parse_url($info['url'], PHP_URL_HOST))
+        {
+            if($extension != 'pages')
+            {
+                $base = $this->getObject('manager')
+                    ->getClassLoader()
+                    ->getLocator('extension')
+                    ->getNamespace(ucfirst($extension));
+            }
+            else $base = $this->getObject('object.bootstrapper')->getComponentPath('pages');
+
+            array_shift($path);
+
+            $base .= '/resources/templates';
+        }
+
+        $parts = array();
+
+        //Add the base path
+        $parts[] = $base;
+
+        //Add the file path
+        if($path) {
+            $parts = array_merge($parts, $path);
+        }
+
+        //Create the path
+        $path = implode('/', $parts);
 
         if($this->realPath($path.'/'.$file)) {
             $pattern = $path.'/'.$file.'/index.'.$format.'*';
@@ -55,5 +83,10 @@ class ComPagesPageLocator extends KTemplateLocatorFile
         }
 
         return $result;
+    }
+
+    public function realPath($file)
+    {
+        return KTemplateLocatorAbstract::realPath($file);
     }
 }

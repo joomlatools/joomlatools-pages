@@ -9,7 +9,7 @@
 
 class ComPagesClassLocatorExtension extends KClassLocatorAbstract
 {
-    protected static $_name = 'ext';
+    protected static $_name = 'extension';
 
     public function locate($classname, $basepath = null)
     {

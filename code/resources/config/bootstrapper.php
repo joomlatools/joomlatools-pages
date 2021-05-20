@@ -27,6 +27,10 @@ return [
         'data.registry' => 'com:pages.data.registry',
         'model.factory' => 'com:pages.model.factory',
 
+        //Aliases for framework
+        'lib:template.engine.koowa' => 'com:pages.template.engine.koowa',
+        'lib:template.engine.twig ' => 'com:pages.template.engine.twig',
+
         //Aliases for com:koowa
         'com:koowa.template.filter.asset' => 'com:pages.template.filter.asset',
     ],
@@ -48,7 +52,8 @@ return [
             'locators' => [
                 'com:pages.data.locator',
                 'com:pages.page.locator',
-                'com:pages.template.locator.theme'
+                'com:pages.template.locator.theme',
+                'com:pages.template.locator.template'
             ]
         ],
         'template.engine.factory' => [
