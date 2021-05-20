@@ -51,6 +51,13 @@ class ComPagesEventSubscriberException extends ComPagesEventSubscriberAbstract
             }
         }
 
+        //Make sure the output buffers are cleared
+        $level = ob_get_level();
+        while($level > 0) {
+            ob_end_clean();
+            $level--;
+        }
+
         //If the error code does not correspond to a status message, use 500
         $code = $exception->getCode();
         if(!isset(KHttpResponse::$status_messages[$code])) {
