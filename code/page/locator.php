@@ -14,7 +14,7 @@ class ComPagesPageLocator extends KTemplateLocatorFile
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'base_path' => $this->getObject('pages.config')->getSitePath(),
+            'base_path' => $this->getObject('pages.config')->getSitePath('pages'),
         ]);
 
         parent::_initialize($config);
@@ -22,7 +22,8 @@ class ComPagesPageLocator extends KTemplateLocatorFile
 
     public function find(array $info)
     {
-        $path = ltrim(str_replace(parse_url($info['url'], PHP_URL_SCHEME).'://', '', $info['url']), '/');
+        $scheme = parse_url($info['url'], PHP_URL_SCHEME);
+        $path   = str_replace([$scheme.'://', $scheme.':'], '', $info['url']);
 
         $file   = pathinfo($path, PATHINFO_FILENAME);
         $format = pathinfo($path, PATHINFO_EXTENSION) ?: 'html';
