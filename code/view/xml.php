@@ -69,7 +69,7 @@ class ComPagesViewXml extends KViewTemplate
         }
 
         //Load the page
-        $template->loadFile('page://pages/'.$this->getPage()->path);
+        $template->loadFile('page:'.$this->getPage()->path);
 
         //Render page
         $content  = '<?xml version="1.0" encoding="utf-8" ?>'."\n";
