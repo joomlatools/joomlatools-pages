@@ -29,7 +29,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         $this->__locator = $this->getObject('com:pages.page.locator');
 
         //Load the cache and do not refresh it
-        $basedir = $this->getLocator()->getBasePath().'/pages';
+        $basedir = $this->getLocator()->getBasePath();
         $this->__data = $this->loadCache($basedir, false);
 
         //Set the collection
@@ -193,13 +193,13 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 if(!is_string($file))
                 {
                     //Do not include a directory without an index file (no existing page)
-                    if(!$file = $this->getLocator()->locate('page://pages/'. $page)) {
+                    if(!$file = $this->getLocator()->locate('page:'. $page)) {
                         continue;
                     }
                 }
 
                 //Get the relative file path
-                $basedir = $this->getLocator()->getBasePath().'/pages';
+                $basedir = $this->getLocator()->getBasePath();
                 $file    = trim(str_replace($basedir, '', $file), '/');
 
                 $result[$page] = $this->__data['pages'][$file];
@@ -217,10 +217,10 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
         if(!isset($this->__pages[$path]))
         {
-            if($file = $this->getLocator()->locate('page://pages/'. $path))
+            if($file = $this->getLocator()->locate('page:'. $path))
             {
                 //Get the relative file path
-                $basedir = $this->getLocator()->getBasePath().'/pages';
+                $basedir = $this->getLocator()->getBasePath();
                 $file    = trim(str_replace($basedir, '', $file), '/');
 
                 //Load the page
@@ -280,7 +280,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             $template = $this->getObject('com:pages.template.default');
 
             //Load and render the page
-            if($template->loadFile('page://pages/'.$path))
+            if($template->loadFile('page:'.$path))
             {
                 $content = $template->render(KObjectConfig::unbox($template->getData()));
 
@@ -290,7 +290,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         }
         else
         {
-            $file = $this->getObject('template.locator.factory')->locate('page://pages/'.$path);
+            $file = $this->getObject('template.locator.factory')->locate('page:'.$path);
             $page = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
 
             $content = $page->getContent();
@@ -329,7 +329,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     public function isPage($path)
     {
         if(!isset($this->__pages[$path])) {
-            $result = (bool) $this->getLocator()->locate('page://pages/'. $path);
+            $result = (bool) $this->getLocator()->locate('page:'. $path);
         } else {
             $result = ($this->__pages[$path] === false) ? false : true;
         }
