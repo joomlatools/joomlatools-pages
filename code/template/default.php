@@ -47,12 +47,9 @@ class ComPagesTemplateDefault extends KTemplate
 
     public function loadFile($url)
     {
-        //Qualify the layout
-        if(!parse_url($url, PHP_URL_SCHEME)) {
-            $url = 'page://layouts/'.$url;
-        }
+        $scheme = parse_url($url, PHP_URL_SCHEME);
 
-        if(parse_url($url, PHP_URL_SCHEME) == 'page')
+        if($scheme == 'page' || $scheme == 'template')
         {
             //Locate the template
             if(!$file = $this->getObject('template.locator.factory')->locate($url)) {
@@ -83,7 +80,7 @@ class ComPagesTemplateDefault extends KTemplate
 
             if(!in_array($this->_type, $this->_excluded_types))
             {
-                unset($this->_functions['import']); //prevent conflict
+                //unset($this->_functions['import']); //prevent conflict
 
                 //Create the template engine
                 $config = array(
