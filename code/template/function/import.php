@@ -9,5 +9,10 @@
 
 return function($url, $data = array())
 {
+    //Qualify the template
+    if(!parse_url($url, PHP_URL_SCHEME)) {
+        $url = 'template:'.$url;
+    }
+
     return $this->loadFile($url)->render($data);
 };
