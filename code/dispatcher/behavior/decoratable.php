@@ -97,7 +97,7 @@ class ComPagesDispatcherBehaviorDecoratable extends ComKoowaDispatcherBehaviorDe
         $request = $mixer->getRequest();
 
         // Support HTML GET requests and also form submits (so we can render errors on POST)
-        if(($request->isFormSubmit() || $request->isGet()) && $request->getFormat() == 'html') {
+        if(($request->isFormSubmit() || $request->isGet())) {
             return true;
         }
 
