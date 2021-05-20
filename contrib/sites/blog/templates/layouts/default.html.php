@@ -20,7 +20,7 @@ process:
 <nav class="navigation w-full bg-white md:pt-0 px-6 relative z-20 border-t border-b border-gray-light">
     <div class="container mx-auto max-w-4xl md:flex justify-between items-center text-sm md:text-md md:justify-start">
         <div class="w-full md:w-1/2 text-center md:text-left py-4 flex flex-wrap justify-center items-stretch md:justify-start md:items-start">
-            <?= import('/partials/navigation/mainmenu',['levels'=>1,]); ?>
+            <?= partial('navigation/mainmenu',['levels'=>1,]); ?>
         </div>
         <div class="w-full md:w-1/2 text-center md:text-right">
             <!-- extra links -->
@@ -49,7 +49,7 @@ process:
     <div class="container mx-auto max-w-4xl py-6 flex flex-wrap md:flex-no-wrap justify-between items-center text-sm">
         &copy;<?= date('now', 'Y'); ?> <?= config()->site->name ?>. All rights reserved.
         <div class="pt-4 md:p-0 text-center md:text-right text-xs">
-            <?= import('/partials/navigation/footer'); ?>
+            <?= partial('navigation/footer'); ?>
         </div>
     </div>
 </footer>
