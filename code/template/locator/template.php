@@ -14,7 +14,7 @@ class ComPagesTemplateLocatorTemplate extends KTemplateLocatorFile
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'base_path' => $this->getObject('com://site/pages.config')->getSitePath('extensions')
+            'base_path' => $this->getObject('com://site/pages.config')->getSitePath('templates')
         ]);
 
         parent::_initialize($config);
@@ -22,10 +22,11 @@ class ComPagesTemplateLocatorTemplate extends KTemplateLocatorFile
 
     public function find(array $info)
     {
-        $path = str_replace(parse_url($info['url'], PHP_URL_SCHEME).'://', '', $info['url']);
+        $scheme = parse_url($info['url'], PHP_URL_SCHEME);
+        $path   = str_replace([$scheme.'://', $scheme.':'], '', $info['url']);
 
         $file   = pathinfo($path, PATHINFO_FILENAME);
-        $format = pathinfo($path, PATHINFO_EXTENSION);
+        $format = pathinfo($path, PATHINFO_EXTENSION) ?: 'html';
 
         if($path = ltrim(pathinfo($path, PATHINFO_DIRNAME), '.')) {
             $path = explode('/', $path);
@@ -33,16 +34,21 @@ class ComPagesTemplateLocatorTemplate extends KTemplateLocatorFile
             $path = [];
         }
 
+        $base = $this->getBasePath();
         if($extension = parse_url($info['url'], PHP_URL_HOST))
         {
-            $base_path = $this->getBasePath();
-            if(file_exists($base_path.'/'.$extension))
+            if($extension != 'pages')
             {
-                $base = $base_path.'/'.$extension.'/resources/templates';
-                array_shift($path);
-
+                $base = $this->getObject('manager')
+                    ->getClassLoader()
+                    ->getLocator('extension')
+                    ->getNamespace(ucfirst($extension));
             }
-            else $base = JPATH_SITE.'/components/com_pages/resources/templates';
+            else $base = $this->getObject('object.bootstrapper')->getComponentPath('pages');
+
+            array_shift($path);
+
+            $base .= '/resources/templates';
         }
 
         $parts = array();
@@ -52,37 +58,29 @@ class ComPagesTemplateLocatorTemplate extends KTemplateLocatorFile
 
         //Add the file path
         if($path) {
-            $parts[] += $path;
+            $parts = array_merge($parts, $path);
         }
-
-        //Add the file
-        $parts[] = $file;
 
         //Create the path
         $path = implode('/', $parts);
 
-        //Append the format
-        if($format) {
-            $path = $path.'.'.$format;
+        if($this->realPath($path.'/'.$file)) {
+            $pattern = $path.'/'.$file.'/index.'.$format.'*';
+        } else {
+            $pattern = $path.'/'.$file.'.'.$format.'*';
         }
 
-        if(!$result = $this->realPath($path))
+        //Try to find the file
+        $result = false;
+        if ($results = glob($pattern))
         {
-            $pattern = $path.'.*';
-            $results = glob($pattern);
-
-            //Try to find the file
-            if ($results)
+            foreach($results as $file)
             {
-                foreach($results as $file)
-                {
-                    if($result = $this->realPath($file)) {
-                        break;
-                    }
+                if($result = $this->realPath($file)) {
+                    break;
                 }
             }
         }
-
 
         return $result;
     }
