@@ -18,7 +18,7 @@ class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
             {
                 //Qualify the layout path
                 if(!parse_url($layout, PHP_URL_SCHEME)) {
-                    $layout = 'page://layouts/'.$layout;
+                    $layout = 'template:layouts/'.$layout;
                 }
 
                 //Locate the layout
@@ -70,6 +70,11 @@ class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
             $renderLayout = function($context, $layout) use(&$renderLayout)
             {
                 $template = clone $this->getTemplate();
+
+                //Qualify the layout path
+                if(!parse_url($layout->path, PHP_URL_SCHEME)) {
+                    $layout->path = 'template:layouts/'.$layout->path;
+                }
 
                 //Load layout
                 $template->loadFile($layout->path);
