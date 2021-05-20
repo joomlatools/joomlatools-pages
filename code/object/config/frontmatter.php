@@ -60,7 +60,11 @@ class ComPagesObjectConfigFrontmatter extends KObjectConfigYaml
                 $this->merge($data);
             }
 
-            $this->setContent(str_replace($matches[0], '', $string));
+            if($matches) {
+                $string = str_replace($matches[0], '', $string);
+            }
+
+            $this->setContent($string);
         }
         else $this->setContent($string);
 
