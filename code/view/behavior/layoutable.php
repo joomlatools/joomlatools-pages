@@ -18,7 +18,7 @@ class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
             {
                 //Qualify the layout path
                 if(!parse_url($layout, PHP_URL_SCHEME)) {
-                    $layout = 'template:layouts/'.$layout;
+                    $layout = 'template:layouts/'.trim($layout, '/');
                 }
 
                 //Locate the layout
@@ -30,10 +30,17 @@ class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
                 $template = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
 
                 //Set the parent layout
-                if($layout = $template->get('layout'))
+                if($parent = $template->get('layout'))
                 {
-                    if(!is_string($layout)) {
-                        $layout = $layout->path;
+                    if(!is_string($parent)) {
+                        $parent = $parent->path;
+                    }
+
+                    if (!parse_url($parent, PHP_URL_SCHEME) && $parent[0] != '/')
+                    {
+                        $parent = $this->getObject('template.locator.factory')
+                            ->createLocator($layout)
+                            ->qualify($parent, $layout);
                     }
                 }
 
@@ -42,10 +49,10 @@ class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
                 //Do not overwrite existing data, only add it not defined yet
                 $context->subject->getLayout()->append($template->remove('layout'));
 
-                //Handle recursive layout
-                if($layout) {
-                    $mergeLayout($context, $layout);
+                if($parent) {
+                    $mergeLayout($context, $parent);
                 }
+
             };
 
             Closure::bind($mergeLayout, $this, get_class());
@@ -73,7 +80,7 @@ class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
 
                 //Qualify the layout path
                 if(!parse_url($layout->path, PHP_URL_SCHEME)) {
-                    $layout->path = 'template:layouts/'.$layout->path;
+                    $layout->path = 'template:layouts/'.trim($layout->path, '/');
                 }
 
                 //Load layout
@@ -120,8 +127,17 @@ class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
                 $this->setContent($template->render(KObjectConfig::unbox($context->data)));
 
                 //Handle recursive layout
-                if($layout = $template->getLayout()) {
-                    $renderLayout($context, $layout);
+                if($parent = $template->getLayout())
+                {
+                    //Handle relative paths
+                    if (!parse_url($parent->path, PHP_URL_SCHEME) && $parent->path[0] != '/')
+                    {
+                        $parent->path = $this->getObject('template.locator.factory')
+                            ->createLocator($layout->path)
+                            ->qualify($parent->path, $layout->path);
+                    }
+
+                    $renderLayout($context, $parent);
                 }
             };
 
