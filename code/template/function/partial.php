@@ -11,8 +11,8 @@ return function($url, $data = array())
 {
     //Qualify the template
     if(!parse_url($url, PHP_URL_SCHEME)) {
-        $url = 'template:partials/'.trim($url, '/');
+        $url = 'template:/partials/'.trim($url, '/');
     }
 
-    return $this->import($url, $data);
+    return  $this->loadFile($url)->render($data);
 };

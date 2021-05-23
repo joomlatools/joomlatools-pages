@@ -31,7 +31,7 @@ class ComPagesTemplateDefault extends KTemplate
             'filters'         => ['partial'],
             'cache'           => false,
             'cache_namespace' => 'pages',
-            'excluded_types' => ['html', 'txt', 'svg', 'css', 'js'],
+            'excluded_types'  => ['html', 'txt', 'svg', 'css', 'js'],
         ]);
 
         //Register template functions (allows core functions to be overridden)
@@ -53,7 +53,7 @@ class ComPagesTemplateDefault extends KTemplate
         {
             //Locate the template
             if(!$file = $this->getObject('template.locator.factory')->locate($url)) {
-                throw new RuntimeException(sprintf('Cannot find layout: "%s"', $url));
+                throw new RuntimeException(sprintf('Cannot find %s: "%s"', $scheme, $url));
             }
 
             //Load the template
@@ -80,8 +80,6 @@ class ComPagesTemplateDefault extends KTemplate
 
             if(!in_array($this->_type, $this->_excluded_types))
             {
-                //unset($this->_functions['import']); //prevent conflict
-
                 //Create the template engine
                 $config = array(
                     'template'  => $this,
