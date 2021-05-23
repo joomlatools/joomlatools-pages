@@ -20,16 +20,16 @@ class ComPagesObjectConfigFrontmatter extends KObjectConfigYaml
         //Store the filename
         $this->__filename = $filename;
 
-        if(isset(static::$__files[$filename]))
+        if(isset(self::$__files[$filename]))
         {
-            $result = static::$__files[$filename];
+            $result = self::$__files[$filename];
 
             $this->__content = $result->getContent();
             $this->__hash    = $result->getHash();
 
             $this->merge($result);
         }
-        else static::$__files[$filename] = parent::fromFile($filename);
+        else self::$__files[$filename] = parent::fromFile($filename);
 
         return $object ? clone $this : $this->toArray();
     }
