@@ -9,6 +9,8 @@
 
 class ComPagesObjectConfigFrontmatter extends KObjectConfigYaml
 {
+    private static $__files = array();
+
     private $__content  = '';
     private $__filename = '';
     private $__hash     = '';
@@ -18,7 +20,18 @@ class ComPagesObjectConfigFrontmatter extends KObjectConfigYaml
         //Store the filename
         $this->__filename = $filename;
 
-        return parent::fromFile($filename, $object);
+        if(isset(static::$__files[$filename]))
+        {
+            $result = static::$__files[$filename];
+
+            $this->__content = $result->getContent();
+            $this->__hash    = $result->getHash();
+
+            $this->merge($result);
+        }
+        else static::$__files[$filename] = parent::fromFile($filename);
+
+        return $object ? clone $this : $this->toArray();
     }
 
     public function fromString($string, $object = true)
