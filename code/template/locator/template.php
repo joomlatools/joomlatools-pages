@@ -85,6 +85,33 @@ class ComPagesTemplateLocatorTemplate extends KTemplateLocatorFile
         return $result;
     }
 
+    public function normalise($url)
+    {
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+        $path   = str_replace(array('/', '\\', $scheme.'://', $scheme.':'), DIRECTORY_SEPARATOR, $url);
+
+        $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
+
+        $absolutes = array();
+        foreach ($parts as $part)
+        {
+            if ('.' == $part) {
+                continue;
+            }
+
+            if ('..' == $part) {
+                array_pop($absolutes);
+            } else {
+                $absolutes[] = $part;
+            }
+        }
+
+        $path = implode(DIRECTORY_SEPARATOR, $absolutes);
+        $url  = $scheme ? $scheme.':'.$path : $path;
+
+        return $url;
+    }
+
     public function realPath($file)
     {
         return KTemplateLocatorAbstract::realPath($file);
