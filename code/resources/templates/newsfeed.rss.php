@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-defined('KOOWA') or die; ?>
+?>
 
 <rss version="2.0"
      xmlns:atom="http://www.w3.org/2005/Atom"

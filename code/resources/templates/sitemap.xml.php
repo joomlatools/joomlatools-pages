@@ -6,8 +6,7 @@
  * @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl.html>
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
-
-defined('KOOWA') or die; ?>
+?>
 
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
