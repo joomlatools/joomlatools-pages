@@ -7,26 +7,11 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesTemplateEngineKoowa extends KTemplateEngineKoowa
+class ComPagesTemplateEngineMarkdown extends KTemplateEngineMarkdown
 {
     protected function _compile($source)
     {
         $source = preg_replace('#\s*---(.*|[\s\S]*)\s*---#siU', '', $source);
         return parent::_compile($source);
-    }
-
-    protected function _import($url, array $data = array())
-    {
-        if (!parse_url($url, PHP_URL_SCHEME))
-        {
-            if($base = end($this->_stack))
-            {
-                if(parse_url($base, PHP_URL_SCHEME) !== 'template') {
-                    $url = 'template:'.trim($url, '/');
-                }
-            }
-        }
-
-        return parent::_import($url, $data);
     }
 }

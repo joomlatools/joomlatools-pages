@@ -28,8 +28,8 @@ return [
         'model.factory' => 'com:pages.model.factory',
 
         //Aliases for framework
-        'lib:template.engine.koowa' => 'com:pages.template.engine.koowa',
-        'lib:template.engine.twig ' => 'com:pages.template.engine.twig',
+        'lib:template.engine.koowa'    => 'com:pages.template.engine.koowa',
+        'lib:template.engine.markdown' => 'com:pages.template.engine.markdown',
 
         //Aliases for com:koowa
         'com:koowa.template.filter.asset' => 'com:pages.template.filter.asset',
