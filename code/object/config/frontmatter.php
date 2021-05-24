@@ -11,9 +11,10 @@ class ComPagesObjectConfigFrontmatter extends KObjectConfigYaml
 {
     private static $__files = array();
 
-    private $__content  = '';
-    private $__filename = '';
-    private $__hash     = '';
+    private $__content    = '';
+    private $__filename   = '';
+    private $__hash       = '';
+    private $__attributes = [];
 
     public function fromFile($filename, $object = true)
     {
@@ -24,8 +25,11 @@ class ComPagesObjectConfigFrontmatter extends KObjectConfigYaml
         {
             $result = self::$__files[$filename];
 
-            $this->__content = $result->getContent();
-            $this->__hash    = $result->getHash();
+            $attributes = $result->getAttributes(true);
+
+            $this->__content    = $result->getContent();
+            $this->__hash       = $result->getHash();
+            $this->__attributes = array_combine($attributes, $attributes);
 
             $this->merge($result);
         }
@@ -44,8 +48,18 @@ class ComPagesObjectConfigFrontmatter extends KObjectConfigYaml
 
         if (strpos($string, "---") !== false)
         {
-            if(preg_match('#^\s*---(.*|[\s\S]*)\s*---#siU', $string, $matches))
+            if(preg_match('#\s*---(.*|[\s\S]*)\s*---#siU', $string, $matches))
             {
+                //Get attributes
+                if(preg_match_all('#(@(.*))\s*:#siU', $matches[1], $attributes))
+                {
+                    $this->__attributes = array_combine($attributes[2], $attributes[2]);
+
+                    foreach($attributes[0] as $key => $value) {
+                        $matches[1] = str_replace($value, $attributes[2][$key].':', $matches[1]);
+                    }
+                }
+
                 $data = parent::fromString($matches[1], false);
 
                 //Handle dynamic data
@@ -123,5 +137,30 @@ class ComPagesObjectConfigFrontmatter extends KObjectConfigYaml
     public function getHash()
     {
         return $this->__hash;
+    }
+
+    public function getProperties($keys = false)
+    {
+        $properties = array_diff_key($this->toArray(), $this->__attributes);
+
+        if(!$keys) {
+            $result = new KObjectConfig($properties);
+        } else {
+            $result = array_keys($properties);
+        }
+
+        return $result;
+    }
+
+    public function getAttributes($keys = false)
+    {
+        if(!$keys)
+        {
+            $attributes = array_intersect_key($this->toArray(), $this->__attributes);
+            $result = new KObjectConfig($attributes);
+        }
+        else $result = array_keys($this->__attributes);
+
+        return $result;
     }
 }
