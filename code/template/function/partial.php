@@ -14,5 +14,5 @@ return function($url, $data = array())
         $url = 'template:/partials/'.trim($url, '/');
     }
 
-    return  $this->loadFile($url)->render($data);
+    return  $this->loadPartial($url)->render($data);
 };

@@ -7,12 +7,11 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesTemplateDefault extends KTemplate
+class ComPagesTemplate extends KTemplate
 {
-    protected $_layout;
-    protected $_type;
-
-    private $__helpers = array();
+    private $__template = null;
+    private $__helpers  = array();
+    private $__layout   = null;
 
     public function __construct(KObjectConfig $config)
     {
@@ -45,82 +44,74 @@ class ComPagesTemplateDefault extends KTemplate
         parent::_initialize($config);
     }
 
-    public function loadFile($url)
+    public function loadLayout($url)
     {
-        $scheme = parse_url($url, PHP_URL_SCHEME);
-
-        if($scheme == 'page' || $scheme == 'template')
+        //Locate the template
+        if(!$file = $this->getObject('template.locator.factory')->locate($url))
         {
-            //Locate the template
-            if(!$file = $this->getObject('template.locator.factory')->locate($url)) {
-                throw new RuntimeException(sprintf('Cannot find %s: "%s"', $scheme, $url));
-            }
-
-            //Load the template
-            $template = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
-
-            //Set the parent layout
-            if($template->has('layout'))
-            {
-                if(is_string($template->layout)) {
-                    $layout = ['path' => $template->layout];
-                } else {
-                    $layout = $template->layout;
-                }
-
-                $this->_layout = new ComPagesObjectConfig($layout);
-            }
-            else $this->_layout = false;
-
-            //Store the data and remove the layout
-            $this->_data = KObjectConfig::unbox($template->remove('layout'));
-
-            //Store the type
-            $this->_type = pathinfo($file, PATHINFO_EXTENSION);
-
-            if(!in_array($this->_type, $this->_excluded_types))
-            {
-                //Create the template engine
-                $config = array(
-                    'template'  => $this,
-                    'functions' => $this->_functions
-                );
-
-                $this->_source = $this->getObject('template.engine.factory')->createEngine($this->_type, $config);
-
-                if($cache = $this->_source->isCached(crc32($url)))
-                {
-                    if($this->_source->getConfig()->cache_reload && filemtime($cache) < filemtime($file)) {
-                        unlink($cache);
-                    }
-                }
-
-                $this->_source->loadString($template->getContent(),  $url);
-            }
-            else $this->_source = $template->getContent();
+            $scheme = parse_url($url, PHP_URL_SCHEME);
+            throw new RuntimeException(sprintf('Cannot find %s: "%s"', $scheme, $url));
         }
-        else $result = parent::loadFile($url);
 
-        return $this;
+        //Load the template
+        $template = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
+
+        //Store the layout
+        if($template->has('layout'))
+        {
+            if (is_string($template->layout)) {
+                $layout = ['path' => $template->layout];
+            } else {
+                $layout = $template->layout;
+            }
+
+            $this->__layout = new ComPagesObjectConfig($layout);
+        }
+        else $this->__layout = false;
+
+        //Store the template
+        $this->__template = $template;
+
+        return parent::loadFile($url);
+    }
+
+    public function loadPartial($url)
+    {
+        return parent::loadFile($url);
     }
 
     public function getLayout()
     {
-        return $this->_layout;
+        return $this->__layout;
+    }
+
+    public function getData()
+    {
+        //Only return properties (not attributes)
+        return KObjectConfig::unbox($this->__template->getProperties());
+    }
+
+    public function get($property, $default = null)
+    {
+        //Allow to access all template variables
+        return $this->__template->get($property, $default);
     }
 
     public function render(array $data = array())
     {
-        unset($data['layout']);
-
         //$display_errors = ini_get('display_errors');
         //ini_set('display_errors', false);
 
         $result = parent::render($data);
 
-        //Exception for html files
-        if($this->_type == 'html') {
-            $result = $this->filter();
+        //Filter html files
+        if($this->__template)
+        {
+            $type = pathinfo($this->__template->getFilename(), PATHINFO_EXTENSION);
+
+            if($type == 'html') {
+                $result = $this->filter();
+            }
         }
 
         //ini_set('display_errors', $display_errors);
