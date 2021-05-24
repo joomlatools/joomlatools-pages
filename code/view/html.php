@@ -16,6 +16,7 @@ class ComPagesViewHtml extends ComKoowaViewHtml
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
+            'template'    => 'com:pages.template',
             'behaviors'   => ['layoutable'],
             'auto_fetch'  => false,
             'template_filters'   => ['asset', 'meta'],
@@ -128,7 +129,6 @@ class ComPagesViewHtml extends ComKoowaViewHtml
             }
         }
 
-
         $template = clone $this->getTemplate()->setParameters($context->parameters);
 
         //Add page filters
@@ -137,10 +137,10 @@ class ComPagesViewHtml extends ComKoowaViewHtml
         }
 
         //Load the page
-        $template->loadFile('page:'.$this->getPage()->path);
+        $template->loadLayout('page:'.$this->getPage()->path);
 
         //Render page
-        $content = $template->render(KObjectConfig::unbox($context->data->append($template->getData())));
+        $content = $template->render($template->getData());
 
         //Set the rendered page in the view to allow for view decoration
         $this->setContent($content);
