@@ -28,6 +28,10 @@
     <script type="module">
         document.documentElement.classList.remove('no-js');
         document.documentElement.classList.add('js');
+
+        if ('connection' in navigator && navigator.connection.saveData === true) {
+            document.documentElement.classList.add('save-data');
+        }
     </script>
 
 </head>
