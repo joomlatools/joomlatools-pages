@@ -13,13 +13,14 @@ class ComPagesPageEntity extends ComPagesModelEntityPage implements ComPagesPage
     {
         $config->append([
             'data' => [
+                //Attributes
                 'redirect'    => '',
                 'process'     => [
                     'filters' => [],
                 ],
-                'layout'      => array(),
+                'layout'     => array(),
                 'collection' => null,
-                'form'        => null,
+                'form'       => null,
             ],
         ]);
 
@@ -50,16 +51,15 @@ class ComPagesPageEntity extends ComPagesModelEntityPage implements ComPagesPage
 
     public function setPropertyLayout($value)
     {
-        if($value) {
+       if(is_array($value)) {
             $value = new ComPagesObjectConfig($value);
         }
-
         return $value;
     }
 
     public function setPropertyCollection($value)
     {
-        if($value) {
+        if(is_array($value)) {
             $value = new ComPagesObjectConfig($value);
         }
 
@@ -70,7 +70,9 @@ class ComPagesPageEntity extends ComPagesModelEntityPage implements ComPagesPage
     {
         if($value)
         {
-            $value = new ComPagesObjectConfig($value);
+            if(is_array($value)) {
+                $value = new ComPagesObjectConfig($value);
+            }
 
             $name = $value->honeypot ?? 'name';
 
@@ -87,7 +89,7 @@ class ComPagesPageEntity extends ComPagesModelEntityPage implements ComPagesPage
 
     public function setPropertyProcess($value)
     {
-        if($value) {
+        if(is_array($value)) {
             $value = new ComPagesObjectConfig($value);
         }
 
@@ -96,40 +98,22 @@ class ComPagesPageEntity extends ComPagesModelEntityPage implements ComPagesPage
 
     public function getType()
     {
-        $type = 'page';
-
-        if($this->isCollection()) {
-            $type = 'collection';
-        }
-
-        if($this->isForm()) {
-            $type = 'form';
-        }
-
-        if($this->isDecorator()) {
-            $type = 'decorator';
-        }
-
-        if($this->isRedirect()) {
-            $type = 'redirect';
-        }
-
-        return $type;
+        return $this->type;
     }
 
     public function isRedirect()
     {
-        return $this->redirect ? $this->redirect : false;
-    }
-
-    public function isCollection()
-    {
-        return $this->collection ? $this->collection : false;
+        return $this->getType() == 'redirect';
     }
 
     public function isForm()
     {
-        return $this->form ? $this->form : false;
+        return $this->getType() == 'form' ?  $this->form : false;
+    }
+
+    public function isCollection()
+    {
+        return $this->getType() == 'collection' ? $this->collection : false;
     }
 
     public function isDecorator()

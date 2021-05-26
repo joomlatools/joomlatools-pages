@@ -88,7 +88,7 @@ class ComPagesTemplate extends KTemplate
     public function getData()
     {
         //Only return properties (not attributes)
-        return KObjectConfig::unbox($this->__template->getProperties());
+        return $this->__template->getProperties(false);
     }
 
     public function get($property, $default = null)

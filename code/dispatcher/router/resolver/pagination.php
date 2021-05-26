@@ -22,8 +22,8 @@ class ComPagesDispatcherRouterResolverPagination extends ComPagesDispatcherRoute
         //Get the state
         if($page = $route->getPage())
         {
-            if(($collection = $page->isCollection()) && isset($collection['state'])) {
-                $state = $collection['state'];
+            if(($collection = $page->isCollection()) && $collection->has('state')) {
+                $state = $collection->get('state')->toArray();
             }
         }
 
@@ -121,8 +121,8 @@ class ComPagesDispatcherRouterResolverPagination extends ComPagesDispatcherRoute
 
         if($page = $route->getPage())
         {
-            if(($collection = $page->isCollection()) && isset($collection['state'])) {
-                $state = $collection['state'];
+            if(($collection = $page->isCollection()) && $collection->has('state')) {
+                $state = $collection->get('state')->toArray();
             }
         }
 

@@ -140,8 +140,8 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
             if($collection = $page->isCollection())
             {
-                if(isset($collection['format'])) {
-                    $formats = array_merge($formats, (array) $collection['format']);
+                if($collection->has('format')) {
+                    $formats = array_merge($formats, (array) $collection->get('format'));
                 }
             }
         }
@@ -214,12 +214,12 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
     protected function _actionGet(KDispatcherContextInterface $context)
     {
-        if($collection =  $context->page->isCollection())
+        if($collection = $context->page->isCollection())
         {
-            if(isset($collection['state']) && isset($collection['state']['limit']))
+            if($collection->has('state/limit'))
             {
-                $this->getConfig()->limit->default  = $collection['state']['limit'];
-                $this->getConfig()->limit->max      = $collection['state']['limit'];
+                $this->getConfig()->limit->default  = $collection->get('state/limit');
+                $this->getConfig()->limit->max      = $collection->get('state/limit');
             }
         }
 

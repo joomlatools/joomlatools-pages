@@ -66,9 +66,14 @@ class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesMo
         return $result;
     }
 
+    public function set($name, $value, $modified = true)
+    {
+        return $this->setProperty($name, $value, $modified);
+    }
+
     public function has($name)
     {
-        return parent::hasProperty($name);
+        return $this->hasProperty($name);
     }
 
     public function save()
