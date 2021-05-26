@@ -74,7 +74,7 @@ class ComPagesViewXml extends KViewTemplate
 
         //Render page
         $content  = '<?xml version="1.0" encoding="utf-8" ?>'."\n";
-        $content = $template->render($template->getData());
+        $content = $template->render();
 
         //Set the rendered page in the view to allow for view decoration
         $this->setContent($content);
