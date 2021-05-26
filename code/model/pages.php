@@ -17,10 +17,7 @@ class ComPagesModelPages extends ComPagesModelCollection
 
         $this->getState()
             ->insertComposite('slug', 'cmd', array('folder'), '')
-            ->insertInternal('folder', 'url')
-            ->insertInternal('recurse', 'cmd')
-            ->insertInternal('level', 'int', 0)
-            ->insertInternal('collection', 'boolean');
+            ->insertInternal('folder', 'url');
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -47,22 +44,19 @@ class ComPagesModelPages extends ComPagesModelCollection
             {
                 $registry = $this->getObject('page.registry');
 
-                if ($state->isUnique())
-                {
-                    if($page = $registry->getPage($folder.'/'.$this->getState()->slug)) {
-                        $this->__data = array($page->toArray());
-                    }
-                }
-                else
+                if (!$state->isUnique())
                 {
                     if(!$state->recurse) {
-                        $mode = ComPagesPageRegistry::PAGES_ONLY;
+                        $mode = ComPagesPageRegistry::PAGES_LIST;
                     } else {
                         $mode = ComPagesPageRegistry::PAGES_TREE;
                     }
 
-                    $this->__data = array_values($registry->getPages($folder, $mode, $state->level - 1));
+                    $data = $registry->getPages($folder, $mode, (int) $state->level - 1);
                 }
+                else $data = $registry->getPages($folder.'/'.$this->getState()->slug, ComPagesPageRegistry::PAGES_ONLY);
+
+                $this->__data = array_values($data);
             }
         }
 
@@ -72,23 +66,6 @@ class ComPagesModelPages extends ComPagesModelCollection
     public function filterItem(&$page, KModelStateInterface $state)
     {
         $result = true;
-
-        //Un-routable
-        if($page['route'] === false) {
-            $result = false;
-        }
-
-        //Collection
-        if($result && !is_null($state->collection))
-        {
-            if($state->collection === true) {
-                $result = isset($page['collection']) && $page['collection'] !== false;
-            }
-
-            if($state->collection === false) {
-                $result = !isset($page['collection']) || $page['collection'] === false;
-            }
-        }
 
         //Permissions
         if($result) {
@@ -102,22 +79,6 @@ class ComPagesModelPages extends ComPagesModelCollection
     {
         $data = array_column($context->data, 'hash', 'path');
         return hash('crc32b', serialize($data));
-    }
-
-
-    protected function _actionFetch(KModelContext $context)
-    {
-        foreach($context->data as $page)
-        {
-            //Unset page attributes
-            unset($page['process']);
-            unset($page['collection']);
-            unset($page['form']);
-            unset($page['layout']);
-            unset($page['redirect']);
-        }
-
-        return parent::_actionFetch($context);
     }
 
     protected function _actionReset(KModelContext $context)

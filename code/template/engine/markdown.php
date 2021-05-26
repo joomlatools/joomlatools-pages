@@ -7,12 +7,11 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-return function($url, $data = array())
+class ComPagesTemplateEngineMarkdown extends KTemplateEngineMarkdown
 {
-    //Qualify the template
-    if(!parse_url($url, PHP_URL_SCHEME)) {
-        $url = 'template:/partials/'.trim($url, '/');
+    protected function _compile($source)
+    {
+        $source = preg_replace('#\s*---(.*|[\s\S]*)\s*---#siU', '', $source);
+        return parent::_compile($source);
     }
-
-    return  $this->loadPartial($url)->render($data);
-};
+}

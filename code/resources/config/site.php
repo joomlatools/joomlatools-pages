@@ -51,7 +51,7 @@ return [
         'com:pages.model.cache' => [
             'cache_path' => $config['http_cache_path'],
         ],
-        'lib:template.engine.markdown' => [
+        'com:pages.template.engine.markdown' => [
             'compiler' => function($text) {
                 //See: https://michelf.ca/projects/php-markdown/extra/
                 return \Michelf\MarkdownExtra::defaultTransform($text);

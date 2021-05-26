@@ -14,6 +14,7 @@ class ComPagesViewXml extends KViewTemplate
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
+            'template'   => 'com:pages.template',
             'behaviors'  => ['layoutable'],
             'auto_fetch' => false,
             'template_functions' => [
@@ -69,11 +70,11 @@ class ComPagesViewXml extends KViewTemplate
         }
 
         //Load the page
-        $template->loadFile('page:'.$this->getPage()->path);
+        $template->loadLayout('page:'.$this->getPage()->path);
 
         //Render page
         $content  = '<?xml version="1.0" encoding="utf-8" ?>'."\n";
-        $content = $template->render(KObjectConfig::unbox($context->data->append($template->getData())));
+        $content = $template->render();
 
         //Set the rendered page in the view to allow for view decoration
         $this->setContent($content);

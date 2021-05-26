@@ -37,8 +37,8 @@ class ComPagesDispatcherRouterResolverState extends ComPagesDispatcherRouterReso
         if($page = $route->getPage())
         {
             //Remove any hardcoded states from the generated route
-            if(($collection = $page->isCollection()) && isset($collection['state'])) {
-                $route->query = array_diff_key($route->query, $collection['state']);
+            if(($collection = $page->isCollection()) && $collection->has('state')) {
+                $route->query = array_diff_key($route->query, $collection->get('state')->toArray());
             }
         }
     }

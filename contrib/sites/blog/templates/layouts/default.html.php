@@ -1,6 +1,6 @@
 ---
-layout: index
-process:
+@layout: index
+@process:
     prefetch: .navigation
 ---
 <!-- header -->

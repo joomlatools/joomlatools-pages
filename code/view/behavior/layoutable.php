@@ -44,10 +44,19 @@ class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
                     }
                 }
 
-                //Append the template layout data
+                //Append the layout properties
                 //
                 //Do not overwrite existing data, only add it not defined yet
-                $context->subject->getLayout()->append($template->remove('layout'));
+                $context->subject->getLayout()->append($template->getProperties());
+
+                //Append the layout process (excluding the filters)
+                //
+                //Do not overwrite existing data, only add it not defined yet
+                if($process =  $template->get('process'))
+                {
+                    $process = clone $process;
+                    $context->subject->getPage()->process->append($process->remove('filters'));
+                }
 
                 if($parent) {
                     $mergeLayout($context, $parent);
@@ -57,15 +66,6 @@ class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
 
             Closure::bind($mergeLayout, $this, get_class());
             $mergeLayout($context, $layout->path);
-
-            //Merge the process (excluding the filters)
-            if($process =  $context->subject->getLayout()->get('process'))
-            {
-                $process = clone $process;
-
-                $context->subject->getPage()->process->append($process->remove('filters'));
-                //$context->subject->getLayout()->remove('process');
-            }
         }
     }
 
@@ -84,7 +84,7 @@ class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
                 }
 
                 //Load layout
-                $template->loadFile($layout->path);
+                $template->loadLayout($layout->path);
 
                 //Parse and disable filters
                 if($process = $template->get('process'))
@@ -121,10 +121,11 @@ class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
                 //Merge the page layout data
                 //
                 //Allow the layout data to be modified during template rendering
-                $context->data->merge($context->subject->getLayout());
+                //$context->data->merge($context->subject->getLayout());
 
                 //Render the template
-                $this->setContent($template->render(KObjectConfig::unbox($context->data)));
+                $data = $context->subject->getLayout();
+                $this->setContent($template->render(KObjectConfig::unbox($data)));
 
                 //Handle recursive layout
                 if($parent = $template->getLayout())

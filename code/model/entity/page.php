@@ -127,40 +127,36 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
 
     public function setPropertyMetadata($metadata)
     {
-        if(!$metadata instanceof ComPagesObjectConfig)
+        $metadata = new ComPagesObjectConfig($metadata);
+
+        if(!isset($metadata->description) && $this->summary) {
+            $metadata->set('description', $this->summary);
+        }
+        if($this->image && $this->image->url) {
+            $metadata->set('og:image', $this->image->url);
+        }
+
+        //Type and image are required. If they are not set remove any opengraph properties
+        if(!empty($metadata->get('og:type')) && !empty($metadata->get('og:image')))
         {
-            $metadata = new ComPagesObjectConfig($metadata);
-
-            if(!isset($metadata->description) && $this->summary) {
-                $metadata->set('description', $this->summary);
+            if($this->title) {
+                $metadata->set('og:title', $this->title);
             }
 
-            if($this->image && $this->image->url) {
-                $metadata->set('og:image', $this->image->url);
+            if($this->summary) {
+                $metadata->set('og:description', $this->summary);
             }
 
-            //Type and image are required. If they are not set remove any opengraph properties
-            if(!empty($metadata->get('og:type')) && !empty($metadata->get('og:image')))
+            if($this->language) {
+                $metadata->set('og:locale', $this->language);
+            }
+        }
+        else
+        {
+            foreach($metadata as $name => $value)
             {
-                if($this->title) {
-                    $metadata->set('og:title', $this->title);
-                }
-
-                if($this->summary) {
-                    $metadata->set('og:description', $this->summary);
-                }
-
-                if($this->language) {
-                    $metadata->set('og:locale', $this->language);
-                }
-            }
-            else
-            {
-                foreach($metadata as $name => $value)
-                {
-                    if(strpos($name, 'og:') === 0 || strpos($name, 'twitter:') === 0) {
-                        $metadata->remove($name);
-                    }
+                if(strpos($name, 'og:') === 0 || strpos($name, 'twitter:') === 0) {
+                    $metadata->remove($name);
                 }
             }
         }
@@ -180,35 +176,6 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
     public function setPropertyAccess($value)
     {
         return new ComPagesObjectConfig($value);
-    }
-
-    public function setPropertyProcess($value)
-    {
-        return new ComPagesObjectConfig($value);
-    }
-
-    public function setPropertyCollection($value)
-    {
-        return new ComPagesObjectConfig($value);
-    }
-
-    public function setPropertyForm($value)
-    {
-        if($value)
-        {
-            $value = new ComPagesObjectConfig($value);
-
-            $name = $value->honeypot ?? 'name';
-
-            if($value->schema->has($name))
-            {
-                $hash = $this->hash;
-                $value->honeypot = sprintf('%s_%s', $name, $hash);
-            }
-            else $value->honeypot = $name;
-        }
-
-        return $value;
     }
 
     public function setPropertyDate($value)

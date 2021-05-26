@@ -22,6 +22,18 @@ class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
         parent::_initialize($config);
     }
 
+    public function onMixin(KObjectMixable $mixer)
+    {
+        parent::onMixin($mixer);
+
+        if($mixer instanceof ComPagesModelInterface)
+        {
+            $mixer->getState()
+                ->insertInternal('recurse', 'cmd')
+                ->insertInternal('level', 'int');
+        }
+    }
+
     public function hasChildren()
     {
         $result = false;
@@ -66,7 +78,7 @@ class ComPagesModelBehaviorRecursable extends KModelBehaviorAbstract
     {
         $state = $context->state;
 
-        if (!$state->isUnique() && $state->recurse && ($state->level == 0 || $state->level > 1))
+        if (!$state->isUnique() && $state->recurse && ((int) $state->level == 0 || $state->level > 1))
         {
             $entities = clone $context->entity;
             $key      = $this->getConfig()->key ?? $context->getIdentityKey();

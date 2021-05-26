@@ -9,6 +9,12 @@
 
 class ComPagesTemplateEngineKoowa extends KTemplateEngineKoowa
 {
+    protected function _compile($source)
+    {
+        $source = preg_replace('#\s*---(.*|[\s\S]*)\s*---#siU', '', $source);
+        return parent::_compile($source);
+    }
+
     protected function _import($url, array $data = array())
     {
         if (!parse_url($url, PHP_URL_SCHEME))

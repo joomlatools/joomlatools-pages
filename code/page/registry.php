@@ -10,7 +10,8 @@
 class ComPagesPageRegistry extends KObject implements KObjectSingleton
 {
     const PAGES_TREE = \RecursiveIteratorIterator::SELF_FIRST;
-    const PAGES_ONLY = \RecursiveIteratorIterator::CHILD_FIRST;
+    const PAGES_LIST = \RecursiveIteratorIterator::CHILD_FIRST;
+    const PAGES_ONLY = \RecursiveIteratorIterator::LEAVES_ONLY;
 
     private $__locator = null;
 
@@ -19,7 +20,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     private $__collections = array();
     private $__redirects   = array();
     private $__hashes      = array();
-    private $__entities    = array();
 
     public function __construct(KObjectConfig $config)
     {
@@ -48,6 +48,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
             'collections' => array('pages' => ['model' => 'com:pages.model.pages']),
             'redirects'   => array(),
             'properties'  => array(),
+            'types'       => ['form', 'collection', 'redirect']
         ]);
 
         parent::_initialize($config);
@@ -160,49 +161,74 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $this->__redirects;
     }
 
-    public function getPages($path = '', $mode = self::PAGES_ONLY, $depth = -1)
+    public function getPages($path = '', $mode = self::PAGES_LIST, $depth = -1)
     {
         $result = array();
-        $files  = $this->__data['files'];
 
-        if($path = trim($path, '.'))
+        //Get a list of pages
+        if($mode != self::PAGES_ONLY)
         {
-            $segments = array();
-            foreach(explode('/', $path) as $segment)
+            $files  = $this->__data['files'];
+
+            if($path = trim($path, '.'))
             {
-                $segments[] = $segment;
-                if(!isset($files[implode('/', $segments)]))
+                $segments = array();
+                foreach(explode('/', $path) as $segment)
                 {
-                    $files = false;
-                    break;
+                    $segments[] = $segment;
+                    if(!isset($files[implode('/', $segments)]))
+                    {
+                        $files = false;
+                        break;
+                    }
+                    else $files = $files[implode('/', $segments)];
                 }
-                else $files = $files[implode('/', $segments)];
             }
-        }
 
-        if(is_array($files))
-        {
-            $iterator = new RecursiveArrayIterator($files);
-            $iterator = new RecursiveIteratorIterator($iterator, $mode);
-
-            //Set the max dept, -1 for full depth
-            $iterator->setMaxDepth($depth);
-
-            foreach ($iterator as $page => $file)
+            if(is_array($files))
             {
-                if(!is_string($file))
+                $iterator = new RecursiveArrayIterator($files);
+                $iterator = new RecursiveIteratorIterator($iterator, $mode);
+
+                //Set the max dept, -1 for full depth
+                $iterator->setMaxDepth($depth);
+
+                foreach ($iterator as $page => $file)
                 {
-                    //Do not include a directory without an index file (no existing page)
-                    if(!$file = $this->getLocator()->locate('page:'. $page)) {
-                        continue;
+                    if(!is_string($file))
+                    {
+                        //Do not include a directory without an index file (no existing page)
+                        if(!$file = $this->getLocator()->locate('page:'. $page)) {
+                            continue;
+                        }
+                    }
+
+                    //Get the relative file path
+                    $basedir = $this->getLocator()->getBasePath();
+                    $file    = trim(str_replace($basedir, '', $file), '/');
+
+                    if(isset($this->__data['routes'][$page])) {
+                        $result[$page] = $this->__data['pages'][$file]['properties'];
                     }
                 }
+            }
+        }
+        //Get a specific page by path
+        else
+        {
+            $path = ltrim($path, './');
 
+            if ($file = $this->getLocator()->locate('page:' . $path))
+            {
                 //Get the relative file path
                 $basedir = $this->getLocator()->getBasePath();
                 $file    = trim(str_replace($basedir, '', $file), '/');
 
-                $result[$page] = $this->__data['pages'][$file];
+                //Only include routable pages
+                if(isset($this->__data['routes'][$path])) {
+                    $result[$path] = $this->__data['pages'][$file]['properties'];
+                }
+
             }
         }
 
@@ -224,7 +250,8 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 $file    = trim(str_replace($basedir, '', $file), '/');
 
                 //Load the page
-                $page = new ComPagesPageObject($this->__data['pages'][$file]);
+                $options = $this->__data['pages'][$file]['properties'] + $this->__data['pages'][$file]['attributes'];
+                $page = $this->getObject('com:pages.page.entity', ['data' => $options]);
 
                 //Get the parent
                 $parent_path = trim(dirname($page->path), '.');
@@ -277,7 +304,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
         if($render)
         {
-            $template = $this->getObject('com:pages.template.default');
+            $template = $this->getObject('lib:template');
 
             //Load and render the page
             if($template->loadFile('page:'.$path))
@@ -297,22 +324,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         }
 
         return $content;
-    }
-
-    public function getPageEntity($path)
-    {
-        $entity = null;
-
-        if($page = $this->getPage($path))
-        {
-            if(!isset($this->__entities[$path])) {
-                $this->__entities[$path] = $this->getObject('com:pages.page.entity', ['data' => $page]);
-            }
-
-            $entity = $this->__entities[$path];
-        }
-
-        return $entity;
     }
 
     public function getRoutes($path = null)
@@ -344,13 +355,13 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         if($page = $this->getPage($path))
         {
             //Groups
-            if(isset($page['access']['groups'])) {
-                $result = $this->getObject('user')->hasGroup($page['access']['groups']);
+            if($page->has('access/groups')) {
+                $result = $this->getObject('user')->hasGroup($page->get('access/groups'));
             }
 
             //Roles
-            if($result && isset($page['access']['roles'])) {
-                $result = $this->getObject('user')->hasRole($page['access']['roles']);
+            if($result && $page->has('access/roles')) {
+                $result = $this->getObject('user')->hasRole($page->get('access/roles'));
             }
         }
         else $result = false;
@@ -434,7 +445,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                      *
                                      * Load and initialise the page object
                                      */
-                                    $page = (new ComPagesPageObject())->fromFile($file);
+                                    $page = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
 
                                     //Append the page properties
                                     $page->append($this->getConfig()->properties);
@@ -450,16 +461,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
                                     //Set the hash
                                     $page->hash = $page->getHash();
-
-                                    //Set the process
-                                    if (!$page->process) {
-                                        $page->process = array();
-                                    }
-
-                                    //Set the route
-                                    if (!$page->route && $page->route !== false) {
-                                        $page->route = $path;
-                                    }
 
                                     //Set the date (if not set yet)
                                     if (!isset($page->date)) {
@@ -487,6 +488,17 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     }
                                     else $page->metadata['robots'] = (array) $page->metadata['robots'];
 
+                                    //Set page type
+                                    $page->type = 'page';
+                                    foreach($this->getConfig()->types as $type)
+                                    {
+                                        if($page->get($type, false) !== false)
+                                        {
+                                            $page->type = $type;
+                                            break;
+                                        }
+                                    }
+
                                     /**
                                      * Cache
                                      *
@@ -495,13 +507,12 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     $file = trim(str_replace($basedir, '', $file), '/');
 
                                     //Page
-                                    $pages[$file] = $page->toArray();
+                                    $pages[$file]['properties'] = $page->getProperties(false);
+                                    $pages[$file]['attributes'] = $page->getAttributes(false);
 
                                     //Route
-                                    if($page->route !== false)
-                                    {
-                                        $routes[$path] = (array) KObjectConfig::unbox($page->route);
-                                        unset($page->route);
+                                    if($page->route !== false) {
+                                        $routes[$path] = (array) KObjectConfig::unbox($page->route ?? $path);
                                     }
 
                                     //File (do not include index pages)
@@ -510,8 +521,8 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     }
 
                                     //Collection
-                                    if($collection = $page->isCollection()) {
-                                        $collections[$path] = KObjectConfig::unbox($collection);
+                                    if(isset($page->collection) && $page->collection !== false) {
+                                        $collections[$path] = KObjectConfig::unbox($page->collection);
                                     }
 
                                     //Redirects

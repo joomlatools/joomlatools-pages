@@ -20,7 +20,7 @@ class ComPagesDispatcherRouterRoutePage extends ComPagesDispatcherRouterRouteAbs
     public function getPage()
     {
         if(is_string($this->__page)) {
-            $this->__page = $this->getObject('page.registry')->getPageEntity($this->__page);
+            $this->__page = $this->getObject('page.registry')->getPage($this->__page);
         }
 
         return $this->__page;
@@ -32,8 +32,8 @@ class ComPagesDispatcherRouterRoutePage extends ComPagesDispatcherRouterRouteAbs
 
         if($page = $this->getPage())
         {
-            if(($collection = $page->isCollection()) && isset($collection['state'])) {
-                $state = $collection['state'];
+            if(($collection = $page->isCollection()) && $collection->has('state')) {
+                $state = $collection->get('state')->toArray();
             }
         }
 

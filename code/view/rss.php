@@ -9,15 +9,5 @@
 
 class ComPagesViewRss extends ComPagesViewXml
 {
-    protected function _initialize(KObjectConfig $config)
-    {
-        $config->append(array(
-            'data'     => array(
-                'update_period'    => 'daily',
-                'update_frequency' => 1
-            )
-        ));
 
-        parent::_initialize($config);
-    }
 }

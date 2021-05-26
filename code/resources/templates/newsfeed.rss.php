@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-defined('KOOWA') or die; ?>
+?>
 
 <rss version="2.0"
      xmlns:atom="http://www.w3.org/2005/Atom"
@@ -33,8 +33,8 @@ defined('KOOWA') or die; ?>
         <lastBuildDate><?= count(collection()) ? collection()->top()->date->format(DateTime::RSS) : '' ?></lastBuildDate>
         <atom:link href="<?=  url() ?>" rel="self" type="application/rss+xml"/>
         <language><?= language() ?></language>
-        <sy:updatePeriod><?= page()->get('update_period', $update_period) ?></sy:updatePeriod>
-        <sy:updateFrequency><?= page()->get('update_frequency', $update_frequency) ?></sy:updateFrequency>
+        <sy:updatePeriod><?= page()->get('update_period', $update_period ?? 'daily') ?></sy:updatePeriod>
+        <sy:updateFrequency><?= page()->get('update_frequency', $update_frequency ?? 1) ?></sy:updateFrequency>
 
         <?foreach(collection() as $item):?>
             <item>

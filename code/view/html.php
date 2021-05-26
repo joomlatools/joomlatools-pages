@@ -16,6 +16,7 @@ class ComPagesViewHtml extends ComKoowaViewHtml
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
+            'template'    => 'com:pages.template',
             'behaviors'   => ['layoutable'],
             'auto_fetch'  => false,
             'template_filters'   => ['asset', 'meta'],
@@ -75,27 +76,27 @@ class ComPagesViewHtml extends ComKoowaViewHtml
                 }
                 else $metadata = $page->metadata;
 
-                $metadata = KObjectConfig::unbox($metadata);
-
-                if(isset($metadata['og:type']) && $metadata['og:type'])
+                if($metadata->get('og:type', false))
                 {
-                    if (strpos($metadata['og:image'], 'http') === false)
+                    if (strpos($metadata->get('og:image'), 'http') === false)
                     {
-                        $this->getTemplate()->getFilter('asset')->filter($metadata['og:image']);
-                        $metadata['og:image'] = (string)$this->getUrl($metadata['og:image']);
+                        $url = $metadata->get('og:image');
+
+                        $this->getTemplate()->getFilter('asset')->filter($url);
+                        $metadata->set('og:image', (string)$this->getUrl($url));
                     }
 
-                    if (!$metadata['og:url']) {
-                        $metadata['og:url'] = (string)$this->getRoute($page);
+                    if (!$metadata->get('og:url')) {
+                        $metadata->set('og:url', (string)$this->getRoute($page));
                     }
 
-                    if (strpos($metadata['og:url'], 'http') === false) {
-                        $metadata['og:url'] = (string)$this->getUrl($metadata['og:url']);
+                    if (strpos($metadata->get('og:url'), 'http') === false) {
+                        $metadata->set('og:url', (string)$this->getUrl($metadata->get('og:url')));
                     }
                 }
             }
 
-            $this->__metadata = new ComPagesObjectConfig($metadata);
+            $this->__metadata = $metadata;
         }
 
         return $this->__metadata;
@@ -128,7 +129,6 @@ class ComPagesViewHtml extends ComKoowaViewHtml
             }
         }
 
-
         $template = clone $this->getTemplate()->setParameters($context->parameters);
 
         //Add page filters
@@ -137,10 +137,10 @@ class ComPagesViewHtml extends ComKoowaViewHtml
         }
 
         //Load the page
-        $template->loadFile('page:'.$this->getPage()->path);
+        $template->loadLayout('page:'.$this->getPage()->path);
 
         //Render page
-        $content = $template->render(KObjectConfig::unbox($context->data->append($template->getData())));
+        $content = $template->render();
 
         //Set the rendered page in the view to allow for view decoration
         $this->setContent($content);
