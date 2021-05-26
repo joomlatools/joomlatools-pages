@@ -16,8 +16,6 @@ class ExtJoomlaModelMenus extends ComPagesModelDatabase
         $this->getState()
             ->insertUnique('id', 'cmd')
             ->insertUnique('slug', 'cmd')
-            ->insertInternal('recurse', 'cmd')
-            ->insertInternal('level', 'int')
 
             ->insert('menutype', 'cmd')
             ->insert('published' , 'boolean')
