@@ -35,7 +35,7 @@ trait ComPagesPageTrait
 
             $result = $this->__page;
         }
-        else $result = $this->getObject('page.registry')->getPageEntity($path);
+        else $result = $this->getObject('page.registry')->getPage($path);
 
         return $result;
     }
