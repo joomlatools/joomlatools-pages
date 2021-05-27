@@ -11,7 +11,22 @@ class ComPagesTemplateEngineKoowa extends KTemplateEngineKoowa
 {
     protected function _compile($source)
     {
-        $source = preg_replace('#\s*---(.*|[\s\S]*)\s*---#siU', '', $source);
+        if($source)
+        {
+            $file = (new ComPagesObjectConfigFrontmatter())->fromString($source);
+            $data = $file->getProperties(false);
+
+            $source = '';
+
+            if($data)
+            {
+                $data = var_export($data, true);
+                $source = '<?php extract('.$data.',EXTR_SKIP) ?>'."\n";
+            }
+
+            $source .= $file->getContent();
+        }
+
         return parent::_compile($source);
     }
 
