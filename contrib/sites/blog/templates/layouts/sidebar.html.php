@@ -1,5 +1,5 @@
 ---
-@layout: default
+@layout: /default
 ---
 
 <div class="container max-w-4xl mx-auto md:flex items-start py-8 px-12 md:px-0">

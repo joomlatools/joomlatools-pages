@@ -1,5 +1,5 @@
 ---
-@layout: index
+@layout: /index
 @process:
     prefetch: .navigation
 ---
