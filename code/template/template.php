@@ -27,7 +27,7 @@ class ComPagesTemplate extends KTemplate
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'filters'         => ['partial'],
+            'filters'         => ['partial', 'block'],
             'cache'           => false,
             'cache_namespace' => 'pages',
             'excluded_types'  => ['html', 'txt', 'svg', 'css', 'js'],
