@@ -5,12 +5,12 @@ title: Homepage
 summary: Description for the homepage
 ---
 
-<ktml:module position="main-header">
+<ktml:block extend="main-header">
 <h1 class=" text-xl md:text-4xl pb-4"><?= $title ?></h1>
 <p class="leading-loose text-gray-dark">
     <?= $summary ?>
 </p>
-</ktml:module>
+</ktml:block>
 
 <!-- articles -->
 <div class="w-full md:pr-12 mb-12 prose">

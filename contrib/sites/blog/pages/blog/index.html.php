@@ -16,7 +16,7 @@ collection:
 
 <link href="<?= route('blog.rss') ?>" rel="alternate" type="application/rss+xml" title="<?= $title ?>"  />
 
-<ktml:module position="main-header">
+<ktml:block extend="main-header">
 <!-- title -->
 <h1 class=" text-xl md:text-4xl pb-4">
     <?= $title ?>
@@ -26,7 +26,7 @@ collection:
 	<?= $summary ?>
 </p>
 <!-- /title -->
-</ktml:module>
+</ktml:block>
 
 <!-- articles -->
 <div class="w-full md:pr-12 mb-12 prose">
