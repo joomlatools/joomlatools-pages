@@ -1,14 +1,11 @@
 <?php
 /**
- * Joomlatools Framework - https://www.joomlatools.com/developer/framework/
+ * Joomlatools Pages
  *
- * @copyright   Copyright (C) 2007 Johan Janssens and Timble CVBA. (http://www.timble.net)
+ * @copyright   Copyright (C) 2018 Johan Janssens and Timble CVBA. (http://www.timble.net)
  * @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl.html>
- * @link        https://github.com/joomlatools/joomlatools-framework for the canonical source repository
+ * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
-
-defined('KOOWA') or die;
-
 
 /**
  * Module Template Filter
@@ -35,11 +32,8 @@ defined('KOOWA') or die;
  * compliance.
  *
  * Example <ktml:module position="sidebar" name="menu" params="<?= json(['menutype' => 'mainmenu'], true); ?>">
- *
- * @author  Johan Janssens <https://github.com/johanjanssens>
- * @package Koowa\Component\Koowa\Template\Filter
  */
-class ComPagesTemplateFilterModule extends ComPagesTemplateFilterAbstract
+class ExtJoomlaTemplateFilterModule extends ComPagesTemplateFilterAbstract
 {
     /**
      * Initializes the options for the object
@@ -62,7 +56,7 @@ class ComPagesTemplateFilterModule extends ComPagesTemplateFilterAbstract
      * Find tags
      *
      * @param string $text Block of text to parse
-     * @return ComPagesTemplateFilterModule
+     * @return ExtJoomlaTemplateFilterModule
      */
     public function filter(&$text)
     {
@@ -123,7 +117,7 @@ class ComPagesTemplateFilterModule extends ComPagesTemplateFilterAbstract
                 $attributes = array_merge($attributes, $this->parseAttributes($matches[1][$key]));
 
                 //Skip unexisting modules
-                if(isset($attributes['name']) && ComPagesModuleHelper::hasModule($attributes['name'])) {
+                if(isset($attributes['name']) && ExtJoomlaTemplateFilterModuleHelper::hasModule($attributes['name'])) {
                     $this->_injectModule($attributes['name'], $attributes);
                 }
             }
@@ -152,7 +146,7 @@ class ComPagesTemplateFilterModule extends ComPagesTemplateFilterAbstract
             {
                 $position = $matches[1][$i];
                 $attribs  = $this->parseAttributes( $matches[2][$i] );
-                $modules  = &ComPagesModuleHelper::getModules($position);
+                $modules  = &ExtJoomlaTemplateFilterModuleHelper::getModules($position);
 
                 if(isset($attribs['condition']))
                 {
@@ -181,7 +175,7 @@ class ComPagesTemplateFilterModule extends ComPagesTemplateFilterAbstract
             {
                 $position = $matches[1][$i];
                 $attribs  = $this->parseAttributes( $matches[2][$i] );
-                $modules  = &ComPagesaModuleHelper::getModules($position);
+                $modules  = &ExtJoomlaTemplateFilterModuleHelper::getModules($position);
 
                 if(isset($attribs['condition']))
                 {
@@ -232,7 +226,7 @@ class ComPagesTemplateFilterModule extends ComPagesTemplateFilterAbstract
             }
 
             //Render the module
-            $content = ComPagesModuleHelper::renderModule($module, $attribs);
+            $content = ExtJoomlaTemplateFilterModuleHelper::renderModule($module, $attribs);
 
             //Prepend or append the module
             if(isset($module->attribs['prepend']) && $module->attribs['prepend']) {
@@ -263,7 +257,7 @@ class ComPagesTemplateFilterModule extends ComPagesTemplateFilterAbstract
             // Odd parts (blocks)
             $name = strtolower($words[$i]);
             if(!is_numeric($name)) {
-                $words[$i] = count(ComPagesModuleHelper::getModules($name));
+                $words[$i] = count(ExtJoomlaTemplateFilterModuleHelper::getModules($name));
             } else {
                 $words[$i] = $name;
             }
@@ -301,7 +295,7 @@ class ComPagesTemplateFilterModule extends ComPagesTemplateFilterAbstract
         $module->name      = $name;
         $module->module    = 'mod_'.$name;
 
-        $modules = &ComPagesModuleHelper::getModules(null);
+        $modules = &ExtJoomlaTemplateFilterModuleHelper::getModules(null);
 
         if($module->attribs['prepend']) {
             array_unshift($modules, $module);
@@ -311,72 +305,22 @@ class ComPagesTemplateFilterModule extends ComPagesTemplateFilterAbstract
     }
 }
 
-/**
- * Modules Helper
- *
- * This is a specialised modules helper which gives access to the Joomla modules by reference
-.*
- * @author  Johan Janssens <https://github.com/johanjanssens>
- * @package Koowa\Component\Koowa\Template\Filter
- */
-if(class_exists('JModuleHelper'))
+class ExtJoomlaTemplateFilterModuleHelper extends JModuleHelper
 {
-    class ComPagesModuleHelper extends JModuleHelper
+    public static function &getModules($position)
     {
-        public static function &getModules($position)
-        {
-            if($position) {
-                $modules =& JModuleHelper::getModules($position);
-            } else {
-                $modules =& JModuleHelper::_load();
-            }
-
-            return $modules;
+        if($position) {
+            $modules =& JModuleHelper::getModules($position);
+        } else {
+            $modules =& JModuleHelper::_load();
         }
 
-        public static function hasModule($name)
-        {
-            $path = JModuleHelper::getLayoutPath('mod_'.strtolower($name));
-            return file_exists($path);
-        }
+        return $modules;
     }
-}
-else
-{
-    class ComPagesModuleHelper
+
+    public static function hasModule($name)
     {
-        private static $__modules = array();
-
-        public static function &getModules($position)
-        {
-            $modules =& static::$__modules;
-
-            if($position)
-            {
-                $position = strtolower($position);
-
-                $result  = array();
-                $total   = count($modules);
-                for ($i = 0; $i < $total; $i++)
-                {
-                    if ($modules[$i]->position == $position) {
-                        $result[] = &$modules[$i];
-                    }
-                }
-            }
-            else $result =& static::$__modules;
-
-            return $result;
-        }
-
-        public static function hasModule($name)
-        {
-            return false;
-        }
-
-        public static function renderModule($module, $attribs = array())
-        {
-            return $module->content;
-        }
+        $path = JModuleHelper::getLayoutPath('mod_'.strtolower($name));
+        return file_exists($path);
     }
 }
