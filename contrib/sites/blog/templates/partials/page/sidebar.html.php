@@ -27,7 +27,7 @@
 		<div class="p-4">
 			<ul class="list-reset leading-normal">
 
-			<? $articles = collection('blog', ['limit' => 0]); ?>
+			<? $articles = collection('/blog', ['limit' => 0]); ?>
 
 			<? foreach($articles as $article): ?>
 				<li>

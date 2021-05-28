@@ -1,13 +1,14 @@
 ---
-route:
+@route:
     - login/[*]?
     - log-out/[*]?
-layout: default
+@layout: /default
+@process:
+    decorate: true
+
 name: Login
 title: Login
 summary: The description for the login
-process:
-    decorate: true
 ---
 
 <style>

@@ -1,10 +1,7 @@
 ---
-route: blog/[digit:page]?
-layout: sidebar
-name: Blog
-title: The blog
-summary: Description for an very awesome blog
-collection:
+@route: blog/[digit:page]?
+@layout: /sidebar
+@collection:
     model: ext:joomla.model.articles
     state:
         limit: 2
@@ -12,6 +9,10 @@ collection:
         sort: date
         order: desc
         category: [blog]
+
+name: Blog
+title: The blog
+summary: Description for an very awesome blog
 ---
 
 <link href="<?= route('blog.rss') ?>" rel="alternate" type="application/rss+xml" title="<?= $title ?>"  />
@@ -31,7 +32,7 @@ collection:
 <!-- articles -->
 <div class="w-full md:pr-12 mb-12 prose">
 
-    <?= partial('articles/list.html', [
+    <?= partial('/articles/list.html', [
          'articles' => collection(),
     ]); ?>
 

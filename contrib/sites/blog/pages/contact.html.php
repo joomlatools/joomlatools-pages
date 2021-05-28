@@ -1,9 +1,6 @@
 ---
-layout: default
-name: Contact
-title: Contact Us
-summary: Description for contact us
-form:
+@layout: /default
+@form:
     name: contact
     processors:
         - csv
@@ -19,6 +16,10 @@ form:
         message: [string, required]
     redirect: thank-you
     honeypot: firstName_407d3z05
+
+name: Contact
+title: Contact Us
+summary: Description for contact us
 ---
 
 <form method="post" action="" class="text-gray-900">

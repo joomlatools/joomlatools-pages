@@ -1,9 +1,10 @@
 ---
-visible: false
+@process:
+    cache: false
+
 metadata:
     robots: [none]
-process:
-    cache: false
+visible: false
 ---
 
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -36,7 +37,7 @@ process:
         <? endif ?>
     <? endforeach ?>
 
-    <? $cache = collection('cache.json', [
+    <? $cache = collection('/cache.json', [
         'filter' => [
             'robots' => ['nin:noindex', 'nin:none'],
             'format' => 'html',

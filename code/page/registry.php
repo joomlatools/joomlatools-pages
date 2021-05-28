@@ -170,18 +170,18 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         {
             $files  = $this->__data['files'];
 
-            if($path = trim($path, '.'))
+            if($path = ltrim($path, './'))
             {
                 $segments = array();
                 foreach(explode('/', $path) as $segment)
                 {
                     $segments[] = $segment;
-                    if(!isset($files[implode('/', $segments)]))
+                    if(!isset($files['/'.implode('/', $segments)]))
                     {
                         $files = false;
                         break;
                     }
-                    else $files = $files[implode('/', $segments)];
+                    else $files = $files['/'.implode('/', $segments)];
                 }
             }
 
@@ -417,7 +417,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                 $info = pathinfo($node);
 
                                 $file = $dir . '/' . $node;
-                                $path = trim(str_replace($basedir, '', $dir . '/' . $info['filename']), '/');
+                                $path = rtrim(str_replace($basedir, '', $dir . '/' . $info['filename']), '/');
 
                                 if (isset($info['extension']))
                                 {
