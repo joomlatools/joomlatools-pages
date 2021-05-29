@@ -1,5 +1,6 @@
 ---
-layout: sidebar
+@layout: /sidebar
+
 name: Home
 title: Homepage
 summary: Description for the homepage

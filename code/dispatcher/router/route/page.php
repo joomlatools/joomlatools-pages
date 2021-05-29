@@ -46,7 +46,7 @@ class ComPagesDispatcherRouterRoutePage extends ComPagesDispatcherRouterRouteAbs
 
         //A resolved route can only receive a path to be resolved, do not change it
         if(!$this->isResolved() &&  $this->getObject('page.registry')->isPage($path)) {
-            $this->__page = trim($this->getPath(), '/');
+            $this->__page = rtrim($this->getPath(), '/');
         }
     }
 

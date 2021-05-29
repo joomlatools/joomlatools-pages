@@ -56,8 +56,8 @@ class ComPagesControllerAbstract extends KControllerModel
             $model = parent::getModel();
 
             //Set the folder to the active page path if no folder is defined
-            if($model->getState()->folder === null) {
-                $model->getState()->folder = $this->getPage()->path;
+            if($model->getState()->path === null) {
+                $model->getState()->path = $this->getPage()->path;
             }
         }
 

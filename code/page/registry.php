@@ -161,7 +161,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $this->__redirects;
     }
 
-    public function getPages($path = '', $mode = self::PAGES_LIST, $depth = -1)
+    public function getPages($path = '/', $mode = self::PAGES_LIST, $depth = -1)
     {
         $result = array();
 
@@ -170,18 +170,18 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         {
             $files  = $this->__data['files'];
 
-            if($path = trim($path, '.'))
+            if($path = ltrim($path, '/'))
             {
                 $segments = array();
                 foreach(explode('/', $path) as $segment)
                 {
                     $segments[] = $segment;
-                    if(!isset($files[implode('/', $segments)]))
+                    if(!isset($files['/'.implode('/', $segments)]))
                     {
                         $files = false;
                         break;
                     }
-                    else $files = $files[implode('/', $segments)];
+                    else $files = $files['/'.implode('/', $segments)];
                 }
             }
 
@@ -216,7 +216,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         //Get a specific page by path
         else
         {
-            $path = ltrim($path, './');
+            $path = ltrim($path, '/');
 
             if ($file = $this->getLocator()->locate('page:' . $path))
             {
@@ -239,7 +239,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     {
         $page = false;
 
-        $path = ltrim($path, './');
+        $path = ltrim($path, '/');
 
         if(!isset($this->__pages[$path]))
         {
@@ -417,7 +417,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                 $info = pathinfo($node);
 
                                 $file = $dir . '/' . $node;
-                                $path = trim(str_replace($basedir, '', $dir . '/' . $info['filename']), '/');
+                                $path = rtrim(str_replace($basedir, '', $dir . '/' . $info['filename']), '/');
 
                                 if (isset($info['extension']))
                                 {

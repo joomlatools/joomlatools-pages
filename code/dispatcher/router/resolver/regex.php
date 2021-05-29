@@ -192,7 +192,7 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
     public function generate(ComPagesDispatcherRouterRouteInterface $route)
     {
         $generated = false;
-        $path      = ltrim($route->getPath(), '/');
+        $path      = rtrim($route->getPath(), '/');
 
         //Dynamic routes
         if($routes = array_keys($this->__dynamic_routes, $path))
