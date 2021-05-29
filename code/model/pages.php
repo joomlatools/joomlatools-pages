@@ -38,7 +38,7 @@ class ComPagesModelPages extends ComPagesModelCollection
 
             //If path is not defined to set root path
             $state = $this->getState();
-            $path  = $state->path ?? '.';
+            $path  = $state->path ?? '/';
 
             if($path)
             {

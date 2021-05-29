@@ -161,7 +161,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $this->__redirects;
     }
 
-    public function getPages($path = '', $mode = self::PAGES_LIST, $depth = -1)
+    public function getPages($path = '/', $mode = self::PAGES_LIST, $depth = -1)
     {
         $result = array();
 
@@ -170,7 +170,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         {
             $files  = $this->__data['files'];
 
-            if($path = ltrim($path, './'))
+            if($path = ltrim($path, '/'))
             {
                 $segments = array();
                 foreach(explode('/', $path) as $segment)
@@ -216,7 +216,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         //Get a specific page by path
         else
         {
-            $path = ltrim($path, './');
+            $path = ltrim($path, '/');
 
             if ($file = $this->getLocator()->locate('page:' . $path))
             {
@@ -239,7 +239,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     {
         $page = false;
 
-        $path = ltrim($path, './');
+        $path = ltrim($path, '/');
 
         if(!isset($this->__pages[$path]))
         {
