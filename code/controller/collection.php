@@ -7,8 +7,18 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesControllerCollection extends ComPagesControllerPage
+class ComPagesControllerCollection extends KControllerModel
 {
+    use ComPagesPageTrait;
+
+    public function __construct(KObjectConfig $config)
+    {
+        parent::__construct($config);
+
+        $this->setPage($config->page);
+        $this->setModel($config->model);
+    }
+
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
@@ -16,6 +26,41 @@ class ComPagesControllerCollection extends ComPagesControllerPage
         ));
 
         parent::_initialize($config);
+    }
+
+    public function getFormats()
+    {
+        return  array($this->getRequest()->getFormat());
+    }
+
+    public function getView()
+    {
+        if(!$this->_view instanceof KViewInterface)
+        {
+            //Get the view
+            $view = KControllerView::getView();
+
+            //Set the model in the view
+            $view->setModel($this->getModel());
+        }
+
+        return parent::getView();
+    }
+
+    public function getModel()
+    {
+        if(!$this->_model instanceof KModelInterface)
+        {
+            //Get the model
+            $model = parent::getModel();
+
+            //Set the folder to the active page path if no folder is defined
+            if($model->getState()->path === null) {
+                $model->getState()->path = $this->getPage()->path;
+            }
+        }
+
+        return $this->_model;
     }
 
     public function setModel($model)
@@ -176,5 +221,17 @@ class ComPagesControllerCollection extends ComPagesControllerPage
         else throw new KControllerExceptionResourceNotFound('Resource Not Found');
 
         return $entities;
+    }
+
+    public function getContext()
+    {
+        $context = new ComPagesControllerContext();
+        $context->setSubject($this);
+        $context->setRequest($this->getRequest());
+        $context->setResponse($this->getResponse());
+        $context->setUser($this->getUser());
+        $context->setPage($this->getPage());
+
+        return $context;
     }
 }
