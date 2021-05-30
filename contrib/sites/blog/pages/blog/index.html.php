@@ -1,5 +1,5 @@
 ---
-@route: blog/[digit:page]?
+@route: /blog/[digit:page]?
 @layout: /sidebar
 @collection:
     model: ext:joomla.model.articles

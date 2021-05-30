@@ -1,7 +1,7 @@
 ---
 @route:
-    - login/[*]?
-    - log-out/[*]?
+    - /login/[*]?
+    - /log-out/[*]?
 @layout: /default
 @process:
     decorate: true
