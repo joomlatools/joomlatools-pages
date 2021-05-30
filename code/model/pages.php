@@ -67,8 +67,8 @@ class ComPagesModelPages extends ComPagesModelCollection
     {
         $result = true;
 
-        //Permissions
-        if($result) {
+        //For performance reasons check of the page has an access property before checking
+        if($result && isset($page['access'])) {
             $result = $this->getObject('page.registry')->isPageAccessible($page['path']);
         }
 
