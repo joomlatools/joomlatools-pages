@@ -83,6 +83,8 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             }
 
             $path  = rtrim($path, '/');
+            $path  = empty($path) ?  '/' : $path;
+
             $query = $this->getRequest()->getUrl()->getQuery(true);
 
             if($route = $this->getRouter()->resolve('pages:'.$path,  $query)) {

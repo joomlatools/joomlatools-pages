@@ -239,7 +239,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     {
         $page = false;
 
-        $path = ltrim($path, '/');
 
         if(!isset($this->__pages[$path]))
         {
@@ -254,7 +253,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 $page = $this->getObject('com:pages.page.entity', ['data' => $options]);
 
                 //Get the parent
-                $parent_path = trim(dirname($page->path), '.');
+                $parent_path = ltrim(dirname($page->path), '/');
 
                 //Set page default properties from parent collection
                 if(!$page->isCollection() && $parent_path && $parent_page = $this->getPage($parent_path))
@@ -436,8 +435,11 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     //Handle index pages
                                     if($slug == 'index')
                                     {
-                                        $path = str_replace(array('/index', 'index'), '', $path);
+                                        $path = str_replace(array('/index'), '', $path);
                                         $slug = pathinfo($path, PATHINFO_FILENAME);
+
+                                        //If path is empty set to root
+                                        $path = empty($path) ?  '/' : $path;
                                     }
 
                                     /**

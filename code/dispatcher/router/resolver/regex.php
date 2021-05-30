@@ -96,9 +96,6 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
      */
     public function addRoute($regex, $path)
     {
-        $regex = trim($regex, '/');
-        $path  = rtrim($path, '/');
-
         if(strpos($regex, '[') !== false) {
             $this->__dynamic_routes[$regex] = $path;
         } else {
@@ -140,7 +137,7 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
     public function resolve(ComPagesDispatcherRouterRouteInterface $route)
     {
         $result = false;
-        $path  = ltrim($route->getPath(), '/');
+        $path  = $route->getPath();
 
         //Check if we have a static route
         if(!isset($this->__static_routes[$path]))
@@ -192,7 +189,7 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
     public function generate(ComPagesDispatcherRouterRouteInterface $route)
     {
         $generated = false;
-        $path      = rtrim($route->getPath(), '/');
+        $path      = $route->getPath();
 
         //Dynamic routes
         if($routes = array_keys($this->__dynamic_routes, $path))
@@ -234,7 +231,7 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
         $result = false;
 
         $query  = array();
-        $path   = ltrim($route->getPath(), '/');
+        $path   = $route->getPath();
 
         if(strpos($regex, '[') !== false)
         {
@@ -304,7 +301,6 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
     {
         $result   = true;
         $replaced = array();
-        $regex    = ltrim($regex, '/');
 
         if(strpos($regex, '[') !== false)
         {

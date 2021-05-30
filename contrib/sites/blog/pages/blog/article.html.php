@@ -1,5 +1,5 @@
 ---
-@route: blog/[:slug]
+@route: /blog/[:slug]
 @layout: /default
 @collection:
     extend: /blog
