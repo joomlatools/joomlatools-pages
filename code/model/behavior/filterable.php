@@ -124,12 +124,6 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
 
                 foreach ((array)$filter['values'] as $value)
                 {
-                    if(strtotime($value) && strtotime($item_value))
-                    {
-                        $value      = strtotime($value);
-                        $item_value = strtotime($item_value);
-                    }
-
                     //Convert boolean strings
                     if(strtolower($value) == 'false') {
                         $value = false;

@@ -87,12 +87,6 @@ class ComPagesModelBehaviorSortable extends ComPagesModelBehaviorQueryable
                 $first_value  = $first[$name];
                 $second_value = $second[$name];
 
-                if($name == 'date')
-                {
-                    $first_value  = is_int($first_value) ? $first_value : strtotime($first_value);
-                    $second_value = is_int($second_value) ? $second_value : strtotime($second_value);
-                }
-
                 if($first_value > $second_value) {
                     $sorting = 1;
                 } elseif ($first_value < $second_value) {

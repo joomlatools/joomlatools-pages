@@ -467,6 +467,8 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     //Set the date (if not set yet)
                                     if (!isset($page->date)) {
                                         $page->date = filemtime($file);
+                                    } else {
+                                        $page->date = strtotime($page->date);
                                     }
 
                                     //Set the process
