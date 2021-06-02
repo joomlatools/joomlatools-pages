@@ -10,6 +10,7 @@ on:
     branches: # Add your feature branch here if you want a release and package generated for it
       - master
       - develop
+      - feature/676-mason
 
 jobs:
   build:
@@ -66,7 +67,7 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.tagname.outputs.tag }}
-          file: ${{ github.workspace }}/com_pages*.zip
+          file: ${{ github.workspace }}/artifacts/*.zip
           file_glob: true
           overwrite: true
 

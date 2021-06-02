@@ -1,6 +1,7 @@
 const mason = require("@joomlatools/mason-tools-v1");
 const path = require("path");
 const fs = require("fs").promises;
+const exec = require('child_process').exec;
 
 const pagesRoot = process.cwd();
 
@@ -8,7 +9,7 @@ async function build({ config = {} }) {
   config = mason.config.merge(
     {
       location: pagesRoot,
-      destination: `${pagesRoot}/com_pages.zip`,
+      destination: `${pagesRoot}/artifacts/com_pages.zip`,
       compress: true,
     },
     config
@@ -23,12 +24,7 @@ async function build({ config = {} }) {
 
   await mason.fs.copyWithoutHiddenFiles(`${config.location}/code`, pkg);
 
-  await mason.fs.copy(`${config.location}/LICENSE.txt`, `${pkg}/LICENSE.txt`);
-
-  await fs.rename(
-    `${pkg}/administrator/components/com_pages/pages.xml`,
-    `${pkg}/pages.xml`
-  );
+  await mason.fs.ensureDir(`${config.location}/artifacts`);
 
   if (config.compress) {
     mason.log.debug(`Creating ZIP file in ${config.destination}`);
@@ -41,6 +37,17 @@ async function build({ config = {} }) {
   }
 
   await cleanup();
+}
+
+function execShellCommand(cmd) {
+  return new Promise((resolve, reject) => {
+    exec(cmd, (error, stdout, stderr) => {
+      if (error) {
+        reject(error);
+      }
+      resolve(stdout ? stdout : stderr);
+    });
+  });
 }
 
 async function buildExtensions({ config = {} }) {
@@ -58,24 +65,58 @@ async function buildExtensions({ config = {} }) {
     mason.log.error(`${contribFolder} does not exist.`);
   }
 
-  const extensionFolders = await fs.readdir(contribFolder, {
-    withFileTypes: true,
-  });
+  await mason.fs.ensureDir(`${config.location}/artifacts`);
 
-  await Promise.all(
-    extensionFolders
-      .filter((dirent) => dirent.isDirectory())
-      .map((dirent) => {
-        const extensionFolder = dirent.name;
+  const extensionFolder = `${contribFolder}/extensions`;
+  if (require("fs").existsSync(extensionFolder)) {
+    const extensionFolders = await fs.readdir(extensionFolder, {
+      withFileTypes: true,
+    });
 
-        mason.log.debug(`Building extension: ${extensionFolder}…`);
+    await Promise.all(
+        extensionFolders
+            .filter((dirent) => dirent.isDirectory())
+            .map(async (dirent) => {
+              const folder = dirent.name;
 
-        return mason.fs.archiveDirectory(
-          path.join(contribFolder, extensionFolder),
-          `${config.location}/com_pages-extension-${extensionFolder}.zip`
-        );
-      })
-  );
+              mason.log.debug(`Building extension: ${folder}…`);
+
+              const cmd = `<?php
+              $phar = new PharData('${config.location}/artifacts/extension-${folder}.zip');
+              $phar->buildFromDirectory('${config.location}/contrib/extensions/${folder}');
+              $phar->compressFiles(Phar::GZ);
+              $phar->setSignatureAlgorithm(Phar::SHA256);`
+                  .replace(/\s+/g, ' ')
+                  .replace(/[\$]+/g, '\\$');
+
+              return execShellCommand(`echo "${cmd}" | php`);
+            })
+    );
+
+  }
+
+  const siteFolder = `${contribFolder}/sites`;
+  if (require("fs").existsSync(siteFolder)) {
+    const siteFolders = await fs.readdir(siteFolder, {
+      withFileTypes: true,
+    });
+
+    await Promise.all(
+        siteFolders
+            .filter((dirent) => dirent.isDirectory())
+            .map((dirent) => {
+              const folder = dirent.name;
+
+              mason.log.debug(`Building site: ${folder}…`);
+
+              return mason.fs.archiveDirectory(
+                  path.join(siteFolder, folder),
+                  `${config.location}/artifacts/site-${folder}.zip`
+              );
+            })
+    );
+  }
+
 }
 
 async function buildFramework({ config = {} }) {
@@ -144,49 +185,34 @@ async function bundle({ config = {} }) {
 
   mason.log.debug(`Using ${tmp} folder for bundle`);
 
-  const installer = `${tmp}/installer`;
-
-  await mason.github.download({
-    token: config.githubToken,
-    repo: "joomlatools/joomlatools-extension-installer",
-    branch: "master",
-    destination: installer,
+  await buildFramework({
+    config: {
+      ...config.framework,
+      compress: false,
+      destination: `${tmp}`,
+    },
   });
 
-  await Promise.all([
-    build({
-      config: {
-        ...config,
-        compress: false,
-        destination: `${installer}/payload/pages`,
-      },
-    }),
-    buildFramework({
-      config: {
-        ...config.framework,
-        compress: false,
-        destination: `${installer}/payload/framework`,
-      },
-    }),
-  ]);
+  await build({
+    config: {
+      ...config,
+      compress: false,
+      destination: `${tmp}/libraries/joomlatools-components/pages`,
+    },
+  });
 
-  await fs.unlink(`${installer}/.gitignore`);
-  await fs.unlink(`${installer}/README.md`);
-  await fs.unlink(`${installer}/LICENSE`);
-
-  await fs.writeFile(
-    `${installer}/payload/manifest.json`,
-    JSON.stringify(config.bundle.manifest, null, 4)
-  );
 
   const xmlManifest = (
-    await fs.readFile(`${installer}/payload/pages/pages.xml`)
+    await fs.readFile(`${tmp}/libraries/joomlatools-components/pages/version/version.php`)
   ).toString();
-  const version = xmlManifest.match(/<version>(.*?)<\/version>/);
 
+  const version = xmlManifest.match(/VERSION\s*=\s*'(.*?)'/);
+
+
+  await mason.fs.ensureDir(`${pagesRoot}/artifacts`);
   await mason.fs.archiveDirectory(
-    installer,
-    `${pagesRoot}/com_pages${version ? "_v" + version[1] : "_bundle"}.zip`
+    tmp,
+    `${pagesRoot}/artifacts/com_pages${version ? "_v" + version[1] : "_bundle"}.zip`
   );
 
   await cleanup();
@@ -205,6 +231,6 @@ module.exports = {
     buildExtensions,
     buildFramework,
     bundle,
-    default: ["bundle" /*, 'buildExtensions'*/],
+    default: ["bundle" , 'buildExtensions'],
   },
 };
