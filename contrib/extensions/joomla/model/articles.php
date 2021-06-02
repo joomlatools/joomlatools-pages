@@ -318,9 +318,9 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
         return $query;
     }
 
-    public function getHash($refresh = false)
+    public function _actionHash(KModelContext $context)
     {
-        $hash = parent::getHash();
+        $hash = 1;
 
         $query = $this->getQuery(false);
         $query->columns(['hash' => 'MAX(GREATEST(tbl.created, tbl.modified))']);
