@@ -140,4 +140,19 @@ class ExtJoomlaModelMenus extends ComPagesModelDatabase
 
         return $query;
     }
+
+    public function _actionHash(KModelContext $context)
+    {
+        $hash = parent::_actionHash($context);
+
+        if($hash === null)
+        {
+            $query = $context->data;
+
+            $query->columns(['hash' => 'CRC32(GROUP_CONCAT(tbl.id, "-", tbl.menutype, "-", tbl.title, "-", tbl.alias, "-", tbl.path, "-", tbl.link, "-", tbl.type, "-", tbl.published, "-", tbl.parent_id, "-", tbl.level, "-", tbl.component_id, "-",tbl.access, "-", tbl.params, "-", tbl.lft, "-", tbl.rgt ))']);
+            $hash = $this->getTable()->select($query, KDatabase::FETCH_FIELD);
+        }
+
+        return $hash;
+    }
 }
