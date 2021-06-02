@@ -67,8 +67,11 @@ class ComPagesModelBehaviorSortable extends ComPagesModelBehaviorQueryable
 
             //Add ordering property
             $ordering = 0;
-            foreach($entity as $key => $item) {
-                $entity[$key]['ordering'] = ++$ordering;
+            foreach($entity as $key => $item)
+            {
+                if(is_array($entity[$key])) {
+                    $entity[$key]['ordering'] = ++$ordering;
+                }
             }
 
             $context->entity = $entity;
