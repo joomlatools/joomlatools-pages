@@ -12,7 +12,9 @@ if(getenv('REDIRECT_IMAGE') === false && getenv('IMAGE') === false)
  * Config options
  */
 
-$image_root    = rtrim($_SERVER['PAGES_IMAGES_ROOT'], '/');
+$src_root  = rtrim($_SERVER['PAGES_IMAGES_ROOT'], '/');
+$dest_root = isset($_SERVER['PAGES_STATIC_ROOT']) ? $_SERVER['PAGES_STATIC_ROOT'] : false;
+
 $enhance       = false;
 $quality       = 100;
 $compress      = false;
@@ -31,8 +33,6 @@ $max_dpr = 3;
  * Route request
  */
 
-$cache_root     = isset($_SERVER['PAGES_CACHE_ROOT']) ? $_SERVER['PAGES_CACHE_ROOT'] : false;
-
 //Request
 $query = array();
 parse_str(filter_var($_SERVER['QUERY_STRING'], FILTER_SANITIZE_URL), $query);
@@ -42,12 +42,12 @@ $time = microtime(true);
 
 if($query['image_path'])
 {
-    $image_path  = trim($query['image_path'], '/');
-    $cache_path = isset($query['cache_path']) ? $query['cache_path'].'/'.$image_path : $image_path;
+    $src_path  = trim($query['src_path'], '/');
+    $dest_path = isset($query['dest_path']) ? $query['dest_path'].'/'.$src_path : $src_path;
 
-    $source      = $image_root.'/'.$image_path;
-    $destination = $cache_root ?  $cache_root.'/'.$cache_path : false;
-    $background  = Image::normalizeColor('white');
+    $source      = $src_root.'/'.$src_path;
+    $destination = $dest_root ?  $dest_root.'/'.$dest_path : false;
+    $background  = Image::normalizeColor('white');;
 
     if(!file_exists($source))
     {
@@ -56,11 +56,11 @@ if($query['image_path'])
     }
 
     //Get format
-    $format = strtolower(pathinfo($image_path, PATHINFO_EXTENSION));
+    $format = strtolower(pathinfo($src_path, PATHINFO_EXTENSION));
 
     //Get the parameters
-    unset($query['image_path']);
-    unset($query['cache_path']);
+    unset($query['src_path']);
+    unset($query['dest_path']);
     $parameters = $query;
 
     if(isset($parameters['auto']))
@@ -156,17 +156,17 @@ if($query['image_path'])
     }
 
     //Create the filename
-    if($cache_root)
+    if($dest_root)
     {
         $cache_query = $parameters;
 
         if(!isset($parameters['fm']))
         {
-            $search     = pathinfo($image_path, PATHINFO_EXTENSION);
-            $cache_path = str_replace('.'.$search, '.'.$format, $cache_path);
+            $search     = pathinfo($src_path, PATHINFO_EXTENSION);
+            $cache_path = str_replace('.'.$search, '.'.$format, $dest_path);
         }
 
-        $destination = $cache_root.'/'.$cache_path.'_'.http_build_query($cache_query, '', '&');
+        $destination = $dest_root.'/'.$dest_path.'_'.http_build_query($cache_query, '', '&');
     }
 
     //Generate image
@@ -226,7 +226,7 @@ if($query['image_path'])
         }
         catch(Exception $e)
         {
-            $log = $cache_root.'/.error_log';
+            $log = $dest_root.'/.error_log';
             error_log(sprintf('Could not generate image: %s, error: %s'."\n", $destination, $e->getMessage()), 3, $log);
         }
     }
