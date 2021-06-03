@@ -150,7 +150,7 @@ if(!preg_match('/(must-revalidate|max-age|no-cache|no-store)/', $cache))
 /**
  * Generate image
  */
-if(file_exists('image.php') && preg_match('#^/images/([^\?]+)\.(jpe?g|png|gif|svg)$#', $path) == 1)
+if(file_exists(getcwd().'/image.php') && preg_match('#^/images/([^\?]+)\.(jpe?g|png|gif|svg)$#', $path) == 1)
 {
     putenv('IMAGE=1');
 
@@ -158,7 +158,7 @@ if(file_exists('image.php') && preg_match('#^/images/([^\?]+)\.(jpe?g|png|gif|sv
     $_SERVER['QUERY_STRING'] .= '&dest_path=images&src_path='.$image_path;
 
     header('Cache-Control: public,max-age=31536000,immutable');
-    require 'image.php';
+    require getcwd().'/image.php';
 
     return true;
 }
@@ -166,4 +166,4 @@ if(file_exists('image.php') && preg_match('#^/images/([^\?]+)\.(jpe?g|png|gif|sv
 /**
  * Generate page
  */
-require 'index.php';
+require getcwd().'/index.php';
