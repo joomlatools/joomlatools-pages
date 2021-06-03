@@ -37,7 +37,7 @@
  * @param callable $callback The callback to execute the application
  * @param integer $user  The user identifier
  */
-return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/pages', callable $callback)
+return function($cache_path = KOOWA_ROOT.'/joomlatools-pages/cache/pages', callable $callback)
 {
     ini_set('output_buffering', false);
     ini_set('zlib.output_compression', false);
