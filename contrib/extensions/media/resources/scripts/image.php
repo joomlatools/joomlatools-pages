@@ -40,7 +40,7 @@ parse_str(filter_var($_SERVER['QUERY_STRING'], FILTER_SANITIZE_URL), $query);
 //Time
 $time = microtime(true);
 
-if($query['image_path'])
+if($query['src_path'])
 {
     $src_path  = trim($query['src_path'], '/');
     $dest_path = isset($query['dest_path']) ? $query['dest_path'].'/'.$src_path : $src_path;
