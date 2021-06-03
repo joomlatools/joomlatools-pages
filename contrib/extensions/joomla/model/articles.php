@@ -320,13 +320,13 @@ class ExtJoomlaModelArticles extends ComPagesModelDatabase
 
     public function _actionHash(KModelContext $context)
     {
-        $hash = 1;
-
         $query = $this->getQuery(false);
         $query->columns(['hash' => 'MAX(GREATEST(tbl.created, tbl.modified))']);
 
         if($modified = $this->getTable()->select($query, KDatabase::FETCH_FIELD)) {
             $hash = hash('crc32b', $modified);
+        } else {
+            $hash = hash('crc32b', 1);
         }
 
         return $hash;
