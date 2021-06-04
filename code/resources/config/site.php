@@ -67,5 +67,5 @@ return [
             'cache_path' => $config['http_static_cache_path'],
         ],
     ],
-    'extensions' => $config['extensions'] ?? array(),
+    'extension_config' => $config['extension_config'] ?? array(),
 ];

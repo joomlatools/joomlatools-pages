@@ -84,7 +84,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         }
 
         //Set config options
-        foreach($options['extensions'] as $identifier => $values) {
+        foreach($options['extension_config'] as $identifier => $values) {
             $this->getConfig($identifier)->merge($values);
         }
     }
