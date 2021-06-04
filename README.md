@@ -17,7 +17,7 @@ Pages is **datasource agnostic**, your data can come from anywhere, for example 
 
 Pages can both be installed in Joomla and be used standalone, it's 100% compatible with every Joomla template, and also offers it's own a very powerful [theme'ing system](https://github.com/joomlatools/joomlatools-pages/wiki/Themes). 
 
-We built it to be your perfect buddy, and [bring joy to Joomla development](https://github.com/joomlatools/joomlatools-pages/wiki/Developer-Joy), it doesn't get in your way and it's always there if you need it.
+We built it to be your perfect buddy, and [bring joy to web development](https://github.com/joomlatools/joomlatools-pages/wiki/Developer-Joy), it doesn't get in your way and it's always there if you need it.
 
 ### Why Joomlatools Pages?
 
@@ -34,14 +34,26 @@ Joomlatools Pages is for website developers and designers who create bespoke (Jo
 
 ## Installation
 
+### In Joomla 
+
 Go to the root directory of your installation in command line and execute this command:
 
 ```
 composer require joomlatools/pages --ignore-platform-reqs
 ```
 
-Note: When installing in Joomla You need to use the --ignore-platform-reqs flag if not the installation will fail due to a mismatch in the platform
+When installing in Joomla you need to use the --ignore-platform-reqs flag if not the installation will fail due to a mismatch in the platform
 constraint. Joomla's requires PHP 5.3.10 as minimum while Joomlatools Pages is set to minimum PHP7.3
+
+### Standalone
+
+Go to the root directory of your installation in command line and execute this command:
+
+```
+composer require joomlatools/pages --no-plugins
+```
+
+When installing standalone you need to use the --no-plugins flag if not the installation will fail due as it will try to execute the composer plugins for Joomla
 
 ## Documentation
 
