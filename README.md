@@ -17,7 +17,7 @@ Pages is **datasource agnostic**, your data can come from anywhere, for example 
 
 Pages can both be installed in Joomla and be used standalone, it's 100% compatible with every Joomla template, and also offers it's own a very powerful [theme'ing system](https://github.com/joomlatools/joomlatools-pages/wiki/Themes). 
 
-We built it to be your perfect buddy, and [bring joy to Joomla development](https://github.com/joomlatools/joomlatools-pages/wiki/Developer-Joy), it doesn't get in your way and it's always there if you need it.
+We built it to be your perfect buddy, and [bring joy to web development](https://github.com/joomlatools/joomlatools-pages/wiki/Developer-Joy), it doesn't get in your way and it's always there if you need it.
 
 ### Why Joomlatools Pages?
 
