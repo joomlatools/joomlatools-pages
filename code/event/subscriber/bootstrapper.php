@@ -26,6 +26,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
         if(false !== $route = $router->resolve())
         {
+            define('PAGES_VERSION'  , (string) $this->getObject('com:pages.version'));
             define('PAGES_SITE_ROOT', $route->getPath());
 
             //Set the site path in the config
@@ -348,6 +349,13 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                     } else {
                         continue;
                     }
+                }
+
+                //Get extension name from manifest
+                if(file_exists($directory.'/manifest.yaml'))
+                {
+                    $manifest = $this->getObject('object.config.factory')->fromFile($directory.'/manifest.yaml', false);
+                    $name = $manifest['name'] ?? $name;
                 }
 
                 //Register the extension namespace
