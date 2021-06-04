@@ -23,7 +23,7 @@ class ComPagesTemplateHelperBehavior extends ComKoowaTemplateHelperBehavior
         $html = '';
         if (!static::isLoaded('prefetcher'))
         {
-            $html .= '<ktml:script src="https://files.joomlatools.com/pages@'.$config->version.'/prefetcher.'.(!$config->debug ? 'min.js' : 'js').'" defer="defer" />';
+            $html .= '<ktml:script src="https://files.joomlatools.com/pages@'.$config->version.'/resources/prefetcher/prefetcher.'.(!$config->debug ? 'min.js' : 'js').'" defer="defer" />';
             $html .= <<<PREFETCHER
 <script>
 document.addEventListener("DOMContentLoaded", () => {
