@@ -10,17 +10,22 @@
 class ComPagesConfig extends KObject implements KObjectSingleton
 {
     protected $_site_path;
+    protected $_log_path;
     protected $_cache_path;
+    protected $_extension_path;
 
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
 
-        $this->_site_path  = $config->site_path;
-        $this->_cache_path = $config->cache_path;
+        $this->_site_path      = $config->site_path;
 
         //Load the site specific options
         $this->_loadOptions();
+
+        $this->_cache_path     = $config->cache_path;
+        $this->_log_path       = $config->log_path;
+        $this->_extension_path = KObjectConfig::unbox($config->extension_path);
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -28,8 +33,10 @@ class ComPagesConfig extends KObject implements KObjectSingleton
         $config->append(array(
             'site_path'  => Koowa::getInstance()->getRootPath().'/joomlatools-pages',
         ))->append(array(
-            'cache_path'  => $config->site_path.'/cache',
-            'debug'       => JFactory::getConfig()->get('debug'),
+            'log_path'       => $config->log_path ? $config->log_path : $config->site_path.'/logs',
+            'cache_path'     => $config->cache_path ? $config->log_path : $config->site_path.'/cache',
+            'extension_path' => $config->extension_path ? $config->extension_path : $config->site_path.'/extensions',
+            'debug'          => JFactory::getConfig()->get('debug'),
         ))->append(array(
             'page_cache'            => true,
             'page_cache_path'       =>  $config->cache_path,
@@ -84,6 +91,16 @@ class ComPagesConfig extends KObject implements KObjectSingleton
     public function getCachePath()
     {
         return $this->_cache_path;
+    }
+
+    public function getExtensionPath()
+    {
+        return (array) $this->_extension_path;
+    }
+
+    public function getLogPath()
+    {
+        return $this->_log_path;
     }
 
     public function get($option, $default = null)

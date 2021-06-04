@@ -34,6 +34,11 @@ return [
             'cache_path'    => $config['template_cache_path'],
             'cache_reload'  => $config['template_cache_validation'],
         ],
+        'com:pages.config' => [
+            'log_path'       => $config['log_path'],
+            'cache_path'     => $config['cache_path'],
+            'extension_path' => $config['extension_path'],
+        ],
         'com:pages.dispatcher.behavior.cacheable' => [
             'cache'       => $config['http_cache'],
             'cache_path'  => $config['http_cache_path'],
@@ -62,5 +67,5 @@ return [
             'cache_path' => $config['http_static_cache_path'],
         ],
     ],
-    'extensions' => $config['extensions'] ?? array(),
+    'extension_config' => $config['extension_config'] ?? array(),
 ];

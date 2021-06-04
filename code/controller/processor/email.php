@@ -14,7 +14,7 @@ class ComPagesControllerProcessorEmail extends ComPagesControllerProcessorAbstra
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'log_file'   => $this->getObject('com:pages.config')->getSitePath('logs').'/mailer.log',
+            'log_file'   => $this->getObject('com:pages.config')->getLogPath().'/mailer.log',
             'html'       => true,
             'title'      => '',
             'subject'    => '',
