@@ -16,7 +16,7 @@ class ComPagesControllerProcessorCsv extends ComPagesControllerProcessorAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'path' => $this->getObject('pages.config')->getSitePath('logs'),
+            'path' => $this->getObject('pages.config')->getLogPath(),
         ]);
 
         parent::_initialize($config);
