@@ -31,7 +31,7 @@
 
 			<? foreach($articles as $article): ?>
 				<li>
-				    <a href="<?= route('blog/article', ['slug' => $article->slug]) ?>" class="text-gray-darkest text-sm">
+				    <a href="<?= route('/blog/article', ['slug' => $article->slug]) ?>" class="text-gray-darkest text-sm">
 				        <?= $article->title; ?>
 				    </a>
                 </li>

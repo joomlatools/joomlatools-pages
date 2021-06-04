@@ -15,7 +15,7 @@ title: The blog
 summary: Description for an very awesome blog
 ---
 
-<link href="<?= route('blog.rss') ?>" rel="alternate" type="application/rss+xml" title="<?= $title ?>"  />
+<link href="<?= route('/blog.rss') ?>" rel="alternate" type="application/rss+xml" title="<?= $title ?>"  />
 
 <ktml:block extend="main-header">
 <!-- title -->
