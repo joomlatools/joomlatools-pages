@@ -15,7 +15,7 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
             'priority' => self::PRIORITY_LOW,
             'enabled'  => JDEBUG ? false : true,
             'origins'  => [],
-            'log_path' => $this->getObject('com:pages.config')->getSitePath('logs'),
+            'log_path' => $this->getObject('com:pages.config')->getLogPath(),
         ));
 
         parent::_initialize($config);
@@ -101,7 +101,7 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
                             {
                                 if ($extension = pathinfo($src, PATHINFO_EXTENSION))
                                 {
-                                    $base = $this->getObject('com://site/pages.config')->getSitePath();
+                                    $base = $this->getObject('com:pages.config')->getSitePath();
                                     $dest = $path .'/'. hash("crc32b", $src).'.' . $extension;
 
                                     if(!file_exists($base . $dest))
@@ -119,7 +119,7 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
                         }
                     }
 
-                    if($this->helper('ext.media.image.supported', $src)) {
+                    if($this->helper('ext:media.image.supported', $src)) {
                         $attribs['url'] = '/'.ltrim($src, '/');
                     } else {
                         $attribs['url'] = $src;
@@ -162,7 +162,7 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
                     }
 
                     //Filter the images
-                    $html = str_replace($matches[0][$key], $this->helper('ext.media.image', $options), $html);
+                    $html = str_replace($matches[0][$key], $this->helper('ext:media.image', $options), $html);
                 }
             }
         }
@@ -177,7 +177,7 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
         {
             foreach($matches[1] as $key => $match)
             {
-                $html .= $this->helper('ext.media.image.import', 'bgset');
+                $html .= $this->helper('ext:media.image.import', 'bgset');
 
                 $attribs = $this->parseAttributes($match);
 
@@ -209,7 +209,6 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
                     $name = str_replace('-', '_', $name);
                     $options[$name] = $value;
                 }
-
 
                 if($srcset = $this->helper('ext:media.image.srcset', $matches[3][$key], $options))
                 {

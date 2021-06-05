@@ -13,7 +13,7 @@ class ExtMediaTemplateFilterVideo extends ComPagesTemplateFilterAbstract
     {
         $config->append(array(
             'priority'   => self::PRIORITY_LOW,
-            'enabled'     => JDEBUG ? false : true,
+            'enabled'    => JDEBUG ? false : true,
             'parameters' => ['auto' => 'true'],
         ));
 
@@ -73,7 +73,7 @@ class ExtMediaTemplateFilterVideo extends ComPagesTemplateFilterAbstract
                         $text = str_replace($matches[1][$key], $this->buildAttributes($attribs), $text);
 
                         //Enable plyr (custom player)
-                        $text .= $this->getTemplate()->helper('ext:media.video.player');
+                        $text .= $this->helper('ext:media.video.player');
                     }
                 }
             }
@@ -94,3 +94,4 @@ class ExtMediaTemplateFilterVideo extends ComPagesTemplateFilterAbstract
         return $url;
     }
 }
+

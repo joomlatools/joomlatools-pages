@@ -13,7 +13,7 @@ class ExtMediaTemplateHelperLazysizes extends ComPagesTemplateHelperBehavior
     {
         $config = new ComPagesObjectConfig($config);
         $config->append(array(
-            'debug' =>  JFactory::getApplication()->getCfg('debug'),
+            'debug' =>  $this->getObject('pages.config')->debug,
         ));
 
         $html   = '';
@@ -61,7 +61,6 @@ window.addEventListener('lazybeforeunveil', function (e)
 </script>
 
 <style>
-
 /* Lazyloaded images */
 span.img-container {
   display: inline-block;
