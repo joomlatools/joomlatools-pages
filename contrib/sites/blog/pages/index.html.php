@@ -35,7 +35,7 @@ summary: Description for the homepage
 
 			<div class="mb-4 text-sm text-gray-700">
 				by <a href="#" class="text-gray-700"><?= $article->getAuthor()->getName(); ?></a>
-        on <?= date($article->published_date, 'd M, Y'); ?>
+        on <?= date('d M, Y', $article->published_date); ?>
 				<span class="font-bold mx-1"> | </span>
 				<a href="#" class="text-gray-700"><?= $article->category->title; ?></a>
 			</div>

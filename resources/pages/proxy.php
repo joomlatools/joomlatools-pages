@@ -2,7 +2,7 @@
 /**
  * Joomlatools Pages
  *
- * @copyright   Copyright (C) 2018 Timble CVBA. (http://www.timble.net)
+ * @copyright  Copyright (C) 2018 Johan Janssens and Timble CVBA. (http://www.timble.net).
  * @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl.html>
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
@@ -35,9 +35,8 @@
  *
  * @param string $cache_path The path for the cache responses
  * @param callable $callback The callback to execute the application
- * @param integer $user  The user identifier
  */
-return function($cache_path = JPATH_ROOT.'/joomlatools-pages/cache/pages', callable $callback)
+return function($cache_path = KOOWA_ROOT.'/sites/default/cache/pages', callable $callback)
 {
     ini_set('output_buffering', false);
     ini_set('zlib.output_compression', false);

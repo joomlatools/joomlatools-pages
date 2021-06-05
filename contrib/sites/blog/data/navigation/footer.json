@@ -1,7 +1,7 @@
 [
   {
     "title": "Contact Us",
-    "route": "contact"
+    "path": "/contact"
   },
   {
     "title": "Created by Joomlatools.com",

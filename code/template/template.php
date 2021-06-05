@@ -122,8 +122,17 @@ class ComPagesTemplate extends KTemplate
     public function invokeHelper($identifier, ...$params)
     {
         //Get the function and helper based on the identifier
-        if(strpos($identifier, '.') === false) {
-            $identifier = $identifier.'.__invoke';
+        if(strpos($identifier, ':') !== false)
+        {
+            if(substr_count($identifier, '.') == 1) {
+                $identifier = $identifier.'.__invoke';
+            }
+        }
+        else
+        {
+            if(strpos($identifier, '.') === false) {
+                $identifier = $identifier.'.__invoke';
+            }
         }
 
         //Get the function and helper based on the identifier

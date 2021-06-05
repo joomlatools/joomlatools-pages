@@ -26,6 +26,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
         if(false !== $route = $router->resolve())
         {
+            define('PAGES_VERSION'  , (string) $this->getObject('com:pages.version'));
             define('PAGES_SITE_ROOT', $route->getPath());
 
             //Set the site path in the config
@@ -40,18 +41,29 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
             //Bootstrap Joomla
             $this->_bootstrapJoomla($config->getSitePath(), $options);
 
-            //Install the extensions
-            $this->_installExtensions($config->getSitePath('extensions'), $options);
+            //Bootstrap extensions
 
-            //Update the extensions
-            $this->_updateExtensions($config->getSitePath('extensions'), $options);
+            //Register 'ext' fallback location
+            $locator = new ComPagesClassLocatorExtension();
 
-            //Archive the extensions
-            $this->_archiveExtensions($config->getSitePath('extensions'), $options);
+            //Register the extension locator
+            $this->getObject('manager')->getClassLoader()->registerLocator($locator);
+            $this->getObject('manager')->registerLocator('com:pages.object.locator.extension');
 
-            //Bootstrap the extensions
-            $this->_bootstrapExtensions($config->getSitePath('extensions'), $options);
+            foreach($config->getExtensionPath() as $path)
+            {
+                //Install
+                $this->_installExtensions($path);
 
+                //Update
+                $this->_updateExtensions($path);
+
+                //Archive
+                $this->_archiveExtensions($path);
+
+                //Bootstrap
+                $this->_bootstrapExtensions($path, $locator);
+            }
         }
         else $this->getObject('pages.config', ['site_path' => false]);
     }
@@ -73,7 +85,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         }
 
         //Set config options
-        foreach($options['extensions'] as $identifier => $values) {
+        foreach($options['extension_config'] as $identifier => $values) {
             $this->getConfig($identifier)->merge($values);
         }
     }
@@ -104,7 +116,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         }
     }
 
-    protected function _installExtensions($path, $config = array())
+    protected function _installExtensions($path)
     {
         if(file_exists($path.'/package.php')) {
             $packages = include $path.'/package.php';
@@ -130,7 +142,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                 if($this->getConfig()->log_path) {
                     $log  = $this->getConfig()->log_path.'/extension.log';
                 } else {
-                    $log  = $this->getObject('com:pages.config')->getSitePath('logs').'/extension.log';
+                    $log  = $this->getObject('com:pages.config')->getLogPath().'/extension.log';
                 }
 
                 $date = date('y:m:d h:i:s');
@@ -162,7 +174,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         }
     }
 
-    protected function _updateExtensions($path, $config = array())
+    protected function _updateExtensions($path)
     {
         if(file_exists($path.'/package.php')) {
             $packages = include $path.'/package.php';
@@ -190,7 +202,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                 if($this->getConfig()->log_path) {
                     $log  = $this->getConfig()->log_path.'/extension.log';
                 } else {
-                    $log  = $this->getObject('com:pages.config')->getSitePath('logs').'/extension.log';
+                    $log  = $this->getObject('com:pages.config')->getLogPath().'/extension.log';
                 }
 
                 $date = date('y:m:d h:i:s');
@@ -222,7 +234,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         }
     }
 
-    protected function _archiveExtensions($path, $config = array())
+    protected function _archiveExtensions($path)
     {
         if($files = glob($path.'/[!_]*/manifest.yaml'))
         {
@@ -233,7 +245,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                 if($this->getConfig()->log_path) {
                     $log  = $this->getConfig()->log_path.'/extension.log';
                 } else {
-                    $log  = $this->getObject('com:pages.config')->getSitePath('logs').'/extension.log';
+                    $log  = $this->getObject('com:pages.config')->getLogPath().'/extension.log';
                 }
 
                 $date = date('y:m:d h:i:s');
@@ -313,25 +325,22 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         }
     }
 
-    protected function _bootstrapExtensions($path, $config = array())
+    protected function _bootstrapExtensions($path, $locator)
     {
         //Register 'ext:[package]' locations
         if($directories = glob($path.'/[!_]*'))
         {
-            //Register 'ext' fallback location
-            $locator = new ComPagesClassLocatorExtension();
-
-            //Register the extension locator
-            $this->getObject('manager')->getClassLoader()->registerLocator($locator);
-            $this->getObject('manager')->registerLocator('com:pages.object.locator.extension');
-
-            $filters    = array();
             $functions  = array();
 
             foreach ($directories as $directory)
             {
                 //The extension name
                 $name = strtolower(basename($directory, '.zip'));
+
+                //Do not re-register the same extension
+                if($locator->getNamespace(ucfirst($name))) {
+                    continue;
+                }
 
                 if(pathinfo($directory, PATHINFO_EXTENSION) == 'zip')
                 {
@@ -340,6 +349,13 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                     } else {
                         continue;
                     }
+                }
+
+                //Get extension name from manifest
+                if(file_exists($directory.'/manifest.yaml'))
+                {
+                    $manifest = $this->getObject('object.config.factory')->fromFile($directory.'/manifest.yaml', false);
+                    $name = $manifest['name'] ?? $name;
                 }
 
                 //Register the extension namespace
@@ -385,34 +401,34 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                         }
                     }
                 }
+
+                //Register 'ext:pages' aliases
+                if($name == 'pages')
+                {
+                    $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path.'/pages'));
+
+                    foreach($iterator as $file)
+                    {
+                        if ($file->isFile() && $file->getExtension() == 'php' && $file->getFileName() !== 'config.php')
+                        {
+                            $segments = explode('/', $iterator->getSubPathName());
+                            $segments[] = basename(array_pop($segments), '.php');
+
+                            //Create the identifier path + file
+                            $path = implode('.', $segments);
+
+                            $this->getObject('manager')->registerAlias(
+                                'ext:pages.'.$path,
+                                'com:pages.'.$path
+                            );
+                        }
+                    }
+                }
             }
 
             //Register template functions
             if($functions) {
-                $this->getConfig('com:pages.template.default')->merge(['functions' => $functions]);
-            }
-        }
-
-        //Register 'ext:pages' aliases
-        if(file_exists($path.'/pages'))
-        {
-            $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path.'/pages'));
-
-            foreach($iterator as $file)
-            {
-                if ($file->isFile() && $file->getExtension() == 'php' && $file->getFileName() !== 'config.php')
-                {
-                    $segments = explode('/', $iterator->getSubPathName());
-                    $segments[] = basename(array_pop($segments), '.php');
-
-                    //Create the identifier path + file
-                    $path = implode('.', $segments);
-
-                    $this->getObject('manager')->registerAlias(
-                        'ext:pages.'.$path,
-                        'com:pages.'.$path
-                    );
-                }
+                $this->getConfig('com:pages.template')->merge(['functions' => $functions]);
             }
         }
     }
