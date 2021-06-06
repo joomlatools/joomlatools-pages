@@ -95,7 +95,7 @@ class ComPagesEventSubscriberException extends ComPagesEventSubscriberAbstract
         {
             foreach([(int) $code, '500'] as $code)
             {
-                if($page = $dispatcher->getPage($code))
+                if($page = $dispatcher->getPage('/'.$code))
                 {
                     $dispatcher->getPage()->setProperties($page);
 
