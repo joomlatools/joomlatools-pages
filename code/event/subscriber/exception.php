@@ -36,6 +36,10 @@ class ComPagesEventSubscriberException extends ComPagesEventSubscriberAbstract
         if(class_exists('JError')) {
             JError::setErrorHandling(E_ERROR, 'callback', array($this, 'handleException'));
         }
+
+        //Catch all Koowa exceptions
+        $handler = $this->getObject('exception.handler');
+        $handler->enable(KExceptionHandlerInterface::TYPE_EXCEPTION);
     }
 
     public function onException(KEvent $event)
