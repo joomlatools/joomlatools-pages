@@ -72,7 +72,15 @@ class ComPagesTemplate extends KTemplate
         //Store the template
         $this->__template = $template;
 
-        return parent::loadFile($url);
+        $type = pathinfo($file, PATHINFO_EXTENSION);
+
+        if(!in_array($type, $this->_excluded_types)) {
+            $result = parent::loadFile($url);
+        } else {
+            $result = parent::loadString($template->getContent(), $type);
+        }
+
+        return $result;
     }
 
     public function loadPartial($url)
