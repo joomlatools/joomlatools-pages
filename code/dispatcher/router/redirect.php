@@ -35,8 +35,6 @@ class ComPagesDispatcherRouterRedirect extends ComPagesDispatcherRouterAbstract
             } else {
                 $route = str_replace($base, '', $url);
             }
-
-            $route = trim($route, '/');
         }
 
         return parent::resolve($route, $parameters);
