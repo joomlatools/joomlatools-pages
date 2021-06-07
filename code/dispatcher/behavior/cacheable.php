@@ -185,7 +185,9 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             $response->setLastModified($response->getDate());
 
             //If the cache exists and it has not been modified do not reset the Last-Modified date
-            if($cache = $this->loadCache() && $this->isIdentical()) {
+            if($this->loadCache() && $this->isIdentical())
+            {
+                $cache = $this->loadCache();
                 $response->setLastModified(new DateTime($cache['headers']['Last-Modified']));
             }
 
