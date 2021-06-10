@@ -37,7 +37,7 @@ class ComPagesObjectConfigFrontmatter extends KObjectConfigYaml
             {
                 //Get attributes
                 $this->__attributes = [];
-                if(preg_match_all('#(@(.*))\s*:#siU', $matches[1], $attributes))
+                if(preg_match_all('#^(@(.*))\s*:#mU', $matches[1], $attributes))
                 {
                     foreach($attributes[0] as $key => $value) {
                         $matches[1] = str_replace($value, $attributes[2][$key].':', $matches[1]);
