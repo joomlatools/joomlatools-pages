@@ -143,7 +143,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             if($collection = $page->isCollection())
             {
                 if($collection->has('format')) {
-                    $formats = array_merge($formats, (array) $collection->get('format'));
+                    $formats = array_merge($formats, (array) KObjectConfig::unbox($collection->get('format')));
                 }
             }
         }
