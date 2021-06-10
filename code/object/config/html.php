@@ -59,7 +59,7 @@ class DomDocumentHtml extends DOMDocument
     private $__xpath;
 
     public function __toString() {
-        return parent::safeHTML();
+        return parent::saveHTML($this);
     }
 
     public function query($expression)
