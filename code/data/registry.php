@@ -111,6 +111,21 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
                 }
             }
 
+            //Try to create data object based on format from string
+            if(is_string($data))
+            {
+                if($format = pathinfo ($url, PATHINFO_EXTENSION))
+                {
+                    if($this->getObject('object.config.factory')->isRegistered($format)) {
+                        $data = $this->getObject('object.config.factory')->createFormat($format)->fromString($data, false);
+                    }
+                }
+            }
+
+            if(!is_array($data)) {
+                throw new \RuntimeException(sprintf('Url: %s cannot be parsed to structured data', $url));
+            }
+
             $class = $this->getObject('manager')->getClass('com:pages.data.object');
             $data = new $class($data);
 
