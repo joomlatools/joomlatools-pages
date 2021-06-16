@@ -49,7 +49,7 @@ visible: false
 
         <? if(!isset($urls[$item->url])) : ?>
             <url>
-                <loc><?= $item->url ?></loc>
+                <loc><?= escape($item->url) ?></loc>
                 <lastmod><?= $item->date->format(DateTime::ATOM); ?></lastmod>
             </url>
         <? endif ?>
