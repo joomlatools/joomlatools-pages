@@ -1,6 +1,6 @@
 framework:
   source: remote # or local
-  branch: v3.5.1
+  branch: v3.5.3
 extensions:
   folder: contrib
 bundle:
