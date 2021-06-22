@@ -265,7 +265,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
             $result = (string) $this->url($url, $config);
 
             //Generate data url for low quality image
-            if($data_url && PHP_SAPI != 'cli-server')
+            /*if($data_url && PHP_SAPI != 'cli-server')
             {
                 $context = stream_context_create([
                     "ssl" => [
@@ -285,7 +285,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
                     }
                     else $result = 'data:image/jpg;base64,'.base64_encode($data);
                 }
-            }
+            }*/
         }
         else $result = $url;
 
