@@ -7,8 +7,9 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
+
 if(!defined('KOOWA_ROOT')) {
-    define('KOOWA_ROOT', realpath(dirname(getcwd())));
+    define('KOOWA_ROOT', realpath(getcwd()));
 }
 
 if(!defined('KOOWA_BASE')) {
