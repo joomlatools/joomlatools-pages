@@ -15,7 +15,6 @@
         email: [email, required]
         message: [string, required]
     redirect: thank-you
-    honeypot: firstName_407d3z05
 
 name: Contact
 title: Contact Us
@@ -31,7 +30,7 @@ summary: Description for contact us
                 <input class="bg-gray-100 rounded mb-2 border border-gray-400 focus:outline-none focus:bg-white focus:shadow-outline py-2 px-4" placeholder="Last Name" type="text" name="lastName">
             </div>
         </div>
-        <?= helper('form.honeypot', page()->form->honeypot); ?>
+        <?= helper('form.honeypot'); ?>
         <div class="question">
             <label for="email" class="block">Email Address<sup>*</sup></label>
             <input class="w-full bg-gray-100 rounded mb-2 border border-gray-400 focus:outline-none focus:bg-white focus:shadow-outline py-2 px-4" placeholder="Email Address" type="text" name="email">
