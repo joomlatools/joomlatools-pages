@@ -166,7 +166,7 @@ class ComPagesEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
 
     public function isDispatchable()
     {
-        return (bool) $this->__dispatchable && $this->getDispatcher()->getRoute();
+        return (bool) ($this->__dispatchable && $this->getDispatcher()->getRoute() && JFactory::getApplication()->isSite());
     }
 
     public function isDecorator()
