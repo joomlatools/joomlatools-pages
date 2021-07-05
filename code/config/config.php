@@ -19,10 +19,6 @@ class ComPagesConfig extends KObject implements KObjectSingleton
         parent::__construct($config);
 
         $this->_site_path      = $config->site_path;
-
-        //Load the site specific options
-        $this->_loadOptions();
-
         $this->_cache_path     = $config->cache_path;
         $this->_log_path       = $config->log_path;
         $this->_extension_path = KObjectConfig::unbox($config->extension_path);
@@ -30,9 +26,9 @@ class ComPagesConfig extends KObject implements KObjectSingleton
 
     protected function _initialize(KObjectConfig $config)
     {
+        $config->merge($this->__loadConfig($config->site_path));
+
         $config->append(array(
-            'site_path'  => Koowa::getInstance()->getRootPath().'/joomlatools-pages',
-        ))->append(array(
             'log_path'       => $config->log_path ? $config->log_path : $config->site_path.'/logs',
             'cache_path'     => $config->cache_path ? $config->log_path : $config->site_path.'/cache',
             'extension_path' => $config->extension_path ? $config->extension_path : $config->site_path.'/extensions',
@@ -113,49 +109,40 @@ class ComPagesConfig extends KObject implements KObjectSingleton
         return KObjectConfig::unbox($this->getConfig());
     }
 
-    protected function _loadOptions()
-    {
-        $options = array();
-
-        //Load site config
-        if($path = $this->getSitePath())
-        {
-            //Get the defaults
-            $options = KObjectConfig::unbox($this->getConfig());
-
-            //Load default config options
-            $files = glob(JPATH_CONFIGURATION.'/*pages.php');
-            if(!empty($files) && file_exists($files[0]))
-            {
-                $config = (array) include $files[0];
-                $options = array_replace_recursive($options, $config);
-            }
-
-            //Register the composer class locator
-            if(isset($options['composer_path']) && file_exists($options['composer_path']))
-            {
-                $this->getObject('manager')->getClassLoader()->registerLocator(
-                    new KClassLocatorComposer(array(
-                            'vendor_path' => $options['composer_path']
-                        )
-                    ));
-            }
-
-            //Load site config options
-            if(file_exists($path.'/config.php'))
-            {
-                $config   = $this->getObject('object.config.factory')->fromFile($path.'/config.php', false);
-                $options = array_replace_recursive($options, $config);
-            }
-
-            $this->getConfig()->merge($options);
-        }
-
-        return $options;
-    }
-
     final public function __get($key)
     {
         return $this->get($key);
+    }
+
+    private function __loadConfig($path)
+    {
+        $options = array();
+
+        //Load default config options
+        $files = glob(JPATH_CONFIGURATION.'/*pages.php');
+        if(!empty($files) && file_exists($files[0]))
+        {
+            $config = (array) include $files[0];
+            $options = array_replace_recursive($options, $config);
+        }
+
+        //Register the composer class locator
+        if(isset($options['composer_path']) && file_exists($options['composer_path']))
+        {
+            $this->getObject('manager')->getClassLoader()->registerLocator(
+                new KClassLocatorComposer(array(
+                        'vendor_path' => $options['composer_path']
+                    )
+                ));
+        }
+
+        //Load site config options
+        if(file_exists($path.'/config.php'))
+        {
+            $config   = $this->getObject('object.config.factory')->fromFile($path.'/config.php', false);
+            $options = array_replace_recursive($options, $config);
+        }
+
+        return $options;
     }
 }
