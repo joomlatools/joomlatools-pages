@@ -46,8 +46,8 @@ if(!is_dir(dirname(getcwd()).'/sites/'.$site))
  * Set environment
  */
 $_SERVER['PAGES_PATH'] = '/';
-$_SERVER['PAGES_IMAGES_ROOT'] = dirname(getcwd()).'/sites/'.$site.'/images';
-$_SERVER['PAGES_STATIC_ROOT'] = getcwd().'/'.$site;
+putenv('PAGES_IMAGES_ROOT', dirname(getcwd()).'/sites/'.$site.'/images');
+putenv('PAGES_STATIC_ROOT', getcwd().'/'.$site);
 
 /**
  * Prevent direct access to /web
