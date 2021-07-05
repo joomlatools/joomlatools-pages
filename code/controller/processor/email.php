@@ -22,7 +22,7 @@ class ComPagesControllerProcessorEmail extends ComPagesControllerProcessorAbstra
                 'email' => JFactory::getConfig()->get('mailfrom'),
                 'name'  => JFactory::getConfig()->get('fromname'),
             ],
-            'recipients' => [],
+            'recipients' => null,
             'smtp' => [
                 'auth'   => JFactory::getConfig()->get('smtpauth'),
                 'user'   => JFactory::getConfig()->get('smtpuser'),
@@ -176,7 +176,13 @@ class ComPagesControllerProcessorEmail extends ComPagesControllerProcessorAbstra
 
     public function getRecipients()
     {
-        return count($this->getConfig()->recipients) ? $this->getConfig()->recipients : (array) JFactory::getConfig()->get('mailfrom');
+        if($this->getConfig()->has('recipients')) {
+            $recipients = KObjectConfig::unbox($this->getConfig()->recipients);
+        }  else {
+            $recipients = JFactory::getConfig()->get('mailfrom');
+        }
+
+        return (array) $recipients;
     }
 
     public function getEmail($data)
