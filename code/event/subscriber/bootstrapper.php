@@ -97,11 +97,6 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
             //Restore phar stream wrapper (Joomla uses the TYPO3 wrapper)
             @stream_wrapper_restore('phar');
 
-            //Set PAGES_PATH based on Joomla configuration
-            if(JFactory::getApplication()->getCfg('sef_rewrite')) {
-                $_SERVER['PAGES_PATH'] = JFactory::getApplication()->getCfg('live_site') ?? '/';
-            }
-
             //Add com_pages to Joomla components
             $install = Closure::bind(function()
             {

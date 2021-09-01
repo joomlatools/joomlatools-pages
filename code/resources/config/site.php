@@ -13,7 +13,7 @@ return [
     'identifiers'   => [
 
         'request' => [
-            'base_path' => $_SERVER['PAGES_PATH'] ?? null,
+            'base_path' => $config['url_prefix'] ?? null,
         ],
 
         'com:pages.template.filter.asset' => [
