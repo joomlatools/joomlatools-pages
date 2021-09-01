@@ -45,7 +45,6 @@ if(!is_dir(dirname(getcwd()).'/sites/'.$site))
 /**
  * Set environment
  */
-$_SERVER['PAGES_PATH'] = '/';
 putenv('PAGES_IMAGES_ROOT', dirname(getcwd()).'/sites/'.$site.'/images');
 putenv('PAGES_STATIC_ROOT', getcwd().'/'.$site);
 

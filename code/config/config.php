@@ -18,9 +18,9 @@ class ComPagesConfig extends KObject implements KObjectSingleton
     {
         parent::__construct($config);
 
-        $this->_site_path      = $config->site_path;
-        $this->_cache_path     = $config->cache_path;
-        $this->_log_path       = $config->log_path;
+        $this->_site_path  = $config->site_path;
+        $this->_cache_path = $config->cache_path;
+        $this->_log_path   = $config->log_path;
         $this->_extension_path = KObjectConfig::unbox($config->extension_path);
     }
 
@@ -33,9 +33,10 @@ class ComPagesConfig extends KObject implements KObjectSingleton
             'cache_path'     => $config->cache_path ? $config->log_path : $config->site_path.'/cache',
             'extension_path' => $config->extension_path ? $config->extension_path : $config->site_path.'/extensions',
             'debug'          => JFactory::getConfig()->get('debug'),
+            'url_prefix'     => $config->url_prefix ? trim($config->url_prefix, '/') : basename($_SERVER['SCRIPT_NAME']),
         ))->append(array(
             'page_cache'            => true,
-            'page_cache_path'       =>  $config->cache_path,
+            'page_cache_path'       => $config->cache_path,
             'page_cache_validation' => true,
 
             'data_namespaces'       => array(),
@@ -82,6 +83,25 @@ class ComPagesConfig extends KObject implements KObjectSingleton
         }
 
         return $result;
+    }
+
+    public function getUrlPrefix()
+    {
+        //Handle Joomla context
+        if(JFactory::getApplication()->getCfg('sef_rewrite') || JFactory::getApplication()->getCfg('live_site'))
+        {
+           $path = '';
+           if($base = JFactory::getApplication()->getCfg('live_site')) {
+                $path .= $base;
+           }
+
+           if(!JFactory::getApplication()->getCfg('sef_rewrite')) {
+                $path = !empty($path) ? $path.'/index.php' : 'index.php';
+           }
+        }
+        else $path = $this->url_prefix;
+
+        return $path;
     }
 
     public function getCachePath()
