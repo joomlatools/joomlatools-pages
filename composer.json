@@ -1,6 +1,5 @@
 {
     "name": "joomlatools/pages",
-    "type": "joomlatools-installer",
     "license": "GPL-3.0-only",
     "description": "A component for including html and markdown into Joomla. Inspired by Jekyll and Grav",
     "keywords": [
