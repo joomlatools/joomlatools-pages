@@ -1,5 +1,6 @@
 {
     "name": "joomlatools/pages",
+    "type": "joomlatools-installer",
     "license": "GPL-3.0-only",
     "description": "A component for including html and markdown into Joomla. Inspired by Jekyll and Grav",
     "keywords": [
@@ -22,11 +23,13 @@
         }
     ],
     "require": {
-        "php": ">=7.3.0",
-        "joomlatools/framework": "~3.5.4",
-        "michelf/php-markdown": "1.9.*"
+        "php": ">=7.0.0",
+        "joomlatools/composer": "*",
+        "joomlatools/framework": "~3.4.2",
+        "michelf/php-markdown": "1.8.*",
+        "scrivo/highlight.php": "9.*"
     },
     "extra": {
-        "joomlatools-component": "pages"
+        "manifest": "code/administrator/components/com_pages/pages.xml"
     }
 }

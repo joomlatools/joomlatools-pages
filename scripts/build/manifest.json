@@ -1,0 +1,6 @@
+{
+  "packages": [
+    {"title": "Joomlatools Framework", "path": "framework"},
+    {"title": "Pages", "path": "pages"}
+  ]
+}

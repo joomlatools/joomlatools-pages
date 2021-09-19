@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<project name="Pages" default="build">
+
+	<property file="build.properties" />
+
+	<target name="build">
+        <delete dir="tmp" includeemptydirs="true" />
+
+        <copy todir="tmp">
+			<fileset dir="../../code" />
+		</copy>
+
+		<copy file="../../LICENSE.txt"
+			  tofile="tmp/LICENSE" overwrite="true" />
+
+		<move file="tmp/administrator/components/com_pages/pages.xml"
+			  tofile="tmp/pages.xml" overwrite="true" />
+
+		<delete file="com_pages.zip" quiet="true" />
+		<zip destfile="com_pages.zip" basedir="tmp" />
+
+		<delete dir="tmp" includeemptydirs="true" />
+	</target>
+</project>
