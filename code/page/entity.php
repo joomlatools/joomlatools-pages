@@ -46,7 +46,7 @@ class ComPagesPageEntity extends ComPagesModelEntityPage implements ComPagesPage
 
     public function has($name)
     {
-        return (bool) $this->get($name);
+        return (bool) ($this->get($name) !== null);
     }
 
     public function setPropertyLayout($value)

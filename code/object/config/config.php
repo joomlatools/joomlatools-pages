@@ -28,7 +28,7 @@ class ComPagesObjectConfig extends KObjectConfig implements JsonSerializable
 
     public function has($name)
     {
-        return (bool) $this->get($name);
+        return (bool) ($this->get($name) !== null);
     }
 
     public function toString()
