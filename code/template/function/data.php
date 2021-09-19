@@ -9,7 +9,7 @@
 
 return function($path, $cache = true)
 {
-    $result = array();
+    $result = false;
     if(is_array($path))
     {
         if(is_numeric(key($path)))
