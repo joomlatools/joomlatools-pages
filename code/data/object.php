@@ -28,7 +28,7 @@ class ComPagesDataObject extends ComPagesObjectConfig
     public function reverse()
     {
         $data = $this->toArray();
-        array_reverse($data);
+        $data = array_reverse($data);
 
         return new static($data);
     }
@@ -127,34 +127,5 @@ class ComPagesDataObject extends ComPagesObjectConfig
         }
 
         return $data;
-    }
-
-    public function jsonSerialize()
-    {
-        return $this->toArray();
-    }
-
-    public function __debugInfo()
-    {
-        return static::unbox($this);
-    }
-
-    /**
-     * Allow PHP casting of this object
-     *
-     * @return string
-     */
-    final public function __toString()
-    {
-        $result = '';
-
-        //Not allowed to throw exceptions in __toString() See : https://bugs.php.net/bug.php?id=53648
-        try {
-            $result = $this->toString();
-        } catch (Exception $e) {
-            trigger_error('KObjectConfigFormat::__toString exception: '. (string) $e, E_USER_ERROR);
-        }
-
-        return $result;
     }
 }
