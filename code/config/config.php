@@ -33,7 +33,7 @@ class ComPagesConfig extends KObject implements KObjectSingleton
             'cache_path'     => $config->cache_path ? $config->log_path : $config->site_path.'/cache',
             'extension_path' => $config->extension_path ? $config->extension_path : $config->site_path.'/extensions',
             'debug'          => JFactory::getConfig()->get('debug'),
-            'base_path'      => $config->base_path ?? null,
+            'base_path'      => $config->base_path ?? JFactory::getApplication()->getCfg('live_site'),
             'url_prefix'     => $config->url_prefix ? trim($config->url_prefix, '/') : basename($_SERVER['SCRIPT_NAME']),
         ))->append(array(
             'page_cache'            => true,
@@ -89,13 +89,9 @@ class ComPagesConfig extends KObject implements KObjectSingleton
     public function getUrlPrefix()
     {
         //Handle Joomla context
-        if(JFactory::getApplication()->getCfg('sef_rewrite') || JFactory::getApplication()->getCfg('live_site'))
+        if(JFactory::getApplication()->getCfg('sef_rewrite'))
         {
            $path = '';
-           if($base = JFactory::getApplication()->getCfg('live_site')) {
-                $path .= $base;
-           }
-
            if(!JFactory::getApplication()->getCfg('sef_rewrite')) {
                 $path = !empty($path) ? $path.'/index.php' : 'index.php';
            }
