@@ -24,7 +24,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         define('PAGES_VERSION', (string) $this->getObject('com:pages.version'));
 
         //Route the site
-        if(!defined('PAGES_SITE_ROOT'))
+        if(!defined('PAGES_SITE_ROOT') || empty(PAGES_SITE_ROOT))
         {
             $request = $this->getObject('request');
             $router  = $this->getObject('com:pages.dispatcher.router.site', ['request' => $request]);
