@@ -24,6 +24,10 @@ if(!defined('KOOWA_CONFIG')) {
     define('KOOWA_CONFIG' , KOOWA_ROOT.'/config');
 }
 
+if(!defined('PAGES_SITE_ROOT')) {
+    define('PAGES_SITE_ROOT', realpath(getcwd()));
+}
+
 //Load composer
 require_once KOOWA_VENDOR.'/autoload.php';
 
@@ -45,7 +49,9 @@ Koowa::getObject('object.bootstrapper')
     ->registerComponent('pages', KOOWA_VENDOR.'/joomlatools/pages/code', 'koowa')
     ->bootstrap();
 
-Koowa::getObject('event.publisher')->publishEvent('onAfterKoowaBootstrap');
+Koowa::getObject('event.publisher')
+    ->publishEvent('onAfterKoowaBootstrap');
 
 //Dispatch Pages component
-Koowa::getObject('com:pages.dispatcher.http')->dispatch();
+Koowa::getObject('com:pages.dispatcher.http')
+    ->dispatch();

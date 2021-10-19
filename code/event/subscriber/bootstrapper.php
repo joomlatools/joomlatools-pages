@@ -21,16 +21,23 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
     public function onAfterKoowaBootstrap(KEventInterface $event)
     {
-        $request = $this->getObject('request');
-        $router  = $this->getObject('com:pages.dispatcher.router.site', ['request' => $request]);
+        define('PAGES_VERSION', (string) $this->getObject('com:pages.version'));
 
-        if(false !== $route = $router->resolve())
+        //Route the site
+        if(!defined('PAGES_SITE_ROOT') || empty(PAGES_SITE_ROOT))
         {
-            define('PAGES_VERSION'  , (string) $this->getObject('com:pages.version'));
-            define('PAGES_SITE_ROOT', $route->getPath());
+            $request = $this->getObject('request');
+            $router  = $this->getObject('com:pages.dispatcher.router.site', ['request' => $request]);
 
+            if(false !== $route = $router->resolve()) {
+                define('PAGES_SITE_ROOT', $route->getPath());
+            }
+        }
+
+        if(defined('PAGES_SITE_ROOT') && file_exists(PAGES_SITE_ROOT))
+        {
             //Set the site path in the config
-            $config = $this->getObject('pages.config', ['site_path' => $route->getPath()]);
+            $config = $this->getObject('pages.config', ['site_path' => PAGES_SITE_ROOT]);
 
             //Get the config options
             $options = $config->getOptions();
