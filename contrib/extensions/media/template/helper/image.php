@@ -15,7 +15,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
             'max_width' => 1920,
             'min_width' => 320,
             'max_dpr'   => 3,
-            'base_url'  => $this->getObject('request')->getBaseUrl(),
+            'base_url' => (string) $this->getObject('request')->getBasePath(),
             'base_path' => $this->getObject('com:pages.config')->getSitePath().'/images',
             'log_path'  => $this->getObject('com:pages.config')->getLogPath(),
             'exclude'    => ['svg'],
@@ -260,34 +260,11 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
             'fm' => 'jpg'
         ));
 
-        if($this->supported($url))
-        {
+        if($this->supported($url)) {
             $result = (string) $this->url($url, $config);
-
-            //Generate data url for low quality image
-            /*if($data_url && PHP_SAPI != 'cli-server')
-            {
-                $context = stream_context_create([
-                    "ssl" => [
-                        "verify_peer"      => false,
-                        "verify_peer_name" => false,
-                    ],
-                ]);
-
-                $url = $this->getConfig()->base_url.'/'.trim($result, '/');
-                if($data = @file_get_contents($url, false, $context))
-                {
-                    //Failsafe: Ensure file is smaller then 10kb
-                    if(strlen($data) > 10000)
-                    {
-                        $log = $this->getConfig()->log_path.'/image.log';
-                        error_log(sprintf('Could not generate LQI image: %s'."\n", $url), 3, $log);
-                    }
-                    else $result = 'data:image/jpg;base64,'.base64_encode($data);
-                }
-            }*/
+        } else {
+            $result = $url;
         }
-        else $result = $url;
 
         return $result;
     }
@@ -398,8 +375,9 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
             $url = KHttpUrl::fromString($url);
         }
 
-        $path  = $url->getPath();
-        $file = $this->getConfig()->base_path . '/' . str_replace('/images/', '', $path);
+        $path = $url->getPath();
+        $base = $this->getConfig()->base_url.'/images/';
+        $file = $this->getConfig()->base_path . '/' . str_replace($base, '', $path);
 
         if(!file_exists($file)) {
             $file = false;

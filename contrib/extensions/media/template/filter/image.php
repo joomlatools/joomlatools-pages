@@ -15,6 +15,7 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
             'priority' => self::PRIORITY_LOW,
             'enabled'  => JDEBUG ? false : true,
             'origins'  => [],
+            'base_url' => (string) $this->getObject('request')->getBasePath(),
             'log_path' => $this->getObject('com:pages.config')->getLogPath(),
         ));
 
@@ -119,11 +120,20 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
                         }
                     }
 
-                    if($this->helper('ext:media.image.supported', $src)) {
-                        $attribs['url'] = '/'.ltrim($src, '/');
-                    } else {
+                    if($this->helper('ext:media.image.supported', $src))
+                    {
+                        $src = '/'.ltrim($src, '/');
+
+                        //Prepend base
+                        $base = $this->getConfig()->base_url;
+
+                        if(strpos($src , $base ) !== 0) {
+                            $src = $base.$src;
+                        }
+
                         $attribs['url'] = $src;
                     }
+                    else $attribs['url'] = $src;
 
                     unset($attribs['src']);
 
