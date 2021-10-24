@@ -8,7 +8,7 @@
  */
 class ComPagesVersion extends KObject implements KObjectSingleton
 {
-    const VERSION = '0.21.5';
+    const VERSION = '0.21.6';
 
     public function getVersion()
     {
