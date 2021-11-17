@@ -1,13 +1,6 @@
 <?php
-/**
- * Joomlatools Pages
- *
- * @copyright   Copyright (C) 2018 Johan Janssens and Timble CVBA. (http://www.timble.net)
- * @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl.html>
- * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
- */
 
-class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
+class ComPagesTemplateHelperImage extends ComPagesTemplateHelperLazysizes
 {
     protected function _initialize(KObjectConfig $config)
     {
@@ -15,12 +8,13 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
             'max_width' => 1920,
             'min_width' => 320,
             'max_dpr'   => 3,
-            'base_url' => (string) $this->getObject('request')->getBasePath(),
+            'base_url' => $this->getObject('request')->getBasePath().'/images',
             'base_path' => $this->getObject('com:pages.config')->getSitePath().'/images',
             'log_path'  => $this->getObject('com:pages.config')->getLogPath(),
             'exclude'    => ['svg'],
             'lazyload'   => true,
             'preload'    => false,
+            'origins'    => [],
             'parameters'     => ['auto' => 'true'],
             'parameters_lqi' => ['auto' => 'compress', 'fm' => 'jpg', 'q' => 50]
         ));
@@ -107,7 +101,8 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
                         $parameters = array();
                         $parameters['w'] = (int) ($width / 8);
 
-                        $lqi_url = $this->url_lqi($config->url, $parameters, in_array('inline', $lazyload));
+                        $lqi_url = (string) $this->url_lqi($config->url, $parameters);
+
                     }
                     else $lqi_url = '';
 
@@ -133,7 +128,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
                 //Add preload link to head
                 if($config->preload)
                 {
-                    $html .= '<link href="'.$hqi_url.'&w='.$width.'" rel="preload" as="image" 
+                   $html .= '<link href="'.$hqi_url.'&w='.$width.'" rel="preload" as="image" 
                         imagesrcset="'. implode(', ', $srcset).'" imagesizes="100vw" />';
 
                 }
@@ -176,7 +171,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
                             $parameters['w'] = (int) ($width / 8);
                         }
 
-                        $lqi_url = $this->url_lqi($config->url, $parameters, in_array('inline', $lazyload));
+                        $lqi_url = (string) $this->url_lqi($config->url, $parameters);
                     }
                     else $lqi_url = '';
 
@@ -243,16 +238,41 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
             $query = array_merge(array_filter(KObjectConfig::unbox($config)), $url->query);
 
             //Add CRC32 checksum
-            $query['crc'] = hash('crc32', filesize($this->_findFile($url)));
+            $file = $this->_findFile($url);
+
+            //Remote image
+            if(strstr($file, 'http'))
+            {
+                $headers  = @get_headers($file, true);
+
+                if($headers && $headers['Content-Length']) {
+                    $filesize = $headers['Content-Length'];
+                }
+
+            }
+            //Local image
+            else $filesize = @filesize($file);
+
+            $query['crc'] = hash('crc32', $filesize);
 
             ksort($query); //sort alphabetically
             $url->query = $query;
+
+            //Prepend urls with base
+            foreach($this->getConfig()->origins as $origin => $base)
+            {
+                if(stripos((string)$url, $origin) === 0)
+                {
+                    $url = $base.'/'.ltrim(str_replace($origin, '', $url), '/');
+                    break;
+                }
+            }
         }
 
         return $url;
     }
 
-    public function url_lqi($url, $parameters = array(), $data_url = false)
+    public function url_lqi($url, $parameters = array())
     {
         $config = new ComPagesObjectConfig($parameters);
         $config->append($this->getConfig()->parameters_lqi);
@@ -261,7 +281,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
         ));
 
         if($this->supported($url)) {
-            $result = (string) $this->url($url, $config);
+            $result = $this->url($url, $config);
         } else {
             $result = $url;
         }
@@ -294,7 +314,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
                 $config->min_width = ceil($this->getConfig()->min_width / 100 * (int)$config->min_width);
             }
 
-            $sizes = $this->_calculateSizes($url->getPath(), $config->max_width * $config->max_dpr, $config->min_width);
+            $sizes = $this->_calculateSizes($url, $config->max_width * $config->max_dpr, $config->min_width);
 
             //Build path for the high quality image
             $hqi_url = $this->url($url);
@@ -324,7 +344,21 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
         $format  = strtolower(pathinfo($url->getPath(), PATHINFO_EXTENSION));
         $exclude = KObjectConfig::unbox($this->getConfig()->exclude);
 
-        if(in_array($format, $exclude) || $url->scheme == 'data' || substr($url->scheme, 0, 4) == 'http') {
+        //Remote image
+        if(substr($url->scheme, 0, 4) == 'http')
+        {
+            $result = false;
+
+            foreach($this->getConfig()->origins as $origin => $path)
+            {
+                if(stripos((string)$url, $origin) === 0) {
+                    $result = true;
+                }
+            }
+        }
+
+        //Always exclude format and/or data
+        if(in_array($format, $exclude) || $url->scheme == 'data') {
             $result = false;
         }
 
@@ -371,19 +405,58 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
 
     protected function _findFile($url)
     {
+        $result = false;
+
         if(!$url instanceof KHttpUrlInterface) {
             $url = KHttpUrl::fromString($url);
         }
 
-        $path = $url->getPath();
-        $base = $this->getConfig()->base_url.'/images/';
-        $file = $this->getConfig()->base_path . '/' . str_replace($base, '', $path);
+        //Remote image
+        if($url->scheme)
+        {
+            //Expand origins
+            foreach($this->getConfig()->origins as $origin => $base)
+            {
+                if(stripos((string) $url, $origin) === 0)
+                {
+                    $ext  = pathinfo($url, PATHINFO_EXTENSION);
+                    $name = hash("crc32b", $url).'.' . $ext;
+                    $file  = $this->getObject('com:pages.config')->getSitePath() . '/' . trim($base, '/'). '/'.$name;
 
-        if(!file_exists($file)) {
-            $file = false;
+                    if(file_exists($file))
+                    {
+                        $result = $file;
+                        break;
+                    }
+                }
+            }
+
+            //Fallback if file doesn't exist
+            if(!$result)
+            {
+                $file = (string) $url;
+
+                $headers = @get_headers($file);
+                if(!$headers || $headers[0] == 'HTTP/1.1 404 Not Found') {
+                    $result = false;
+                } else {
+                    $result = $file;
+                }
+            }
+        }
+        //Local image
+        else
+        {
+            $path = $url->getPath();
+            $base = $this->getConfig()->base_url.'/';
+            $file = $this->getConfig()->base_path . '/' . str_replace($base, '', $path);
+
+            if(file_exists($file)) {
+                $result = $file;
+            }
         }
 
-        return $file;
+        return $result;
     }
 
     /*
@@ -394,7 +467,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
     protected function _calculateSizes($url, $max_width, $min_width = 320)
     {
         $min_filesize = 1024 * 5; //5kb
-        $modifier     = 0.7;       //70% (each image should be +/- 30% smaller in expected size)
+        $modifier     = 0.7;      //70% (each image should be +/- 30% smaller in expected size)
 
         //Get dimensions
         $sizes = array();
@@ -402,8 +475,18 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
         {
             list($width, $height) = @getimagesize($file);
 
-            //Get filesize
-            $filesize = @filesize($file);
+            //Remote image
+            if(strstr($file, 'http'))
+            {
+                $headers  = @get_headers($file, true);
+
+                if($headers && $headers['Content-Length']) {
+                    $filesize = $headers['Content-Length'];
+                }
+
+            }
+            //Local image
+            else  $filesize = @filesize($file);
 
             if ($width < $max_width) {
                 $sizes[] = $width;
@@ -458,7 +541,7 @@ class ExtMediaTemplateHelperImage extends ExtMediaTemplateHelperLazysizes
         if($file = $this->_findFile($url))
         {
             list($width, $height) = @getimagesize($file);
-
+            
             if($max_width && $max_width < $width)
             {
                 $height = ceil(($max_width / $width) * $height);

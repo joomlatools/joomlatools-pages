@@ -1,22 +1,14 @@
 <?php
-/**
- * Joomlatools Pages
- *
- * @copyright   Copyright (C) 2018 Johan Janssens and Timble CVBA. (http://www.timble.net)
- * @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl.html>
- * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
- */
 
-class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
+class ComPagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
 {
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
             'priority' => self::PRIORITY_LOW,
-            'enabled'  => JDEBUG ? false : true,
-            'origins'  => [],
-            'base_url' => (string) $this->getObject('request')->getBasePath(),
-            'log_path' => $this->getObject('com:pages.config')->getLogPath(),
+            'enabled'  => true,
+            'base_url'  => (string) $this->getObject('request')->getBasePath(),
+            'log_path'  => $this->getObject('com:pages.config')->getLogPath(),
         ));
 
         parent::_initialize($config);
@@ -93,36 +85,11 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
                         $attribs['class'] = explode(' ', $attribs['class']);
                     }
 
-                    //Copy images
-                    if(strpos($src, '://') !== false && count($this->getConfig()->origins))
+                    if($this->helper('image.supported', $src))
                     {
-                        foreach($this->getConfig()->origins as $origin => $path)
-                        {
-                            if(stripos($src, $origin) === 0)
-                            {
-                                if ($extension = pathinfo($src, PATHINFO_EXTENSION))
-                                {
-                                    $base = $this->getObject('com:pages.config')->getSitePath();
-                                    $dest = $path .'/'. hash("crc32b", $src).'.' . $extension;
-
-                                    if(!file_exists($base . $dest))
-                                    {
-                                        if(copy($src, $base . $dest) == false)
-                                        {
-                                            $log = $this->getConfig()->log_path.'/image.log';
-                                            error_log(sprintf('Could copy image: %s'."\n", $src), 3, $log);
-                                        }
-                                        else $src = $dest;
-                                    }
-                                    else $src = $dest;
-                                }
-                            }
+                        if(strpos($src, '://') === false) {
+                            $src = '/'.ltrim($src, '/');
                         }
-                    }
-
-                    if($this->helper('ext:media.image.supported', $src))
-                    {
-                        $src = '/'.ltrim($src, '/');
 
                         //Prepend base
                         $base = $this->getConfig()->base_url;
@@ -172,7 +139,7 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
                     }
 
                     //Filter the images
-                    $html = str_replace($matches[0][$key], $this->helper('ext:media.image', $options), $html);
+                    $html = str_replace($matches[0][$key], $this->helper('image', $options), $html);
                 }
             }
         }
@@ -187,7 +154,7 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
         {
             foreach($matches[1] as $key => $match)
             {
-                $html .= $this->helper('ext:media.image.import', 'bgset');
+                $html .= $this->helper('image.import', 'bgset');
 
                 $attribs = $this->parseAttributes($match);
 
@@ -220,7 +187,7 @@ class ExtMediaTemplateFilterImage extends ComPagesTemplateFilterAbstract
                     $options[$name] = $value;
                 }
 
-                if($srcset = $this->helper('ext:media.image.srcset', $matches[3][$key], $options))
+                if($srcset = $this->helper('image.srcset', $matches[3][$key], $options))
                 {
                     $attribs['data-sizes'] = 'auto';
                     $attribs['data-bgset'] = implode(',', $srcset);

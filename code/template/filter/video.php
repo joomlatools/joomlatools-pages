@@ -1,19 +1,12 @@
 <?php
-/**
- * Joomlatools Pages
- *
- * @copyright   Copyright (C) 2018 Johan Janssens and Timble CVBA. (http://www.timble.net)
- * @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl.html>
- * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
- */
 
-class ExtMediaTemplateFilterVideo extends ComPagesTemplateFilterAbstract
+class ComPagesTemplateFilterVideo extends ComPagesTemplateFilterAbstract
 {
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
             'priority'   => self::PRIORITY_LOW,
-            'enabled'    => JDEBUG ? false : true,
+            'enabled'     => true,
             'parameters' => ['auto' => 'true'],
         ));
 
@@ -73,7 +66,7 @@ class ExtMediaTemplateFilterVideo extends ComPagesTemplateFilterAbstract
                         $text = str_replace($matches[1][$key], $this->buildAttributes($attribs), $text);
 
                         //Enable plyr (custom player)
-                        $text .= $this->helper('ext:media.video.player');
+                        $text .= $this->helper('video.player');
                     }
                 }
             }
@@ -94,4 +87,3 @@ class ExtMediaTemplateFilterVideo extends ComPagesTemplateFilterAbstract
         return $url;
     }
 }
-

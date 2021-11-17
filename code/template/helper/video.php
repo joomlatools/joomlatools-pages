@@ -1,17 +1,10 @@
 <?php
-/**
- * Joomlatools Pages
- *
- * @copyright   Copyright (C) 2018 Johan Janssens and Timble CVBA. (http://www.timble.net)
- * @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl.html>
- * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
- */
 
-class ExtMediaTemplateHelperVideo extends ExtMediaTemplateHelperLazysizes
+class ComPagesTemplateHelperVideo extends ComagesTemplateHelperLazysizes
 {
     public function player($config = array())
     {
-        $config = new ComPagesObjectConfig($config);
+        $config = new KObjectConfigJson($config);
         $config->append(array(
             'quality_default' => '540',
             'quality_lowest'  => '240',

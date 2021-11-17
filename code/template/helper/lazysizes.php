@@ -1,19 +1,12 @@
 <?php
-/**
- * Joomlatools Pages
- *
- * @copyright   Copyright (C) 2018 Johan Janssens and Timble CVBA. (http://www.timble.net)
- * @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl.html>
- * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
- */
 
-class ExtMediaTemplateHelperLazysizes extends ComPagesTemplateHelperBehavior
+class ComPagesTemplateHelperLazysizes extends ComPagesTemplateHelperBehavior
 {
     public function import($plugin = '', $config = array())
     {
-        $config = new ComPagesObjectConfig($config);
+        $config = new KObjectConfigJson($config);
         $config->append(array(
-            'debug' =>  $this->getObject('pages.config')->debug,
+            'debug' =>  JFactory::getApplication()->getCfg('debug'),
         ));
 
         $html   = '';
