@@ -190,7 +190,7 @@ class DomDocumentXml extends DOMDocument
     private $__xpath;
 
     public function __toString() {
-        return parent::saveXML();
+        return parent::saveXML($this);
     }
 
     public function query($expression)

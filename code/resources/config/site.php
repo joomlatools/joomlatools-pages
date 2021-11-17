@@ -11,6 +11,11 @@ return [
 
     'composer_path' => $config['composer_path'],
     'identifiers'   => [
+
+        'request' => [
+            'base_path' => $config['base_path'] ?? null,
+        ],
+
         'com:pages.template.filter.asset' => [
             'schemes' =>  $config['aliases'] ?? array()
         ],

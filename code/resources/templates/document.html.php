@@ -13,7 +13,7 @@
 <html xmlns:og="http://opengraphprotocol.org/schema/" class="no-js" lang="<?= language() ?>" dir="<?= direction() ?>" vocab="http://schema.org/">
 <head>
     <meta charset="utf-8"/>
-    <base href="<?= url(); ?>" />
+    <base href="<?= url()->toString(KHttpUrl::FULL ^ KHttpUrl::SCHEME); ?>" />
 
     <ktml:title>
     <ktml:meta>

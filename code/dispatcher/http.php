@@ -72,14 +72,20 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
         if(!isset($this->__route) && $this->getObject('pages.config')->getSitePath() !== false)
         {
-            $base  = $this->getRequest()->getBasePath();
-            $url   = urldecode($this->getRequest()->getUrl()->getPath());
+            $base   = $this->getRequest()->getBasePath();
+            $prefix = $this->getObject('pages.config')->getUrlPrefix();
+            $path   = urldecode($this->getRequest()->getUrl()->getPath());
+            
+            //Strip base
+            $pos = strpos($path, $base);
+            if ($pos !== false) {
+                $path = substr_replace($path, '', $pos, strlen($base));
+            }
 
             //Strip script name if request is rewritten
-            if(!isset($_SERVER['PAGES_PATH'])) {
-                $path = str_replace(array($base, basename($_SERVER['SCRIPT_NAME'])), '', $url);
-            } else {
-                $path = str_replace($base, '', $url);
+            $pos = strpos($path, $prefix);
+            if ($pos !== false) {
+                $path = substr_replace($path, '', $pos, strlen($prefix));
             }
 
             $path  = rtrim($path, '/');
@@ -143,7 +149,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
             if($collection = $page->isCollection())
             {
                 if($collection->has('format')) {
-                    $formats = array_merge($formats, (array) $collection->get('format'));
+                    $formats = array_merge($formats, (array) KObjectConfig::unbox($collection->get('format')));
                 }
             }
         }

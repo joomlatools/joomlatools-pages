@@ -185,7 +185,9 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             $response->setLastModified($response->getDate());
 
             //If the cache exists and it has not been modified do not reset the Last-Modified date
-            if($cache = $this->loadCache() && $this->isIdentical()) {
+            if($this->loadCache() && $this->isIdentical())
+            {
+                $cache = $this->loadCache();
                 $response->setLastModified(new DateTime($cache['headers']['Last-Modified']));
             }
 
@@ -506,11 +508,13 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         if($result && $strict)
         {
             //Check if the current page is cacheable
-            if($page = $this->getPage()) {
-                $result = (bool)$page->process->get('cache', true);
-            } else {
-                $result = false;
+            if($page = $this->getPage())
+            {
+                if($page->process->get('cache', true) === false) {
+                    $result = false;
+                }
             }
+            else $result = false;
 
             //Failsafe in case an error got cached
             if($cache = $this->loadCache()) {
@@ -556,6 +560,8 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
     protected function _decodeEtag($etag)
     {
         $validators = array();
+
+        $etag = ltrim($etag, 'W/'); //strip W/ before decoding
         if($etag && $data = base64_decode($etag)) {
             $validators = json_decode(gzinflate($data), true);
         }

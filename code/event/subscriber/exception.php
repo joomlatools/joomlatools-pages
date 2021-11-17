@@ -36,6 +36,10 @@ class ComPagesEventSubscriberException extends ComPagesEventSubscriberAbstract
         if(class_exists('JError')) {
             JError::setErrorHandling(E_ERROR, 'callback', array($this, 'handleException'));
         }
+
+        //Catch all Koowa exceptions
+        $handler = $this->getObject('exception.handler');
+        $handler->enable(KExceptionHandlerInterface::TYPE_EXCEPTION);
     }
 
     public function onException(KEvent $event)
@@ -95,7 +99,7 @@ class ComPagesEventSubscriberException extends ComPagesEventSubscriberAbstract
         {
             foreach([(int) $code, '500'] as $code)
             {
-                if($page = $dispatcher->getPage($code))
+                if($page = $dispatcher->getPage('/'.$code))
                 {
                     $dispatcher->getPage()->setProperties($page);
 

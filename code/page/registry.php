@@ -138,6 +138,11 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     $extend->type = $result->get('type');
                 }
 
+                //Merge format
+                if($result->has('format')) {
+                    $extend->format->merge($result->get('format'));
+                }
+
                 $result = $extend;
             }
 
@@ -238,7 +243,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     public function getPage($path)
     {
         $page = false;
-
 
         if(!isset($this->__pages[$path]))
         {

@@ -26,17 +26,22 @@ class ComPagesDispatcherRouterRedirect extends ComPagesDispatcherRouterAbstract
     {
         if(!$route)
         {
-            $base = $this->getRequest()->getBasePath();
-            $url  = urldecode( $this->getRequest()->getUrl()->getPath());
 
-            //Strip script name if request is not rewritten (allow to redirect /index.php/)
-            if(!isset($_SERVER['PAGES_PATH'])) {
-                $route = str_replace(array($base, basename($_SERVER['SCRIPT_NAME'])), '', $url);
-            } else {
-                $route = str_replace($base, '', $url);
+            $base   = $this->getRequest()->getBasePath();
+            $prefix = $this->getObject('pages.config')->getUrlPrefix();
+            $route  = urldecode( $this->getRequest()->getUrl()->getPath());
+
+            //Strip base
+            $pos = strpos($route, $base);
+            if ($pos !== false) {
+                $route = substr_replace($route, '', $pos, strlen($base));
             }
 
-            $route = trim($route, '/');
+            //Strip script name if request is not rewritten (allow to redirect /index.php/)
+            $pos = strpos($route, $prefix);
+            if ($pos !== false) {
+                $route = substr_replace($route, '', $pos, strlen($prefix));
+            }
         }
 
         return parent::resolve($route, $parameters);
