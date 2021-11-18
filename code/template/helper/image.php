@@ -277,6 +277,7 @@ class ComPagesTemplateHelperImage extends ComPagesTemplateHelperLazysizes
                 if(stripos((string)$url, $origin) === 0)
                 {
                     $url = $base.'/'.ltrim(str_replace($origin, '', $url), '/');
+                    $url = KHttpUrl::fromString($url);
                     break;
                 }
             }
