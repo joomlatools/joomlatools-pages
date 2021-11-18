@@ -5,10 +5,10 @@ class ComPagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'priority' => self::PRIORITY_LOW,
-            'enabled'  => true,
-            'base_url'  => (string) $this->getObject('request')->getBasePath(),
-            'log_path'  => $this->getObject('com:pages.config')->getLogPath(),
+            'priority'      => self::PRIORITY_LOW,
+            'enabled'       => true,
+            'base_url'      => (string) $this->getObject('request')->getBasePath(),
+            'client_hints' => true
         ));
 
         parent::_initialize($config);
@@ -61,8 +61,11 @@ class ComPagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
             }
 
             //Add client hints
-            $text .= '<meta http-equiv="Accept-CH" content="dpr, width, viewport-width, downlink" />';
-            $text .= '<meta http-equiv="Accept-CH-Lifetime" content="86400" />';
+            if($this->getConfig()->client_hints)
+            {
+                $text .= '<meta http-equiv="Accept-CH" content="dpr, width, viewport-width, downlink" />';
+                $text .= '<meta http-equiv="Accept-CH-Lifetime" content="86400" />';
+            }
         }
     }
 
