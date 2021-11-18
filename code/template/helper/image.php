@@ -10,7 +10,6 @@ class ComPagesTemplateHelperImage extends ComPagesTemplateHelperLazysizes
             'max_dpr'   => 3,
             'base_url' => $this->getObject('request')->getBasePath().'/images',
             'base_path' => $this->getObject('com:pages.config')->getSitePath().'/images',
-            'log_path'  => $this->getObject('com:pages.config')->getLogPath(),
             'exclude'    => ['svg'],
             'lazyload'   => true,
             'preload'    => false,
@@ -98,20 +97,27 @@ class ComPagesTemplateHelperImage extends ComPagesTemplateHelperLazysizes
                     {
                         $config->attributes->class->append(['lazyprogressive']);
 
+                        if(in_array('inline', $lazyload)) {
+                            $config->attributes->class->append(['lazyprogressive-inline']);
+                        }
+
                         $parameters = array();
                         $parameters['w'] = (int) ($width / 8);
 
-                        $lqi_url = (string) $this->url_lqi($config->url, $parameters);
+                        $lqi_url   = (string) $this->url_lqi($config->url, $parameters);
+                        $lqi_style = in_array('inline', $lazyload) ? '--lqi-inline' : '--lqi';
+
+                        $lqi = sprintf("%s: url('%s')", $lqi_style, $lqi_url);
 
                     }
-                    else $lqi_url = '';
+                    else $lqi = '';
 
                     //Combine low quality image and a data-srcset attribute and provide a fallback if javascript is disabled
                     $html .= '<span '.$this->buildAttributes($config->attributes_container).'>';
                     $html .= '<noscript>';
                     $html .=    '<img width="'.$width.'" height="'.$height.'" src="'.$hqi_url.'&w='.$width.'" alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes_noscript).'>';
                     $html .= '</noscript>';
-                    $html .='<img width="'.$width.'" height="'.$height.'" style="--lqi: '.sprintf("url('%s')", $lqi_url).'"
+                    $html .='<img width="'.$width.'" height="'.$height.'" style="'.$lqi.'"
                         src="'.$this->_generatePlaceholder($width, $height).'"
                         data-sizes="auto"
                         data-srcset="'. implode(', ', $srcset).'"
@@ -163,6 +169,10 @@ class ComPagesTemplateHelperImage extends ComPagesTemplateHelperLazysizes
                     {
                         $config->attributes->class->append(['lazyprogressive']);
 
+                        if(in_array('inline', $lazyload)) {
+                            $config->attributes->class->append(['lazyprogressive-inline']);
+                        }
+
                         $parameters = array();
 
                         if($height) {
@@ -171,16 +181,19 @@ class ComPagesTemplateHelperImage extends ComPagesTemplateHelperLazysizes
                             $parameters['w'] = (int) ($width / 8);
                         }
 
-                        $lqi_url = (string) $this->url_lqi($config->url, $parameters);
+                        $lqi_url   = (string) $this->url_lqi($config->url, $parameters);
+                        $lqi_style = in_array('inline', $lazyload) ? '--lqi-inline' : '--lqi';
+
+                        $lqi = sprintf("%s: url('%s')", $lqi_style, $lqi_url);
                     }
-                    else $lqi_url = '';
+                    else $lqi = '';
 
                     //Combine low quality image and a data-srcset attribute and provide a fallback if javascript is disabled
                     $html .= '<span '.$this->buildAttributes($config->attributes_container).'>';
                     $html .= '<noscript>';
                     $html .=    '<img width="'.$width.'" height="'.$height.'" src="'.$hqi_url.'" alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes_noscript).'>';
                     $html .= '</noscript>';
-                    $html .='<img width="'.$width.'" height="'.$height.'" style="--lqi: '.sprintf("url('%s')", $lqi_url).'"
+                    $html .='<img width="'.$width.'" height="'.$height.'" style="'.$lqi.'"
                       src="'.$this->_generatePlaceholder($width, $height).'"
                       data-srcset="'. implode(',', $srcset).'"
                       alt="'.$config->alt.'" '.$this->buildAttributes($config->attributes).'>';

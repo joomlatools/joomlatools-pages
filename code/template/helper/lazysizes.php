@@ -66,10 +66,14 @@ span.img-container > img {
 }
 
 .lazyprogressive {
-  background-image: var(--lqi);
+  background-image: var(--lqi-url);
   background-repeat: no-repeat;
   background-size: contain;
   filter: blur(8px);
+}
+
+.lazyprogressive-inline {
+  background-image: var(--lqi-inline);
 }
 
 .lazyloaded {
