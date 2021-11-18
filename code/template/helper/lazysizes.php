@@ -34,6 +34,14 @@ if ('connection' in navigator)
     }
 }
 
+window.addEventListener('lazybeforesizes', function (e)
+{
+    //If 2g or saveData load lower quality image
+    if(navigator.connection.effectiveType.includes('2g') || navigator.connection.saveData === true) {
+        e.detail.width = Math.round(e.detail.width / 2);
+    }
+});
+
 window.addEventListener('lazybeforeunveil', function (e)
 {
   var detail = e.detail;
