@@ -67,10 +67,6 @@ return [
                 return \Michelf\MarkdownExtra::defaultTransform($text);
             }
         ],
-        'com:pages.event.subscriber.staticcache' => [
-            'enabled'    => $config['http_static_cache'] && $config['http_cache'],
-            'cache_path' => $config['http_static_cache_path'],
-        ],
     ],
     'extension_config' => $config['extension_config'] ?? array(),
 ];
