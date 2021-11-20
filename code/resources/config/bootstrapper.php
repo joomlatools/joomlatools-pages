@@ -66,7 +66,6 @@ return [
                 'com:pages.event.subscriber.bootstrapper',
                 'com:pages.event.subscriber.dispatcher',
                 'com:pages.event.subscriber.exception',
-                'com:pages.event.subscriber.staticcache',
             ]
         ],
         'com:pages.dispatcher.router.site' => [
