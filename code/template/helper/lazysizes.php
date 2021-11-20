@@ -40,7 +40,7 @@ window.addEventListener('lazybeforesizes', function (e)
     if(navigator.connection.saveData === true) {
         e.detail.width = Math.round(e.detail.width / 3);
     //If 2g or saveData load lower quality image
-    } elseif(navigator.connection.effectiveType.includes('2g')) {
+    } else if(navigator.connection.effectiveType.includes('2g')) {
         e.detail.width = Math.round(e.detail.width / 2);
     }
     
