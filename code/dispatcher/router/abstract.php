@@ -147,7 +147,7 @@ abstract class ComPagesDispatcherRouterAbstract extends KObject implements ComPa
             $path = trim($url->getPath(), '/');
 
             //Add the url path and (script name (index.php) if request is not rewritten)
-            if($prefix = $this->getObject('pages.config')->getUrlPrefix()) {
+            if($prefix = $this->getObject('pages.config')->getScriptName()) {
                 $base = $base .'/'.$prefix;
             }
 
