@@ -90,15 +90,16 @@ class ComPagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
 
                     if($this->helper('image.supported', $src))
                     {
-                        if(strpos($src, '://') === false) {
+                        if(strpos($src, '://') === false)
+                        {
                             $src = '/'.ltrim($src, '/');
-                        }
 
-                        //Prepend base
-                        $base = $this->getConfig()->base_url;
+                            //Prepend base
+                            $base = $this->getConfig()->base_url;
 
-                        if(strpos($src , $base ) !== 0) {
-                            $src = $base.$src;
+                            if(strpos($src , $base ) !== 0) {
+                                $src = $base.$src;
+                            }
                         }
 
                         $attribs['url'] = $src;
