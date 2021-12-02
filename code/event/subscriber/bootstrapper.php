@@ -121,7 +121,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
     protected function _installExtensions($path)
     {
         if(file_exists($path.'/package.php')) {
-            $packages = include $path.'/package.php';
+            $packages = (array) include $path.'/package.php';
         } else {
             $packages = array();
         }
@@ -346,11 +346,15 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
 
                 if(pathinfo($directory, PATHINFO_EXTENSION) == 'zip')
                 {
-                    if(!is_dir($path.'/'.$name)) {
+                    if(!is_dir($path.'/'.$name))
+                    {
+                        if(!class_exists('Phar')) {
+                            throw new RuntimeException('Phar extension not available');
+                        }
+
                         $directory = 'phar://'.$directory;
-                    } else {
-                        continue;
                     }
+                    else continue;
                 }
 
                 //Get extension name from manifest
