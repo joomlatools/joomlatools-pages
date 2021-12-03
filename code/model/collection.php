@@ -75,19 +75,6 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         $context->data = $this->filterData($data);
     }
 
-    public function setState(array $values)
-    {
-        //Automatically create states that don't exist yet
-        foreach($values as $name => $value)
-        {
-            if(!$this->getState()->has($name)) {
-                $this->getState()->insert($name, 'string');
-            }
-        }
-
-        return parent::setState($values);
-    }
-
     final public function hash($refresh = false)
     {
         $context = $this->getContext();
