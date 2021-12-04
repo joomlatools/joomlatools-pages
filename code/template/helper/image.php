@@ -8,8 +8,9 @@ class ComPagesTemplateHelperImage extends ComPagesTemplateHelperLazysizes
             'max_width' => 1920,
             'min_width' => 320,
             'max_dpr'   => 3,
-            'base_url' => $this->getObject('request')->getBasePath().'/images',
-            'base_path' => $this->getObject('com:pages.config')->getSitePath().'/images',
+            'base_url'   => $this->getObject('request')->getBasePath().'/images',
+            'base_path'  => $this->getObject('com:pages.config')->getSitePath().'/images',
+            'cache_path' => $this->getObject('com:pages.config')->getCachePath().'/images',
             'exclude'    => ['svg'],
             'lazyload'   => true,
             'preload'    => false,
@@ -276,6 +277,8 @@ class ComPagesTemplateHelperImage extends ComPagesTemplateHelperLazysizes
             {
                 if(stripos((string)$url, $origin) === 0)
                 {
+                    $this->getTemplate()->getFilter('asset')->filter($base);
+
                     $url = $base.'/'.ltrim(str_replace($origin, '', $url), '/');
                     $url = KHttpUrl::fromString($url);
                     break;
@@ -433,9 +436,12 @@ class ComPagesTemplateHelperImage extends ComPagesTemplateHelperLazysizes
             {
                 if(stripos((string) $url, $origin) === 0)
                 {
+                    $this->getTemplate()->getFilter('asset')->filter($base);
+
                     $ext  = pathinfo($url, PATHINFO_EXTENSION);
                     $name = hash("crc32b", $url).'.' . $ext;
-                    $file  = $this->getObject('com:pages.config')->getSitePath() . '/' . trim($base, '/'). '/'.$name;
+                    $base  = str_replace(rtrim($this->getConfig()->base_url, '/').'/', '', $base);
+                    $file  = $this->getConfig()->cache_path . '/' . trim($base, '/'). '/'.$name;
 
                     if(file_exists($file))
                     {
@@ -444,6 +450,8 @@ class ComPagesTemplateHelperImage extends ComPagesTemplateHelperLazysizes
                     }
                 }
             }
+
+
 
             //Fallback if file doesn't exist
             if(!$result)
@@ -462,7 +470,7 @@ class ComPagesTemplateHelperImage extends ComPagesTemplateHelperLazysizes
         else
         {
             $path = $url->getPath();
-            $base = $this->getConfig()->base_url.'/';
+            $base = rtrim($this->getConfig()->base_url, '/').'/';
             $file = $this->getConfig()->base_path . '/' . str_replace($base, '', $path);
 
             if(file_exists($file)) {
