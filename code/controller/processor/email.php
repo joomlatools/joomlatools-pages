@@ -73,6 +73,8 @@ class ComPagesControllerProcessorEmail extends ComPagesControllerProcessorAbstra
 
                     if ($smtp->secure == 'ssl' || $smtp->secure == 'tls') {
                         $mailer->SMTPSecure = $smtp->secure;
+                    } else {
+                        $mailer->SMTPAutoTLS = false;
                     }
 
                     $mailer->isSMTP();
@@ -136,30 +138,7 @@ class ComPagesControllerProcessorEmail extends ComPagesControllerProcessorAbstra
             $body = $this->getMessage($data);
             $mailer->Body = $body;
 
-            try
-            {
-                $result = $mailer->send();
-            }
-            catch (PHPMailer\Exception $e)
-            {
-                $result = false;
-
-                if ($mailer->SMTPAutoTLS)
-                {
-                    /**
-                     * PHPMailer has an issue with servers with invalid certificates
-                     *
-                     * See: https://github.com/PHPMailer/PHPMailer/wiki/Troubleshooting#opportunistic-tls
-                     */
-                    $mailer->SMTPAutoTLS = false;
-
-                    try {
-                        $result = $mailer->send();
-                    }  catch (PHPMailer\Exception $e) {
-                        $result = false;
-                    }
-                }
-            }
+            $result = $mailer->send();
 
             if(!$result) {
                 throw new RuntimeException($mailer->ErrorInfo);
