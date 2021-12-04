@@ -64,6 +64,8 @@ class ComPagesHttpCache extends KHttpClient
             //Revalidate the cache
             if(!$valid)
             {
+                $start = microtime(true);
+
                 $response = parent::send($request);
 
                 if($cache && ($response->isError() || $response->isNotModified()))
@@ -82,7 +84,8 @@ class ComPagesHttpCache extends KHttpClient
                         'status'  => $response->getStatusCode(),
                         'format'  => $response->getFormat(),
                         'headers' => $response->getHeaders()->toArray(),
-                        'content' => $response->getContent()
+                        'content' => $response->getContent(),
+                        'timing'  => (int) ((microtime(true) - $start) * 1000),
                     ]);
                 }
             }
