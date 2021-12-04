@@ -97,7 +97,7 @@ class ComPagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
                             //Prepend base
                             $base = $this->getConfig()->base_url;
 
-                            if(strpos($src , $base ) !== 0) {
+                            if($base && strpos($src , $base ) !== 0) {
                                 $src = $base.$src;
                             }
                         }
