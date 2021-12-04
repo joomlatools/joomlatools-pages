@@ -7,6 +7,8 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
+use PHPMailer\PHPMailer;
+
 class ComPagesControllerProcessorEmail extends ComPagesControllerProcessorAbstract
 {
     private $__mailer;
@@ -14,7 +16,8 @@ class ComPagesControllerProcessorEmail extends ComPagesControllerProcessorAbstra
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'log_file'   => $this->getObject('com:pages.config')->getLogPath().'/mailer.log',
+            'log_file'   => $this->getObject('com:pages.config')->getLogPath().'/phpmailer.log',
+            'debug'      => false, //PHPMailer\SMTP::DEBUG_LOWLEVEL
             'html'       => true,
             'title'      => '',
             'subject'    => '',
@@ -39,11 +42,11 @@ class ComPagesControllerProcessorEmail extends ComPagesControllerProcessorAbstra
 
     public function getMailer()
     {
-        if(class_exists('PHPMailer') && !isset($this->__mailer))
+        if(class_exists('\PHPMailer\PHPMailer\PHPMailer') && !isset($this->__mailer))
         {
             $config = $this->getConfig();
 
-            $mailer = new \PHPMailer();
+            $mailer = new PHPMailer\PHPMailer();
 
             $from_email = $config->get('sender')->email;
             $from_name  = $config->get('sender')->name;
@@ -85,9 +88,9 @@ class ComPagesControllerProcessorEmail extends ComPagesControllerProcessorAbstra
                     break;
             }
 
-            if ($this->getObject('pages.config')->debug)
+            if ($this->getConfig()->debug)
             {
-                $mailer->SMTPDebug = 4;
+                $mailer->SMTPDebug = (int) $this->getConfig()->debug;
 
                 if(is_dir(dirname($config->log_file)))
                 {
@@ -99,7 +102,7 @@ class ComPagesControllerProcessorEmail extends ComPagesControllerProcessorAbstra
             else $mailer->XMailer = ' '; // Don't disclose the PHPMailer version
 
             if (version_compare(PHP_VERSION, '7.3.0', '>=')) {
-                \PHPMailer::$validator = 'php';
+                PHPMailer\PHPMailer::$validator = 'php';
             }
 
             $this->__mailer = $mailer;
@@ -137,7 +140,7 @@ class ComPagesControllerProcessorEmail extends ComPagesControllerProcessorAbstra
             {
                 $result = $mailer->send();
             }
-            catch (\PHPMailerException $e)
+            catch (PHPMailer\Exception $e)
             {
                 $result = false;
 
@@ -152,7 +155,7 @@ class ComPagesControllerProcessorEmail extends ComPagesControllerProcessorAbstra
 
                     try {
                         $result = $mailer->send();
-                    }  catch (\PHPMailerException $e) {
+                    }  catch (PHPMailer\Exception $e) {
                         $result = false;
                     }
                 }
