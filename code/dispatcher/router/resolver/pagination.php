@@ -58,7 +58,7 @@ class ComPagesDispatcherRouterResolverPagination extends ComPagesDispatcherRoute
             {
                 $page = $route->query['page'];
 
-                if($page && $state['limit']) {
+                if($page && isset($state['limit'])) {
                     $route->query['offset'] = ($page - 1) * (int) $state['limit'];
                 }
 
