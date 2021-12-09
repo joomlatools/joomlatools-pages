@@ -30,7 +30,7 @@ tracesSampleRate: 1.0
 <?
 $dsn = $dsn ?? getenv('SENTRY_DSN');
 $env = $environment ?? getenv('SENTRY_ENVIRONMENT');
-$rel = $release ?? getenv('SENTRY_RELEASE') ?: $this->getObject('com:pages.version')->getVersion();
+$rel = $release ?? getenv('SENTRY_RELEASE') ?: object('pages.version')->getVersion();
 
 if(!empty($version)) {
     $version =  '@'.$version;
