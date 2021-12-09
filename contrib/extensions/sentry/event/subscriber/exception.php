@@ -15,8 +15,9 @@ class ExtSentryEventSubscriberException extends ComPagesEventSubscriberAbstract
             'dsn'         => getenv('SENTRY_DSN'),
             'environment' => getenv('SENTRY_ENVIONMENT'),
             'traces_sample_rate' => 1.0,
-            'release'     => getenv('SENTRY_RELEASE') ?: $this->getObject('com:pages.version')->getVersion(),
-            'tags'        => array()
+            'release'     => getenv('SENTRY_RELEASE') ?: $this->getObject('pages.version')->getVersion(),
+            'tags'        => array(),
+            'init'        => true,
         ));
 
         parent::_initialize($config);
@@ -24,20 +25,23 @@ class ExtSentryEventSubscriberException extends ComPagesEventSubscriberAbstract
 
     public function onAfterKoowaBootstrap(KEventInterface $event)
     {
-        \Sentry\init([
-            'dsn'                => $this->getConfig()->dsn,
-            'environment'        => $this->getConfig()->environment ?: null,
-            'traces_sample_rate' => $this->getConfig()->traces_sample_rate,
-            'release'            => $this->getConfig()->release,
-        ]);
-
-        //Configure Sentry
-        \Sentry\configureScope(function (\Sentry\State\Scope $scope): void
+        if($this->getConfig()->init && $this->getConfig()->dsn)
         {
-            foreach($this->getConfig()->tags as $key => $value) {
-                $scope->setTag($key, $value);
-            }
-        });
+            \Sentry\init([
+                'dsn'                => $this->getConfig()->dsn,
+                'environment'        => $this->getConfig()->environment ?: null,
+                'traces_sample_rate' => $this->getConfig()->traces_sample_rate,
+                'release'            => $this->getConfig()->release,
+            ]);
+
+            //Configure Sentry
+            \Sentry\configureScope(function (\Sentry\State\Scope $scope): void
+            {
+                foreach($this->getConfig()->tags as $key => $value) {
+                    $scope->setTag($key, $value);
+                }
+            });
+        }
     }
 
     public function onException(KEventInterface $event)
@@ -51,6 +55,6 @@ class ExtSentryEventSubscriberException extends ComPagesEventSubscriberAbstract
 
     public function isEnabled()
     {
-        return $this->getConfig()->dsn && function_exists('\Sentry\captureException') && parent::isEnabled();
+        return function_exists('\Sentry\captureException') && parent::isEnabled();
     }
 }
