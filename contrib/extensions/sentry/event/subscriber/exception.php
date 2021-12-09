@@ -27,7 +27,8 @@ class ExtSentryEventSubscriberException extends ComPagesEventSubscriberAbstract
     {
         if($this->getConfig()->init && $this->getConfig()->dsn)
         {
-            $init = [
+            //Initialise Options
+            $options = [
                 'dsn'                => $this->getConfig()->dsn,
                 'environment'        => $this->getConfig()->environment ?: null,
                 'traces_sample_rate' => $this->getConfig()->traces_sample_rate,
@@ -35,12 +36,12 @@ class ExtSentryEventSubscriberException extends ComPagesEventSubscriberAbstract
             ];
 
             if(is_callable($this->getConfig()->init)) {
-                $init = call_user_func($this->getConfig()->init, $init);
+                $options = call_user_func($this->getConfig()->init, $options);
             }
 
-            \Sentry\init([$init]);
+            \Sentry\init($options);
 
-            //Configure Sentry
+            //Configure Scope
             \Sentry\configureScope(function (\Sentry\State\Scope $scope): void
             {
                 foreach($this->getConfig()->tags as $key => $value) {
