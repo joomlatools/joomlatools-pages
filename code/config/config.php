@@ -35,7 +35,7 @@ class ComPagesConfig extends KObject implements KObjectSingleton
             'debug'          => JFactory::getConfig()->get('debug'),
             'base_path'      => $config->base_path ?? JFactory::getApplication()->getCfg('live_site'),
             'script_name'    => $config->script_name ? trim($config->script_name, '/') : basename($_SERVER['SCRIPT_NAME']),
-            'environment'    => 'production',
+            'environment'    => null,
         ))->append(array(
             'page_cache'            => true,
             'page_cache_path'       => $config->cache_path,
