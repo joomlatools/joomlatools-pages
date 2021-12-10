@@ -13,7 +13,7 @@ class ExtSentryEventSubscriberException extends ComPagesEventSubscriberAbstract
     {
         $config->append(array(
             'dsn'         => getenv('SENTRY_DSN'),
-            'environment' => getenv('SENTRY_ENVIRONMENT'),
+            'environment' => $this->getObject('pages.config')->environment,
             'traces_sample_rate' => 1.0,
             'release'     => getenv('SENTRY_RELEASE') ?: null,
             'tags'        => array(),

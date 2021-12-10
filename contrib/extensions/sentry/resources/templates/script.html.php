@@ -29,7 +29,7 @@ tracesSampleRate: "1.0"
 
 <?
 $dsn = $dsn ?? getenv('SENTRY_DSN');
-$env = $environment ?? getenv('SENTRY_ENVIRONMENT');
+$env = $environment ?? object('pages.config')->environment;
 $rel = $release ?? getenv('SENTRY_RELEASE') ?: null;
 
 if(!empty($version)) {
