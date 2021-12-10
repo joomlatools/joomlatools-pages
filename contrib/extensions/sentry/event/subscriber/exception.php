@@ -15,15 +15,16 @@ class ExtSentryEventSubscriberException extends ComPagesEventSubscriberAbstract
             'dsn'         => getenv('SENTRY_DSN'),
             'environment' => getenv('SENTRY_ENVIONMENT'),
             'traces_sample_rate' => 1.0,
-            'release'     => getenv('SENTRY_RELEASE') ?: $this->getObject('pages.version')->getVersion(),
+            'release'     => getenv('SENTRY_RELEASE') ?: null,
             'tags'        => array(),
             'init'        => true,
+            'scope'       => null,
         ));
 
         parent::_initialize($config);
     }
 
-    public function onAfterKoowaBootstrap(KEventInterface $event)
+    public function onBeforeDispatcherDispatch(KEventInterface $event)
     {
         if($this->getConfig()->init && $this->getConfig()->dsn)
         {
@@ -47,7 +48,12 @@ class ExtSentryEventSubscriberException extends ComPagesEventSubscriberAbstract
                 foreach($this->getConfig()->tags as $key => $value) {
                     $scope->setTag($key, $value);
                 }
+
+                if(is_callable($this->getConfig()->scope)) {
+                    call_user_func($this->getConfig()->scope, $scope);
+                }
             });
+
         }
     }
 

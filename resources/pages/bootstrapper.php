@@ -24,6 +24,10 @@ if(!defined('KOOWA_CONFIG')) {
     define('KOOWA_CONFIG' , KOOWA_ROOT.'/config');
 }
 
+if(!defined('KOOWA_DEBUG')) {
+    define('KOOWA_DEBUG' , false);
+}
+
 if(!defined('PAGES_SITE_ROOT')) {
     define('PAGES_SITE_ROOT', realpath(getcwd()));
 }
@@ -40,7 +44,8 @@ require_once KOOWA_VENDOR.'/joomlatools/framework/code/libraries/joomlatools/lib
 Koowa::getInstance(array(
     'root_path'    => KOOWA_ROOT,
     'vendor_path'  => KOOWA_VENDOR,
-    'cache'        => getenv('KOOWA_DEBUG') ? false : true,
+    'debug'        => KOOWA_DEBUG,
+    'cache'        => KOOWA_DEBUG ? false : true,
 ));
 
 //Bootstrap Framework
