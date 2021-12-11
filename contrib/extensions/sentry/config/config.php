@@ -26,9 +26,9 @@ class ComSentryConfig extends ComPagesConfigAbstract implements KObjectSingleton
     public function getTags(array $tags = [])
     {
         if(is_callable($this->tags)) {
-            $defaults = call_user_func($this->tags);
+            $defaults = call_user_func($this->getConfig()->tags);
         } else {
-            $defaults = KObjectConfig::unbox($this->tags);
+            $defaults = KObjectConfig::unbox($this->getConfig()->tags);
         }
 
         return array_replace_recursive($defaults, $tags);
