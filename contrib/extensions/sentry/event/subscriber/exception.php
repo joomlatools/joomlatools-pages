@@ -11,7 +11,7 @@ class ExtSentryEventSubscriberException extends ComPagesEventSubscriberAbstract
 {
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append($this->getObject('pages.config'));
+        $config->append($this->getObject('ext:sentry.config'));
 
         parent::_initialize($config);
     }
