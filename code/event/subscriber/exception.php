@@ -30,18 +30,6 @@ class ComPagesEventSubscriberException extends ComPagesEventSubscriberAbstract
         return $result;
     }
 
-    public function onAfterKoowaBootstrap(KEventInterface $event)
-    {
-        //Catch all Joomla exceptions
-        if(class_exists('JError')) {
-            JError::setErrorHandling(E_ERROR, 'callback', array($this, 'handleException'));
-        }
-
-        //Catch all Koowa exceptions
-        $handler = $this->getObject('exception.handler');
-        $handler->enable(KExceptionHandlerInterface::TYPE_EXCEPTION);
-    }
-
     public function onException(KEvent $event)
     {
         $dispatcher = $this->getObject('com:pages.dispatcher.http');
