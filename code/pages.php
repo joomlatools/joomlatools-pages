@@ -12,8 +12,4 @@ if (!class_exists('Koowa')) {
     return;
 }
 
-try {
-    Koowa::getObject('com:pages.dispatcher.http')->dispatch();
-} catch(Exception $exception) {
-    Koowa::getObject('exception.handler')->handleException($exception);
-}
+Koowa::getObject('com:pages.dispatcher.http')->dispatch();
