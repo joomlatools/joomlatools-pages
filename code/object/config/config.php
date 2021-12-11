@@ -44,16 +44,7 @@ class ComPagesObjectConfig extends KObjectConfig implements JsonSerializable
 
     final public function __toString()
     {
-        $result = '';
-
-        //Not allowed to throw exceptions in __toString() See : https://bugs.php.net/bug.php?id=53648
-        try {
-            $result = $this->toString();
-        } catch (Exception $e) {
-            trigger_error('ComPagesObjectConfig::__toString exception: '. (string) $e, E_USER_ERROR);
-        }
-
-        return $result;
+        return $this->toString();
     }
 
     public function __debugInfo()
