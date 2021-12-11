@@ -30,6 +30,13 @@ class ComPagesEventSubscriberException extends ComPagesEventSubscriberAbstract
         return $result;
     }
 
+    public function onAfterKoowaBootstrap(KEventInterface $event)
+    {
+        //Catch all Koowa exceptions
+        $handler = $this->getObject('exception.handler');
+        $handler->enable(KExceptionHandlerInterface::TYPE_EXCEPTION);
+    }
+
     public function onException(KEvent $event)
     {
         $dispatcher = $this->getObject('com:pages.dispatcher.http');
@@ -71,11 +78,6 @@ class ComPagesEventSubscriberException extends ComPagesEventSubscriberAbstract
         }
 
         $dispatcher->send();
-    }
-
-    public function handleException(\Exception $exception)
-    {
-        $this->getObject('exception.handler')->handleException($exception);
     }
 
     protected function _renderErrorPage($exception, $code = 500)
