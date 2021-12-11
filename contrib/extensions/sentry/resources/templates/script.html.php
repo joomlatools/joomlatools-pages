@@ -28,9 +28,9 @@ tracesSampleRate: "1.0"
 ---
 
 <?
-$dsn = $dsn ?? getenv('SENTRY_DSN');
-$env = $environment ?? object('pages.config')->environment;
-$rel = $release ?? getenv('SENTRY_RELEASE') ?: null;
+$dsn = $dsn ?? object('sentry.config')->dsn;
+$env = $environment ?? object('sentry.config')->environment;
+$rel = $release ?? object('sentry.config')->release;
 
 if(!empty($version)) {
     $version =  '@'.$version;
@@ -47,10 +47,10 @@ Sentry.init({
     tunnel: <?= !empty($tunnel) ? '"'.$tunnel.'"' : 'null' ?>,
     release: <?= !empty($rel) ? '"'.$rel.'"' : 'null' ?>,
     environment: <?= !empty($env) ? '"'.$env.'"' : 'null' ?>,
-    tracesSampleRate: <?= $tracesSampleRate ?? 1.0 ?>,
+    tracesSampleRate: <?= $tracesSampleRate ?? object('sentry.config')->traces_sample_rate ?>,
     integrations: [new Sentry.Integrations.BrowserTracing()],
     initialScope: scope => {
-        scope.setTags(<?= json($tags ?? []) ?>);
+        scope.setTags(<?= json(unbox(object('sentry.config')->getTags($tags ?? []))) ?>);
         return scope;
     },
 });

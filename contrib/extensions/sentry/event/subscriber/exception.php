@@ -11,15 +11,7 @@ class ExtSentryEventSubscriberException extends ComPagesEventSubscriberAbstract
 {
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append(array(
-            'dsn'         => getenv('SENTRY_DSN'),
-            'environment' => $this->getObject('pages.config')->environment,
-            'traces_sample_rate' => 1.0,
-            'release'     => getenv('SENTRY_RELEASE') ?: null,
-            'tags'        => array(),
-            'init'        => true,
-            'scope'       => null,
-        ));
+        $config->append($this->getObject('pages.config'));
 
         parent::_initialize($config);
     }
@@ -31,9 +23,10 @@ class ExtSentryEventSubscriberException extends ComPagesEventSubscriberAbstract
             //Initialise Options
             $options = [
                 'dsn'                => $this->getConfig()->dsn,
-                'environment'        => $this->getConfig()->environment ?: null,
+                'environment'        => $this->getConfig()->environment,
                 'traces_sample_rate' => $this->getConfig()->traces_sample_rate,
                 'release'            => $this->getConfig()->release,
+                'logger'             => 'php.pages',
             ];
 
             if(is_callable($this->getConfig()->init)) {
@@ -60,10 +53,7 @@ class ExtSentryEventSubscriberException extends ComPagesEventSubscriberAbstract
     public function onException(KEventInterface $event)
     {
         $exception = $event->exception;
-
-        if($exception->getCode() >= 500) {
-            \Sentry\captureException($exception);
-        }
+        \Sentry\captureException($exception);
     }
 
     public function isEnabled()
