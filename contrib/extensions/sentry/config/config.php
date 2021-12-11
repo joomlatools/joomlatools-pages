@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComSentryConfig extends ComPagesConfigAbstract implements KObjectSingleton
+class ExtSentryConfig extends ComPagesConfigAbstract implements KObjectSingleton
 {
     protected function _initialize(KObjectConfig $config)
     {
