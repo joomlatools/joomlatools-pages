@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesConfigAbstract extends KObject
+class ComPagesConfigAbstract extends KObject implements ComPagesConfigInterface
 {
     public function get($option, $default = null)
     {
