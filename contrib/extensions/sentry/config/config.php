@@ -20,6 +20,7 @@ class ExtSentryConfig extends ComPagesConfigAbstract
                 'environment' => getenv('SENTRY_ENVIRONMENT') ?: null,
                 'release'     => getenv('SENTRY_RELEASE') ?: null,
             ],
+            'disable_on' => [401, 403, 404],
         ));
 
         //A number between 0 (false|off) and 1 (true|on), controlling the percentage chance a
@@ -42,10 +43,10 @@ class ExtSentryConfig extends ComPagesConfigAbstract
     {
         if(is_callable($this->getConfig()->user))
         {
-            $user = new ComPagesObjectConfig();
+            $user = new ExtSentryConfigOptions();
             call_user_func($this->getConfig()->user, $user);
         }
-        else $user = new ComPagesObjectConfig($this->getConfig()->user ?? []);
+        else $user = new ExtSentryConfigOptions($this->getConfig()->user ?? []);
 
         return $user;
     }
@@ -54,10 +55,10 @@ class ExtSentryConfig extends ComPagesConfigAbstract
     {
         if(is_callable($this->getConfig()->context))
         {
-            $context = new ComPagesObjectConfig();
+            $context = new ExtSentryConfigOptions();
             call_user_func($this->getConfig()->context, $context);
         }
-        else $context = new ComPagesObjectConfig($this->getConfig()->context ?? []);
+        else $context = new ExtSentryConfigOptions($this->getConfig()->context ?? []);
 
         return $context;
     }
@@ -66,10 +67,10 @@ class ExtSentryConfig extends ComPagesConfigAbstract
     {
         if(is_callable($this->getConfig()->tags))
         {
-            $tags = new ComPagesObjectConfig();
+            $tags = new ExtSentryConfigOptions();
             call_user_func($this->getConfig()->tags, $tags);
         }
-        else $tags = new ComPagesObjectConfig($this->getConfig()->tags ?? []);
+        else $tags = new ExtSentryConfigOptions($this->getConfig()->tags ?? []);
 
         return $tags;
     }
