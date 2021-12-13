@@ -7,11 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-interface ComPagesConfigInterface
+class ComPagesConfigOptions extends ComPagesObjectConfig
 {
-    public function get($option, $default = null);
 
-    public function getOptions();
-
-    public function toArray();
 }
