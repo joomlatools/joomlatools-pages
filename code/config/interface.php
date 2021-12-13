@@ -11,5 +11,7 @@ interface ComPagesConfigInterface
 {
     public function get($option, $default = null);
 
+    public function getOptions();
+
     public function toArray();
 }
