@@ -23,7 +23,7 @@ class ComPagesConfigAbstract extends KObject implements ComPagesConfigInterface
 
     public function getOptions()
     {
-        return new ComPagesObjectConfig($this->getConfig());
+        return new ComPagesConfigOptions($this->getConfig());
     }
 
     final public function toArray()
