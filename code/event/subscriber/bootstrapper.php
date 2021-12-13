@@ -40,7 +40,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
             $config = $this->getObject('pages.config', ['site_path' => PAGES_SITE_ROOT]);
 
             //Get the config options
-            $options = $config->getOptions();
+            $options = $config->toArray();
 
             //Bootstrap the site configuration (before extensions to allow overriding)
             $this->_bootstrapSite($config->getSitePath(), $options);

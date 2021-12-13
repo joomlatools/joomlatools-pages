@@ -7,21 +7,15 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesConfig extends KObject implements KObjectSingleton
+class ComPagesConfig extends ComPagesConfigAbstract implements KObjectSingleton
 {
     protected $_site_path;
-    protected $_log_path;
-    protected $_cache_path;
-    protected $_extension_path;
 
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
 
-        $this->_site_path  = $config->site_path;
-        $this->_cache_path = $config->cache_path;
-        $this->_log_path   = $config->log_path;
-        $this->_extension_path = KObjectConfig::unbox($config->extension_path);
+        $this->_site_path = $config->site_path;
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -93,39 +87,14 @@ class ComPagesConfig extends KObject implements KObjectSingleton
                 $path = !empty($path) ? $path.'/index.php' : 'index.php';
            }
         }
-        else $path = $this->script_name;
+        else $path = $this->getConfig()->script_name;
 
         return $path;
     }
 
-    public function getCachePath()
-    {
-        return $this->_cache_path;
-    }
-
     public function getExtensionPath()
     {
-        return (array) $this->_extension_path;
-    }
-
-    public function getLogPath()
-    {
-        return $this->_log_path;
-    }
-
-    public function get($option, $default = null)
-    {
-        return $this->getConfig()->get($option, $default);
-    }
-
-    public function getOptions()
-    {
-        return KObjectConfig::unbox($this->getConfig());
-    }
-
-    final public function __get($key)
-    {
-        return $this->get($key);
+        return (array) KObjectConfig::unbox($this->getConfig()->extension_path);
     }
 
     private function __loadConfig($path)

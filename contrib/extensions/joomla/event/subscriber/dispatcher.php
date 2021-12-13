@@ -85,7 +85,7 @@ class ExtJoomlaEventSubscriberDispatcher extends ComPagesEventSubscriberDispatch
 
     public function onBeforeDispatcherDispatch(KEventInterface $event)
     {
-        $config = $this->getObject('pages.config')->getOptions();
+        $config = $this->getObject('pages.config')->toArray();
 
         //Configure the Joomla template
         if(isset($config['template']) || isset($config['template_config']))

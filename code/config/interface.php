@@ -7,9 +7,9 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-defined('_JEXEC') or die;
-if (!class_exists('Koowa')) {
-    return;
-}
+interface ComPagesConfigInterface
+{
+    public function get($option, $default = null);
 
-Koowa::getObject('com:pages.dispatcher.http')->dispatch();
+    public function toArray();
+}
