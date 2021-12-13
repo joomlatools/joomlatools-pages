@@ -68,5 +68,5 @@ return [
             }
         ],
     ],
-    'extension_config' => $config['extension_config'] ?? array(),
+    'extensions' => $config['extensions'] ?? array(),
 ];
