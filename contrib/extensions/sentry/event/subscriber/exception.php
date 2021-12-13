@@ -13,7 +13,7 @@ class ExtSentryEventSubscriberException extends ComPagesEventSubscriberAbstract
     {
         $config->append($this->getConfig('ext:sentry.config'));
         $config->append(array(
-            'init'       => true,
+            'bootstrap'  => true,
             'disable_on' => [401, 403, 404],
             'options'    => [
                 'server_name'  => gethostname(),
@@ -29,22 +29,22 @@ class ExtSentryEventSubscriberException extends ComPagesEventSubscriberAbstract
         //Get Sentry Config Object
         $sentry = $this->getObject('ext:sentry.config', $this->getConfig()->toArray());
 
-        if(function_exists('\Sentry\init') && $sentry->init && $sentry->options->dsn)
+        if(function_exists('\Sentry\init') && $sentry->bootstrap && $sentry->options->dsn)
         {
             //Initialise Options
             $options = $sentry->options;
 
-            if(is_callable($sentry->init)) {
-                call_user_func($sentry->init, $options);
+            if(is_callable($sentry->bootstrap)) {
+                call_user_func($sentry->bootstrap, $options);
             };
 
-            \Sentry\init(KObjectConfig::unbox($options));
+            \Sentry\init(ExtSentryConfigOptions::unbox($options));
 
             //Configure Scope
             \Sentry\configureScope(function (\Sentry\State\Scope $scope) use($sentry): void
             {
                 foreach($sentry->getContext() as $name => $context) {
-                    $scope->setContext($name, (array) KObjectConfig::unbox($context));
+                    $scope->setContext($name, (array) ExtSentryConfigOptions::unbox($context));
                 }
 
                 foreach($sentry->getTags() as $name => $value) {
@@ -68,7 +68,7 @@ class ExtSentryEventSubscriberException extends ComPagesEventSubscriberAbstract
             $code = '500';
         }
 
-        if(!in_array($code, KObjectConfig::unbox($this->getConfig()->disable_on))) {
+        if(!in_array($code, ExtSentryConfigOptions::unbox($this->getConfig()->disable_on))) {
             \Sentry\captureException($exception);
         }
     }
