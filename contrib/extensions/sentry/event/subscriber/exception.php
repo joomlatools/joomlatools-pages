@@ -11,53 +11,70 @@ class ExtSentryEventSubscriberException extends ComPagesEventSubscriberAbstract
 {
     protected function _initialize(KObjectConfig $config)
     {
-        $config->append($this->getObject('ext:sentry.config'));
+        $config->append($this->getConfig('ext:sentry.config'));
+        $config->append(array(
+            'init'       => true,
+            'disable_on' => [401, 403, 404],
+            'options'    => [
+                'server_name'  => gethostname(),
+                'logger'       => 'php.pages'
+            ],
+        ));
 
         parent::_initialize($config);
     }
 
-    public function onBeforeDispatcherDispatch(KEventInterface $event)
+    public function onAfterPagesBootstrap(KEventInterface $event)
     {
-        if($this->getConfig()->init && $this->getConfig()->dsn)
+        //Get Sentry Config Object
+        $sentry = $this->getObject('ext:sentry.config', $this->getConfig()->toArray());
+
+        if(function_exists('\Sentry\init') && $sentry->init && $sentry->options->dsn)
         {
             //Initialise Options
-            $options = [
-                'dsn'                => $this->getConfig()->dsn,
-                'environment'        => $this->getConfig()->environment,
-                'traces_sample_rate' => $this->getConfig()->traces_sample_rate,
-                'release'            => $this->getConfig()->release,
-                'logger'             => 'php.pages',
-            ];
+            $options = $sentry->options;
 
-            if(is_callable($this->getConfig()->init)) {
-                $options = call_user_func($this->getConfig()->init, $options);
-            }
+            if(is_callable($sentry->init)) {
+                call_user_func($sentry->init, $options);
+            };
 
-            \Sentry\init($options);
+            \Sentry\init(KObjectConfig::unbox($options));
 
             //Configure Scope
-            \Sentry\configureScope(function (\Sentry\State\Scope $scope): void
+            \Sentry\configureScope(function (\Sentry\State\Scope $scope) use($sentry): void
             {
-                foreach($this->getConfig()->tags as $key => $value) {
-                    $scope->setTag($key, $value);
+                foreach($sentry->getContext() as $name => $context) {
+                    $scope->setContext($name, (array) KObjectConfig::unbox($context));
                 }
 
-                if(is_callable($this->getConfig()->scope)) {
-                    call_user_func($this->getConfig()->scope, $scope);
+                foreach($sentry->getTags() as $name => $value) {
+                    $scope->setTag($name, $value);
+                }
+
+                foreach($sentry->getUser() as $key => $value) {
+                    $scope->setUser([$key => $value]);
                 }
             });
-
         }
     }
 
     public function onException(KEventInterface $event)
     {
         $exception = $event->exception;
-        \Sentry\captureException($exception);
+
+        //If the error code does not correspond to a status message, use 500
+        $code = $exception->getCode();
+        if(!isset(KHttpResponse::$status_messages[$code])) {
+            $code = '500';
+        }
+
+        if(!in_array($code, KObjectConfig::unbox($this->getConfig()->disable_on))) {
+            \Sentry\captureException($exception);
+        }
     }
 
     public function isEnabled()
     {
-        return function_exists('\Sentry\captureException') && parent::isEnabled();
+        return function_exists('\Sentry\init') && parent::isEnabled();
     }
 }
