@@ -73,6 +73,8 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
             }
         }
         else $this->getObject('pages.config', ['site_path' => false]);
+
+        $this->getObject('event.publisher')->publishEvent('onAfterPagesBootstrap');
     }
 
     protected function _bootstrapSite($path, $config = array())
@@ -92,7 +94,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         }
 
         //Set config options
-        foreach($options['extension_config'] as $identifier => $values) {
+        foreach($options['extensions'] as $identifier => $values) {
             $this->getConfig($identifier)->merge($values);
         }
     }
