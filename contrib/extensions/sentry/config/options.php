@@ -19,7 +19,7 @@ class ExtSentryConfigOptions extends ComPagesConfigOptions
             $options[$key] = $value;
         }
 
-        $json = new static($options);
+        $json = new ComPagesObjectConfigJson($options);
         return $json->toString();
     }
 }
