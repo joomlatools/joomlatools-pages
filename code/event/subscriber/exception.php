@@ -12,22 +12,10 @@ class ComPagesEventSubscriberException extends ComPagesEventSubscriberAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'priority' => KEvent::PRIORITY_LOW
+            'priority' => KEvent::PRIORITY_LOWEST
         ));
 
         parent::_initialize($config);
-    }
-
-    public function isEnabled()
-    {
-        $result = parent::isEnabled();
-
-        //Disable error handler if directly routing to a component
-        if(isset($_REQUEST['option']) && substr($_REQUEST['option'], 0, 4) == 'com_') {
-            $result = false;
-        }
-
-        return $result;
     }
 
     public function onAfterKoowaBootstrap(KEventInterface $event)

@@ -77,21 +77,6 @@ class ComPagesConfig extends ComPagesConfigAbstract implements KObjectSingleton
         return $result;
     }
 
-    public function getScriptName()
-    {
-        //Handle Joomla context
-        if(JFactory::getApplication()->getCfg('sef_rewrite'))
-        {
-           $path = '';
-           if(!JFactory::getApplication()->getCfg('sef_rewrite')) {
-                $path = !empty($path) ? $path.'/index.php' : 'index.php';
-           }
-        }
-        else $path = $this->getConfig()->script_name;
-
-        return $path;
-    }
-
     public function getExtensionPath()
     {
         return (array) KObjectConfig::unbox($this->getConfig()->extension_path);
