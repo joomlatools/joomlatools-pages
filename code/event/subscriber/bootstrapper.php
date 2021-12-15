@@ -13,7 +13,12 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
     {
         $config->append(array(
             'priority' => KEvent::PRIORITY_HIGH,
-            'log_path' => null,
+            //Cannot use pages.config before it's bootstrapped
+            'install'  => !JFactory::getConfig()->get('debug') ? class_exists('PharData') : true,
+            'archive'  => JFactory::getConfig()->get('debug'),
+            'log_path'     => null,
+            'install_path' => null,
+            'archive_path' => null,
         ));
 
         parent::_initialize($config);
@@ -46,28 +51,8 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
             $this->_bootstrapSite($config->getSitePath(), $options);
 
             //Bootstrap extensions
+            $this->_bootstrapExtensions($config->getExtensionPath(), $options);
 
-            //Register 'ext' fallback location
-            $locator = new ComPagesClassLocatorExtension();
-
-            //Register the extension locator
-            $this->getObject('manager')->getClassLoader()->registerLocator($locator);
-            $this->getObject('manager')->registerLocator('com:pages.object.locator.extension');
-
-            foreach($config->getExtensionPath() as $path)
-            {
-                //Install
-                $this->_installExtensions($path);
-
-                //Update
-                $this->_updateExtensions($path);
-
-                //Archive
-                $this->_archiveExtensions($path);
-
-                //Bootstrap
-                $this->_bootstrapExtensions($path, $locator);
-            }
         }
         else $config = $this->getObject('pages.config', ['site_path' => false]);
 
@@ -96,21 +81,192 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         }
     }
 
-    protected function _installExtensions($path)
+    protected function _bootstrapExtensions($extensions, $config = array())
     {
-        if(file_exists($path.'/package.php')) {
-            $packages = (array) include $path.'/package.php';
-        } else {
-            $packages = array();
+        //Restore phar stream wrapper (Joomla uses the TYPO3 wrapper)
+        @stream_wrapper_restore('phar');
+
+        //Register 'ext' fallback location
+        $locator = new ComPagesClassLocatorExtension();
+
+        //Register the extension locator
+        $this->getObject('manager')->getClassLoader()->registerLocator($locator);
+        $this->getObject('manager')->registerLocator('com:pages.object.locator.extension');
+
+        $install_path = $this->getConfig()->install_path ?? PAGES_SITE_ROOT.'/extensions';
+        $archive_path = $this->getConfig()->archive_path ?? PAGES_SITE_ROOT.'/extensions';
+
+        //Bootstrap Extensions
+        array_unshift($extensions, $install_path);
+
+        foreach(array_unique($extensions) as $path)
+        {
+            //Install Extensions
+            if(substr($path, 0, 4) == 'http' && pathinfo($path, PATHINFO_EXTENSION) == 'zip')
+            {
+                $url = $path;
+
+                //Try to update or install the extension
+                if(!$path = $this->_updateExtension($url, $install_path)) {
+                    $path = $this->_installExtension($url, $install_path);
+                }
+
+                //Extension not updated or installed skip bootstrapping
+                if(!$path) {
+                    continue;
+                }
+            }
+
+            //Bootstrap Extensions
+            if(!is_file($path) && !file_exists($path.'/manifest.yaml'))
+            {
+                foreach((array) glob($path.'/[!_]*') as $extension)
+                {
+                    //Do not bootstrap extension from zip if directory exists
+                    if(pathinfo($extension, PATHINFO_EXTENSION) == 'zip')
+                    {
+                        $name = strtolower(basename($extension, '.zip'));
+                        if(is_dir($path.'/'.$name)) {
+                            continue;
+                        }
+                    }
+
+                    $this->_bootstrapExtension($extension, $locator);
+                    if(dirname($extension) == $install_path) {
+                        $this->_archiveExtension($extension, $archive_path);
+                    }
+                }
+            }
+            else
+            {
+                $this->_bootstrapExtension($path, $locator);
+                if(dirname($path) == $install_path) {
+                    $this->_archiveExtension($path, $archive_path);
+                }
+            }
+        }
+    }
+
+    protected function _bootstrapExtension($path, $locator)
+    {
+        $result    = false;
+        $functions = array();
+
+        //The extension name
+        $name = strtolower(basename($path, '.zip'));
+
+        //Do not re-register the same extension
+        if(!$locator->getNamespace(ucfirst($name)))
+        {
+            if(pathinfo($path, PATHINFO_EXTENSION) == 'zip')
+            {
+                if(!class_exists('Phar')) {
+                    throw new RuntimeException('Phar extension not available');
+                } else {
+                    $path = 'phar://'.$path;
+                }
+            }
+
+            //Get extension name from manifest
+            if(file_exists($path.'/manifest.yaml'))
+            {
+                $manifest = $this->getObject('object.config.factory')->fromFile($path.'/manifest.yaml', false);
+                $name = $manifest['name'] ?? $name;
+            }
+
+            //Register the extension namespace
+            $locator->registerNamespace(ucfirst($name), $path);
+
+            //Register event subscribers
+            if(is_dir($path.'/event/subscriber'))
+            {
+                foreach(scandir($path.'/event/subscriber') as $filename)
+                {
+                    if(!str_starts_with($filename, '_') && str_ends_with($filename, '.php'))
+                    {
+                        $this->getObject('event.subscriber.factory')
+                            ->registerSubscriber('ext:'.$name.'.event.subscriber.'.basename($filename, '.php'));
+                    }
+                }
+            }
+
+            //Find template functions
+            if(is_dir($path.'/template/function'))
+            {
+                foreach(scandir($path.'/template/function') as $filename)
+                {
+                    if(!str_starts_with($filename, '_') && str_ends_with($filename, '.php')) {
+                        $functions[basename($filename, '.php')] = $path.'/template/function/'.$filename;
+                    }
+                }
+            }
+
+            //Include autoloader
+            if(file_exists($path.'/resources/vendor/autoload.php')) {
+                include $path.'/resources/vendor/autoload.php';
+            }
+
+            if(file_exists($path.'/config.php'))
+            {
+                $identifiers = include $path.'/config.php';
+
+                if(is_array($identifiers))
+                {
+                    foreach($identifiers as $identifier => $values) {
+                        $this->getConfig($identifier)->merge($values);
+                    }
+                }
+            }
+
+            //Register 'ext:pages' aliases
+            if($name == 'pages')
+            {
+                $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path));
+
+                foreach($iterator as $file)
+                {
+                    if ($file->isFile() && $file->getExtension() == 'php' && $file->getFileName() !== 'config.php')
+                    {
+                        $segments = explode('/', $iterator->getSubPathName());
+                        $segments[] = basename(array_pop($segments), '.php');
+
+                        //Create the identifier path + file
+                        $identifier = implode('.', $segments);
+
+                        $this->getObject('manager')->registerAlias(
+                            'ext:pages.'.$identifier,
+                            'com:pages.'.$identifier
+                        );
+                    }
+                }
+            }
+
+            //Register template functions
+            if($functions) {
+                $this->getConfig('com:pages.template')->merge(['functions' => $functions]);
+            }
+
+            $result = true;
         }
 
-        foreach($packages as $url)
+        return $result;
+    }
+
+    protected function _installExtension($url, $destination)
+    {
+        $result = false;
+
+        if($this->getConfig()->install)
         {
+            if(!class_exists('PharData')) {
+                throw new RuntimeException('Phar extension not available');
+            }
+
             $filepath  = trim(parse_url($url, PHP_URL_PATH), '/');
             $archive   = basename($filepath);
             $directory = basename($filepath, '.zip');
 
-            if(!file_exists($path.'/'.$archive) && !file_exists($path.'/'.$directory))
+            if(!file_exists($destination.'/'.$archive) && !file_exists($destination.'/'.$directory))
             {
                 $context = stream_context_create([
                     "ssl" => [
@@ -126,11 +282,11 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                 }
 
                 $date = date('y:m:d h:i:s');
-                if(copy($url, $path.'/'.$archive, $context))
+                if(copy($url, $destination.'/'.$archive, $context))
                 {
                     try
                     {
-                        $phar = new PharData($path.'/'.$archive);
+                        $phar = new PharData($destination.'/'.$archive);
                         $metadata = $phar->getMetadata();
 
                         //Update the metadata
@@ -144,30 +300,34 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                         } else {
                             error_log(sprintf('%s - Install Success: %s'."\n", $date, $url), 3, $log);
                         }
+
+                        $result =  $destination.'/'.$archive;
                     }
                     catch(Exception $e) {
                         error_log(sprintf('%s - Install Failed: %s, error %s'."\n", $date, $url, $e->getMessage()), 3, $log);
                     }
                 }
-                else error_log(sprintf('%s - Install Failed: %s, error %s'."\n", $date, $url, $e->getMessage()), 3, $log);
+                else error_log(sprintf('%s - Install Failed: %s, could not copy from url'."\n", $date, $url), 3, $log);
             }
         }
+
+        return $result;
     }
 
-    protected function _updateExtensions($path)
+    protected function _updateExtension($url, $destination)
     {
-        if(file_exists($path.'/package.php')) {
-            $packages = include $path.'/package.php';
-        } else {
-            $packages = array();
-        }
+        $result = false;
 
-        foreach($packages as $url)
+        if($this->getConfig()->install)
         {
+            if(!class_exists('PharData')) {
+                throw new RuntimeException('Phar extension not available');
+            }
+
             $filepath  = trim(parse_url($url, PHP_URL_PATH), '/');
             $archive   = basename($filepath);
 
-            $phar = new PharData($path . '/' . $archive);
+            $phar = new PharData($destination . '/' . $archive);
             $metadata = $phar->getMetadata();
 
             if(isset($metadata['url']) && $metadata['url'] !== $url)
@@ -186,11 +346,11 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                 }
 
                 $date = date('y:m:d h:i:s');
-                if(copy($url, $path.'/'.$archive, $context))
+                if(copy($url, $destination.'/'.$archive, $context))
                 {
                     try
                     {
-                        $phar = new PharData($path.'/'.$archive);
+                        $phar = new PharData($destination.'/'.$archive);
 
                         //Update the metadata
                         $metadata = $phar->getMetadata();
@@ -203,216 +363,109 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                         } else {
                             error_log(sprintf('%s - Update Success: %s'."\n", $date, $url), 3, $log);
                         }
+
+                        $result =  $destination.'/'.$archive;
                     }
                     catch(Exception $e) {
                         error_log(sprintf('%s - Update Failed: %s, error %s'."\n", $date, $url, $e->getMessage()), 3, $log);
                     }
                 }
-                else error_log(sprintf('%s - Update Failed: %s, error %s'."\n", $date, $url, $e->getMessage()), 3, $log);
-
+                else error_log(sprintf('%s - Update Failed: %s, could not copy from url'."\n", $date, $url), 3, $log);
             }
         }
+
+        return $result;
     }
 
-    protected function _archiveExtensions($path)
+    protected function _archiveExtension($path, $destination)
     {
-        if($files = glob($path.'/[!_]*/manifest.yaml'))
+        $file = $path.'/manifest.yaml';
+
+        if($this->getConfig()->archive && file_exists($file))
         {
-            foreach($files as $file)
+            if(!class_exists('PharData')) {
+                throw new RuntimeException('Phar extension not available');
+            }
+
+            if($this->getConfig()->log_path) {
+                $log  = $this->getConfig()->log_path.'/extension.log';
+            } else {
+                $log  = $this->getObject('com:pages.config')->getLogPath().'/extension.log';
+            }
+
+            $date = date('y:m:d h:i:s');
+
+            $size = function ($directory) use (&$size)
             {
-                $name = basename(dirname($file));
+                $result = array();
 
-                if($this->getConfig()->log_path) {
-                    $log  = $this->getConfig()->log_path.'/extension.log';
-                } else {
-                    $log  = $this->getObject('com:pages.config')->getLogPath().'/extension.log';
-                }
-
-                $date = date('y:m:d h:i:s');
-
-                $size = function ($path) use (&$size)
+                if (is_dir($directory))
                 {
-                    $result = array();
+                    $files = array_diff(scandir($directory), array('.', '..', '.DS_Store'));
 
-                    if (is_dir($path))
+                    foreach ($files as $file)
                     {
-                        $files = array_diff(scandir($path), array('.', '..', '.DS_Store'));
-
-                        foreach ($files as $file)
-                        {
-                            if (is_dir($path . '/' . $file)) {
-                                $result[$file] = $size($path . '/' . $file);
-                            } else {
-                                $result[$file] = sprintf('%u', filesize($path . '/' . $file));
-                            }
-                        }
-                    }
-                    else $result[basename($path)] = sprintf('%u', filesize($path));
-
-                    return $result;
-                };
-
-                //Load the manifest
-                $manifest = $this->getObject('object.config.factory')->fromFile($file, false);
-
-                $build   = $manifest['build']  ?? 0;
-                $version = $manifest['version'] ?? 'unknown';
-
-                $archive = 'create';
-                $hash    = hash('crc32b', serialize($size($path . '/' . $name)));
-
-                if (file_exists($path . '/' . $name . '.zip'))
-                {
-                    $phar = new PharData($path . '/' . $name . '.zip');
-                    $metadata = $phar->getMetadata();
-
-                    $build = $metadata['build'] ?? $build;
-                    $version = $metadata['version'] ?? $version;
-
-                    if (isset($metadata['hash']) && $metadata['hash'] == $hash) {
-                        $archive = false;
-                    } else {
-                        $archive = 'update';
-                    }
-                }
-
-                if ($archive)
-                {
-                    try
-                    {
-                        $phar = new PharData($path . '/' . $name . '.zip');
-                        $phar->buildFromDirectory($path . '/' . $name);
-                        $phar->compressFiles(Phar::GZ);
-                        $phar->setSignatureAlgorithm(Phar::SHA256);
-                        $phar->setMetadata([
-                            'hash' => $hash,
-                            'date' => $date,
-                            'version' => $version,
-                            'build'   => $build + 1
-                        ]);
-
-                        if ($archive == 'create') {
-                            error_log(sprintf('%s - Archive Created: %s, version %s' . "\n", $date, $name . '.zip', $version), 3, $log);
+                        if (is_dir($directory . '/' . $file)) {
+                            $result[$file] = $size($directory . '/' . $file);
                         } else {
-                            error_log(sprintf('%s - Archive Updated: %s, version %s, build %s' . "\n", $date, $name . '.zip', $version, $build), 3, $log);
+                            $result[$file] = sprintf('%u', filesize($directory . '/' . $file));
                         }
-
-                    } catch (Exception $e) {
-                        error_log(sprintf('%s - Archive Failed: %s, error $s' . "\n", $date, $name . '.zip', $e->getMessage()), 3, $log);
                     }
                 }
-            }
-        }
-    }
+                else $result[basename($directory)] = sprintf('%u', filesize($directory));
 
-    protected function _bootstrapExtensions($path, $locator)
-    {
-        //Register 'ext:[package]' locations
-        if($directories = glob($path.'/[!_]*'))
-        {
-            $functions  = array();
+                return $result;
+            };
 
-            foreach ($directories as $directory)
+            //Load the manifest
+            $manifest = $this->getObject('object.config.factory')->fromFile($file, false);
+
+            $build   = $manifest['build']  ?? 0;
+            $version = $manifest['version'] ?? 'unknown';
+
+            $archive = 'create';
+            $hash    = hash('crc32b', serialize($size($path)));
+            $name    = basename(dirname($file));
+
+            if (file_exists($destination . '/' . $name . '.zip'))
             {
-                //The extension name
-                $name = strtolower(basename($directory, '.zip'));
+                $phar = new PharData($destination . '/' . $name . '.zip');
+                $metadata = $phar->getMetadata();
 
-                //Do not re-register the same extension
-                if($locator->getNamespace(ucfirst($name))) {
-                    continue;
-                }
+                $build = $metadata['build'] ?? $build;
+                $version = $metadata['version'] ?? $version;
 
-                if(pathinfo($directory, PATHINFO_EXTENSION) == 'zip')
-                {
-                    if(!is_dir($path.'/'.$name))
-                    {
-                        if(!class_exists('Phar')) {
-                            throw new RuntimeException('Phar extension not available');
-                        }
-
-                        $directory = 'phar://'.$directory;
-                    }
-                    else continue;
-                }
-
-                //Get extension name from manifest
-                if(file_exists($directory.'/manifest.yaml'))
-                {
-                    $manifest = $this->getObject('object.config.factory')->fromFile($directory.'/manifest.yaml', false);
-                    $name = $manifest['name'] ?? $name;
-                }
-
-                //Register the extension namespace
-                $locator->registerNamespace(ucfirst($name), $directory);
-
-                //Register event subscribers
-                if(is_dir($directory.'/event/subscriber'))
-                {
-                    foreach(scandir($directory.'/event/subscriber') as $filename)
-                    {
-                        if(!str_starts_with($filename, '_') && str_ends_with($filename, '.php'))
-                        {
-                            $this->getObject('event.subscriber.factory')
-                                ->registerSubscriber('ext:'.$name.'.event.subscriber.'.basename($filename, '.php'));
-                        }
-                    }
-                }
-
-                //Find template functions
-                if(is_dir($directory.'/template/function'))
-                {
-                    foreach(scandir($directory.'/template/function') as $filename)
-                    {
-                        if(!str_starts_with($filename, '_') && str_ends_with($filename, '.php')) {
-                            $functions[basename($filename, '.php')] = $directory.'/template/function/'.$filename;
-                        }
-                    }
-                }
-
-                //Include autoloader
-                if(file_exists($directory.'/resources/vendor/autoload.php')) {
-                    include $directory.'/resources/vendor/autoload.php';
-                }
-
-                if(file_exists($directory.'/config.php'))
-                {
-                    $identifiers = include $directory.'/config.php';
-
-                    if(is_array($identifiers))
-                    {
-                        foreach($identifiers as $identifier => $values) {
-                            $this->getConfig($identifier)->merge($values);
-                        }
-                    }
-                }
-
-                //Register 'ext:pages' aliases
-                if($name == 'pages')
-                {
-                    $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path.'/pages'));
-
-                    foreach($iterator as $file)
-                    {
-                        if ($file->isFile() && $file->getExtension() == 'php' && $file->getFileName() !== 'config.php')
-                        {
-                            $segments = explode('/', $iterator->getSubPathName());
-                            $segments[] = basename(array_pop($segments), '.php');
-
-                            //Create the identifier path + file
-                            $path = implode('.', $segments);
-
-                            $this->getObject('manager')->registerAlias(
-                                'ext:pages.'.$path,
-                                'com:pages.'.$path
-                            );
-                        }
-                    }
+                if (isset($metadata['hash']) && $metadata['hash'] == $hash) {
+                    $archive = false;
+                } else {
+                    $archive = 'update';
                 }
             }
 
-            //Register template functions
-            if($functions) {
-                $this->getConfig('com:pages.template')->merge(['functions' => $functions]);
+            if ($archive)
+            {
+                try
+                {
+                    $phar = new PharData($destination . '/' . $name . '.zip');
+                    $phar->buildFromDirectory($path );
+                    $phar->compressFiles(Phar::GZ);
+                    $phar->setSignatureAlgorithm(Phar::SHA256);
+                    $phar->setMetadata([
+                        'hash' => $hash,
+                        'date' => $date,
+                        'version' => $version,
+                        'build'   => $build + 1
+                    ]);
+
+                    if ($archive == 'create') {
+                        error_log(sprintf('%s - Archive Created: %s, version %s' . "\n", $date, $name . '.zip', $version), 3, $log);
+                    } else {
+                        error_log(sprintf('%s - Archive Updated: %s, version %s, build %s' . "\n", $date, $name . '.zip', $version, $build), 3, $log);
+                    }
+
+                } catch (Exception $e) {
+                    error_log(sprintf('%s - Archive Failed: %s, error $s' . "\n", $date, $name . '.zip', $e->getMessage()), 3, $log);
+                }
             }
         }
     }
