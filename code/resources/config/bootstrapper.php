@@ -64,7 +64,6 @@ return [
         'event.subscriber.factory' => [
             'subscribers' => [
                 'com:pages.event.subscriber.bootstrapper',
-                'com:pages.event.subscriber.dispatcher',
                 'com:pages.event.subscriber.exception',
             ]
         ],
