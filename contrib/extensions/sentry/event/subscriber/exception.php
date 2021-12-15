@@ -13,6 +13,7 @@ class ExtSentryEventSubscriberException extends ComPagesEventSubscriberAbstract
     {
         $config->append($this->getConfig('ext:sentry.config'));
         $config->append(array(
+            'priority' => KEvent::PRIORITY_HIGH,
             'bootstrap'  => true,
             'disable_on' => [401, 403, 404],
             'options'    => [
