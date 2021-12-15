@@ -45,9 +45,6 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
             //Bootstrap the site configuration (before extensions to allow overriding)
             $this->_bootstrapSite($config->getSitePath(), $options);
 
-            //Bootstrap Joomla
-            $this->_bootstrapJoomla($config->getSitePath(), $options);
-
             //Bootstrap extensions
 
             //Register 'ext' fallback location
@@ -72,9 +69,9 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                 $this->_bootstrapExtensions($path, $locator);
             }
         }
-        else $this->getObject('pages.config', ['site_path' => false]);
+        else $config = $this->getObject('pages.config', ['site_path' => false]);
 
-        $this->getObject('event.publisher')->publishEvent('onAfterPagesBootstrap');
+        $this->getObject('event.publisher')->publishEvent('onAfterPagesBootstrap', ['config' => $config->getConfig()]);
     }
 
     protected function _bootstrapSite($path, $config = array())
@@ -96,27 +93,6 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         //Set config options
         foreach($options['extensions'] as $identifier => $values) {
             $this->getConfig($identifier)->merge($values);
-        }
-    }
-
-    protected function _bootstrapJoomla($path, $config = array())
-    {
-        if(class_exists('\Joomla\CMS\Component\ComponentHelper'))
-        {
-            //Restore phar stream wrapper (Joomla uses the TYPO3 wrapper)
-            @stream_wrapper_restore('phar');
-
-            //Add com_pages to Joomla components
-            $install = Closure::bind(function()
-            {
-                static::$components['com_pages'] = new Joomla\CMS\Component\ComponentRecord([
-                    'option'  => 'com_pages',
-                    'enabled' => 1
-                ]);
-
-            }, null, '\Joomla\CMS\Component\ComponentHelper');
-
-            $install();
         }
     }
 
