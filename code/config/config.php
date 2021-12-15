@@ -27,7 +27,7 @@ class ComPagesConfig extends ComPagesConfigAbstract implements KObjectSingleton
             'cache_path'     => $config->cache_path ? $config->log_path : $config->site_path.'/cache',
             'extension_path' => $config->extension_path ? $config->extension_path : $config->site_path.'/extensions',
             'debug'          => JFactory::getConfig()->get('debug'),
-            'base_path'      => $config->base_path ?? JFactory::getApplication()->getCfg('live_site'),
+            'base_path'      => $config->base_path ?? JFactory::getConfig()->get('live_site'),
             'script_name'    => $config->script_name ? trim($config->script_name, '/') : basename($_SERVER['SCRIPT_NAME']),
         ))->append(array(
             'page_cache'            => true,

@@ -6,7 +6,7 @@ class ComPagesTemplateHelperLazysizes extends ComPagesTemplateHelperBehavior
     {
         $config = new KObjectConfigJson($config);
         $config->append(array(
-            'debug' =>  JFactory::getApplication()->getCfg('debug'),
+            'debug' =>  JFactory::getConfig()->get('debug'),
         ));
 
         $html   = '';
