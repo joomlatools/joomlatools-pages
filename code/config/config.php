@@ -82,6 +82,16 @@ class ComPagesConfig extends ComPagesConfigAbstract implements KObjectSingleton
         return (array) KObjectConfig::unbox($this->getConfig()->extension_path);
     }
 
+    public function getInstallPath()
+    {
+        return $this->getConfig()->install_path ?? $this->getSitePath('extensions');
+    }
+
+    public function getArchivePath()
+    {
+        return $this->getConfig()->archive_path ?? $this->getConfig()->debug ? $this->getSitePath('extensions') : false;
+    }
+
     private function __loadConfig($path)
     {
         $options = array();

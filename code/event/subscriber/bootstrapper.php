@@ -13,9 +13,6 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
     {
         $config->append(array(
             'priority' => KEvent::PRIORITY_HIGH,
-            //Cannot use pages.config before it's bootstrapped
-            'install'  => !JFactory::getConfig()->get('debug') ? class_exists('PharData') : true,
-            'archive'  => JFactory::getConfig()->get('debug'),
             'log_path'     => null,
             'install_path' => null,
             'archive_path' => null,
@@ -51,7 +48,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
             $this->_bootstrapSite($config->getSitePath(), $options);
 
             //Bootstrap extensions
-            $this->_bootstrapExtensions($config->getExtensionPath(), $options);
+            $this->_bootstrapExtensions($config->getExtensionPath(), $config);
 
         }
         else $config = $this->getObject('pages.config', ['site_path' => false]);
@@ -81,7 +78,7 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         }
     }
 
-    protected function _bootstrapExtensions($extensions, $config = array())
+    protected function _bootstrapExtensions($extensions, $config)
     {
         //Restore phar stream wrapper (Joomla uses the TYPO3 wrapper)
         @stream_wrapper_restore('phar');
@@ -93,11 +90,13 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
         $this->getObject('manager')->getClassLoader()->registerLocator($locator);
         $this->getObject('manager')->registerLocator('com:pages.object.locator.extension');
 
-        $install_path = $this->getConfig()->install_path ?? PAGES_SITE_ROOT.'/extensions';
-        $archive_path = $this->getConfig()->archive_path ?? PAGES_SITE_ROOT.'/extensions';
+        $install_path = $config->getInstallPath();
+        $archive_path = $config->getArchivePath();
 
         //Bootstrap Extensions
-        array_unshift($extensions, $install_path);
+        if($install_path) {
+            array_unshift($extensions, $install_path);
+        }
 
         foreach(array_unique($extensions) as $path)
         {
@@ -255,13 +254,8 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
     protected function _installExtension($url, $destination)
     {
         $result = false;
-
-        if($this->getConfig()->install)
+        if($this-_canInstall($destination))
         {
-            if(!class_exists('PharData')) {
-                throw new RuntimeException('Phar extension not available');
-            }
-
             $filepath  = trim(parse_url($url, PHP_URL_PATH), '/');
             $archive   = basename($filepath);
             $directory = basename($filepath, '.zip');
@@ -318,12 +312,8 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
     {
         $result = false;
 
-        if($this->getConfig()->install)
+        if($this->_canInstall($destination))
         {
-            if(!class_exists('PharData')) {
-                throw new RuntimeException('Phar extension not available');
-            }
-
             $filepath  = trim(parse_url($url, PHP_URL_PATH), '/');
             $archive   = basename($filepath);
 
@@ -381,12 +371,8 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
     {
         $file = $path.'/manifest.yaml';
 
-        if($this->getConfig()->archive && file_exists($file))
+        if($this->_canArchive($destination) && file_exists($file))
         {
-            if(!class_exists('PharData')) {
-                throw new RuntimeException('Phar extension not available');
-            }
-
             if($this->getConfig()->log_path) {
                 $log  = $this->getConfig()->log_path.'/extension.log';
             } else {
@@ -468,5 +454,44 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
                 }
             }
         }
+    }
+
+    protected function _canInstall($destination)
+    {
+        if($destination !== false)
+        {
+            if(!is_dir($destination)) {
+                throw new RuntimeException("Cannot install extensions. Path does not exist: $destination");
+            }
+
+            if($this->getObject('com:pages.config')->debug)
+            {
+                if(!class_exists('PharData')) {
+                    throw new RuntimeException('Cannot install extensions. Phar extension not available');
+                }
+            }
+
+        }
+
+        return $destination && class_exists('PharData');
+    }
+
+    protected function _canArchive($destination)
+    {
+        if($destination !== false)
+        {
+            if(!is_dir($destination)) {
+                throw new RuntimeException("Cannot archive extensions. Path does not exist: $destination");
+            }
+
+            if($this->getObject('com:pages.config')->debug)
+            {
+                if(!class_exists('PharData')) {
+                    throw new RuntimeException('Cannot archive extensions. Phar extension not available');
+                }
+            }
+        }
+
+        return $destination && class_exists('PharData');
     }
 }
