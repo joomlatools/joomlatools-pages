@@ -16,32 +16,12 @@ class ComPagesDispatcherBehaviorDecoratable extends ComKoowaDispatcherBehaviorDe
 
         if(!$response->isDownloadable() && !$response->isRedirect() && $request->getFormat() == 'html')
         {
-            $decorator = $this->getDecorator();
-
-            //Set metadata in Joomla document
-            if($decorator == 'joomla')
-            {
-                //Set the title
-                if($title = $this->getController()->getView()->getTitle()) {
-                    JFactory::getDocument()->setTitle($title);
-                }
-
-                //Set the direction
-                if($direction = $this->getController()->getView()->getDirection()) {
-                    JFactory::getDocument()->setDirection($direction);
-                }
-
-                //Set the language
-                if($language = $this->getController()->getView()->getLanguage()) {
-                    JFactory::getDocument()->setLanguage($language);
-                }
-            }
-
             $controller = $this->getObject('com:koowa.controller.page',  array('response' => $response));
 
             //Configure the page view
             $controller->getView()
-                ->setDecorator($decorator)
+                ->setDecorator($this->getDecorator())
+                ->setDecorator($this->getDecorator())
                 ->setLayout($this->getLayout());
 
             //Set the result in the response

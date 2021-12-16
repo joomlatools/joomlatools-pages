@@ -114,7 +114,6 @@ class ExtJoomlaEventSubscriberDispatcher extends ComPagesEventSubscriberDispatch
         }
     }
 
-
     public function onAfterApplicationRoute(KEventInterface $event)
     {
         $dispatcher = $this->getDispatcher();
@@ -231,6 +230,29 @@ class ExtJoomlaEventSubscriberDispatcher extends ComPagesEventSubscriberDispatch
         }
     }
 
+    public function onBeforeKoowaPageControllerRender(KEventInterface $event)
+    {
+        $dispatcher = $this->getDispatcher();
+
+        if($dispatcher->getDecorator() == 'joomla')
+        {
+            //Set the title
+            if($title = $dispatcher->getController()->getView()->getTitle()) {
+                JFactory::getDocument()->setTitle($title);
+            }
+
+            //Set the direction
+            if($direction = $dispatcher->getController()->getView()->getDirection()) {
+                JFactory::getDocument()->setDirection($direction);
+            }
+
+            //Set the language
+            if($language = $dispatcher->getController()->getView()->getLanguage()) {
+                JFactory::getDocument()->setLanguage($language);
+            }
+        }
+    }
+
     public function onAfterApplicationDispatch(KEventInterface $event)
     {
         if($this->isDispatchable())
@@ -273,6 +295,8 @@ class ExtJoomlaEventSubscriberDispatcher extends ComPagesEventSubscriberDispatch
             }
         }
     }
+
+
 
     public function onAfterApplicationRender(KEventInterface $event)
     {
