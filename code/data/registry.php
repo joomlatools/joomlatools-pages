@@ -122,12 +122,15 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
                 }
             }
 
-            if(!is_array($data)) {
+            if(!is_iterable($data)) {
                 throw new \RuntimeException(sprintf('Url: %s cannot be parsed to structured data', $url));
             }
 
-            $class = $this->getObject('manager')->getClass('com:pages.data.object');
-            $data = new $class($data);
+            if(is_array($data))
+            {
+                $class = $this->getObject('manager')->getClass('com:pages.data.object');
+                $data = new $class($data);
+            }
 
             $this->__data[$url] = $data;
         }
@@ -177,8 +180,11 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
                 else $data = $data[$segment];
             }
 
-            $class = $this->getObject('manager')->getClass('com:pages.data.object');
-            $data = new $class($data);
+            if(is_array($data))
+            {
+                $class = $this->getObject('manager')->getClass('com:pages.data.object');
+                $data = new $class($data);
+            }
 
             $this->__data[$path] = $data;
         }
