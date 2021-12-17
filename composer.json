@@ -1,7 +1,7 @@
 {
     "name": "joomlatools/pages",
     "license": "GPL-3.0-only",
-    "description": "A component for including html and markdown into Joomla. Inspired by Jekyll and Grav",
+    "description": "Easy to use just-in-time page generator (for Joomla)",
     "keywords": [
         "joomla",
         "component",
