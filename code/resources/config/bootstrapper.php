@@ -44,8 +44,6 @@ return [
                 'md'   => 'com:pages.object.config.markdown',
                 'csv'  => 'com:pages.object.config.csv',
                 'json' => 'com:pages.object.config.json',
-                'xml'  => 'com:pages.object.config.xml',
-                'html' => 'com:pages.object.config.html',
             ],
         ],
         'template.locator.factory' => [
