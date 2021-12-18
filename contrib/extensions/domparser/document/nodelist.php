@@ -92,7 +92,6 @@ class ExtDomparserDocumentNodelist implements \Countable, \IteratorAggregate, \A
         return $result;
     }
 
-
     public function shuffle()
     {
         shuffle($this->__nodes);
@@ -111,11 +110,13 @@ class ExtDomparserDocumentNodelist implements \Countable, \IteratorAggregate, \A
         return $this;
     }
 
-    public function count() {
+    public function count()
+    {
         return count($this->__nodes);
     }
 
-    public function contains(DOMNode $node) {
+    public function contains(\DOMNode $node)
+    {
         return in_array($node, $this->__nodes, true);
     }
 
@@ -142,19 +143,23 @@ class ExtDomparserDocumentNodelist implements \Countable, \IteratorAggregate, \A
         return $this;
     }
 
-    public function getDocument() {
+    public function getDocument()
+    {
         return $this->__document;
     }
 
-    public function getIterator() {
+    public function getIterator()
+    {
         return new ExtDomparserDocumentIterator($this->__nodes);
     }
 
-    public function offsetExists($offset) {
+    public function offsetExists($offset)
+    {
         return isset($this->__nodes[$offset]);
     }
 
-    public function offsetGet($offset){
+    public function offsetGet($offset)
+    {
         return isset($this->__nodes[$offset]) ? $this->__nodes[$offset] : null;
     }
 
@@ -167,15 +172,18 @@ class ExtDomparserDocumentNodelist implements \Countable, \IteratorAggregate, \A
         }
     }
 
-    public function offsetUnset($offset) {
+    public function offsetUnset($offset)
+    {
         unset($this->__nodes[$offset]);
     }
 
-    public function toString(){
-        return $result = $this->__call('toString');
+    public function toString()
+    {
+        return $this->__call('toString');
     }
 
-    public function __debugInfo(){
+    public function __debugInfo()
+    {
         return $this->__nodes;
     }
 
@@ -211,6 +219,6 @@ class ExtDomparserDocumentNodelist implements \Countable, \IteratorAggregate, \A
 
     final public function __toString()
     {
-        return $result = $this->toString();;
+        return $this->toString();
     }
 }

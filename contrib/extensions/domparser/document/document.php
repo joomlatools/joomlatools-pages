@@ -261,7 +261,7 @@ class ExtDomparserDocument extends \DOMDocument implements ExtDomparserDocumentI
      * @param string|array|DOMNodeList|ExtDomparserDocumentNodelist $selector The element name, css selector or xpath expression
      * 																  of the element(s) to rename
      * @param string $name     The new element name
-     * @return ExtDomparserocument
+     * @return ExtDomparserDocument
      */
     public function rename($selector, $name)
     {
@@ -631,6 +631,6 @@ class ExtDomparserDocument extends \DOMDocument implements ExtDomparserDocumentI
      */
     final public function __toString()
     {
-        return $result = $this->toString();
+        return $this->toString();
     }
 }

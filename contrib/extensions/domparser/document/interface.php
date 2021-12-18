@@ -88,7 +88,7 @@ interface ExtDomparserDocumentInterface extends \Countable, \IteratorAggregate
      * Given an XSL string transform the document
      *
      * @param string $xsl XSL Transormation
-     * @return ExtDomparserocument
+     * @return ExtDomparserDocument
      */
     public function transform($xsl);
 

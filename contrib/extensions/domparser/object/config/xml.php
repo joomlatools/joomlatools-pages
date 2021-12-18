@@ -13,12 +13,12 @@ class ExtDomparserObjectConfigXml extends KObjectConfigFormat
 
     public function fromString($string, $object = true)
     {
-        $data = ComPagesDataDocumentFactory::fromString($string, true)->toArray();
+        $data = ExtDomparserDocumentFactory::fromString($string, true)->toArray();
         return $object ? $this->merge($data) : $data;
     }
 
     public function toString()
     {
-        return ComPagesDataDocumentFactory::fromArray($this->toArray(), true)->toString();
+        return ExtDomparserDocumentFactory::fromArray($this->toArray(), true)->toString();
     }
 }
