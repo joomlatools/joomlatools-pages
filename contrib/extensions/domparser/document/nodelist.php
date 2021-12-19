@@ -9,10 +9,12 @@
 
 class ExtDomparserDocumentNodelist implements \Countable, \IteratorAggregate, \ArrayAccess
 {
+    use ExtDomparserDocumentNodeTrait;
+
     private $__document;
     private $__nodes = [];
 
-    public function __construct($list, ExtDomparserDocument $document)
+    public function __construct(iterable $list, ExtDomparserDocument $document)
     {
         foreach ($list as $node) {
             $this->__nodes[] = $node;
@@ -27,7 +29,7 @@ class ExtDomparserDocumentNodelist implements \Countable, \IteratorAggregate, \A
         if(!empty($this->__nodes))
         {
             if($node = reset($this->__nodes)) {
-                $result = new static($node, $this->__document);
+                $result = new static([$node], $this->__document);
             }
         }
 
@@ -37,8 +39,9 @@ class ExtDomparserDocumentNodelist implements \Countable, \IteratorAggregate, \A
     public function item($key)
     {
         $result = null;
+        $key    = $key - 1;
         if(isset($this->__nodes[$key])) {
-            $result = new static($this->__nodes[$key], $this->__document);
+            $result = new static([$this->__nodes[$key]], $this->__document);
         }
 
         return $result;
@@ -50,42 +53,7 @@ class ExtDomparserDocumentNodelist implements \Countable, \IteratorAggregate, \A
         if(!empty($this->__nodes))
         {
             if($node = end($this->__nodes)) {
-                $result = new static($node, $this->__document);
-            }
-        }
-
-        return $result;
-    }
-
-    public function name()
-    {
-        $result = null;
-
-        if($node = current($this->__nodes)) {
-            $result = $node->nodeName;
-        }
-
-        return $result;
-    }
-
-    public function text($default = null)
-    {
-        $result = $default;
-
-        if($node = current($this->__nodes)) {
-            $result = $node->textContent;
-        }
-
-        return $result;
-    }
-
-    public function attribute($name, $default = null)
-    {
-        $result = $default;
-        if($node = current($this->__nodes))
-        {
-            if($node->hasAttribute($name)) {
-                $result = $node->getAttribute($name);
+                $result = new static([$node], $this->__document);
             }
         }
 
@@ -120,6 +88,17 @@ class ExtDomparserDocumentNodelist implements \Countable, \IteratorAggregate, \A
         return in_array($node, $this->__nodes, true);
     }
 
+    public function each(callable $function)
+    {
+        $data = [];
+        foreach ($this->__nodes as $i => $node) {
+            $data[] = $function($node, $i);
+
+        }
+
+        return $data;
+    }
+
     public function reduce(callable $function, $initial = null)
     {
         if(is_null($initial)) {
@@ -141,6 +120,17 @@ class ExtDomparserDocumentNodelist implements \Countable, \IteratorAggregate, \A
         }
 
         return $this;
+    }
+
+    public function getName()
+    {
+        $result = null;
+
+        if($node = current($this->__nodes)) {
+            $result = $node->getName();
+        }
+
+        return $result;
     }
 
     public function getDocument()
@@ -177,29 +167,24 @@ class ExtDomparserDocumentNodelist implements \Countable, \IteratorAggregate, \A
         unset($this->__nodes[$offset]);
     }
 
+    public function toArray()
+    {
+        return $this->__nodes;
+    }
+
     public function toString()
     {
         return $this->__call('toString');
     }
 
-    public function __debugInfo()
+    public function isRemoved()
     {
-        return $this->__nodes;
+        return false;
     }
 
-    public function __call($method, $arguments = array())
+    public function __debugInfo()
     {
-        if(!method_exists($this->getDocument(), $method)) {
-            throw new \BadMethodCallException("Call to undefined method " . get_class($this) . '::' . $method . "()");
-        }
-
-        //Create new document
-        $class = get_class($this->__document);
-        $document = new $class();
-        $document->xml = $this->getDocument()->isXml();
-        $document->append($this);
-
-        return call_user_func_array([$document, $method], $arguments);
+        return $this->toArray();
     }
 
     public function __clone()
@@ -215,6 +200,24 @@ class ExtDomparserDocumentNodelist implements \Countable, \IteratorAggregate, \A
         }
 
         $this->__nodes = $array;
+    }
+
+    public function __call($method, $arguments = array())
+    {
+        if($document = $this->getDocument())
+        {
+            if(!method_exists($document, $method)) {
+                throw new \BadMethodCallException("Call to undefined method " . get_class($this) . '::' . $method . "()");
+            }
+
+            //Create new document
+            $class = get_class($document);
+            $document = new $class();
+            $document->xml = $this->getDocument()->isXml();
+            $document->append($this);
+
+            return call_user_func_array([$document, $method], $arguments);
+        }
     }
 
     final public function __toString()

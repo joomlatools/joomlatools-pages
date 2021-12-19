@@ -31,6 +31,15 @@ class ExtDomparserDocument extends \DOMDocument implements ExtDomparserDocumentI
 
         $this->formatOutput       = true;
         $this->preserveWhiteSpace = true;
+
+        //Dpcument
+        $this->registerNodeClass('DOMDocument'    , 'ExtDomparserDocument');
+
+        //Nodes
+        $this->registerNodeClass('DOMText'        , 'ExtDomparserDocumentNodeText');
+        $this->registerNodeClass('DOMElement'     , 'ExtDomparserDocumentNodeElement');
+        $this->registerNodeClass('DOMComment'     , 'ExtDomparserDocumentNodeComment');
+        $this->registerNodeClass('DOMDocumentType', 'ExtDomparserDocumentNodeType');
     }
 
     /**
@@ -83,7 +92,7 @@ class ExtDomparserDocument extends \DOMDocument implements ExtDomparserDocumentI
      * @throws InvalidArgumentException If the selector is not valid
      * @return ExtDomparserDocumentNodelist  A ExtDomparserDocumentNodelist
      */
-    public function filter($selector, $value = null, $exclude = false)
+    public function filter($selector = null, $value = null, $exclude = false)
     {
         $result = array();
 
@@ -168,34 +177,12 @@ class ExtDomparserDocument extends \DOMDocument implements ExtDomparserDocumentI
     }
 
     /**
-     * Given an name of a node, CSS selector, or XPath expression get the text content
-     *
-     * @see: https://symfony.com/doc/current/components/css_selector.html
-     *
-     * @param string $selector 			  Element name, CSS Selector, or Xpath expression
-     * @param bool  $normalize_whitespace Whether whitespaces should be trimmed and normalized to single space
-     * @return string
-     */
-    public function text($selector = '*', $normalize_whitespace = true)
-    {
-        $result = $this->filter($selector)->reduce(function($carry, $node) {
-            return $carry .= $node->textContent;
-        }, '');
-
-        if ($normalize_whitespace) {
-            $result = trim(preg_replace('/(?:\s{2,}+|[^\S ])/', ' ', $result));
-        }
-
-        return $result;
-    }
-
-    /**
      * Given an name of a node, CSS selector, or XPath expression count the nodes
      *
      * @param string $selector Tag name, CSS Selector, or Xpath expression
      * @return int
      */
-    public function count($selector = '*')
+    public function count($selector = null)
     {
         return $this->filter($selector)->count();
     }
@@ -258,12 +245,12 @@ class ExtDomparserDocument extends \DOMDocument implements ExtDomparserDocumentI
     /**
      * Rename element(s)
      *
+     * @param string $name  The new element name
      * @param string|array|DOMNodeList|ExtDomparserDocumentNodelist $selector The element name, css selector or xpath expression
      * 																  of the element(s) to rename
-     * @param string $name     The new element name
      * @return ExtDomparserDocument
      */
-    public function rename($selector, $name)
+    public function rename($name, $selector = null)
     {
         if($nodes = $this->filter($selector))
         {
@@ -296,7 +283,7 @@ class ExtDomparserDocument extends \DOMDocument implements ExtDomparserDocumentI
      * 																  of the element(s) to rename
      * @return ExtDomparserDocument
      */
-    public function remove($selector)
+    public function remove($selector = null)
     {
         if($nodes = $this->filter($selector))
         {
@@ -326,55 +313,109 @@ class ExtDomparserDocument extends \DOMDocument implements ExtDomparserDocumentI
     }
 
     /**
+     * Given an name of a node, CSS selector, or XPath expression get the text content
+     *
+     * @param string $selector 			  Element name, CSS Selector, or Xpath expression
+     * @param bool  $normalize_whitespace Whether whitespaces should be trimmed and normalized to single space
+     * @return string
+     */
+    public function getText($selector = null, $normalize_whitespace = true)
+    {
+        $result = $this->filter($selector)->reduce(function($carry, $node) {
+            return $carry .= $node->textContent;
+        }, '');
+
+        if ($normalize_whitespace) {
+            $result = trim(preg_replace('/(?:\s{2,}+|[^\S ])/', ' ', $result));
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get an attribute by name
+     *
+     * @param string  $name    The attribute name to get
+     * @param string $selector The element name, css selector or xpath expression of the element(s) to
+     * 							get the attribute from
+     * @return ExtDomparserDocumentAttributes|string
+     */
+    public function getAttribute($name, $selector = null)
+    {
+        $values = array();
+        $nodes = $this->filter($selector);
+
+        foreach($nodes as $node)
+        {
+            if ($node instanceof \DOMElement && $node->hasAttribute($name)) {
+                $values[] = $node->getAttribute($name);
+            }
+        }
+
+        return count($nodes) == 1 ? $values[0] : new ExtDomparserDocumentAttributes($values);
+    }
+
+    /**
      * Get attributes
      *
      * @param string $selector The element name, css selector or xpath expression of the element(s) to
      * 							get the attributes from
      * @param array  $names    The attribute names to remove
-     * @return array
+     * @return ExtDomparserDocumentAttributes
      */
-    public function getAttributes($selector)
+    public function getAttributes($selector = null)
     {
         $attributes = array();
         $nodes = $this->filter($selector);
 
         foreach($nodes as $node)
         {
-            if ($node instanceof \DOMElement)
+            if ($node instanceof \DOMElement && $node->hasAttributes())
             {
-                if($node->hasAttributes())
+                foreach($node->attributes as $attribute)
                 {
-                    foreach($node->attributes as $key => $attribute)
+                    $name  = $attribute->name;
+                    $value = $attribute->value;
+
+                    if(isset($attributes[$name]))
                     {
-                        $name  = $attribute->name;
-                        $value = $attribute->value;
+                        $value = array_merge((array) $attributes[$name], (array) $value);
 
-                        if(isset($attributes[$name]))
-                        {
-                            $value = array_merge((array) $attributes[$name], (array) $value);
-
-                            if(count($value) > 1) {
-                                $attributes[$name] = $value;
-                            }
+                        if(count($value) > 1) {
+                            $attributes[$name] = $value;
                         }
-                        else $attributes[$name] = $value;
                     }
+                    else $attributes[$name] = $value;
                 }
             }
         }
 
-        return $attributes;
+        return new ExtDomparserDocumentAttributes($attributes);
     }
 
     /**
-     * Remove attributes
+     * Set an attribute
      *
-     * @param string $selector The element name, css selector or xpath expression of the element(s) to
-     * 							remove attributes from
-     * @param array  $names    The attribute names to remove
+     * @param string $name        The name of the attribute to set
+     * @param string $value       The value of the attribue to set
+     * @param string $selector    The element name, css selector or xpath expression of the element(s)
+     * 							  to add attributes too
      * @return ExtDomparserDocument
      */
-    public function removeAttributes($selector, $attributes)
+    public function setAttribute($name, $value, $selector = null)
+    {
+        return $this->setAttributes([$name => $value], $selector);
+    }
+
+    /**
+     * Set attributes
+     *
+     * @param iterable $attribues   Array containing the attribute name value pairs to add
+     * @param string $selector    The element name, css selector or xpath expression of the element(s)
+     * 							  to add attributes too
+     * @return ExtDomparserDocument
+     */
+    public function setAttributes(iterable $attributes, $selector = null)
     {
         $nodes = $this->filter($selector);
 
@@ -382,7 +423,50 @@ class ExtDomparserDocument extends \DOMDocument implements ExtDomparserDocumentI
         {
             if ($node instanceof \DOMElement)
             {
-                foreach((array) $attributes as $name) {
+                foreach($attributes as $name => $value) 
+                {
+                    if(is_array($value)) {
+                        $value = implode(' ', $value);
+                    }
+                    
+                    $node->setAttribute($name, $value);
+                }
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Remove an attribute by name
+     *
+     * @param string $attribute The attribute name to remove
+     * @param string $selector The element name, css selector or xpath expression of the element(s) to
+     * 							remove attributes from
+     * @return ExtDomparserDocument
+     */
+    public function removeAttribute($name, $selector = null)
+    {
+        return $this->removeAttributes([$name], $selector);
+    }
+
+    /**
+     * Remove attributes
+     *
+     * @param iterable $attributes The attribute names to remove
+     * @param string $selector The element name, css selector or xpath expression of the element(s) to
+     * 							remove attributes from
+     * @return ExtDomparserDocument
+     */
+    public function removeAttributes(iterable $attributes, $selector = null)
+    {
+        $nodes = $this->filter($selector);
+
+        foreach($nodes as $node)
+        {
+            if ($node instanceof \DOMElement)
+            {
+                foreach($attributes as $name) {
                     $node->removeAttribute($name);
                 }
             }
@@ -392,14 +476,39 @@ class ExtDomparserDocument extends \DOMDocument implements ExtDomparserDocumentI
     }
 
     /**
-     * Add attributes
+     * Get class(es)
      *
      * @param string $selector    The element name, css selector or xpath expression of the element(s)
      * 							  to add attributes too
-     * @param array  $attribues   Array containing the attribute name value pairs to add
+     * @return ExtDomparserDocumentAttributes
+     */
+    public function getClass($selector = null)
+    {
+        $classes = array();
+        $nodes = $this->filter($selector);
+
+        foreach($nodes as $node)
+        {
+            if ($node instanceof \DOMElement)
+            {
+                if($node->hasAttribute('class')) {
+                    $classes = array_merge($classes, preg_split('/\s+/', $node->getAttribute('class')));
+                }
+            }
+        }
+
+        return new ExtDomparserDocumentAttributes(array_values(array_unique($classes)));
+    }
+
+    /**
+     * Add class(es)
+     *
+     * @param string|array $class Class or array of classes to add
+     * @param string $selector    The element name, css selector or xpath expression of the element(s)
+     * 							  to add attributes too
      * @return ExtDomparserDocument
      */
-    public function addAttributes($selector, array $attributes, $replace = false)
+    public function addClass($class, $selector = null)
     {
         $nodes = $this->filter($selector);
 
@@ -407,14 +516,43 @@ class ExtDomparserDocument extends \DOMDocument implements ExtDomparserDocumentI
         {
             if ($node instanceof \DOMElement)
             {
-                foreach($attributes as $name => $value)
+                if($node->hasAttribute('class'))
                 {
-                    if(!$replace && $node->hasAttribute($name))
-                    {
-                        $value = array_merge((array) $value, explode(' ', $node->getAttribute($name)));
-                        $node->setAttribute($name, implode(' ', array_unique($value)));
+                    $value = array_merge((array) $class, preg_split('/\s+/', $node->getAttribute('class')));
+                    $node->setAttribute('class', implode(' ', array_unique($value)));
+                }
+                else $node->setAttribute('class', implode(' ', (array) $class));
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Add class(es)
+     *
+     * @param string|array $class Class or array of classes to remove
+     * @param string $selector    The element name, css selector or xpath expression of the element(s)
+     * 							  to add attributes too
+     * @return ExtDomparserDocument
+     */
+    public function removeClass($class, $selector = null)
+    {
+        $nodes = $this->filter($selector);
+
+        foreach($nodes as $node)
+        {
+            if ($node instanceof \DOMElement)
+            {
+                if($node->hasAttribute('class'))
+                {
+                    $value = array_diff(preg_split('/\s+/', $node->getAttribute('class')), (array) $class);
+                    
+                    if(!empty($value)) {
+                        $node->setAttribute('class', implode(' ', array_unique($value)));
+                    } else {
+                        $node->removeAttribute('class');
                     }
-                    else $node->setAttribute($name, implode(' ', $value));
                 }
             }
         }
@@ -620,7 +758,7 @@ class ExtDomparserDocument extends \DOMDocument implements ExtDomparserDocumentI
         }
 
         //Create new document
-        $nodes = $this->filter('*');
+        $nodes = $this->filter();
         return call_user_func_array([$nodes, $method], $arguments);
     }
 
