@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ExtDomparserDocumentIterator extends RecursiveArrayIterator
+class ExtDomparserDocumentElementIterator extends RecursiveArrayIterator
 {
     public function __construct($nodes)
     {
