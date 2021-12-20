@@ -89,7 +89,7 @@ class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
                 //Parse and disable filters
                 if($process = $template->get('process'))
                 {
-                    $filters = $process['filters'] ?? array();
+                    $filters = KObjectConfig::unbox($process['filters']) ?? array();
 
                     foreach($filters as $key => $filter)
                     {
