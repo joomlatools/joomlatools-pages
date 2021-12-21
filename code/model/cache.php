@@ -9,7 +9,7 @@
 
 class ComPagesModelCache extends ComPagesModelCollection
 {
-    private $__data;
+    private $__files;
 
     public function __construct(KObjectConfig $config)
     {
@@ -22,66 +22,120 @@ class ComPagesModelCache extends ComPagesModelCollection
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'type'         => 'cache',
-            'cache_path'   =>  $this->getObject('pages.config')->getCachePath(),
-            'identity_key' => 'id',
+            'type'       => 'cache',
+            'cache_path' =>  $this->getObject('pages.config')->getCachePath(),
+        ])->append([
+            'behaviors'   => [
+                'com:pages.model.behavior.paginatable',
+            ],
         ]);
 
         parent::_initialize($config);
     }
 
-    public function fetchData()
+    public function fetchFiles()
     {
-        if(!isset($this->__data))
+        if(!isset($this->__files))
         {
-            $this->__data = array();
+            $files  = array();
 
-            $dispatcher = $this->getObject('com:pages.dispatcher.http');
-            if($dispatcher->isCacheable(false))
+            $offset = $this->getState()->offset;
+            $limit  = $this->getState()->limit;
+
+            $i = 1;
+            if ($handle = opendir($this->getConfig()->cache_path))
             {
-                $state  = $this->getState();
-                $files  = array();
-
-                if ($state->isUnique())
+                while (false !== ($entry = readdir($handle)))
                 {
-                    $file = $dispatcher->locateCache($state->id);
+                    if ($entry != "." && $entry != "..")
+                    {
+                        if($i > ($offset + $limit)) {
+                            break;
+                        }
 
-                    if(file_exists($file)) {
-                        $files[] = $file;
+                        if($i >= $offset) {
+                            $files[] = $this->getConfig()->cache_path.'/'.$entry;
+                        }
+
+                        $i++;
                     }
                 }
-                else $files = glob($this->getConfig()->cache_path.'/response_*');
 
-                foreach ($files as $file)
-                {
-                    $data = require $file;
-
-                    $valid = $dispatcher->validateCache($data['validators'], true);
-
-                    $this->__data[] = array(
-                        'id'          => $data['id'],
-                        'url'         => $data['url'],
-                        'date'        => $this->getObject('date', array('date' => $data['headers']['Last-Modified'])),
-                        'hash'        => $data['headers']['Etag'],
-                        'token'       => $data['token'],
-                        'format'      => $data['format'],
-                        'language'    => $data['language'],
-                        'collections' => $data['headers']['Content-Collections'] ?? array(),
-                        'robots'      => isset($data['headers']['X-Robots-Tag']) ? array_map('trim', explode(',', $data['headers']['X-Robots-Tag'])) : array(),
-                        'status'      => $data['status'],
-                        'valid'       => $valid
-                    );
-                }
+                closedir($handle);
             }
+
+            $this->__files = $files;
         }
 
-        return $this->__data;
+        return $this->__files;
+    }
+
+    protected function _actionFetch(KModelContext $context)
+    {
+        $state  = $this->getState();
+
+        $result = array();
+        $files  = array();
+        if ($state->isUnique())
+        {
+            $file = $this->getConfig()->cache_path . '/response_' . crc32($state->id) . '.php';
+
+            if(file_exists($file)) {
+                $files[] = $file;
+            }
+        }
+        else $files = $this->fetchFiles();
+
+        foreach ($files as $file)
+        {
+            $data = require $file;
+
+            $result[] = array(
+                'id'          => $data['id'],
+                'url'         => $data['url'],
+                'date'        => $this->getObject('date', array('date' => $data['headers']['Last-Modified'])),
+                'hash'        => $data['headers']['Etag'],
+                'token'       => $data['token'],
+                'format'      => $data['format'],
+                'language'    => $data['language'],
+                'collections' => $data['headers']['Content-Collections'] ?? array(),
+                'robots'      => isset($data['headers']['X-Robots-Tag']) ? array_map('trim', explode(',', $data['headers']['X-Robots-Tag'])) : array(),
+                'status'      => $data['status'],
+            );
+        }
+
+        $context->data = $result;
+
+        return parent::_actionFetch($context);
+    }
+
+    protected function _actionCount(KModelContext $context)
+    {
+        return count(glob($this->getConfig()->cache_path.'/*'));
     }
 
     protected function _actionReset(KModelContext $context)
     {
-        $this->__data = null;
+        $this->__files = null;
 
         parent::_actionReset($context);
+    }
+
+    public function getHashState()
+    {
+        return array('offset', 'limit');
+    }
+
+    protected function _actionHash(KModelContext $context)
+    {
+        $files = $this->fetchFiles();
+
+        $result = array();
+        foreach ($files as $file) {
+            $result[basename($file)] = sprintf('%u', filemtime($file));
+        }
+
+        $hash = hash('crc32b', serialize($result));
+        return $hash;
     }
 }
