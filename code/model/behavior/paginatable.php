@@ -46,6 +46,11 @@ class ComPagesModelBehaviorPaginatable extends ComPagesModelBehaviorQueryable
         return $paginator;
     }
 
+    protected function _beforeHash(KModelContextInterface $context)
+    {
+        $this->_beforeFetch($context);
+    }
+
     protected function _beforeFetch(KModelContextInterface $context)
     {
         $state = $context->state;
