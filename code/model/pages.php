@@ -24,7 +24,14 @@ class ComPagesModelPages extends ComPagesModelCollection
     {
         $config->append([
             'type'      => 'pages',
-            'behaviors' => ['com:pages.model.behavior.recursable' => ['key' => 'folder']]
+            'behaviors' => ['com:pages.model.behavior.recursable' => ['key' => 'folder']],
+        ])->append([
+            'behaviors'   => [
+                'com:pages.model.behavior.paginatable',
+                'com:pages.model.behavior.sortable',
+                'com:pages.model.behavior.sparsable',
+                'com:pages.model.behavior.filterable',
+            ],
         ]);
 
         parent::_initialize($config);
