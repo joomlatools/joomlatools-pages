@@ -38,6 +38,7 @@ visible: false
     <? endforeach ?>
 
     <? $cache = collection('/cache.json', [
+        'limit' => 0,
         'filter' => [
             'robots' => ['nin:noindex', 'nin:none'],
             'format' => 'html',
