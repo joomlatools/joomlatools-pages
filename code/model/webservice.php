@@ -42,7 +42,16 @@ class ComPagesModelWebservice extends ComPagesModelCollection
             'hash_key'     => array(),
             'cache'        => true,
             'cache_path'   => null,
-            'headers'      => array()
+            'headers'      => array(),
+             'search'      => [], //properties to allow searching on
+        ])->append([
+            'behaviors'   => [
+                'com:pages.model.behavior.paginatable',
+                'com:pages.model.behavior.sortable',
+                'com:pages.model.behavior.sparsable',
+                'com:pages.model.behavior.filterable',
+                'com:pages.model.behavior.searchable' => ['columns' => $config->search],
+            ],
         ]);
 
         parent::_initialize($config);
