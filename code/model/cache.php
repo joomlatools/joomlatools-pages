@@ -27,6 +27,7 @@ class ComPagesModelCache extends ComPagesModelCollection
         ])->append([
             'behaviors'   => [
                 'com:pages.model.behavior.paginatable',
+                'com:pages.model.behavior.filterable',
             ],
         ]);
 
@@ -49,7 +50,7 @@ class ComPagesModelCache extends ComPagesModelCollection
                 {
                     if ($entry != "." && $entry != "..")
                     {
-                        if($i > ($offset + $limit)) {
+                        if($limit && $i >= ($offset + $limit)) {
                             break;
                         }
 
@@ -70,7 +71,7 @@ class ComPagesModelCache extends ComPagesModelCollection
         return $this->__files;
     }
 
-    protected function _actionFetch(KModelContext $context)
+    protected function _beforeFetch(KModelContext $context)
     {
         $state  = $this->getState();
 
@@ -105,8 +106,6 @@ class ComPagesModelCache extends ComPagesModelCollection
         }
 
         $context->data = $result;
-
-        return parent::_actionFetch($context);
     }
 
     protected function _actionCount(KModelContext $context)
@@ -123,7 +122,12 @@ class ComPagesModelCache extends ComPagesModelCollection
 
     public function getHashState()
     {
-        return array('offset', 'limit');
+        $state = [
+            'limit' => $this->getState()->limit,
+            'offset' => $this->getState()->offset,
+        ];
+
+        return $state;
     }
 
     protected function _actionHash(KModelContext $context)
