@@ -148,18 +148,6 @@ class ComPagesDataObject extends ComPagesObjectConfig
         return $data;
     }
 
-    public function toHtml()
-    {
-        $html = new ComPagesObjectConfigHtml($this);
-        return $html->toDom();
-    }
-
-    public function toXml()
-    {
-        $html = new ComPagesObjectConfigXml($this);
-        return $html->toDom();
-    }
-
     public function toJson()
     {
         $html = new ComPagesObjectConfigJson($this);
