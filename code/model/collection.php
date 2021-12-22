@@ -59,11 +59,14 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         //Validate the state
         $this->_validateState($context->state);
 
-        //Fetch the data
-        $data = $this->fetchData();
+        if(!$context->data)
+        {
+            //Fetch the data
+            $data = $this->fetchData();
 
-        //Filter the data
-        $context->data = $this->filterData($data);
+            //Filter the data
+            $context->data = $this->filterData($data);
+        }
     }
 
     final public function hash($refresh = false)
