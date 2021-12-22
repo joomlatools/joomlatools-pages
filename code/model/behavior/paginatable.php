@@ -99,7 +99,11 @@ class ComPagesModelBehaviorPaginatable extends ComPagesModelBehaviorQueryable
 
     protected function _queryArray(array $data, KModelStateInterface $state)
     {
-        return array_slice($data, $state->offset, $state->limit);
+        if($data && count($data) > $state->offset) {
+            $data = array_slice($data, $state->offset, $state->limit);
+        }
+
+        return $data;
     }
 
     protected function _queryDatabase(KDatabaseQuerySelect $query, KModelStateInterface $state)
