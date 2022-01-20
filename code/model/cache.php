@@ -22,7 +22,8 @@ class ComPagesModelCache extends ComPagesModelCollection
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'type'       => 'cache',
+            'type'  => 'cache',
+            'debug' => $this->getObject('pages.config')->debug,
             'cache_path' =>  $this->getObject('pages.config')->getCachePath(),
         ])->append([
             'behaviors'   => [
@@ -87,22 +88,34 @@ class ComPagesModelCache extends ComPagesModelCollection
         }
         else $files = $this->fetchFiles();
 
-        foreach ($files as $file)
+        foreach ($files as $index => $file)
         {
-            $data = require $file;
+            try
+            {
+                $data = require $file;
 
-            $result[] = array(
-                'id'          => $data['id'],
-                'url'         => $data['url'],
-                'date'        => $this->getObject('date', array('date' => $data['headers']['Last-Modified'])),
-                'hash'        => $data['headers']['Etag'],
-                'token'       => $data['token'],
-                'format'      => $data['format'],
-                'language'    => $data['language'],
-                'collections' => $data['headers']['Content-Collections'] ?? array(),
-                'robots'      => isset($data['headers']['X-Robots-Tag']) ? array_map('trim', explode(',', $data['headers']['X-Robots-Tag'])) : array(),
-                'status'      => $data['status'],
-            );
+                $result[] = array(
+                    'id'          => $data['id'],
+                    'url'         => $data['url'],
+                    'date'        => $this->getObject('date', array('date' => $data['headers']['Last-Modified'])),
+                    'hash'        => $data['headers']['Etag'],
+                    'token'       => $data['token'],
+                    'format'      => $data['format'],
+                    'language'    => $data['language'],
+                    'collections' => $data['headers']['Content-Collections'] ?? array(),
+                    'robots'      => isset($data['headers']['X-Robots-Tag']) ? array_map('trim', explode(',', $data['headers']['X-Robots-Tag'])) : array(),
+                    'status'      => $data['status'],
+                );
+            }
+            catch(\Throwable $exception)
+            {
+                if(!$this->getConfig()->debug)
+                {
+                    unset($this->__files[$index]);
+                    unlink($file);
+                }
+                else throw $exception;
+            }
         }
 
         $context->data = $result;
