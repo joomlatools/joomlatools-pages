@@ -11,20 +11,24 @@ class ComPagesTemplateEngineKoowa extends KTemplateEngineKoowa
 {
     protected function _compile($source)
     {
-        if($source)
+        //Only specialise in a ComPagesTemplate context
+        if($this->getConfig()->template instanceof ComPagesTemplate)
         {
-            $file = (new ComPagesObjectConfigFrontmatter())->fromString($source);
-            $data = $file->getProperties(false);
-
-            $source = '';
-
-            if($data)
+            if($source)
             {
-                $data = var_export($data, true);
-                $source = '<?php extract('.$data.',EXTR_SKIP) ?>'."\n";
-            }
+                $file = (new ComPagesObjectConfigFrontmatter())->fromString($source);
+                $data = $file->getProperties(false);
 
-            $source .= $file->getContent();
+                $source = '';
+
+                if($data)
+                {
+                    $data = var_export($data, true);
+                    $source = '<?php extract('.$data.',EXTR_SKIP) ?>'."\n";
+                }
+
+                $source .= $file->getContent();
+            }
         }
 
         return parent::_compile($source);
@@ -32,12 +36,16 @@ class ComPagesTemplateEngineKoowa extends KTemplateEngineKoowa
 
     protected function _import($url, array $data = array())
     {
-        if (!parse_url($url, PHP_URL_SCHEME))
+        //Only specialise in a ComPagesTemplate context
+        if($this->getConfig()->template instanceof ComPagesTemplate)
         {
-            if($base = end($this->_stack))
+            if (!parse_url($url, PHP_URL_SCHEME))
             {
-                if(parse_url($base, PHP_URL_SCHEME) !== 'template') {
-                    $url = 'template:'.trim($url, '/');
+                if($base = end($this->_stack))
+                {
+                    if(parse_url($base, PHP_URL_SCHEME) !== 'template') {
+                        $url = 'template:'.trim($url, '/');
+                    }
                 }
             }
         }
