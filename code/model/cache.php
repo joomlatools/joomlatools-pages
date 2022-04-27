@@ -94,18 +94,23 @@ class ComPagesModelCache extends ComPagesModelCollection
             {
                 $data = require $file;
 
-                $result[] = array(
-                    'id'          => $data['id'],
-                    'url'         => $data['url'],
-                    'date'        => $this->getObject('date', array('date' => $data['headers']['Last-Modified'])),
-                    'hash'        => $data['headers']['Etag'],
-                    'token'       => $data['token'],
-                    'format'      => $data['format'],
-                    'language'    => $data['language'],
-                    'collections' => $data['headers']['Content-Collections'] ?? array(),
-                    'robots'      => isset($data['headers']['X-Robots-Tag']) ? array_map('trim', explode(',', $data['headers']['X-Robots-Tag'])) : array(),
-                    'status'      => $data['status'],
-                );
+                if($data && is_array($data))
+                {
+                    $result[] = array(
+                        'id'          => $data['id'],
+                        'url'         => $data['url'],
+                        'date'        => $this->getObject('date', array('date' => $data['headers']['Last-Modified'])),
+                        'hash'        => $data['headers']['Etag'],
+                        'token'       => $data['token'],
+                        'format'      => $data['format'],
+                        'language'    => $data['language'],
+                        'collections' => $data['headers']['Content-Collections'] ?? array(),
+                        'robots'      => isset($data['headers']['X-Robots-Tag']) ? array_map('trim', explode(',', $data['headers']['X-Robots-Tag'])) : array(),
+                        'status'      => $data['status'],
+                    );
+                }
+                else throw new \RuntimeException("Cache file: $file is not valid");
+
             }
             catch(\Throwable $exception)
             {
