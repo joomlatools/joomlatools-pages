@@ -1,4 +1,12 @@
 ---
 @collection:
-  extend: cache
+  model: cache
+  state:
+    sort: date
+    order: desc
+    limit: 0
+@process:
+  cache: false
+
+visible: false
 ---

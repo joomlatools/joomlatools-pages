@@ -40,7 +40,7 @@ return array(
     'ga_code' => '',
 
     // Extensions
-    'extensions' => [
+    'extension_config' => [
 
         'ext:joomla.model.articles'  => [
             'aliases' => [
