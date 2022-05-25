@@ -1,7 +1,7 @@
 {
     "name": "joomlatools/pages",
     "license": "GPL-3.0-only",
-    "description": "A component for including html and markdown into Joomla. Inspired by Jekyll and Grav",
+    "description": "Joomlatools Pages is a very fast just-in-time page generator and flexible framework that makes building websites with any CMS, API, or database fun again. It can be installed in Joomla as a component, or be used standalone",
     "keywords": [
         "joomla",
         "component",
