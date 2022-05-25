@@ -4,7 +4,7 @@
 
 ### What is Joomlatools Pages?
 
-Joomlatools Pages is a very fast [_just-in-time_ **page generator**](https://github.com/joomlatools/joomlatools-pages/discussions/655) and flexible framework that makes building websites with any CMS, API, or database [fun again](https://github.com/joomlatools/joomlatools-pages/wiki/Developer-Joy). 
+***Joomlatools Pages is a very fast [_just-in-time_ **page generator**](https://github.com/joomlatools/joomlatools-pages/discussions/655) and flexible framework that makes building websites with any CMS, API, or database [fun again](https://github.com/joomlatools/joomlatools-pages/wiki/Developer-Joy).*** 
 
 It's written in PHP and inspired by the ideas and concepts of flat-file CMS systems like [Grav](https://getgrav.org/) and [Statamic](statamic.com), static site generators like [Jekyll]( https://jekyllrb.com), [Hugo](https://gohugo.io), [Gatsby](https://www.gatsbyjs.org/) and Headless CMS system like [Strapi](https://strapi.io/) and [Prismic](https://prismic.io/) etc. 
 
