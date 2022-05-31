@@ -61,7 +61,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
 
     public function getPropertyFolder()
     {
-        return dirname($this->path);
+        return dirname(rtrim($this->path, '/'));
     }
 
     public function getPropertyExcerpt()
