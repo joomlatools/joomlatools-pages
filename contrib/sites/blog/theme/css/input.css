@@ -4,7 +4,96 @@
 @tailwind utilities;
 
 /* custom */
-/* add tailwind classes to pagination select list so it's pretty */
-select.k-form-control {
-	@apply block appearance-none w-full bg-white border border-gray-100 hover:border-gray-200 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none;
+@layer base {
+	/* add tailwind classes to pagination select list so it's pretty */
+	select.k-form-control {
+		@apply block appearance-none w-full bg-white border border-gray-100 hover:border-gray-200 py-2 pt-3 lg:pt-4 px-4 pr-8 rounded shadow leading-tight focus:outline-none;
+	}
+	/* Pagination */
+	.k-pagination__pages {
+		@apply flex justify-center pt-2 m-0 p-0 list-none border-0 bg-transparent;
+	}
+	.k-pagination__pages li {
+		@apply ml-1 mr-1;
+	}
+	.k-pagination__pages li a, .k-pagination__pages li span {
+		@apply block text-center;
+		min-width: 40px;
+		min-height: 40px;
+	}
+	.k-pagination__pages li a {
+		@apply relative overflow-hidden no-underline rounded-full bg-gray-100 text-gray-800;
+		line-height: 40px;
+		transition: background 200ms cubic-bezier(0.195, 0.4, 0.45, 0.785) 0ms;
+	}
+	.k-pagination__pages li a:after {
+		@apply block absolute rounded-full opacity-0 transition duration-1000;
+		content: "";
+		background: rgba(255, 255, 255, 0.3);
+		padding-top: 240%;
+		padding-left: 240%;
+		margin-top: -120%;
+		margin-left: -120%;
+	}
+	.k-pagination__pages li a:active:after {
+		@apply pt-0 pl-0 mt-0 ml-0 opacity-100;
+		transition: 0s;
+	}
+	.k-pagination__pages li a[href]:hover, .k-pagination__pages li a[href]:focus {
+		@apply bg-gray-500;
+	}
+	.k-pagination__pages li span {
+		line-height: 40px;
+	}
+	.k-pagination__pages li span.active {
+		@apply bg-blue-400 text-white rounded-full;
+		line-height: 40px;
+	}
+	.k-pagination__pages [aria-label="Next page"],
+	.k-pagination__pages [aria-label="Previous page"] {
+		@apply relative;
+	}
+	.k-pagination__pages [aria-label="Next page"]:before,
+	.k-pagination__pages [aria-label="Previous page"]:before {
+		@apply bg-contain inline-block h-6 w-6 scale-90 opacity-20 transition duration-300 ease-in-out;
+		content: " ";
+		background: url("../assets/icons/custom/arrow.svg") 0px 5px no-repeat;
+	}
+	.k-pagination__pages [aria-label="Next page"]:hover:before,
+	.k-pagination__pages [aria-label="Previous page"]:hover:before {
+		@apply scale-100 opacity-80;
+	}
+	.k-pagination__pages [aria-label="Next page"] span,
+	.k-pagination__pages [aria-label="Previous page"] span {
+		@apply hidden;
+	}
+	.k-pagination__pages [aria-label="Previous page"] {
+		@apply relative;
+	}
+	.k-pagination__pages [aria-label="Previous page"]:before {
+		@apply scale-90 rotate-180;
+		background-position: 0 -5px;
+	}
+	.k-pagination__pages [aria-label="Previous page"]:hover:before {
+		@apply scale-100 rotate-180;
+	}
+}
+
+@layer components {
+
+}
+
+@layer utilities {
+
+}
+
+/* smooth scroll */
+html {
+  background: white;
+  scroll-behavior: smooth;
+}
+@media screen and (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
