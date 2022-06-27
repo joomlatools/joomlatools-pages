@@ -259,7 +259,7 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
                         . ($param !== '' ? "?P<$param>" : null)
                         . $type
                         . ')'
-                        . $optional
+                        . ($pre !== '\.' ? $optional : null)
                         . ')'
                         . $optional;
 
