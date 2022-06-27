@@ -117,25 +117,20 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
 
     public function getPrimaryKey()
     {
-        if(!$this->getIdentityKey())
+        $keys = array();
+        foreach ($this->getState() as $state)
         {
-            $keys = array();
-            foreach ($this->getState() as $name => $state)
+            if($state->unique && !$state->internal)
             {
-                //Unique values cannot be null or an empty string
-                if($state->unique)
-                {
-                    foreach($state->required as $required) {
-                        $keys[] = $required;
-                    }
-
-                    $keys[] = $state->name;
+                foreach($state->required as $required) {
+                    $keys[] = $required;
                 }
+
+                $keys[] = $state->name;
             }
         }
-        else $keys = (array) $this->getIdentityKey();
 
-        return (array) $keys;
+        return $keys;
     }
 
     public function getHashState()
