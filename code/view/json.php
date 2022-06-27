@@ -92,16 +92,30 @@ class ComPagesViewJson extends KViewAbstract
     protected function _fetchData(KViewContext $context)
     {
         $route = $this->getRoute();
+        $format = $this->getPage()->getFormat();
 
-        $document = new \ArrayObject(array(
-            'jsonapi' => array('version' => $this->_version),
-            'links'   => array('self' => (string) $this->getRoute($route)),
-            'data'    => array()
-        ));
+        $document = new \ArrayObject([
+            'jsonapi' => ['version' => $this->_version],
+            'links'   => [],
+            'data'    => []
+        ]);
 
-        if ($this->isCollection())
+        $query = [];
+
+        if($this->isCollection())
         {
             $context->parameters->total = $this->getModel()->count();
+
+            if($format != 'json')
+            {
+                //Add format specific link
+                $document['links'][$format] =  (string) $this->getRoute($route, $query);
+
+                //Set format to json
+                $query['format'] = 'json';
+            }
+
+            $document['links']['self'] = (string) $this->getRoute($route, $query);
 
             foreach ($this->getModel()->fetch() as $entity) {
                 $document['data'][] = $this->_createResource($entity);
@@ -140,19 +154,24 @@ class ComPagesViewJson extends KViewAbstract
                 $document['meta']['limit']  = $limit;
 
                 if ($limit && $total > count($this->getModel()->fetch())) {
-                    $document['links']['first'] = (string) $this->getRoute($route, array('offset' => 0));
+                    $document['links']['first'] = (string) $this->getRoute($route, $query + ['offset' => 0]);
                 }
 
                 if ($limit && $total-($limit + $offset) > 0) {
-                    $document['links']['next'] = (string) $this->getRoute($route, array('offset' => $limit+$offset));
+                    $document['links']['next'] = (string) $this->getRoute($route, $query + ['offset' => $limit+$offset]);
                 }
 
                 if ($limit && $offset && $offset >= $limit) {
-                    $document['links']['prev'] = (string) $this->getRoute($route, array('offset' => max($offset-$limit, 0)));
+                    $document['links']['prev'] = (string) $this->getRoute($route, $query + ['offset' => max($offset-$limit, 0)]);
                 }
             }
         }
-        else $document['data'] = $this->_createResource($entity = $this->getModel()->fetch()->top());
+        else
+        {
+            $document['links']['self'] = (string) $this->getUrl();
+
+            $document['data'] = $this->_createResource($this->getModel()->fetch()->top());
+        }
 
         $context->content = $document;
     }
@@ -168,6 +187,8 @@ class ComPagesViewJson extends KViewAbstract
      */
     protected function _createResource(KModelEntityInterface $entity)
     {
+        $collection = $this->getCollectionContext();
+
         //Data
         $resource = [
             'type'       => $this->_getEntityType($entity),
@@ -176,8 +197,11 @@ class ComPagesViewJson extends KViewAbstract
         ];
 
         //Links
-        if($links = $this->_getEntityLinks($entity)) {
-            $resource['links'] = $links;
+        if($collection->route !== false)
+        {
+            if($links = $this->_getEntityLinks($entity)) {
+                $resource['links'] = $links;
+            }
         }
 
         //Relationships
@@ -196,17 +220,26 @@ class ComPagesViewJson extends KViewAbstract
      */
     protected function _getEntityId(KModelEntityInterface $entity)
     {
-        $values = array();
-
-        if($keys = $this->getModel()->getPrimaryKey())
+        if(!$id = $entity->{$entity->getIdentityKey()})
         {
-            foreach($keys as $key){
-                $values[] = $entity->{$key};
-            }
+            $values = array();
+            if($keys = $this->getModel()->getPrimaryKey())
+            {
+                foreach($keys as $key)
+                {
+                    $value = $entity->{$key};
 
-            $id = implode('/', $values);
+                    if($value instanceof ComPagesModelEntityInterface) {
+                        $values[] = $value->{$value->getIdentityKey()};
+                    } else {
+                        $values[] = $value;
+                    }
+
+                }
+
+                $id = '/'.trim(implode('/', $values), '/');
+            }
         }
-        else  $id = $entity->getProperty($entity->getIdentityKey(), '');
 
         return $id;
     }
@@ -281,10 +314,13 @@ class ComPagesViewJson extends KViewAbstract
 
         if(!$this->isCollection() && method_exists($entity, 'getContent'))
         {
-            $attributes['content'] = [
-                'body' => $entity->getContent(),
-                'type' => $entity->getContentType(),
-            ];
+            if($content = $entity->getContent())
+            {
+                $attributes['content'] = [
+                    'body' => $content,
+                    'type' => $entity->getContentType() ?: 'text/plain' ,
+                ];
+            }
         }
 
         return $attributes;
@@ -299,19 +335,69 @@ class ComPagesViewJson extends KViewAbstract
     protected function _getEntityLinks(KModelEntityInterface $entity)
     {
         $links = array();
+        $query = array();
+        $format = $this->getPage()->getFormat();
 
-        if($this->isCollection())
+        if(!$entity instanceof ComPagesModelEntityPage)
         {
-            $query = array();
-            foreach($this->getModel()->getPrimaryKey() as $key){
-                $query[$key] = $entity->{$key};
+            $collection = $this->getCollectionContext();
+            $page = $collection->route ?? $this->getPage();
+
+            foreach($this->getModel()->getPrimaryKey() as $key)
+            {
+                $value = $entity->{$key} ?? $this->getState()->{$key};
+
+                if($value instanceof ComPagesModelEntityInterface) {
+                    $value = $value->{$value->getIdentityKey()};
+                }
+
+                $query[$key] = $value;
+
             }
 
-            if(!empty($query))
+            if($format != 'json')
             {
-                $url = $this->getRoute($this->getPage(), $query);
-                $links = ['self' => (string) $url];
+                //Add format specific link
+                $links[$format] =  (string) $this->getRoute($page, $query);
+
+                //Set format to json
+                $query['format'] = 'json';
             }
+
+            //Add self link
+            if($self = (string) $this->getRoute($page, $query)) {
+                $links['self'] = "$self";
+            }
+
+        }
+        else
+        {
+            $page = $entity->path;
+
+            if($entity->getFormat() != 'json')
+            {
+                //Add format specific link
+                $format = $entity->getFormat();
+
+                if($route = (string) $this->getRoute($page, $query)) {
+                    $links[$format] =  $route;
+                }
+            }
+
+            //Add self link
+            $self = (string) $this->getRoute($page, $query);
+
+            if($self && $entity->type == 'collection')
+            {
+                if($entity->getFormat() == 'json') {
+                    $links['self'] = $self;
+                }
+
+                if($entity->getFormat() == 'html') {
+                    $links['self'] = "$self.json";
+                }
+            }
+
         }
 
         return $links;
