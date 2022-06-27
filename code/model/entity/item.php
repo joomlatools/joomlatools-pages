@@ -109,10 +109,9 @@ class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesMo
         //Remove internal properties
         $data = array_diff_key($data, array_flip($internal));
 
-        //Add none-internal computed properties
-        foreach(array_diff($computed, $internal) as $property) {
-            $data[$property] = $this->{$property};
-        }
+        //Remove computed properties
+        $data = array_diff_key($data, array_flip($computed));
+
 
         //Unpack config objects
         array_walk_recursive($data, function(&$value, $key)
