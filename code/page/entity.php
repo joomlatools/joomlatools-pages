@@ -96,6 +96,11 @@ class ComPagesPageEntity extends ComPagesModelEntityPage implements ComPagesPage
         return $value;
     }
 
+    public function getFormat()
+    {
+        return $this->format;
+    }
+
     public function getType()
     {
         return $this->type;

@@ -9,7 +9,7 @@
 
 trait ComPagesViewTraitCollection
 {
-    public function getCollection($model = '', $state = array())
+    public function getCollection($model = '', $state = [])
     {
         if($model) {
             $result = $this->getObject('model.factory')->createModel($model, $state)->fetch();
@@ -18,6 +18,11 @@ trait ComPagesViewTraitCollection
         }
 
         return $result;
+    }
+
+    public function getCollectionContext()
+    {
+        return $this->getObject('page.registry')->getCollection($this->getModel()->getName());
     }
 
     public function getState()

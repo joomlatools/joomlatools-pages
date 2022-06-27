@@ -25,6 +25,7 @@ class ComPagesModelCache extends ComPagesModelCollection
             'type'  => 'cache',
             'debug' => $this->getObject('pages.config')->debug,
             'cache_path' =>  $this->getObject('pages.config')->getCachePath(),
+            'identity_key' => 'id',
         ])->append([
             'behaviors'   => [
                 'com:pages.model.behavior.paginatable',

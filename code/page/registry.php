@@ -144,6 +144,11 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     $extend->type = $result->get('type');
                 }
 
+                //Merge route
+                if($result->has('route')) {
+                    $extend->route = $result->get('route');
+                }
+
                 //Merge format
                 if($result->has('format')) {
                     $extend->format->merge($result->get('format'));
@@ -227,8 +232,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         //Get a specific page by path
         else
         {
-            $path = ltrim($path, '/');
-
             if ($file = $this->getLocator()->locate('page:' . $path))
             {
                 //Get the relative file path
@@ -239,7 +242,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 if(isset($this->__data['routes'][$path])) {
                     $result[$path] = $this->__data['pages'][$file]['properties'];
                 }
-
             }
         }
 
@@ -303,36 +305,47 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $page;
     }
 
-    public function getPageContent($path, $render = false)
+    public function getPageContent($path)
     {
-        $content = false;
+        $result = false;
 
         if($path instanceof ComPagesPageObject) {
             $path = $path->path;
         }
 
-        if($render)
+        if($file = $this->getObject('template.locator.factory')->locate('page:'.$path))
         {
-            $template = $this->getObject('lib:template');
+            $page = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
+            $result = $page->getContent();
+        }
 
-            //Load and render the page
-            if($template->loadFile('page:'.$path))
-            {
-                $content = $template->render(KObjectConfig::unbox($template->getData()));
+        return $result;
+    }
 
-                //Remove <ktml:*> filter tags
-                $content = preg_replace('#<ktml:*\s*([^>]*)>#siU', '', $content);
+    public function getPageContentType($path)
+    {
+        $result = false;
+
+        if($path instanceof ComPagesPageObject) {
+            $path = $path->path;
+        }
+
+        if($file = $this->getLocator()->locate('page:'. $path))
+        {
+            if(str_ends_with($file, '.md')) {
+                $result = 'text/markdown';
+            }
+
+            if(str_ends_with($file, '.html')) {
+                $result = 'text/html';
+            }
+
+            if(str_ends_with($file, '.txt')) {
+                $result = 'text/plain';
             }
         }
-        else
-        {
-            $file = $this->getObject('template.locator.factory')->locate('page:'.$path);
-            $page = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
 
-            $content = $page->getContent();
-        }
-
-        return $content;
+        return $result;
     }
 
     public function getRoutes($path = null)
@@ -530,7 +543,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     }
 
                                     //File (do not include index pages)
-                                    if(strpos($file, '/index') === false) {
+                                    if(strpos($file, '/index.html') === false) {
                                         $files[$path] = $file;
                                     }
 
