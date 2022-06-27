@@ -150,7 +150,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
         if($page = $this->getPage())
         {
-            $formats = (array) $page->format;
+            $formats = (array) $page->getFormat();
 
             if($collection = $page->isCollection())
             {
@@ -186,7 +186,7 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
 
             //Use default if no accept header or accept includes */*
             if(empty($accept) || array_key_exists('*/*', $accept)) {
-                $context->request->setFormat($context->page->format);
+                $context->request->setFormat($context->page->getFormat());
             } else {
                 throw new KHttpExceptionNotAcceptable('Format not supported');
             }
