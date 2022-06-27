@@ -16,8 +16,8 @@ class ComPagesModelPages extends ComPagesModelCollection
         parent::__construct($config);
 
         $this->getState()
-            ->insertComposite('slug', 'cmd', array('path'), '')
-            ->insertInternal('path', 'url');
+            ->insertComposite('slug', 'cmd', array('folder'), '')
+            ->insertInternal('folder', 'url', '/');
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -44,10 +44,10 @@ class ComPagesModelPages extends ComPagesModelCollection
             $this->__data = array();
 
             //If path is not defined to set root path
-            $state = $this->getState();
-            $path  = $state->path ?? '/';
+            $state  = $this->getState();
+            $folder = $state->folder ?? '/';
 
-            if($path)
+            if($folder)
             {
                 $registry = $this->getObject('page.registry');
 
@@ -59,9 +59,9 @@ class ComPagesModelPages extends ComPagesModelCollection
                         $mode = ComPagesPageRegistry::PAGES_TREE;
                     }
 
-                    $data = $registry->getPages($path, $mode, (int) $state->level - 1);
+                    $data = $registry->getPages($folder, $mode, (int) $state->level - 1);
                 }
-                else $data = $registry->getPages($path.'/'.$this->getState()->slug, ComPagesPageRegistry::PAGES_ONLY);
+                else $data = $registry->getPages(rtrim($folder, '/').'/'.$this->getState()->slug, ComPagesPageRegistry::PAGES_ONLY);
 
                 $this->__data = array_values($data);
             }
