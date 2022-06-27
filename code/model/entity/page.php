@@ -44,15 +44,8 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                 'canonical'   => null,
             ],
             'internal_properties' => [
-                'format',
-                'route',
-                'slug',
-                'path',
-                'folder',
                 'content',
-                'hash',
-                'text',
-                'excerpt',
+                'format'
             ],
         ]);
 
@@ -190,6 +183,11 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         return $date;
     }
 
+    public function getFormat()
+    {
+        return $this->format;
+    }
+
     public function getParent()
     {
         if(!$this->__parent)
@@ -206,7 +204,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
 
     public function getContent()
     {
-        if(!$this->content) {
+        if($this->getContentType() && !$this->content) {
             $this->content = $this->getObject('page.registry')->getPageContent($this->path);
         }
 
@@ -215,7 +213,7 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
 
     public function getContentType()
     {
-        return 'text/html';
+        return $this->getObject('page.registry')->getPageContentType($this->path) ?: '';
     }
 
     public function getHandle()
@@ -225,10 +223,6 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
 
     public function __toString()
     {
-        if(!isset($this->__content)) {
-            $this->__content = $this->getObject('page.registry')->getPageContent($this->path, true);
-        }
-
-        return $this->__content;
+        return $this->getContent();
     }
 }
