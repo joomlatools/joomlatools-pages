@@ -252,10 +252,11 @@ class ComPagesTemplateHelperImage extends ComPagesTemplateHelperLazysizes
             $query = array_merge(array_filter(KObjectConfig::unbox($config)), $url->query);
 
             //Add CRC32 checksum
-            $file = $this->_findFile($url);
+            $file    = $this->_findFile($url);
+            $filesize = null;
 
             //Remote image
-            if(strstr($file, 'http'))
+            if(str_starts_with($file, 'http'))
             {
                 $headers  = @get_headers($file, true);
 
@@ -267,7 +268,9 @@ class ComPagesTemplateHelperImage extends ComPagesTemplateHelperLazysizes
             //Local image
             else $filesize = @filesize($file);
 
-            $query['crc'] = hash('crc32', $filesize);
+            if($filesize) {
+                $query['crc'] = hash('crc32', $filesize);
+            }
 
             ksort($query); //sort alphabetically
             $url->query = $query;
@@ -492,13 +495,15 @@ class ComPagesTemplateHelperImage extends ComPagesTemplateHelperLazysizes
         $modifier     = 0.7;      //70% (each image should be +/- 30% smaller in expected size)
 
         //Get dimensions
-        $sizes = array();
+        $sizes    = array();
+        $filesize = null;
+
         if($file = $this->_findFile($url))
         {
             list($width, $height) = @getimagesize($file);
 
             //Remote image
-            if(strstr($file, 'http'))
+            if(str_starts_with($file, 'http'))
             {
                 $headers  = @get_headers($file, true);
 
