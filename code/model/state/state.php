@@ -9,14 +9,14 @@
 
 class ComPagesModelState extends KModelState
 {
-    public function insertUnique($name, $filter, $default = null)
+    public function insertUnique($name, $filter, $internal = false)
     {
-        return parent::insert($name, $filter, $default, true);
+        return parent::insert($name, $filter, null, true, [], $internal);
     }
 
-    public function insertComposite($name, $filter, $related, $default = null)
+    public function insertComposite($name, $filter, $related, $internal = false)
     {
-        return parent::insert($name, $filter, $default, true, $related, false);
+        return parent::insert($name, $filter, null, true, $related, $internal);
     }
 
     public function insertRequired($name, $filter, $default = null)
@@ -26,6 +26,6 @@ class ComPagesModelState extends KModelState
 
     public function insertInternal($name, $filter, $default = null)
     {
-        return parent::insert($name, $filter, $default, false, array(), true);
+        return parent::insert($name, $filter, $default, false, [], true);
     }
 }
