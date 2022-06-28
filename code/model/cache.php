@@ -50,7 +50,7 @@ class ComPagesModelCache extends ComPagesModelCollection
             {
                 while (false !== ($entry = readdir($handle)))
                 {
-                    if ($entry != "." && $entry != "..")
+                    if (!str_starts_with($entry, '.'))
                     {
                         if($limit && $i >= ($offset + $limit)) {
                             break;
@@ -95,7 +95,7 @@ class ComPagesModelCache extends ComPagesModelCollection
             {
                 $data = require $file;
 
-                if($data && is_array($data))
+                if($data && is_array($data) && isset($data['id']))
                 {
                     $result[] = array(
                         'id'          => $data['id'],
