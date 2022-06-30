@@ -312,7 +312,7 @@ class ComPagesViewJson extends KViewAbstract
             unset($attributes[$key]);
         }
 
-        if(!$this->isCollection() && method_exists($entity, 'getContent'))
+        if(!$this->isCollection() && $entity instanceof ComPagesModelEntityContent)
         {
             if($content = $entity->getContent())
             {
@@ -374,10 +374,10 @@ class ComPagesViewJson extends KViewAbstract
         {
             $page = $entity->path;
 
-            if($entity->getFormat() != 'json')
+            if($entity->format != 'json')
             {
                 //Add format specific link
-                $format = $entity->getFormat();
+                $format = $entity->format;
 
                 if($route = (string) $this->getRoute($page, $query)) {
                     $links[$format] =  $route;
@@ -389,11 +389,11 @@ class ComPagesViewJson extends KViewAbstract
 
             if($self && $entity->type == 'collection')
             {
-                if($entity->getFormat() == 'json') {
+                if($entity->format == 'json') {
                     $links['self'] = $self;
                 }
 
-                if($entity->getFormat() == 'html') {
+                if($entity->format == 'html') {
                     $links['self'] = "$self.json";
                 }
             }
