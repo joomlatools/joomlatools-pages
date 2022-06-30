@@ -24,6 +24,7 @@ class ComPagesModelPages extends ComPagesModelCollection
     {
         $config->append([
             'type'      => 'pages',
+            'search'    => [], //properties to allow searching on
             'behaviors' => ['com:pages.model.behavior.recursable' => ['key' => 'folder']],
         ])->append([
             'behaviors'   => [
@@ -31,6 +32,7 @@ class ComPagesModelPages extends ComPagesModelCollection
                 'com:pages.model.behavior.sortable',
                 'com:pages.model.behavior.sparsable',
                 'com:pages.model.behavior.filterable',
+                'com:pages.model.behavior.searchable' => ['columns' => $config->search],
             ],
         ]);
 
@@ -43,9 +45,8 @@ class ComPagesModelPages extends ComPagesModelCollection
         {
             $this->__data = array();
 
-            //If path is not defined to set root path
             $state  = $this->getState();
-            $folder = $state->folder ?? '/';
+            $folder = '/'.trim($state->folder, '/');
 
             if($folder)
             {
