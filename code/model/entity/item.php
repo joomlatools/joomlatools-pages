@@ -99,6 +99,50 @@ class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesMo
         return $this;
     }
 
+    public function getProperty($name)
+    {
+        $result = null;
+
+        //Handle computed properties
+        if(!empty($name))
+        {
+            $result = KObjectArray::offsetGet($name);
+
+            $getter  = 'getProperty'.KStringInflector::camelize($name);
+            $methods = $this->getMethods();
+
+            if(isset($methods[$getter])) {
+                $result = $this->$getter($result);
+            }
+        }
+
+        return $result;
+    }
+
+    public function setProperty($name, $value, $modified = true)
+    {
+        if (!array_key_exists($name, $this->_data) || ($this->_data[$name] != $value))
+        {
+            //Call the setter if it exists
+            $setter  = 'setProperty'.KStringInflector::camelize($name);
+            $methods = $this->getMethods();
+
+            if(isset($methods[$setter])) {
+                $value = $this->$setter($value);
+            }
+
+            //Set the property value
+            KObjectArray::offsetSet($name, $value);
+
+            //Mark the property as modified
+            if($modified || $this->isNew()) {
+                $this->_modified[$name] = $name;
+            }
+        }
+
+        return $this;
+    }
+
     public function toArray()
     {
         $data = parent::toArray();
@@ -109,9 +153,10 @@ class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesMo
         //Remove internal properties
         $data = array_diff_key($data, array_flip($internal));
 
-        //Remove computed properties
-        $data = array_diff_key($data, array_flip($computed));
-
+        ///Add none-internal computed properties
+        foreach(array_diff($computed, $internal) as $property) {
+            $data[$property] = $this->{$property};
+        }
 
         //Unpack config objects
         array_walk_recursive($data, function(&$value, $key)

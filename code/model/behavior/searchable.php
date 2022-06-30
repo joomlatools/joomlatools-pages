@@ -35,6 +35,11 @@ class ComPagesModelBehaviorSearchable extends ComPagesModelBehaviorQueryable
             ->insert('search', 'string');
     }
 
+    public function isSearchable()
+    {
+        return !empty($this->_columns);
+    }
+
     protected function _beforeFetch(KModelContextInterface $context)
     {
         $state = $context->state;

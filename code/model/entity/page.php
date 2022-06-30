@@ -7,7 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesModelEntityPage extends ComPagesModelEntityItem
+class ComPagesModelEntityPage extends ComPagesModelEntityContent
 {
     private $__parent;
     private $__content;
@@ -16,22 +16,9 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
     {
         $config->append([
             'data' => [
-                'path'        => '',
-                'slug'        => '',
-                'name'        => '',
-                'title'       => '',
-                'summary'     => '',
-                'content'     => '',
-                'excerpt'     => null,
-                'text'        => '',
-                'image'       => [
-                    //'url' 	   => '',
-                    //'alt'	     => null,
-                    //'caption'  => null,
-                ],
-                'date'        => 'now',
-                'author'      => null,
-                'access'      => [],
+                'name'    => '',
+                'path'    => '',
+                'access'  => [],
                 'metadata'    => [
                     'og:type'        => 'website',
                     'og:title'       => null,
@@ -39,13 +26,6 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
                     'og:image'       => null,
                     'og:description' => null,
                 ],
-                'direction'   => 'auto',
-                'language'    => 'en-GB',
-                'canonical'   => null,
-            ],
-            'internal_properties' => [
-                'content',
-                'format'
             ],
         ]);
 
@@ -57,104 +37,9 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         return dirname(rtrim($this->path, '/'));
     }
 
-    public function getPropertyExcerpt()
+    public function setPropertyAccess($value)
     {
-        $parts = preg_split('#<!--(.*)more(.*)-->#i', $this->getContent(), 2);
-
-        if(count($parts) > 1) {
-            $excerpt = $parts[0];
-        } else {
-            $excerpt = null;
-        }
-
-        return $excerpt;
-    }
-
-    public function getPropertyText()
-    {
-        $parts = preg_split('#<!--(.*)more(.*)-->#i', $this->getContent(), 2);
-
-        if(count($parts) > 1) {
-            $text = $parts[1];
-        } else {
-            $text = $parts[0];
-        }
-
-        return $text;
-    }
-
-    public function setPropertyImage($value)
-    {
-        //Normalize images
-        $image = null;
-
-        if(!empty($value) && !$value instanceof ComPagesObjectConfig)
-        {
-            if(is_array($value)) {
-                $url = $value['url'] ?? '';
-            } else {
-                $url = $value;
-            }
-
-            if($url)
-            {
-                if(is_string($url) && strpos($url, '://') === false) {
-                    $url = '/'.ltrim($url, '/');
-                }
-
-                $url = $this->getObject('lib:http.url')->setUrl($url);
-
-                $image = [
-                    'url'      => $url,
-                    'alt'      => $value['alt'] ?? null,
-                    'caption'  => $value['caption'] ?? null,
-                ];
-            }
-
-            $image = new ComPagesObjectConfig($image);
-        }
-        else $image = new ComPagesObjectConfig($value);
-
-        return $image;
-    }
-
-    public function setPropertyMetadata($metadata)
-    {
-        $metadata = new ComPagesObjectConfig($metadata);
-
-        if(!isset($metadata->description) && $this->summary) {
-            $metadata->set('description', $this->summary);
-        }
-        if($this->image && $this->image->url) {
-            $metadata->set('og:image', $this->image->url);
-        }
-
-        //Type and image are required. If they are not set remove any opengraph properties
-        if(!empty($metadata->get('og:type')) && !empty($metadata->get('og:image')))
-        {
-            if($this->title) {
-                $metadata->set('og:title', $this->title);
-            }
-
-            if($this->summary) {
-                $metadata->set('og:description', $this->summary);
-            }
-
-            if($this->language) {
-                $metadata->set('og:locale', $this->language);
-            }
-        }
-        else
-        {
-            foreach($metadata as $name => $value)
-            {
-                if(strpos($name, 'og:') === 0 || strpos($name, 'twitter:') === 0) {
-                    $metadata->remove($name);
-                }
-            }
-        }
-
-        return $metadata;
+        return new ComPagesObjectConfig($value);
     }
 
     public function setPropertyName($name)
@@ -164,28 +49,6 @@ class ComPagesModelEntityPage extends ComPagesModelEntityItem
         }
 
         return $name;
-    }
-
-    public function setPropertyAccess($value)
-    {
-        return new ComPagesObjectConfig($value);
-    }
-
-    public function setPropertyDate($value)
-    {
-        //Set the date based on the modified time of the file
-        if(is_integer($value)) {
-            $date = $this->getObject('date')->setTimestamp($value);
-        } else {
-            $date = $this->getObject('date', array('date' => trim($value)));
-        }
-
-        return $date;
-    }
-
-    public function getFormat()
-    {
-        return $this->format;
     }
 
     public function getParent()
