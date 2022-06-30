@@ -125,6 +125,13 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     );
                 }
 
+                //Merge page
+                if($extend->has('config')) {
+                    $extend->config->merge($result->get('config', array()));
+                } else {
+                    $extend->config = $result->get('config');
+                }
+
                 //Merge state
                 if($extend->has('state')) {
                     $extend->state->merge($result->get('state', array()));
@@ -472,7 +479,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                      */
                                     $page = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
 
-                                    //Append the page properties
                                     $page->append($this->getConfig()->properties);
 
                                     //Set the path
