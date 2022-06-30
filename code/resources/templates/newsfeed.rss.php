@@ -9,6 +9,8 @@
 
 ?>
 
+<? $route = page()->collection->route ?? page()->path ?>
+
 <rss version="2.0"
      xmlns:atom="http://www.w3.org/2005/Atom"
      xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
@@ -39,9 +41,9 @@
         <?foreach(collection() as $item):?>
             <item>
                 <title><?= escape($item->title); ?></title>
-                <? if($item->path) : ?>
-                    <link><?= route($item->path); ?></link>
-                    <guid isPermaLink="true"><?= route($item->path); ?></guid>
+                <? if($item->folder && $item->slug) : ?>
+                    <link><?= route($route, ['folder' => $item->folder, 'slug' => $item->slug]); ?></link>
+                    <guid isPermaLink="true"><?= route($route, ['folder' => $item->folder, 'slug' => $item->slug]); ?></guid>
                 <? endif ?>
                 <? if($item->image && $item->image->url): ?>
                     <media:content medium="image" url="<?= url($item->image->url) ?>" />
