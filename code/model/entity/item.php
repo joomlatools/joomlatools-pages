@@ -106,13 +106,13 @@ class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesMo
         //Handle computed properties
         if(!empty($name))
         {
+            $result = KObjectArray::offsetGet($name);
+
             $getter  = 'getProperty'.KStringInflector::camelize($name);
             $methods = $this->getMethods();
 
             if(isset($methods[$getter])) {
-                $result = $this->$getter($this->_data[$name] ?? null);
-            } else {
-                $result = KObjectArray::offsetGet($name);
+                $result = $this->$getter($result);
             }
         }
 
