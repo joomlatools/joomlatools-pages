@@ -12,27 +12,31 @@ class ComPagesModelData extends ComPagesModelCollection
     private $__data;
 
     protected $_path;
-    protected $_flatten;
+    protected $_namespace;
 
     public function __construct(KObjectConfig $config)
     {
         parent::__construct($config);
 
-        $this->_path    = $config->path;
-        $this->_flatten = $config->flatten;
+        $this->_path      = KObjectConfig::unbox($config->path);
+        $this->_namespace = $config->namespace;
 
+        $this->_flatten = $config->flatten;
         if(filter_var($this->_flatten, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE) !== null) {
             $this->_flatten = filter_var($this->_flatten, FILTER_VALIDATE_BOOL);
         }
+
+        $this->getState()
+            ->insertComposite('slug', 'cmd', array('folder'), '')
+            ->insertInternal('folder', 'url', '/');
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
-            'identity_key' => 'id',
-            'path'         => '',
-            'search'       => [], //properties to allow searching on
-            'flatten'      => false,
+            'path'       => '',
+            'namespace' => null,
+            'search'    => [], //properties to allow searching on
         ])->append([
             'behaviors'   => [
                 'com:pages.model.behavior.paginatable',
@@ -46,52 +50,91 @@ class ComPagesModelData extends ComPagesModelCollection
         parent::_initialize($config);
     }
 
-    public function getPath(array $variables = array())
+    public function getPaths()
     {
-        return KHttpUrl::fromTemplate($this->_path, $variables);
-    }
+        $state  = $this->getState();
 
-    public function filterItem(&$item, KModelStateInterface $state)
-    {
-        foreach($state->getValues(true) as $key => $value)
+        $paths = (array) $this->_path;
+        if($folder = trim($state->folder, '/'))
         {
-            if(isset($item[$key]) && !in_array($item[$key], (array) $value)) {
-                return false;
+            $folder = '/'.$folder;
+
+            if(in_array($folder, $paths)) {
+                $paths = array($folder);
             }
         }
 
-        return true;
-    }
-
-    public function filterData($data)
-    {
-        $key = $this->getIdentityKey();
-
-        foreach($data as $k => $v) {
-            $data[$k][$key] = $k;
+        $result = [];
+        foreach($paths as $path)
+        {
+            $path = trim($path, '/');
+            $result[$path] = $this->_namespace ? $this->_namespace .'://'.$path : $path;
         }
 
-        $data = array_values($data);
-
-        return parent::filterData($data);
+        return $result;
     }
-
 
     public function fetchData()
     {
         if(!isset($this->__data))
         {
-            $path = (string) $this->getPath($this->getState()->getValues());
-            $data = $this->getObject('data.registry')->fromPath($path);
+            $this->__data = array();
 
-            if($this->_flatten) {
-                $data = $data->flatten(is_string($this->_flatten) ? $this->_flatten : null);
+            $state  = $this->getState();
+
+            if (!$state->isUnique())
+            {
+                $paths = $this->getPaths();
+
+                $data  = [];
+                foreach($paths as $folder => $path)
+                {
+                    if($items = $this->getObject('data.registry')->fromPath($path, false, false))
+                    {
+                        array_walk($items, function(&$item) use($folder) {
+                            $item['folder'] = '/'.$folder;
+                        });
+
+                        $data += $items;
+                    }
+                }
+            }
+            else
+            {
+                $folder = trim($state->folder, '/');
+                $slug   = $state->slug;
+
+                $path = $folder.'/'.$slug;
+                $path = $this->_namespace ? $this->_namespace .'://'.$path : $path;
+
+                if($data = $this->getObject('data.registry')->fromFile($path, false))
+                {
+                    $data['folder'] = '/'.$folder;
+                    $data = array($slug => $data);
+                }
             }
 
-            $this->__data = $data->toArray();
+            $this->__data = $data;
         }
 
        return $this->__data;
+    }
+
+    public function filterData($data)
+    {
+        array_walk($data, function(&$item, $slug)
+        {
+            $item['slug'] = $slug;
+
+            if(isset($item['content'])) {
+                $item['hash'] = hash('crc32b', $item['content']);
+            }
+
+        });
+
+        $data = array_values($data);
+
+        return parent::filterData($data);
     }
 
     protected function _actionReset(KModelContext $context)
@@ -103,10 +146,13 @@ class ComPagesModelData extends ComPagesModelCollection
 
     protected function _actionHash(KModelContext $context)
     {
-        $hash = parent::_actionHash($context);
+        $hashes = array();
+        $paths = $this->getPaths();
+        foreach($paths as $path) {
+            $hashes[] = $this->getObject('data.registry')->getHash($path);
+        }
 
-        $path = $this->getPath($this->getState()->getValues());
-        $hash = $this->getObject('data.registry')->fromPath($path);
+        $hash = hash('crc32',serialize($hashes));
 
         return $hash;
     }
