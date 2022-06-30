@@ -11,14 +11,9 @@ class ComPagesObjectConfigMarkdown extends ComPagesObjectConfigFrontmatter
 {
     protected static $_media_type = 'text/markdown';
 
-    public function setContent($content)
+    public function getContent($markdown = true)
     {
-        $this->content = \Michelf\MarkdownExtra::defaultTransform($content);
-        return $this;
-    }
-
-    public function getContent()
-    {
-        return $this->content;
+        $content = parent::getContent();
+        return $markdown ? \Michelf\MarkdownExtra::defaultTransform($content) : $content;
     }
 }
