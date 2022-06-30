@@ -93,7 +93,7 @@ class ComPagesModelCache extends ComPagesModelCollection
         {
             try
             {
-                $data = require $file;
+                $data = include $file;
 
                 if($data && is_array($data) && isset($data['id']))
                 {
