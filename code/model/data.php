@@ -21,11 +21,6 @@ class ComPagesModelData extends ComPagesModelCollection
         $this->_path      = KObjectConfig::unbox($config->path);
         $this->_namespace = $config->namespace;
 
-        $this->_flatten = $config->flatten;
-        if(filter_var($this->_flatten, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE) !== null) {
-            $this->_flatten = filter_var($this->_flatten, FILTER_VALIDATE_BOOL);
-        }
-
         $this->getState()
             ->insertComposite('slug', 'cmd', array('folder'), '')
             ->insertInternal('folder', 'url', '/');
