@@ -254,10 +254,17 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
     {
         $data = $this->getObject('object.config.factory')->fromFile($file);
 
-        if($data instanceof ComPagesObjectConfigMarkdown) {
-
+        if($data instanceof ComPagesObjectConfigMarkdown)
+        {
             if($content) {
                 $data->content = $data->getContent();
+            }
+
+            //Set the date (if not set yet)
+            if (!isset($data->date)) {
+                $data->date = filemtime($file);
+            } else {
+                $data->date = strtotime($data->date);
             }
 
             $data->hash = $data->getHash();
