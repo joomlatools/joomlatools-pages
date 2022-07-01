@@ -148,14 +148,18 @@ class ComPagesModelEntityContent extends ComPagesModelEntityItem
         return $image;
     }
 
-    public function setPropertyDate($value)
+    public function getPropertyDate($value)
     {
-        //Set the date based on the modified time of the file
-        if(is_integer($value)) {
-            $date = $this->getObject('date')->setTimestamp($value);
-        } else {
-            $date = $this->getObject('date', array('date' => trim($value)));
+        if(!$value instanceof ComKoowaDate)
+        {
+            //Set the date based on the modified time of the file
+            if(is_integer($value)) {
+                $date = $this->getObject('date')->setTimestamp($value);
+            } else {
+                $date = $this->getObject('date', array('date' => trim($value)));
+            }
         }
+        else $date = $value;
 
         return $date;
     }
