@@ -267,7 +267,11 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
                 $data->date = strtotime($data->date);
             }
 
-            $data->hash = $data->getHash();
+            if($hash =  $data->getHash()) {
+                $data->hash = $hash;
+            } else {
+                $data->hash = hash('crc32b', filesize($file));
+            }
 
         }
 

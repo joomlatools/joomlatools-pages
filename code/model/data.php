@@ -117,14 +117,8 @@ class ComPagesModelData extends ComPagesModelCollection
 
     public function filterData($data)
     {
-        array_walk($data, function(&$item, $slug)
-        {
+        array_walk($data, function(&$item, $slug) {
             $item['slug'] = $slug;
-
-            if(isset($item['content'])) {
-                $item['hash'] = hash('crc32b', $item['content']);
-            }
-
         });
 
         $data = array_values($data);
