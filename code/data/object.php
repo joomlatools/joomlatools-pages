@@ -14,7 +14,7 @@ class ComPagesDataObject extends ComPagesObjectConfig
         $data = $this->toArray();
         shuffle($data);
 
-        return new self($data);
+        return new static($data);
     }
 
     public function slice($offset, $length = NULL)
@@ -22,7 +22,15 @@ class ComPagesDataObject extends ComPagesObjectConfig
         $data = $this->toArray();
         $data = array_slice($data, $offset, $length);
 
-        return new self($data);
+        return new static($data);
+    }
+
+    public function reverse()
+    {
+        $data = $this->toArray();
+        $data  = array_reverse($data);
+
+        return new static($data);
     }
 
     public function sort($key, $order = 'asc')
@@ -60,7 +68,7 @@ class ComPagesDataObject extends ComPagesObjectConfig
                     break;
             }
 
-            return new self($data);
+            return new static($data);
         }
 
         return $this;
@@ -87,7 +95,7 @@ class ComPagesDataObject extends ComPagesObjectConfig
             else $data[] = $values;
         }
 
-        return new self($data);
+        return new static($data);
     }
 
     public function filter($key, $value = null, $exclude = false)
@@ -144,46 +152,8 @@ class ComPagesDataObject extends ComPagesObjectConfig
                 $data = $data[0];
             }
 
-            return is_array($data) ? new self($data) : $data;
+            return is_array($data) ? new static($data) : $data;
 
-        }
-
-        return $this;
-    }
-
-    public function find($key, $depth = 0)
-    {
-        if($key)
-        {
-            $result = [];
-            $data   = $this->toArray();
-
-            $array    = new RecursiveArrayIterator($data);
-            $iterator = new RecursiveIteratorIterator($array, \RecursiveIteratorIterator::SELF_FIRST);
-
-            //Set the max dept, -1 for full depth
-            $iterator->setMaxDepth($depth);
-
-            foreach ($iterator as $k => $v)
-            {
-                if($key === $k)
-                {
-                    if(is_array($v) && is_numeric(key($v))) {
-                        $result = array_merge($result, $v);
-                    } else {
-                        $result[] = $v;
-                    }
-                }
-            }
-
-
-            //Do no return an array if we only found one result
-            if(count($result) == 1  && isset($result[0])) {
-                $result = $result[0];
-            }
-
-
-            return is_array($result) ? new self($result) : $result;
         }
 
         return $this;
@@ -195,19 +165,14 @@ class ComPagesDataObject extends ComPagesObjectConfig
 
         if(is_array($data))
         {
-            if(!isset($data['@value'])) {
-                $data = $this->toJson()->toString();
-            } else {
-                $data = $data['@value'];
+            if(!isset($data['@value']))
+            {
+                $json = new ComPagesObjectConfigJson($this);
+                $data = $json->toString();
             }
+            else $data = $data['@value'];
         }
 
         return $data;
-    }
-
-    public function toJson()
-    {
-        $html = new ComPagesObjectConfigJson($this);
-        return $html;
     }
 }
