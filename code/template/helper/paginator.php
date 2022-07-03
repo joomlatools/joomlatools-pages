@@ -19,7 +19,7 @@ class ComPagesTemplateHelperPaginator extends KTemplateHelperPaginator
             'display'    => 2,
             'offset'     => 0,
             'limit'      => 0,
-            'show_limit' => true,
+            'show_limit' => false,
             'show_count' => false,
             'show_first' => false,
             'show_last'  => false,
