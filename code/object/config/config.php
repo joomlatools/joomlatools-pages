@@ -49,6 +49,6 @@ class ComPagesObjectConfig extends KObjectConfig implements JsonSerializable
 
     public function __debugInfo()
     {
-        return self::unbox($this);
+        return static::unbox($this);
     }
 }
