@@ -357,7 +357,9 @@ class ComPagesTemplateHelperImage extends ComPagesTemplateHelperLazysizes
     {
         $result = true;
 
-        if(!$url instanceof KHttpUrlInterface) {
+        if(!$url instanceof KHttpUrlInterface)
+        {
+            $this->getTemplate()->getFilter('asset')->filter($url);
             $url = KHttpUrl::fromString($url);
         }
 
@@ -388,6 +390,12 @@ class ComPagesTemplateHelperImage extends ComPagesTemplateHelperLazysizes
     public function exists($url)
     {
         $result = false;
+
+        if(!$url instanceof KHttpUrlInterface)
+        {
+            $this->getTemplate()->getFilter('asset')->filter($url);
+            $url = KHttpUrl::fromString($url);
+        }
 
         if($this->supported($url)) {
             $result = (bool) $this->_findFile($url);
