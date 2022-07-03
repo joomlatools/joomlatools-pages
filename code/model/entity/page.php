@@ -79,11 +79,6 @@ class ComPagesModelEntityPage extends ComPagesModelEntityContent
         return $this->getObject('page.registry')->getPageContentType($this->path) ?: '';
     }
 
-    public function getHandle()
-    {
-        return $this->path;
-    }
-
     public function __toString()
     {
         return $this->getContent();

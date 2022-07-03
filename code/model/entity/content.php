@@ -37,7 +37,7 @@ class ComPagesModelEntityContent extends ComPagesModelEntityItem
                 'language'    => 'en-GB',
                 'canonical'   => null,
             ],
-            'internal_properties' => ['content', 'text'],
+            'internal_properties' => ['content', 'text', 'path'],
         ]);
 
         parent::_initialize($config);
@@ -164,8 +164,20 @@ class ComPagesModelEntityContent extends ComPagesModelEntityItem
         return $date;
     }
 
+    public function getHandle()
+    {
+        return $this->path;
+    }
+
     public function getContent()
     {
+        if($this->getContentType() && !isset($this->content) && $this->path)
+        {
+            $this->content = $this->getObject('data.registry')
+                ->fromFile($this->path)
+                ->content;
+        }
+
         return $this->content;
     }
 
