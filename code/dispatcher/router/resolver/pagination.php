@@ -56,7 +56,7 @@ class ComPagesDispatcherRouterResolverPagination extends ComPagesDispatcherRoute
         {
             if(isset($route->query['page']))
             {
-                $page = $route->query['page'];
+                $page = (int) $route->query['page'];
 
                 if($page && isset($state['limit'])) {
                     $route->query['offset'] = ($page - 1) * (int) $state['limit'];
@@ -75,24 +75,24 @@ class ComPagesDispatcherRouterResolverPagination extends ComPagesDispatcherRoute
         if($route->getFormat() == 'json')
         {
             if (isset($route->query['offset'])) {
-                $page['offset'] = $route->query['offset'];
+                $page['offset'] = (int) $route->query['offset'];
                 unset($route->query['offset']);
             }
 
             if (isset($route->query['limit'])) {
-                $page['limit'] = $route->query['limit'];
+                $page['limit'] = (int) $route->query['limit'];
                 unset($route->query['offset']);
             }
 
             if (isset($route->query['total'])) {
-                $page['total'] = $route->query['total'];
+                $page['total'] = (int) $route->query['total'];
                 unset($route->query['total']);
             }
 
             if (isset($state['limit']) && isset($page['offset']))
             {
                 if($state['limit']) {
-                    $page['number'] = ceil($page['offset'] / $state['limit']) + 1;
+                    $page['number'] = ceil((int) $page['offset'] / (int) $state['limit']) + 1;
                 }
 
                 unset($page['offset']);
@@ -102,9 +102,9 @@ class ComPagesDispatcherRouterResolverPagination extends ComPagesDispatcherRoute
         }
         else
         {
-            if (isset($state['limit']) && isset($route->query['offset']))
+            if (isset($state['limit']) && isset($route->query['offset']) && $state['limit'])
             {
-                $page = ceil($route->query['offset'] / $state['limit']) + 1;
+                $page = ceil((int) $route->query['offset'] / (int) $state['limit']) + 1;
 
                 if($page > 1) {
                     $route->query['page'] = $page;
