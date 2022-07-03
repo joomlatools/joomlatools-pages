@@ -25,6 +25,47 @@ class ComPagesDataObject extends ComPagesObjectConfig
         return new self($data);
     }
 
+    public function sort($key, $order = 'asc')
+    {
+        if($key)
+        {
+            $data = $this->toArray();
+
+            usort($data, function($first, $second) use($key)
+            {
+                $sorting = 0;
+
+                $first_value  = $first[$key];
+                $second_value = $second[$key];
+
+                if($first_value > $second_value) {
+                    $sorting = 1;
+                } elseif ($first_value < $second_value) {
+                    $sorting = -1;
+                }
+
+                return $sorting;
+            });
+
+            switch($order)
+            {
+                case 'desc':
+                case 'descending':
+                    $data = array_reverse($data);
+                    break;
+
+                case 'random':
+                case 'shuffle':
+                    shuffle($data);
+                    break;
+            }
+
+            return new self($data);
+        }
+
+        return $this;
+    }
+
     public function flatten($key_as_property = null)
     {
         $data = array();
@@ -51,85 +92,101 @@ class ComPagesDataObject extends ComPagesObjectConfig
 
     public function filter($key, $value = null, $exclude = false)
     {
-        $data = $this->toArray();
-
-        if(isset($data[$key])) {
-            $data = array($data);
-        }
-
-        //Filter the array
-        $data = array_filter($data, function($v) use ($key, $value, $exclude)
+        if($key)
         {
-            if($value !== null && isset($v[$key]))
-            {
-                if(is_array($value)  && is_array($v[$key]))
-                {
-                    if($exclude) {
-                        return (bool) array_diff_assoc($value, $v[$key]);
-                    } else {
-                        return (bool) !array_diff_assoc($value, $v[$key]);
-                    }
+            $data = $this->toArray();
 
+            if(isset($data[$key])) {
+                $data = array($data);
+            }
+
+            //Filter the array
+            $data = array_filter($data, function($v) use ($key, $value, $exclude)
+            {
+                if($value !== null && isset($v[$key]))
+                {
+                    if(is_array($value)  && is_array($v[$key]))
+                    {
+                        if($exclude) {
+                            return (bool) array_diff_assoc($value, $v[$key]);
+                        } else {
+                            return (bool) !array_diff_assoc($value, $v[$key]);
+                        }
+
+                    }
+                    else
+                    {
+                        if($exclude) {
+                            return ($v[$key] !== $value);
+                        } else {
+                            return ($v[$key] === $value);
+                        }
+                    }
                 }
                 else
                 {
                     if($exclude) {
-                        return ($v[$key] !== $value);
+                        return !isset($v[$key]);
                     } else {
-                        return ($v[$key] === $value);
+                        return isset($v[$key]);
+                    }
+
+                }
+            });
+
+            //Reset the numeric keys
+            if (is_numeric(key($data))) {
+                $data = array_values($data);
+            }
+
+            //Do no return an array if we only found a single scalar result
+            if(count($data) == 1 && isset($data[0])) {
+                $data = $data[0];
+            }
+
+            return is_array($data) ? new self($data) : $data;
+
+        }
+
+        return $this;
+    }
+
+    public function find($key, $depth = 0)
+    {
+        if($key)
+        {
+            $result = [];
+            $data   = $this->toArray();
+
+            $array    = new RecursiveArrayIterator($data);
+            $iterator = new RecursiveIteratorIterator($array, \RecursiveIteratorIterator::SELF_FIRST);
+
+            //Set the max dept, -1 for full depth
+            $iterator->setMaxDepth($depth);
+
+            foreach ($iterator as $k => $v)
+            {
+                if($key === $k)
+                {
+                    if(is_array($v) && is_numeric(key($v))) {
+                        $result = array_merge($result, $v);
+                    } else {
+                        $result[] = $v;
                     }
                 }
             }
-            else
-            {
-                if($exclude) {
-                    return !isset($v[$key]);
-                } else {
-                    return isset($v[$key]);
-                }
 
+
+            //Do no return an array if we only found one result
+            if(count($result) == 1  && isset($result[0])) {
+                $result = $result[0];
             }
-        });
 
-        //Reset the numeric keys
-        if (is_numeric(key($data))) {
-            $data = array_values($data);
+
+            return is_array($result) ? new self($result) : $result;
         }
 
-        //Do no return an array if we only found a single scalar result
-        if(count($data) == 1 && isset($data[0])) {
-            $data = $data[0];
-        }
-
-        return is_array($data) ? new self($data) : $data;
-    }
-
-    public function find($key)
-    {
-        $data = $this->toArray();
-
-        $array    = new RecursiveArrayIterator($data);
-        $iterator = new RecursiveIteratorIterator($array, \RecursiveIteratorIterator::SELF_FIRST);
-
-        $result = array();
-        foreach ($iterator as $k => $v)
-        {
-            if($key === $k)
-            {
-                if(is_array($v) && is_numeric(key($v))) {
-                    $result = array_merge($result, $v);
-                } else {
-                    $result[] = $v;
-                }
-            }
-        }
-
-        //Do no return an array if we only found one result
-        if(count($result) == 1  && isset($result[0])) {
-            $result = $result[0];
-        }
-
-        return is_array($result) ? new self($result) : $result;
+        return $this;
     }
 
     public function toString()
