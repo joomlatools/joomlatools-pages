@@ -23,7 +23,7 @@ class ComPagesModelData extends ComPagesModelCollection
 
         $this->getState()
             ->insertComposite('slug', 'cmd', array('folder'), '')
-            ->insertInternal('folder', 'url', '/');
+            ->insertInternal('folder', 'url', is_string($this->_path) ? $this->_path : '/' );
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -86,8 +86,11 @@ class ComPagesModelData extends ComPagesModelCollection
                 {
                     if($items = $this->getObject('data.registry')->fromPath($path, false, false))
                     {
-                        array_walk($items, function(&$item) use($folder) {
+                        array_walk($items, function(&$item, $slug) use($folder, $path)
+                        {
                             $item['folder'] = '/'.$folder;
+                            $item['path']   = $path.'/'.$slug;
+                            $item['slug']   = $slug;
                         });
 
                         $data += $items;
@@ -99,31 +102,25 @@ class ComPagesModelData extends ComPagesModelCollection
                 $folder = trim($state->folder, '/');
                 $slug   = $state->slug;
 
-                $path = $folder.'/'.$slug;
+                $path = $folder ? $folder.'/'.$slug : $slug;
                 $path = $this->_namespace ? $this->_namespace .'://'.$path : $path;
 
-                if($data = $this->getObject('data.registry')->fromFile($path, false))
+                $data = [];
+                if($item = $this->getObject('data.registry')->fromFile($path, false))
                 {
-                    $data['folder'] = '/'.$folder;
-                    $data = array($slug => $data);
+                    $item['folder'] = '/'.$folder;
+                    $item['path']   = $path;
+                    $item['slug']   = $slug;
+
+                    $data[] = $item;
                 }
             }
 
-            $this->__data = $data;
+            $this->__data = array_values($data);
+
         }
 
        return $this->__data;
-    }
-
-    public function filterData($data)
-    {
-        array_walk($data, function(&$item, $slug) {
-            $item['slug'] = $slug;
-        });
-
-        $data = array_values($data);
-
-        return parent::filterData($data);
     }
 
     protected function _actionReset(KModelContext $context)
