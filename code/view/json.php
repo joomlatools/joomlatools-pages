@@ -54,7 +54,7 @@ class ComPagesViewJson extends KViewAbstract
      */
     public function isCollection()
     {
-        return (bool) !$this->getModel()->getState()->isUnique();
+        return !$this->getState()->isUnique();
     }
 
     /**
@@ -150,8 +150,11 @@ class ComPagesViewJson extends KViewAbstract
                 $limit  = (int) $paginator->limit;
                 $offset = (int) $paginator->offset;
 
-                $document['meta']['offset'] = $offset;
-                $document['meta']['limit']  = $limit;
+                if($limit)
+                {
+                    $document['meta']['offset'] = $offset;
+                    $document['meta']['limit']  = $limit;
+                }
 
                 if ($limit && $total > count($this->getModel()->fetch())) {
                     $document['links']['first'] = (string) $this->getRoute($route, $query + ['offset' => 0]);
