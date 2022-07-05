@@ -158,7 +158,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
 
                 //Merge format
                 if($result->has('format')) {
-                    $extend->format->merge($result->get('format'));
+                    $extend->format = $result->get('format');
                 }
 
                 $result = $extend;
@@ -312,49 +312,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         return $page;
     }
 
-    public function getPageContent($path)
-    {
-        $result = false;
-
-        if($path instanceof ComPagesPageObject) {
-            $path = $path->path;
-        }
-
-        if($file = $this->getObject('template.locator.factory')->locate('page:'.$path))
-        {
-            $page = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
-            $result = $page->getContent();
-        }
-
-        return $result;
-    }
-
-    public function getPageContentType($path)
-    {
-        $result = false;
-
-        if($path instanceof ComPagesPageObject) {
-            $path = $path->path;
-        }
-
-        if($file = $this->getLocator()->locate('page:'. $path))
-        {
-            if(str_ends_with($file, '.md')) {
-                $result = 'text/markdown';
-            }
-
-            if(str_ends_with($file, '.html')) {
-                $result = 'text/html';
-            }
-
-            if(str_ends_with($file, '.txt')) {
-                $result = 'text/plain';
-            }
-        }
-
-        return $result;
-    }
-
     public function getRoutes($path = null)
     {
         if(!is_null($path)) {
@@ -480,6 +437,9 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     $page = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
 
                                     $page->append($this->getConfig()->properties);
+
+                                    //Set the file
+                                    $page->file = $file;
 
                                     //Set the path
                                     $page->path = $path;

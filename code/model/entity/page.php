@@ -10,7 +10,6 @@
 class ComPagesModelEntityPage extends ComPagesModelEntityContent
 {
     private $__parent;
-    private $__content;
 
     protected function _initialize(KObjectConfig $config)
     {
@@ -27,22 +26,18 @@ class ComPagesModelEntityPage extends ComPagesModelEntityContent
                     'og:description' => null,
                 ],
             ],
+            'internal_properties' => ['file'],
         ]);
 
         parent::_initialize($config);
     }
 
-    public function getPropertyFolder()
-    {
-        return dirname(rtrim($this->path, '/'));
-    }
-
-    public function setPropertyAccess($value)
+    public function getPropertyAccess($value)
     {
         return new ComPagesObjectConfig($value);
     }
 
-    public function setPropertyName($name)
+    public function getPropertyName($name)
     {
         if(empty($name)) {
             $name = ucwords(str_replace(array('_', '-'), ' ', $this->slug));
@@ -67,8 +62,10 @@ class ComPagesModelEntityPage extends ComPagesModelEntityContent
 
     public function getContent()
     {
-        if($this->getContentType() && !$this->content) {
-            $this->content = $this->getObject('page.registry')->getPageContent($this->path);
+        if($this->getContentType() && !$this->content && $this->file)
+        {
+            $page = (new ComPagesObjectConfigFrontmatter())->fromFile($this->file);
+            $this->content = $page->getContent();
         }
 
         return $this->content;
@@ -76,7 +73,24 @@ class ComPagesModelEntityPage extends ComPagesModelEntityContent
 
     public function getContentType()
     {
-        return $this->getObject('page.registry')->getPageContentType($this->path) ?: '';
+        $result = false;
+
+        if($file = $this->file)
+        {
+            if(str_ends_with($file, '.md')) {
+                $result = 'text/markdown';
+            }
+
+            if(str_ends_with($file, '.html')) {
+                $result = 'text/html';
+            }
+
+            if(str_ends_with($file, '.txt')) {
+                $result = 'text/plain';
+            }
+        }
+
+        return $result;
     }
 
     public function __toString()
