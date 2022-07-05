@@ -20,10 +20,6 @@ class ComPagesModelData extends ComPagesModelCollection
 
         $this->_path      = KObjectConfig::unbox($config->path);
         $this->_namespace = $config->namespace;
-
-        $this->getState()
-            ->insertComposite('slug', 'cmd', array('folder'), '')
-            ->insertInternal('folder', 'url', is_string($this->_path) ? $this->_path : '/' );
     }
 
     protected function _initialize(KObjectConfig $config)
@@ -47,19 +43,9 @@ class ComPagesModelData extends ComPagesModelCollection
 
     public function getPaths()
     {
-        $state  = $this->getState();
-
-        $paths = (array) $this->_path;
-        if($folder = trim($state->folder, '/'))
-        {
-            $folder = '/'.$folder;
-
-            if(in_array($folder, $paths)) {
-                $paths = array($folder);
-            }
-        }
-
         $result = [];
+        $paths  = (array) $this->_path;
+
         foreach($paths as $path)
         {
             $path = trim($path, '/');
@@ -75,49 +61,16 @@ class ComPagesModelData extends ComPagesModelCollection
         {
             $this->__data = array();
 
-            $state  = $this->getState();
+            $paths = $this->getPaths();
 
-            if (!$state->isUnique())
+            $data  = [];
+            foreach($paths as $path)
             {
-                $paths = $this->getPaths();
-
-                $data  = [];
-                foreach($paths as $folder => $path)
-                {
-                    if($items = $this->getObject('data.registry')->fromPath($path, false, false))
-                    {
-                        array_walk($items, function(&$item, $slug) use($folder, $path)
-                        {
-                            $item['folder'] = '/'.$folder;
-                            $item['path']   = $path.'/'.$slug;
-                            $item['slug']   = $slug;
-                        });
-
-                        $data += $items;
-                    }
-                }
-            }
-            else
-            {
-                $folder = trim($state->folder, '/');
-                $slug   = $state->slug;
-
-                $path = $folder ? $folder.'/'.$slug : $slug;
-                $path = $this->_namespace ? $this->_namespace .'://'.$path : $path;
-
-                $data = [];
-                if($item = $this->getObject('data.registry')->fromFile($path, false))
-                {
-                    $item['folder'] = '/'.$folder;
-                    $item['path']   = $path;
-                    $item['slug']   = $slug;
-
-                    $data[] = $item;
-                }
+                $items = $this->getObject('data.registry')->fromPath($path, false, false);
+                $data += $items;
             }
 
             $this->__data = array_values($data);
-
         }
 
        return $this->__data;
