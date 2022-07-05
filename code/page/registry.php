@@ -554,7 +554,12 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     }
 
                                     //Collection
-                                    if(isset($page->collection) && $page->collection !== false) {
+                                    if(isset($page->collection) && $page->collection !== false)
+                                    {
+                                        if(!$page->collection->extend && !$page->collection->route) {
+                                            $page->collection->route = $path;
+                                        }
+
                                         $collections[$path] = KObjectConfig::unbox($page->collection);
                                     }
 
