@@ -13,6 +13,8 @@ class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesMo
 
     private $__internal_properties;
 
+    private $__model;
+
     public static function getInstance(KObjectConfigInterface $config, KObjectManagerInterface $manager)
     {
         if($config->entity)
@@ -34,12 +36,17 @@ class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesMo
     {
         parent::__construct($config);
 
+        if($config->model) {
+            $this->setModel($config->model);
+        }
+
         $this->__internal_properties = KObjectConfig::unbox($config->internal_properties);
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
+            'model' => null,
             'internal_properties' => [],
         ]);
 
@@ -167,6 +174,22 @@ class ComPagesModelEntityItem extends KModelEntityAbstract implements ComPagesMo
         });
 
         return $data;
+    }
+
+    public function setModel(ComPagesModelInterface $model)
+    {
+        $this->__model = $model;
+        return $this;
+    }
+
+    public function getModel()
+    {
+        return $this->__model;
+    }
+
+    public function isConnected()
+    {
+        return (bool) $this->__model;
     }
 
     public function __call($method, $arguments)

@@ -252,6 +252,7 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         }
 
         $options['entity'] = $this->getIdentifier($identifier);
+        $options['model']  = $this;
 
         //Set the identitiy key
         if($identity_key = $context->getIdentityKey()) {
@@ -308,6 +309,11 @@ abstract class ComPagesModelCollection extends KModelAbstract implements ComPage
         $context->setIdentityKey($this->getIdentityKey());
 
         return $context;
+    }
+
+    public function getCollection()
+    {
+        return $this->getObject('page.registry')->getCollection($this->getName());
     }
 
     public function isPersistable()

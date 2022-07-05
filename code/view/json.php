@@ -100,8 +100,6 @@ class ComPagesViewJson extends KViewAbstract
             'data'    => []
         ]);
 
-        $query = [];
-
         if($this->isCollection())
         {
             $context->parameters->total = $this->getModel()->count();
@@ -109,13 +107,13 @@ class ComPagesViewJson extends KViewAbstract
             if($format != 'json')
             {
                 //Add format specific link
-                $document['links'][$format] =  (string) $this->getRoute($route, $query);
+                $document['links'][$format] =  (string) $this->getRoute($route);
 
                 //Set format to json
-                $query['format'] = 'json';
+                $route->query['format'] = 'json';
             }
 
-            $document['links']['self'] = (string) $this->getRoute($route, $query);
+            $document['links']['self'] = (string) $this->getRoute($route);
 
             foreach ($this->getModel()->fetch() as $entity) {
                 $document['data'][] = $this->_createResource($entity);
@@ -156,23 +154,28 @@ class ComPagesViewJson extends KViewAbstract
                     $document['meta']['limit']  = $limit;
                 }
 
-                if ($limit && $total > count($this->getModel()->fetch())) {
-                    $document['links']['first'] = (string) $this->getRoute($route, $query + ['offset' => 0]);
+                if ($limit && $total > count($this->getModel()->fetch()))
+                {
+                    $route->query['offset'] = 0;
+                    $document['links']['first'] = (string) $this->getRoute($route);
                 }
 
-                if ($limit && $total-($limit + $offset) > 0) {
-                    $document['links']['next'] = (string) $this->getRoute($route, $query + ['offset' => $limit+$offset]);
+                if ($limit && $total-($limit + $offset) > 0)
+                {
+                    $route->query['offset'] =  $limit+$offset;
+                    $document['links']['next'] = (string) $this->getRoute($route);
                 }
 
-                if ($limit && $offset && $offset >= $limit) {
-                    $document['links']['prev'] = (string) $this->getRoute($route, $query + ['offset' => max($offset-$limit, 0)]);
+                if ($limit && $offset && $offset >= $limit)
+                {
+                    $route->query['offset'] =  max($offset-$limit, 0);
+                    $document['links']['prev'] = (string) $this->getRoute($route);
                 }
             }
         }
         else
         {
             $document['links']['self'] = (string) $this->getUrl();
-
             $document['data'] = $this->_createResource($this->getModel()->fetch()->top());
         }
 
@@ -190,8 +193,6 @@ class ComPagesViewJson extends KViewAbstract
      */
     protected function _createResource(KModelEntityInterface $entity)
     {
-        $collection = $this->getCollectionContext();
-
         //Data
         $resource = [
             'type'       => $this->_getEntityType($entity),
@@ -200,11 +201,8 @@ class ComPagesViewJson extends KViewAbstract
         ];
 
         //Links
-        if($collection->route !== false)
-        {
-            if($links = $this->_getEntityLinks($entity)) {
-                $resource['links'] = $links;
-            }
+        if($links = $this->_getEntityLinks($entity)) {
+            $resource['links'] = $links;
         }
 
         //Relationships
@@ -337,61 +335,20 @@ class ComPagesViewJson extends KViewAbstract
      */
     protected function _getEntityLinks(KModelEntityInterface $entity)
     {
-        $links = array();
-        $query = array();
-        $format = $this->getPage()->getFormat();
+        $links  = array();
 
-        if(!$entity instanceof ComPagesModelEntityPage)
+        if($entity instanceof ComPagesModelEntityPage || $entity instanceof ComPagesModelEntityPages)
         {
-            $collection = $this->getCollectionContext();
-            $page = $collection->route ?? $this->getPage();
-
-            foreach($this->getModel()->getPrimaryKey() as $key)
+            if($self = (string) $this->getRoute($entity))
             {
-                $value = $entity->{$key} ?? $this->getState()->{$key};
+                if($entity->format != 'json')
+                {
+                    if($format = $entity->format) {
+                        $links[$format] = $self;
+                    }
 
-                if($value instanceof ComPagesModelEntityInterface) {
-                    $value = $value->{$value->getIdentityKey()};
                 }
 
-                $query[$key] = $value;
-
-            }
-
-            if($format != 'json')
-            {
-                //Add format specific link
-                $links[$format] =  (string) $this->getRoute($page, $query);
-
-                //Set format to json
-                $query['format'] = 'json';
-            }
-
-            //Add self link
-            if($self = (string) $this->getRoute($page, $query)) {
-                $links['self'] = "$self";
-            }
-
-        }
-        else
-        {
-            $page = $entity->path;
-
-            if($entity->format != 'json')
-            {
-                //Add format specific link
-                $format = $entity->format;
-
-                if($route = (string) $this->getRoute($page, $query)) {
-                    $links[$format] =  $route;
-                }
-            }
-
-            //Add self link
-            $self = (string) $this->getRoute($page, $query);
-
-            if($self && $entity->type == 'collection')
-            {
                 if($entity->format == 'json') {
                     $links['self'] = $self;
                 }
@@ -400,7 +357,19 @@ class ComPagesViewJson extends KViewAbstract
                     $links['self'] = "$self.json";
                 }
             }
+        }
+        else
+        {
+            if($self = (string) $this->getRoute($entity))
+            {
+                $format = $this->getPage()->getFormat();
 
+                if($format && $format != 'json') {
+                    $links[$format] = $self;
+                }
+
+                $links['self'] = "$self.json";
+            }
         }
 
         return $links;

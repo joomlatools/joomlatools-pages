@@ -11,6 +11,8 @@ class ComPagesModelEntityItems extends KModelEntityComposite implements JsonSeri
 {
     use ComPagesObjectDebuggable;
 
+    private $__model;
+
     public static function getInstance(KObjectConfigInterface $config, KObjectManagerInterface $manager)
     {
         if($config->entity)
@@ -26,6 +28,24 @@ class ComPagesModelEntityItems extends KModelEntityComposite implements JsonSeri
         else $instance = new self($config);
 
         return $instance;
+    }
+
+    public function __construct(KObjectConfig $config)
+    {
+        parent::__construct($config);
+
+        if($config->model) {
+            $this->setModel($config->model);
+        }
+    }
+
+    protected function _initialize(KObjectConfig $config)
+    {
+        $config->append(array(
+            'model' => null,
+        ));
+
+        parent::_initialize($config);
     }
 
     public function get($property, $default = null)
@@ -70,7 +90,8 @@ class ComPagesModelEntityItems extends KModelEntityComposite implements JsonSeri
                 //The entity default options
                 $options = array(
                     'identity_key' => $this->getIdentityKey(),
-                    'entity'       => $this->getIdentifier($identifier)
+                    'entity'       => $this->getIdentifier($identifier),
+                    'model'        => $this->getModel()
                 );
 
                 //Delegate entity instantiation
@@ -92,7 +113,8 @@ class ComPagesModelEntityItems extends KModelEntityComposite implements JsonSeri
                 'data'         => $properties,
                 'status'       => $status,
                 'identity_key' => $this->getIdentityKey(),
-                'entity'       => $this->getIdentifier($identifier)
+                'entity'       => $this->getIdentifier($identifier),
+                'model'        => $this->getModel()
             );
 
             //Delegate entity instantiation
@@ -103,6 +125,22 @@ class ComPagesModelEntityItems extends KModelEntityComposite implements JsonSeri
         $this->insert($entity);
 
         return $entity;
+    }
+
+    public function setModel(ComPagesModelInterface $model)
+    {
+        $this->__model = $model;
+        return $this;
+    }
+
+    public function getModel()
+    {
+        return $this->__model;
+    }
+
+    public function isConnected()
+    {
+        return (bool) $this->__model;
     }
 
     public function __call($method, $arguments)

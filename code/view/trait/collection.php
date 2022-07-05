@@ -20,11 +20,6 @@ trait ComPagesViewTraitCollection
         return $result;
     }
 
-    public function getCollectionContext()
-    {
-        return $this->getObject('page.registry')->getCollection($this->getModel()->getName());
-    }
-
     public function getState()
     {
         return $this->getModel()->getState();

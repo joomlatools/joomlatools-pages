@@ -51,7 +51,9 @@ class ComPagesViewHtml extends ComKoowaViewHtml
                 $canonical = $this->getCollection()->get('canonical', $canonical);
             }
 
-            $canonical = $this->getUrl($this->getRoute($canonical));
+            if(!str_starts_with($canonical, 'http')) {
+                $canonical = $this->getUrl($this->getRoute($canonical));
+            }
         }
 
         return $canonical;
