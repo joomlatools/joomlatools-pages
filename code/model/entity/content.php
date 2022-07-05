@@ -110,7 +110,7 @@ class ComPagesModelEntityContent extends ComPagesModelEntityItem
         return $metadata;
     }
 
-    public function setPropertyImage($value)
+    public function getPropertyImage($value)
     {
         //Normalize images
         $image = null;
@@ -130,7 +130,6 @@ class ComPagesModelEntityContent extends ComPagesModelEntityItem
                 }
 
                 $url = $this->getObject('lib:http.url')->setUrl($url);
-
 
                 $image = [
                     'url'      => $url,
