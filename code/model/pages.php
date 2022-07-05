@@ -80,6 +80,10 @@ class ComPagesModelPages extends ComPagesModelCollection
             $result = $this->getObject('page.registry')->isPageAccessible($page['path']);
         }
 
+        if($result && isset($page['path'])) {
+            $page['folder'] = dirname(rtrim($page['path'], '/'));
+        }
+
         return $result;
     }
 
