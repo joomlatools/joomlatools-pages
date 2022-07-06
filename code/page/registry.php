@@ -197,6 +197,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     {
         $result = array();
 
+
         //Get a list of pages
         if($mode != self::PAGES_ONLY)
         {
@@ -540,7 +541,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                 else
                                 {
                                     //Iterate over path
-                                    if($result = $iterate($file)) {
+                                    if(false !== $result = $iterate($file)) {
                                         $files[$path] = $result;
                                     }
                                 }
