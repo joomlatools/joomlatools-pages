@@ -139,6 +139,15 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     $extend->state = $result->get('state');
                 }
 
+                //Merge state
+                $filter = (array) KObjectConfig::unbox($result->get('filter', []));
+
+                if($extend->has('filter')) {
+                    $extend->filter->merge($filter);
+                } else {
+                    $extend->filter = $filter;
+                }
+
                 //Merge page
                 if($extend->has('page')) {
                     $extend->page->merge($result->get('page', array()));
