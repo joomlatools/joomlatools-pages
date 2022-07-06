@@ -67,7 +67,7 @@ class ComPagesControllerCollection extends KControllerModel
     {
         //Create the collection model
         $model = $this->getObject('model.factory')
-            ->createModel($this->getPage()->path, $this->getRequest()->query->toArray(), [], false);
+            ->createModel($this->getPage()->path, $this->getRequest()->query->toArray(), [], [], false);
 
         return parent::setModel($model);
     }

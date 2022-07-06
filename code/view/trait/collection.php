@@ -9,10 +9,10 @@
 
 trait ComPagesViewTraitCollection
 {
-    public function getCollection($model = '', $state = [])
+    public function getCollection($model = '', $state = [], $filter = [])
     {
         if($model) {
-            $result = $this->getObject('model.factory')->createModel($model, $state)->fetch();
+            $result = $this->getObject('model.factory')->createModel($model, $state, $filter)->fetch();
         } else {
             $result = $this->getModel()->fetch();
         }
