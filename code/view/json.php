@@ -345,12 +345,17 @@ class ComPagesViewJson extends KViewAbstract
                 {
                     if($format != 'json') {
                         $links[$format] = $self;
-                    } else {
-                        $links['self'] = $self;
                     }
 
-                    if($format == 'html') {
-                        $links['self'] = "$self.json";
+                    if($entity->type == 'collection' || $entity->getContentType())
+                    {
+                        if($format == 'json') {
+                            $links['self'] = $self;
+                        }
+
+                        if($format == 'html') {
+                            $links['self'] = "$self.json";
+                        }
                     }
 
                     $formats = (array) $entity->getModel()->getCollection()->format;
