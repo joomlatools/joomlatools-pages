@@ -43,6 +43,15 @@ class ComPagesModelEntityContent extends ComPagesModelEntityItem
         parent::_initialize($config);
     }
 
+    public function getPropertyTitle($value)
+    {
+        if(!$value) {
+            $value = ucwords(str_replace(['-', '_'], ' ', $this->slug));
+        }
+
+        return $value;
+    }
+
     public function getPropertyExcerpt()
     {
         $parts = preg_split('#<!--(.*)more(.*)-->#i', $this->getContent(), 2);
