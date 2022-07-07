@@ -178,8 +178,9 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
 
             if (!isset($this->__data[$key]))
             {
-                $data = $this->loadCache($root_path, false, $namespace ?: 'data', $content);
-                $this->__data[$key] = $data;
+                if($data = $this->loadCache($root_path, false, $namespace ?: 'data', $content)) {
+                    $this->__data[$key] = $data;
+                }
             }
             else $data = $this->__data[$key];
 
@@ -252,30 +253,38 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
 
     private function __fromFile($file, $content = true)
     {
-        $data = $this->getObject('object.config.factory')->fromFile($file);
+        $result = null;
+        $format = pathinfo($file, PATHINFO_EXTENSION);
 
-        if($data instanceof ComPagesObjectConfigMarkdown)
+        if($format && $this->getObject('object.config.factory')->isRegistered($format))
         {
-            if($content) {
-                $data->content = $data->getContent();
+            $data = $this->getObject('object.config.factory')->fromFile($file);
+
+            if($data instanceof ComPagesObjectConfigMarkdown)
+            {
+                if($content) {
+                    $data->content = $data->getContent();
+                }
+
+                //Set the date (if not set yet)
+                if (!isset($data->date)) {
+                    $data->date = filemtime($file);
+                } else {
+                    $data->date = strtotime($data->date);
+                }
+
+                if($hash =  $data->getHash()) {
+                    $data->hash = $hash;
+                } else {
+                    $data->hash = hash('crc32b', filesize($file));
+                }
+
             }
 
-            //Set the date (if not set yet)
-            if (!isset($data->date)) {
-                $data->date = filemtime($file);
-            } else {
-                $data->date = strtotime($data->date);
-            }
-
-            if($hash =  $data->getHash()) {
-                $data->hash = $hash;
-            } else {
-                $data->hash = hash('crc32b', filesize($file));
-            }
-
+            $result =  $data->toArray();
         }
 
-        return $data->toArray();
+        return $result;
     }
 
     private function __fromDirectory($path, $content = true)
@@ -316,15 +325,21 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
 
         foreach($files as $name => $file)
         {
-            if($name !== basename(dirname($file))) {
-                $data[$name] = $this->__fromPath($file, $content);
-            } else {
-                $data = $this->__fromPath($file, $content);
+            if($array = $this->__fromPath($file, $content))
+            {
+                if($name !== basename(dirname($file))) {
+                    $data[$name] = $array;
+                } else {
+                    $data = $array;
+                }
             }
         }
 
-        foreach($dirs as $name => $dir) {
-            $data[$name] = $this->__fromPath($dir, $content);
+        foreach($dirs as $name => $dir)
+        {
+            if($array = $this->__fromPath($dir, $content)) {
+                $data[$name] = $array;
+            }
         }
 
         return $data;
