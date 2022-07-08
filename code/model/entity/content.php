@@ -26,6 +26,7 @@ class ComPagesModelEntityContent extends ComPagesModelEntityItem
                     'alt'	   => null,
                     'caption'  => null,
                 ],
+                'state'       => [],
                 'metadata'    => [
                     'og:type'        => 'article',
                     'og:title'       => null,
