@@ -125,6 +125,8 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     );
                 }
 
+                $extend->extend = $result->extend;
+
                 //Merge page
                 if($extend->has('config')) {
                     $extend->config->merge($result->get('config', array()));
