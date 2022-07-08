@@ -26,7 +26,7 @@ trait ComPagesViewTraitRoute
                     $path = false;
                     if($collection->route !== false)
                     {
-                        $path = $collection->route;
+                        $path = '/'.ltrim($collection->route, '/');
                         $page = $this->getPage('/'.$collection->route);
 
                         if($routes = (array) KObjectConfig::unbox($page->route))
