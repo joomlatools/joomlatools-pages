@@ -125,34 +125,43 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     );
                 }
 
-                $extend->extend = $result->extend;
+                //Merge extend (is a string)
+                $from = (array) KObjectConfig::unbox($result->get('extend', []));
+
+                if($extend->has('extend'))
+                {
+                    $extend->extend = (array) KObjectConfig::unbox($extend->extend);
+                    $extend->extend->merge($from);
+                }
+                else $extend->extend = $from;
 
                 //Merge page
                 if($extend->has('config')) {
-                    $extend->config->merge($result->get('config', array()));
+                    $extend->config->merge($result->get('config', []));
                 } else {
                     $extend->config = $result->get('config');
                 }
 
                 //Merge state
                 if($extend->has('state')) {
-                    $extend->state->merge($result->get('state', array()));
+                    $extend->state->merge($result->get('state', []));
                 } else {
                     $extend->state = $result->get('state');
                 }
 
-                //Merge state
+                //Merge state (can be a string)
                 $filter = (array) KObjectConfig::unbox($result->get('filter', []));
 
-                if($extend->has('filter')) {
+                if($extend->has('filter'))
+                {
+                    $extend->filter = (array) KObjectConfig::unbox($extend->filter);
                     $extend->filter->merge($filter);
-                } else {
-                    $extend->filter = $filter;
                 }
+                else $extend->filter = $filter;
 
                 //Merge page
                 if($extend->has('page')) {
-                    $extend->page->merge($result->get('page', array()));
+                    $extend->page->merge($result->get('page', []));
                 } else {
                     $extend->page = $result->get('page');
                 }
