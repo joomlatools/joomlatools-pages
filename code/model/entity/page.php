@@ -50,11 +50,17 @@ class ComPagesModelEntityPage extends ComPagesModelEntityContent
     {
         if(!$this->__parent)
         {
-            $page = $this->getObject('page.registry')->getPage($this->folder);
+            $path = rtrim($this->path, '/');
 
-            $this->__parent = $this->getObject($this->getIdentifier(),
-                array('data'  => $page->toArray())
-            );
+            if($path = dirname($path))
+            {
+                $page = $this->getObject('page.registry')->getPage($path);
+
+                $this->__parent = $this->getObject($this->getIdentifier(),
+                    array('data'  => $page->toArray())
+                );
+            }
+            else $this->__parent = null;
         }
 
         return $this->__parent;
