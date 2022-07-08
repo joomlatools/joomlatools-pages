@@ -96,6 +96,17 @@ class ComPagesPageEntity extends ComPagesModelEntityPage implements ComPagesPage
         return $value;
     }
 
+    public function getParent()
+    {
+        if($this->isCollection() && $this->isCollection()->extend) {
+            $parent = $this->getObject('page.registry')->getPage($this->isCollection()->extend);
+        } else {
+            $parent = parent::getParent();
+        }
+
+        return $parent;
+    }
+
     public function getFormat()
     {
         return $this->format;
