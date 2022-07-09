@@ -29,9 +29,10 @@ class ComPagesObjectConfigFrontmatter extends KObjectConfigYaml
         $this->__hash = hash("crc32b", $string);
 
         // Normalize line endings to Unix style.
-        $string = preg_replace("/(\r\n|\r)/", "\n", $string);
+        $string = trim(preg_replace("/(\r\n|\r)/", "\n", $string));
 
-        if (strpos($string, "---") !== false)
+        //Frontmatter block needs to be on top
+        if(substr( $string, 0, 3 ) === "---" )
         {
             if(preg_match('#\s*---(.*|[\s\S]*)\s*---#siU', $string, $matches))
             {
@@ -48,7 +49,6 @@ class ComPagesObjectConfigFrontmatter extends KObjectConfigYaml
 
                 if($data = parent::fromString($matches[1], false))
                 {
-                    //Handle dynamic data
                     array_walk_recursive ($data, function(&$value, $key)
                     {
                         if(is_string($value) && strpos($value, 'data://') === 0)
