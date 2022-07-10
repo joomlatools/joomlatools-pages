@@ -9,9 +9,8 @@
 
 trait ComPagesViewTraitRoute
 {
-    public function getRoute($entity = null, $fqr = true, $escape = null)
+    public function getRoute($entity = null, $query = [], $escape = null)
     {
-        $query  = [];
         $result = null;
 
         if($entity)
