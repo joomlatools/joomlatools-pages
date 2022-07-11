@@ -145,7 +145,7 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                         }
                         else
                         {
-                            if ($item_value === $value) {
+                            if (is_null($item_value) || $item_value == $value) {
                                 return true;
                             }
                         }
@@ -160,7 +160,7 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                         }
                         else
                         {
-                            if($item_value !== $value) {
+                            if(is_null($item_value) || $item_value != $value) {
                                 return true;
                             }
                         }
