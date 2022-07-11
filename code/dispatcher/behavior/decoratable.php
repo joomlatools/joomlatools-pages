@@ -21,7 +21,6 @@ class ComPagesDispatcherBehaviorDecoratable extends ComKoowaDispatcherBehaviorDe
             //Configure the page view
             $controller->getView()
                 ->setDecorator($this->getDecorator())
-                ->setDecorator($this->getDecorator())
                 ->setLayout($this->getLayout());
 
             //Set the result in the response
@@ -31,7 +30,7 @@ class ComPagesDispatcherBehaviorDecoratable extends ComKoowaDispatcherBehaviorDe
 
     public function getLayout()
     {
-        $result = 'joomla';
+        $result = 'template://pages/page';
 
         if($this->getObject('pages.config')->debug && $this->getResponse()->isError()) {
             $result = 'koowa';

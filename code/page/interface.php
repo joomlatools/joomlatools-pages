@@ -10,6 +10,7 @@
 interface ComPagesPageInterface
 {
     public function getType();
+    public function getFormat();
 
     public function isRedirect();
     public function isForm();

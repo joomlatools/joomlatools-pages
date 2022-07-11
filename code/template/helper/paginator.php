@@ -19,7 +19,7 @@ class ComPagesTemplateHelperPaginator extends KTemplateHelperPaginator
             'display'    => 2,
             'offset'     => 0,
             'limit'      => 0,
-            'show_limit' => true,
+            'show_limit' => false,
             'show_count' => false,
             'show_first' => false,
             'show_last'  => false,
@@ -199,12 +199,12 @@ class ComPagesTemplateHelperPaginator extends KTemplateHelperPaginator
 
     protected function _link($page, $title)
     {
-        $query = (array(
-            'limit'  => $page->limit,
-            'offset' => $page->offset,
-        ));
+        $route = $this->route();
+        $route->query['limit']  = $page->limit;
+        $route->query['offset'] = $page->offset;
 
-        $route = $this->route($this->getTemplate()->page(), $query);
+        $route = $this->route($route);
+
         $label = $this->getObject('translator')->translate($page->label);
         $title = $this->getObject('translator')->translate($title);
 
@@ -219,12 +219,11 @@ class ComPagesTemplateHelperPaginator extends KTemplateHelperPaginator
 
     protected function _rel($page)
     {
-        $query = (array(
-            'limit'  => $page->limit,
-            'offset' => $page->offset,
-        ));
+        $route = $this->route();
+        $route->query['limit']  = $page->limit;
+        $route->query['offset'] = $page->offset;
 
-        $route = $this->route($this->getTemplate()->page(), $query);
+        $route = $this->route($route);
 
         if($page->rel) {
             $html = '<link href="'.$this->url($route).'" rel="'.$page->rel.'"  />';

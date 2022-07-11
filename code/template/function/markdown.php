@@ -7,13 +7,15 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ComPagesObjectConfigMarkdown extends ComPagesObjectConfigFrontmatter
+return function($source)
 {
-    protected static $_media_type = 'text/markdown';
+    static $engine;
 
-    public function getContent($markdown = true)
+    if(!isset($engine))
     {
-        $content = parent::getContent();
-        return $markdown ? \Michelf\MarkdownExtra::defaultTransform($content) : $content;
+        $engine = $this->getObject('template.engine.factory')
+            ->createEngine('markdown', array('template' => $this));
     }
-}
+
+    return $engine->loadString($source)->render();
+};

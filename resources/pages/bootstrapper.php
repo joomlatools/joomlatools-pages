@@ -7,6 +7,9 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
+//Disable PHP8.1 deprecation errors
+//https://php.watch/versions/8.0/error-display-E_ALL
+error_reporting(error_reporting() & ~E_DEPRECATED);
 
 if(!defined('KOOWA_ROOT')) {
     define('KOOWA_ROOT', realpath(getcwd()));

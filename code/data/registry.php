@@ -54,7 +54,14 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
 
     public function getHash($path = null)
     {
-        $path = $path ?? $this->getLocator()->getBasePath();
+        //Find path and base_path
+        if ($namespace = parse_url($path, PHP_URL_SCHEME)) {
+            $base_path = $this->__namespaces[$namespace];
+        } else {
+            $base_path = $this->getLocator()->getConfig()->base_path;
+        }
+
+        $this->getLocator()->setBasePath($base_path);
 
         $size = function($path) use(&$size)
         {
@@ -90,9 +97,9 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         return $this->__hashes[$path];
     }
 
-    public function fromUrl($url, $cache = true)
+    public function fromUrl($url, $cache = true, $object = true, $content = true)
     {
-        if (!isset($this->__data[$url]))
+        if (!isset($this->__data[$url]) || !$object)
         {
             $http = $this->_getHttpClient();
             $headers['Cache-Control'] = $this->_getCacheControl($cache);
@@ -116,8 +123,15 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
             {
                 if($format = pathinfo ($url, PATHINFO_EXTENSION))
                 {
-                    if($this->getObject('object.config.factory')->isRegistered($format)) {
-                        $data = $this->getObject('object.config.factory')->createFormat($format)->fromString($data, false);
+                    if($this->getObject('object.config.factory')->isRegistered($format))
+                    {
+                        $data = $this->getObject('object.config.factory')->createFormat($format)->fromString($data);
+
+                        if($content && $data instanceof ComPagesObjectConfigMarkdown) {
+                            $data->content = $data->getContent();
+                        }
+
+                        $data = $data->toArray();
                     }
                 }
             }
@@ -126,7 +140,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
                 throw new \RuntimeException(sprintf('Url: %s cannot be parsed to structured data', $url));
             }
 
-            if(is_array($data))
+            if($object && is_array($data))
             {
                 $class = $this->getObject('manager')->getClass('com:pages.data.object');
                 $data = new $class($data);
@@ -139,9 +153,9 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         return $data;
     }
 
-    public function fromPath($path)
+    public function fromPath($path, $object = true, $content = true)
     {
-        if(!isset($this->__data[$path]))
+        if(!isset($this->__data[$path]) || !$object)
         {
             //Find path and base_path
             if ($namespace = parse_url($path, PHP_URL_SCHEME))
@@ -164,8 +178,9 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
 
             if (!isset($this->__data[$key]))
             {
-                $data = $this->loadCache($root_path, false);
-                $this->__data[$key] = $data;
+                if($data = $this->loadCache($root_path, false, $namespace ?: 'data', $content)) {
+                    $this->__data[$key] = $data;
+                }
             }
             else $data = $this->__data[$key];
 
@@ -180,7 +195,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
                 else $data = $data[$segment];
             }
 
-            if(is_array($data))
+            if($object && is_array($data))
             {
                 $class = $this->getObject('manager')->getClass('com:pages.data.object');
                 $data = new $class($data);
@@ -193,7 +208,38 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         return $data;
     }
 
-    private function __fromPath($path)
+    public function fromFile($path, $object = true, $content = true)
+    {
+        $result = array();
+
+        //Find path and base_path
+        if ($namespace = parse_url($path, PHP_URL_SCHEME))
+        {
+            $path = str_replace($namespace . '://', '', $path);
+            $base_path = $this->__namespaces[$namespace];
+        }
+        else $base_path = $this->getLocator()->getConfig()->base_path;
+
+        $this->getLocator()->setBasePath($base_path);
+
+        // Locate path
+        $path = pathinfo($path, PATHINFO_EXTENSION) ? $path : $path.'*';
+
+        if($file = $this->getLocator()->locate($path)) {
+            $result =  $this->__fromFile($file, $content);
+        }
+
+        // Create data object
+        if($object && is_array($result))
+        {
+            $class = $this->getObject('manager')->getClass('com:pages.data.object');
+            $result = new $class($result);
+        }
+
+        return $result;
+    }
+
+    private function __fromPath($path, $content = true)
     {
         //Locate the data file
         if (!$file = $this->getLocator()->locate($path)) {
@@ -201,9 +247,45 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         }
 
         if(is_dir($file)) {
-            $result = $this->__fromDirectory($file);
+            $result = $this->__fromDirectory($file, $content);
         } else {
-            $result = $this->__fromFile($file);
+            $result = $this->__fromFile($file, $content);
+        }
+
+        return $result;
+    }
+
+    private function __fromFile($file, $content = true)
+    {
+        $result = null;
+        $format = pathinfo($file, PATHINFO_EXTENSION);
+
+        if($format && $this->getObject('object.config.factory')->isRegistered($format))
+        {
+            $data = $this->getObject('object.config.factory')->fromFile($file);
+
+            if($data instanceof ComPagesObjectConfigMarkdown)
+            {
+                if($content) {
+                    $data->content = $data->getContent();
+                }
+
+                //Set the date (if not set yet)
+                if (!isset($data->date)) {
+                    $data->date = filemtime($file);
+                } else {
+                    $data->date = strtotime($data->date);
+                }
+
+                if($hash =  $data->getHash()) {
+                    $data->hash = $hash;
+                } else {
+                    $data->hash = hash('crc32b', filesize($file));
+                }
+
+            }
+
+            $result =  $data->toArray();
         }
 
         return $result;
@@ -252,27 +334,33 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
 
         foreach($files as $name => $file)
         {
-            if($name !== basename(dirname($file))) {
-                $data[$name] = $this->__fromPath($file);
-            } else {
-                $data = $this->__fromPath($file);
+            if($array = $this->__fromPath($file, $content))
+            {
+                if($name !== basename(dirname($file))) {
+                    $data[$name] = $array;
+                } else {
+                    $data = $array;
+                }
             }
         }
 
-        foreach($dirs as $name => $dir) {
-            $data[$name] = $this->__fromPath($dir);
+        foreach($dirs as $name => $dir)
+        {
+            if($array = $this->__fromPath($dir, $content)) {
+                $data[$name] = $array;
+            }
         }
 
         return $data;
     }
 
-    public function loadCache($path, $refresh = true)
+    public function loadCache($path, $refresh = true, $namespace = 'data', $content = true)
     {
         $file = $this->getLocator()->getBasePath().'/'.$path;
 
         if ($refresh || !$cache = $this->isCached($file))
         {
-            $data = $this->__fromPath($path);
+            $data = $this->__fromPath($path, $content);
 
             $result = array();
             $result['data'] = $data;
@@ -282,7 +370,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
                 $result['hash'] = $this->getHash($path);
             }
 
-            $this->storeCache($file, $result);
+            $this->storeCache($file, $result, $namespace);
         }
         else
         {
@@ -292,7 +380,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
 
             //Check if the cache is still valid, if not refresh it
             if($this->getConfig()->cache_validation && $result['hash'] != $this->getHash($path)) {
-                $this->loadCache($path, true);
+                $this->loadCache($path, true, $namespace, $content);
             }
 
             $data = $result['data'];
@@ -301,7 +389,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         return $data;
     }
 
-    public function storeCache($file, $data)
+    public function storeCache($file, $data, $namespace = 'data')
     {
         if($this->getConfig()->cache)
         {
@@ -322,7 +410,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
             }
 
             $hash = crc32($file.PHP_VERSION);
-            $file  = $this->getConfig()->cache_path.'/data_'.$hash.'.php';
+            $file  = $this->getConfig()->cache_path.'/'.$namespace.'_'.$hash.'.php';
 
             if(@file_put_contents($file, $result) === false) {
                 throw new RuntimeException(sprintf('The data cannot be cached in "%s"', $file));

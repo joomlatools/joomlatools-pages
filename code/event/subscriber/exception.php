@@ -12,7 +12,7 @@ class ComPagesEventSubscriberException extends ComPagesEventSubscriberAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'priority' => KEvent::PRIORITY_LOWEST
+            'priority' => KEvent::PRIORITY_LOW
         ));
 
         parent::_initialize($config);

@@ -403,7 +403,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
             //Validate page
             $page = $this->getPage($validators['page']['path']);
-            if($validators['page']['hash'] != $page->hash) {
+            if(!$page || $validators['page']['hash'] != $page->hash) {
                 $valid = false;
             }
 
@@ -518,9 +518,13 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             //Check if the current page is cacheable
             if($page = $this->getPage())
             {
-                if($page->process->get('cache', true) === false) {
+                $format = $this->getController()->getView()->getFormat();
+                $cache  = $format == 'json' ? false : true;
+
+                if($page->process->get('cache', $cache) === false) {
                     $result = false;
                 }
+
             }
             else $result = false;
 
@@ -559,8 +563,10 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
     protected function _encodeEtag(array $validators)
     {
-        $data = json_encode($validators);
-        $etag = base64_encode(gzdeflate($data));
+        $etag = null;
+        if($data = json_encode($validators)) {
+            $etag = base64_encode(gzdeflate($data));
+        }
 
         return $etag;
     }
@@ -570,8 +576,11 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         $validators = array();
 
         $etag = ltrim($etag, 'W/'); //strip W/ before decoding
-        if($etag && $data = base64_decode($etag)) {
-            $validators = json_decode(gzinflate($data), true);
+        if($etag && $data = base64_decode($etag))
+        {
+            if($data = gzinflate($data)) {
+                $validators = json_decode($data, true);
+            }
         }
 
         return $validators;

@@ -32,7 +32,7 @@ class ComPagesModelBehaviorPaginatable extends ComPagesModelBehaviorQueryable
 
     public function isPaginatable()
     {
-        return !$this->isAtomic();
+        return !$this->isAtomic() && $this->getState()->limit;
     }
 
     public function getPaginator()
@@ -44,6 +44,11 @@ class ComPagesModelBehaviorPaginatable extends ComPagesModelBehaviorQueryable
         ));
 
         return $paginator;
+    }
+
+    protected function _beforeHash(KModelContextInterface $context)
+    {
+        $this->_beforeFetch($context);
     }
 
     protected function _beforeFetch(KModelContextInterface $context)
@@ -94,7 +99,11 @@ class ComPagesModelBehaviorPaginatable extends ComPagesModelBehaviorQueryable
 
     protected function _queryArray(array $data, KModelStateInterface $state)
     {
-        return array_slice($data, $state->offset, $state->limit);
+        if($data && count($data) > $state->offset) {
+            $data = array_slice($data, $state->offset, $state->limit);
+        }
+
+        return $data;
     }
 
     protected function _queryDatabase(KDatabaseQuerySelect $query, KModelStateInterface $state)

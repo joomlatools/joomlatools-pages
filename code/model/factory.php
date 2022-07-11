@@ -11,7 +11,7 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
 {
     private $__models;
 
-    public function createModel($name, $state = array(), $replace = true)
+    public function createModel($name, $state = [], $filter = [], $replace = true)
     {
         $model = null;
 
@@ -93,6 +93,20 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
                 } else {
                     $state = array_replace_recursive($state, $default_state);
                 }
+            }
+
+            //Set the model filter
+            if(isset($collection->filter))
+            {
+                $default_filter = (array) KObjectConfig::unbox($collection->filter);
+
+                if($replace) {
+                    $filter = array_replace_recursive($default_filter, $filter);
+                } else {
+                    $filter = array_replace_recursive($filter, $default_filter);
+                }
+
+                $state['filter'] = $filter;
             }
 
             $model->setState($state);

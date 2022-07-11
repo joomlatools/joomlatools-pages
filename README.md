@@ -4,7 +4,9 @@
 
 ### What is Joomlatools Pages?
 
-Joomlatools Pages is an easy to use [_just-in-time_ **page generator**](https://github.com/joomlatools/joomlatools-pages/discussions/655) written in PHP and inspired by the ideas and concepts of flat-file CMS systems like [Grav](https://getgrav.org/) and [Statamic](statamic.com), static site generators like [Jekyll]( https://jekyllrb.com), [Hugo](https://gohugo.io), [Gatsby](https://www.gatsbyjs.org/) and Headless CMS system like [Strapi](https://strapi.io/) and [Prismic](https://prismic.io/) etc. 
+***Joomlatools Pages is a very fast [_just-in-time_ **page generator**](https://github.com/joomlatools/joomlatools-pages/discussions/655) and flexible framework that makes building websites with any CMS, API, or database [fun again](https://github.com/joomlatools/joomlatools-pages/wiki/Developer-Joy). It can be installed in Joomla as a component, or be used standalone.*** 
+
+It's written in PHP and inspired by the ideas and concepts of flat-file CMS systems like [Grav](https://getgrav.org/) and [Statamic](statamic.com), static site generators like [Jekyll]( https://jekyllrb.com), [Hugo](https://gohugo.io), [Gatsby](https://www.gatsbyjs.org/) and Headless CMS system like [Strapi](https://strapi.io/) and [Prismic](https://prismic.io/) etc. 
 
 Make no mistake, Pages is **not** a static site generator (SSG), Pages works in a _dynamic, lazy and smart_ way. A page is just in time dynamically generated, cached and only re-generated when its content or layout has changed.
 
@@ -14,7 +16,7 @@ Pages takes your custom HTML/CSS/JS and churns through layouts to create a page.
 
 Pages is **datasource agnostic**, your data can come from anywhere, for example you could use, a Joomla component, a database table, a headless CMS or even a webservice like [Airtable](https://airtable.com) or [Google Sheets](https://www.google.com/sheets/about/).
 
-Pages can both be installed in Joomla and be used standalone, it's 100% compatible with every Joomla template, and also offers it's own a very powerful [theme'ing system](https://github.com/joomlatools/joomlatools-pages/wiki/Themes). 
+Pages can both be installed in Joomla and be used standalone, it's 100% compatible with every Joomla template, and also offers it's own a very powerful [theming system](https://github.com/joomlatools/joomlatools-pages/wiki/Themes). 
 
 We built it to be your perfect buddy, and [bring joy to web development](https://github.com/joomlatools/joomlatools-pages/wiki/Developer-Joy), it doesn't get in your way and it's always there if you need it.
 

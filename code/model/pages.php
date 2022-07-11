@@ -16,15 +16,24 @@ class ComPagesModelPages extends ComPagesModelCollection
         parent::__construct($config);
 
         $this->getState()
-            ->insertComposite('slug', 'cmd', array('path'), '')
-            ->insertInternal('path', 'url');
+            ->insertComposite('slug', 'cmd', array('folder'), '')
+            ->insertInternal('folder', 'url', '/');
     }
 
     protected function _initialize(KObjectConfig $config)
     {
         $config->append([
             'type'      => 'pages',
-            'behaviors' => ['com:pages.model.behavior.recursable' => ['key' => 'folder']]
+            'search'    => [], //properties to allow searching on
+            'behaviors' => ['com:pages.model.behavior.recursable' => ['key' => 'folder']],
+        ])->append([
+            'behaviors'   => [
+                'com:pages.model.behavior.paginatable',
+                'com:pages.model.behavior.sortable',
+                'com:pages.model.behavior.sparsable',
+                'com:pages.model.behavior.filterable',
+                'com:pages.model.behavior.searchable' => ['columns' => $config->search],
+            ],
         ]);
 
         parent::_initialize($config);
@@ -36,11 +45,10 @@ class ComPagesModelPages extends ComPagesModelCollection
         {
             $this->__data = array();
 
-            //If path is not defined to set root path
-            $state = $this->getState();
-            $path  = $state->path ?? '/';
+            $state  = $this->getState();
+            $folder = '/'.trim($state->folder, '/');
 
-            if($path)
+            if($folder)
             {
                 $registry = $this->getObject('page.registry');
 
@@ -52,9 +60,9 @@ class ComPagesModelPages extends ComPagesModelCollection
                         $mode = ComPagesPageRegistry::PAGES_TREE;
                     }
 
-                    $data = $registry->getPages($path, $mode, (int) $state->level - 1);
+                    $data = $registry->getPages($folder, $mode, (int) $state->level - 1);
                 }
-                else $data = $registry->getPages($path.'/'.$this->getState()->slug, ComPagesPageRegistry::PAGES_ONLY);
+                else $data = $registry->getPages(rtrim($folder, '/').'/'.$this->getState()->slug, ComPagesPageRegistry::PAGES_ONLY);
 
                 $this->__data = array_values($data);
             }
@@ -70,6 +78,10 @@ class ComPagesModelPages extends ComPagesModelCollection
         //For performance reasons check of the page has an access property before checking
         if($result && isset($page['access'])) {
             $result = $this->getObject('page.registry')->isPageAccessible($page['path']);
+        }
+
+        if($result && isset($page['path'])) {
+            $page['folder'] = dirname(rtrim($page['path'], '/'));
         }
 
         return $result;
