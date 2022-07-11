@@ -563,8 +563,10 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
 
     protected function _encodeEtag(array $validators)
     {
-        $data = json_encode($validators);
-        $etag = base64_encode(gzdeflate($data));
+        $etag = null;
+        if($data = json_encode($validators)) {
+            $etag = base64_encode(gzdeflate($data));
+        }
 
         return $etag;
     }
@@ -574,8 +576,11 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         $validators = array();
 
         $etag = ltrim($etag, 'W/'); //strip W/ before decoding
-        if($etag && $data = base64_decode($etag)) {
-            $validators = json_decode(gzinflate($data), true);
+        if($etag && $data = base64_decode($etag))
+        {
+            if($data = gzinflate($data)) {
+                $validators = json_decode($data, true);
+            }
         }
 
         return $validators;
