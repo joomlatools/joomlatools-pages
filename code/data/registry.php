@@ -291,12 +291,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         return $result;
     }
 
-    private function __fromFile($file)
-    {
-        return $this->getObject('object.config.factory')->fromFile($file, false);
-    }
-
-    private function __fromDirectory($path)
+    private function __fromDirectory($path, $content = true)
     {
         $data  = array();
         $nodes = array();
