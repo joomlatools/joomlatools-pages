@@ -143,6 +143,37 @@ class ExtDomparserDocumentElement extends \DOMElement implements ExtDomparserDoc
         return $this;
     }
 
+    public function hasChildren()
+    {
+        if ($this->hasChildNodes())
+        {
+            foreach ($this->childNodes as $node)
+            {
+                if ($node->nodeType == XML_ELEMENT_NODE) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public function getChildren()
+    {
+        $children = array();
+        if ($this->hasChildNodes())
+        {
+            foreach ($this->childNodes as $node)
+            {
+                if ($node->nodeType == XML_ELEMENT_NODE) {
+                    $children[] = $node;
+                }
+            }
+        }
+
+        return new ExtDomparserDocumentElementList($children, $this->getDocument());
+    }
+
     public function toString()
     {
         $document = $this->getDocument();
