@@ -95,7 +95,8 @@ class ExtDomparserDocument extends \DOMDocument implements ExtDomparserDocumentI
         //Get the node list
         if(is_string($selector))
         {
-            if(strpos($selector, '/') === false)
+            //If not element name, and not xpath expression (only recognise xpatx expressions if selector starts with "/")
+            if(!preg_match('/^\w+$/', $selector) && !str_starts_with($selector, '/'))
             {
                 if (class_exists('\Symfony\Component\CssSelector\CssSelectorConverter'))
                 {
