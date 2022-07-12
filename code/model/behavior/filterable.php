@@ -105,6 +105,7 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
             {
                 $property = $filter['property'];
 
+
                 if(isset($item[$property]))
                 {
                     $item_value = $item[$property];
@@ -120,6 +121,7 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                             $item_value = null;
                         }
                     }
+
                 }
                 else $item_value = null;
 
@@ -145,7 +147,7 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                         }
                         else
                         {
-                            if (is_null($item_value) || $item_value == $value) {
+                            if (!is_null($item_value) && $item_value == $value) {
                                 return true;
                             }
                         }
