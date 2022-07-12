@@ -95,27 +95,33 @@ class ExtDomparserDocument extends \DOMDocument implements ExtDomparserDocumentI
         //Get the node list
         if(is_string($selector))
         {
-            //If not element name, and not xpath expression (only recognise xpatx expressions if selector starts with "/")
-            if(!preg_match('/^\w+$/', $selector) && !str_starts_with($selector, '/'))
+            //If not tagname
+            if(!preg_match('/^\w+$/', $selector))
             {
-                if (class_exists('\Symfony\Component\CssSelector\CssSelectorConverter'))
+                //If not xpath expression (only recognise xpatx expressions if selector starts with "/")
+                if(!str_starts_with($selector, '/'))
                 {
-                    if (!isset($this->__selector)) {
-                        $this->__selector = new \Symfony\Component\CssSelector\CssSelectorConverter(!$this->isXml());
-                    }
+                    if (class_exists('\Symfony\Component\CssSelector\CssSelectorConverter'))
+                    {
+                        if (!isset($this->__selector)) {
+                            $this->__selector = new \Symfony\Component\CssSelector\CssSelectorConverter(!$this->isXml());
+                        }
 
-                    $selector = $this->__selector->toXPath($selector);
+                        $selector = $this->__selector->toXPath($selector);
+                    }
+                }
+
+                if(!isset($this->__xpath)) {
+                    $this->__xpath = new \DOMXPath($this);
+                }
+
+                //Evaluate the expression
+                if(false === $result = $this->__xpath->query($selector, $this)) {
+                    throw new InvalidArgumentException(sprintf('Selector: %s is not valid', $selector));
                 }
             }
+            else $result = $this->getElementsByTagName($selector);
 
-            if(!isset($this->__xpath)) {
-                $this->__xpath = new \DOMXPath($this);
-            }
-
-            //Evaluate the expression
-            if(false === $result = $this->__xpath->query($selector, $this)) {
-                throw new InvalidArgumentException(sprintf('Selector: %s is not valid', $selector));
-            }
         }
         else $result = $selector;
 
