@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Joomlatools Pages
  *
@@ -25,7 +26,7 @@ interface ExtDomparserDocumentElementInterface
      * @param string  $name    The attribute name to get
      * @return array|string
      */
-    public function getAttribute($name);
+    #public function getAttribute($name);
 
     /**
      * Get attributes
@@ -57,7 +58,7 @@ interface ExtDomparserDocumentElementInterface
      * @param string $attribute The attribute name to remove
      * @return self
      */
-    public function removeAttribute($name);
+    #public function removeAttribute($name);
 
     /**
      * Remove attributes

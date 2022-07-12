@@ -151,7 +151,7 @@ class ExtDomparserDocumentElement extends \DOMElement implements ExtDomparserDoc
         $class = get_class($document);
         $newDocument = new $class();
         $newDocument->xml = $document->isXml();
-        $newDocument->append(new ExtDomparserDocumentElementList([$this], $newDocument));
+        $newDocument->merge(new ExtDomparserDocumentElementList([$this], $newDocument));
 
         return $newDocument->toString();
     }

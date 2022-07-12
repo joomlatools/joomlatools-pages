@@ -158,7 +158,7 @@ class ExtDomparserDocument extends \DOMDocument implements ExtDomparserDocumentI
         //Create new document
         $document = new static();
         $document->xml = $document->isXml();
-        $document->append($nodes);
+        $document->merge($nodes);
 
         return $document;
 
@@ -205,13 +205,13 @@ class ExtDomparserDocument extends \DOMDocument implements ExtDomparserDocumentI
     }
 
     /**
-     * Append a list of nodes
+     * Merge a list of nodes by selector
      *
      * @param string|array|DOMNodeList|ExtDomparserDocumentElementList $nodes
      * @param string $selector Element name, CSS Selector, or Xpath expression
      * @return ExtDomparserDocument
      */
-    public function append($nodes, $selector = null)
+    public function merge($nodes, $selector = null)
     {
         //Handle fragment string
         if(is_string($nodes))

@@ -9,7 +9,6 @@
 
 class ExtDomparserDocumentElementList implements \Countable, \IteratorAggregate, \ArrayAccess
 {
-
     private $__document;
     private $__nodes = [];
 
