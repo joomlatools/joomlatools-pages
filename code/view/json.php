@@ -285,7 +285,15 @@ class ComPagesViewJson extends KViewAbstract
                     }
                 }
             }
-            else $value = $this->_getEntityAttributes($value);
+            else
+            {
+                if(!$value->getModel()->getState()->isUnique())
+                {
+                    $value = $this->_getEntityAttributes($value);
+                    $value = array_values($value);
+                }
+                else $value = $this->_getEntityAttributes($value->top());
+            }
         });
 
         //Remove NULL values
