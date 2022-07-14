@@ -47,17 +47,18 @@ class ComPagesTemplateFilterToc extends ComPagesTemplateFilterAbstract
 
                 $result = '<h'.$level.' id="'.$id.'" class="toc-anchor"><a href="#'.$id.'">'.$content.'</a></h'.$level.'>';
                 $text   = str_replace($headers[0][$key], $result, $text);
+            }
 
-                if($this->getConfig()->anchor)
-                {
-                    $icon = $this->getConfig()->icon;
+            if($this->getConfig()->anchor)
+            {
+                $icon = $this->getConfig()->icon;
 
-                    if(strlen($icon) == 1) {
-                        $icon = '"'.$icon.'"';
-                    }
+                if(strlen($icon) == 1) {
+                    $icon = '"'.$icon.'"';
+                }
 
-                    //Accessible anchor links, see https://codepen.io/johanjanssens/pen/PoWObpL
-                    $text .= <<<ANCHOR
+                //Accessible anchor links, see https://codepen.io/johanjanssens/pen/PoWObpL
+                $text .= <<<ANCHOR
 <style>
 @media (hover: hover) {
   .toc-anchor  {
@@ -86,7 +87,6 @@ class ComPagesTemplateFilterToc extends ComPagesTemplateFilterAbstract
 </style>
 ANCHOR;
 
-                }
             }
 
             /*
