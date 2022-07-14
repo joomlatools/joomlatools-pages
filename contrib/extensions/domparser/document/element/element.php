@@ -14,6 +14,11 @@ class ExtDomparserDocumentElement extends \DOMElement implements ExtDomparserDoc
         return $this->ownerDocument;
     }
 
+    public function getParent()
+    {
+        return $this->parentNode;
+    }
+
     public function getName()
     {
         return $this->nodeName;
