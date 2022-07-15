@@ -147,6 +147,24 @@ class ExtDomparserDocumentElementList implements \Countable, \IteratorAggregate,
         return $this;
     }
 
+    public function append($element, $attributes = [])
+    {
+        foreach($this->__nodes as $node)
+        {
+            if(!$element instanceof \DOMNode) {
+                $element = $this->getDocument()->createElement($element);
+            }
+
+            if($attributes) {
+                $element->setAttributes($attributes);
+            }
+
+            $node->appendChild($element);
+        }
+
+        return $this;
+    }
+
     public function remove()
     {
         foreach($this->__nodes as $key => $node)
