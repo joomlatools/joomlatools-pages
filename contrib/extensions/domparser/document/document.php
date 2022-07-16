@@ -218,7 +218,7 @@ class ExtDomparserDocument extends \DOMDocument implements ExtDomparserDocumentI
      * @param string $selector Element name, CSS Selector, or Xpath expression
      * @return ExtDomparserDocument
      */
-    public function merge($nodes, $selector = null)
+    public function merge($nodes, $selector = null, $prepend = false)
     {
         //Handle fragment string
         if(is_string($nodes))
@@ -252,15 +252,13 @@ class ExtDomparserDocument extends \DOMDocument implements ExtDomparserDocumentI
         //Append the nodes to the document
         foreach($nodes as $node)
         {
-            $node = $this->importNode($node, true);
-
             if($selector)
             {
                 foreach($targets as $target) {
-                    $target->appendChild($node);
+                    $target->insertBefore(clone $node, $prepend ? $target->firstChild : null);
                 }
             }
-            else $this->appendChild($node);
+            else  $target->insertBefore(clone $node, $prepend ? $target->firstChild : null);
         }
 
         return $this;
