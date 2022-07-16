@@ -71,6 +71,11 @@ class ExtDomparserDocumentElementList implements \Countable, \IteratorAggregate,
         return in_array($node, $this->__nodes, true);
     }
 
+    public function search(\DOMNode $node)
+    {
+        return array_search($node, $this->__nodes, true);
+    }
+
     public function each(callable $function)
     {
         foreach ($this->__nodes as $i => $node)
@@ -142,24 +147,6 @@ class ExtDomparserDocumentElementList implements \Countable, \IteratorAggregate,
             }
 
             $oldNode->parentNode->replaceChild($newNode, $oldNode);
-        }
-
-        return $this;
-    }
-
-    public function append($element, $attributes = [])
-    {
-        foreach($this->__nodes as $node)
-        {
-            if(!$element instanceof \DOMNode) {
-                $element = $this->getDocument()->createElement($element);
-            }
-
-            if($attributes) {
-                $element->setAttributes($attributes);
-            }
-
-            $node->appendChild($element);
         }
 
         return $this;
