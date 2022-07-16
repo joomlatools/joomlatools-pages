@@ -152,17 +152,6 @@ class ExtDomparserDocumentElementList implements \Countable, \IteratorAggregate,
         return $this;
     }
 
-    public function remove()
-    {
-        foreach($this->__nodes as $key => $node)
-        {
-            $node->parentNode->removeChild($node);
-            unset($this->__nodes[$key]);
-        }
-
-        return $this;
-    }
-
     public function getText($normalize_whitespace = true)
     {
         $result = $this->reduce(function($carry, $node) use($normalize_whitespace) {

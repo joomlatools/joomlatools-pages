@@ -267,6 +267,23 @@ class ExtDomparserDocument extends \DOMDocument implements ExtDomparserDocumentI
     }
 
     /**
+     * Merge a list of nodes by selector
+     *
+     * @param string $selector Element name, CSS Selector, or Xpath expression
+     * @return ExtDomparserDocument
+     */
+    public function remove($selector)
+    {
+        $nodes = $this->query($selector);
+
+        foreach($nodes as $key => $node) {
+            $node->parentNode->removeChild($node);
+        }
+
+        return $this;
+    }
+
+    /**
      * Return an associative array of dom data
      *
      * @return array
