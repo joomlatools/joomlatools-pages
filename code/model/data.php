@@ -91,7 +91,7 @@ class ComPagesModelData extends ComPagesModelCollection
             $hashes[] = $this->getObject('data.registry')->getHash($path);
         }
 
-        $hash = hash('crc32',serialize($hashes));
+        $hash = hash('crc32b',serialize($hashes));
 
         return $hash;
     }
