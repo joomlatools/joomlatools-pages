@@ -121,7 +121,6 @@ class ComPagesTemplate extends KTemplate
                 $result = $this->filter();
             }
         }
-
         //ini_set('display_errors', $display_errors);
 
         return $result;
@@ -129,58 +128,51 @@ class ComPagesTemplate extends KTemplate
 
     public function invokeHelper($identifier, ...$params)
     {
-        //Get the function and helper based on the identifier
-        if(strpos($identifier, ':') !== false)
-        {
-            if(substr_count($identifier, '.') == 1) {
-                $identifier = $identifier.'.__invoke';
-            }
-        }
-        else
-        {
-            if(strpos($identifier, '.') === false) {
-                $identifier = $identifier.'.__invoke';
-            }
-        }
-
-        //Get the function and helper based on the identifier
-        $parts      = explode('.', $identifier);
-        $function   = array_pop($parts);
-        $identifier = array_pop($parts);
-
-        //Handle schema:package.helper.function identifiers
-        if(!empty($parts)) {
-            $identifier = implode('.', $parts).'.template.helper.'.$identifier;
-        }
-        
         $helper = $this->createHelper($identifier);
 
-        //Call the helper function
-        if (!is_callable(array($helper, $function))) {
-            throw new BadMethodCallException(get_class($helper) . '::' . $function . ' not supported.');
+        if(is_callable($helper))
+        {
+            if(is_numeric(key($params))) {
+                $helper = $helper(...$params);
+            } else {
+                $helper = $helper($params);
+            }
         }
 
-        //Merge the parameters if helper asks for it
-        if ($helper instanceof KTemplateHelperParameterizable) {
-            $params = array_merge($this->getParameters()->toArray(), $params);
-        }
-
-        if(is_numeric(key($params))) {
-            $result = $helper->$function(...$params);
-        } else {
-            $result = $helper->$function($params);
-        }
-
-        return $result;
+        return $helper;
     }
 
     public function createHelper($helper, $config = array())
     {
-        if(!isset($this->__helpers[$helper])) {
-            $this->__helpers[$helper] = parent::createHelper($helper, $config);
+        //Create the complete identifier if a partial identifier was passed
+        if (is_string($helper) && strpos($helper, '.') === false)
+        {
+            $identifier = $this->getIdentifier()->toArray();
+
+            if($identifier['type'] != 'lib') {
+                $identifier['path'] = array('template', 'helper');
+            } else {
+                $identifier['path'] = array('helper');
+            }
+
+            $identifier['name'] = $helper;
+        }
+        else $identifier = $helper;
+
+        $identifier = $this->getIdentifier($identifier);
+
+        if(!isset($this->__helpers[(string) $identifier]))
+        {
+            $class = $this->getObject('manager')->getClass($identifier);
+
+            if(array_key_exists('KTemplateHelperParameterizable', class_implements($class))) {
+                $config = array_merge($this->getParameters()->toArray(), $config);
+            }
+
+            $this->__helpers[(string) $identifier] = parent::createHelper($identifier, $config);
         }
 
-        return $this->__helpers[$helper];
+        return $this->__helpers[(string) $identifier];
     }
 
     public function registerFunction($name, $function)
