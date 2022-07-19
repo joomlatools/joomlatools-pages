@@ -26,7 +26,7 @@ class ComPagesTemplateFilterHighlight extends ComPagesTemplateFilterAbstract
     {
         if ($this->isEnabled() && preg_match_all('#<pre>\s*<code\s*([^>]*)>(.*)<\/code>\s*</pre>#siU', $text, $matches))
         {
-            $html = $this->helper('behavior.highlight', $this->getConfig());
+            $html = $this->helper('highlight', $this->getConfig());
             $text = $text."\n".$html;
         }
     }
