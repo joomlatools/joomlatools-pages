@@ -22,7 +22,7 @@ class ComPagesTemplateHelperImage extends ComPagesTemplateHelperLazysizes
         parent::_initialize($config);
     }
 
-    public function __invoke($config = array())
+    public function responsive($config = array())
     {
         $config = new ComPagesObjectConfig($config);
         $config->append(array(
