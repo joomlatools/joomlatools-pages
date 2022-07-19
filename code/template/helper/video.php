@@ -8,14 +8,15 @@ class ComPagesTemplateHelperVideo extends ComPagesTemplateHelperLazysizes
         $config->append(array(
             'quality_default' => '540',
             'quality_lowest'  => '240',
-            'selector'        => 'video'
+            'selector'        => 'video',
+            'version'         => '3.6.9'
         ));
 
         $html = '';
         if (!static::isLoaded('plyr'))
         {
-            $script = 'https://unpkg.com/plyr@3.6.9/dist/plyr.'.(!$config->debug ? 'min.js' : 'js');
-            $style  = 'https://unpkg.com/plyr@3.6.9/dist/plyr.css';
+            $script = 'https://unpkg.com/plyr@'.$config->version.'/dist/plyr.'.(!$config->debug ? 'min.js' : 'js');
+            $style  = 'https://unpkg.com/plyr@'.$config->version.'/dist/plyr.css';
 
             $html .= $this->import('unveilhooks');
             $html .= <<<PLYR
