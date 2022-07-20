@@ -66,7 +66,7 @@ class ComPagesTemplateFilterVideo extends ComPagesTemplateFilterAbstract
                         $text = str_replace($matches[1][$key], $this->buildAttributes($attribs), $text);
 
                         //Enable plyr (custom player)
-                        $text .= $this->helper('video.player');
+                        $text .= $this->helper('video')->player();
                     }
                 }
             }

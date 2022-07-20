@@ -39,12 +39,12 @@ class ComPagesDispatcherBehaviorPrefetchable extends KControllerBehaviorAbstract
 
                 if(is_scalar($prefetch))
                 {
-                    $config = $this->getConfig()->options;
-                    $config->selector = is_string($prefetch) ? $prefetch : 'a.prefetch';
+                    $options = $this->getConfig()->options;
+                    $options->selector = is_string($prefetch) ? $prefetch : 'a.prefetch';
                 }
-                else $config = $prefetch->append($this->getConfig()->options);
+                else $options = $prefetch->append($this->getConfig()->options);
 
-                $prefetcher = $template->helper('behavior.prefetcher', $config);
+                $prefetcher = $template->helper('prefetcher', ['options' => KObjectConfig::unbox($options)]);
                 $template->getFilter('asset')->filter($prefetcher);
 
                 $context->subject->getResponse()->setContent($content.$prefetcher);

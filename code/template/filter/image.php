@@ -88,7 +88,7 @@ class ComPagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
                         $attribs['class'] = explode(' ', $attribs['class']);
                     }
 
-                    if($this->helper('image.supported', $src))
+                    if($this->helper('image')->supported($src))
                     {
                         if(strpos($src, '://') === false)
                         {
@@ -143,7 +143,7 @@ class ComPagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
                     }
 
                     //Filter the images
-                    $html = str_replace($matches[0][$key], $this->helper('image', $options), $html);
+                    $html = str_replace($matches[0][$key], $this->helper('image')->responsive($options), $html);
                 }
             }
         }
@@ -158,7 +158,7 @@ class ComPagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
         {
             foreach($matches[1] as $key => $match)
             {
-                $html .= $this->helper('image.import', 'bgset');
+                $html .= $this->helper('image')->import('bgset');
 
                 $attribs = $this->parseAttributes($match);
 
@@ -191,7 +191,7 @@ class ComPagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
                     $options[$name] = $value;
                 }
 
-                if($srcset = $this->helper('image.srcset', $matches[3][$key], $options))
+                if($srcset = $this->helper('image')->srcset($matches[3][$key], $options))
                 {
                     $attribs['data-sizes'] = 'auto';
                     $attribs['data-bgset'] = implode(',', $srcset);
