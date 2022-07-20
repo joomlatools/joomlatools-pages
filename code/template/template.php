@@ -161,12 +161,15 @@ class ComPagesTemplate extends KTemplate
 
         $identifier = $this->getIdentifier($identifier);
 
+        //Helpers are multi-tons, config options are immutable
         if(!isset($this->__helpers[(string) $identifier]))
         {
             $class = $this->getObject('manager')->getClass($identifier);
 
             if(array_key_exists('KTemplateHelperParameterizable', class_implements($class))) {
-                $config = array_merge($this->getParameters()->toArray(), $config);
+                $config = $this->getParameters()->toArray();
+            } else {
+                $config = array();
             }
 
             $this->__helpers[(string) $identifier] = parent::createHelper($identifier, $config);

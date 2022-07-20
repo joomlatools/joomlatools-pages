@@ -11,7 +11,6 @@ class ComPagesTemplateHelperPrefetcher extends ComKoowaTemplateHelperBehavior
 {
     protected function _initialize(KObjectConfig $config)
     {
-        $config = new ComPagesObjectConfig($config);
         $config->append(array(
             'options' => [
                 'debug'    =>  $this->getObject('pages.config')->debug,
@@ -33,7 +32,7 @@ class ComPagesTemplateHelperPrefetcher extends ComKoowaTemplateHelperBehavior
         $html = '';
         if (!static::isLoaded('prefetcher'))
         {
-            $html .= '<ktml:script src="https://files.joomlatools.com/pages@'.$config->version.'/resources/prefetcher/prefetcher.'.(!$config->debug ? 'min.js' : 'js').'" defer="defer" />';
+            $html .= '<ktml:script src="https://files.joomlatools.com/pages@'.$config->version.'/resources/prefetcher/prefetcher.'.(!$config->options->debug ? 'min.js' : 'js').'" defer="defer" />';
             $html .= <<<PREFETCHER
 <script>
 document.addEventListener("DOMContentLoaded", () => {

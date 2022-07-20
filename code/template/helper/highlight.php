@@ -11,14 +11,13 @@ class ComPagesTemplateHelperHighlight extends ComKoowaTemplateHelperBehavior
 {
     protected function _initialize(KObjectConfig $config)
     {
-        $config = new ComPagesObjectConfig($config);
         $config->append(array(
             'debug'    => $this->getObject('pages.config')->debug,
             'selector' => 'body',
             'style'    => 'atom-one-light',
             'badge_icon' => true,
             'badge_lang' => true,
-            'version'    => '10.7.1',
+            'version'    => '11.5.1',
         ));
 
         parent::_initialize($config);
