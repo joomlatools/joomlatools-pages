@@ -28,7 +28,7 @@ class ComPagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
             $images  = array();
 
             //Find images between <ktml:images></ktml:images>
-            if(preg_match_all('#<ktml:images(.*)>(.*)<\/ktml:images>#siU', $text, $matches))
+            if(preg_match_all('#<ktml:image(.*)>(.*)<\/ktml:image>#siU', $text, $matches))
             {
                 foreach($matches[0] as $key => $match)
                 {
@@ -108,15 +108,16 @@ class ComPagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
 
                     unset($attribs['src']);
 
-                    //Strip data- prefix
+                    $options = array();
+
+                    //Handle data attributes
+                    $options['attributes'] = [];
                     foreach($attribs as $name => $value)
                     {
-                        if(strpos($name, 'data-') !== false)
+                        if(str_starts_with($name, 'data-'))
                         {
                             unset($attribs[$name]);
-
-                            $name = str_replace('data-', '', $name);
-                            $attribs[$name] = $value;
+                            $options['attributes'][$name] = $value;
                         }
                     }
 
@@ -162,32 +163,37 @@ class ComPagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
 
                 $attribs = $this->parseAttributes($match);
 
+                $options['attributes'] = [];
+
+                //Handle data attributes
                 foreach($attribs as $name => $value)
                 {
-                    if(strpos($name, 'data-') !== false)
+                    if(str_starts_with($name, 'data-'))
                     {
                         unset($attribs[$name]);
-
-                        $name = str_replace('data-', '', $name);
-
-                        if($value === 'true') {
-                            $value = true;
-                        }
-
-                        if($value === 'false') {
-                            $value = false;
-                        }
-
-                        $attribs[$name] = $value;
+                        $options['attributes'][$name] = $value;
                     }
                 }
-
 
                 //Rename hyphen to underscore
                 $options = array();
                 foreach(array_replace_recursive($config, $attribs) as $name => $value)
                 {
                     $name = str_replace('-', '_', $name);
+                    $options[$name] = $value;
+                }
+
+                //Covert false/true
+                foreach($options as $name => $value)
+                {
+                    if($value === 'true') {
+                        $value = true;
+                    }
+
+                    if($value === 'false') {
+                        $value = false;
+                    }
+
                     $options[$name] = $value;
                 }
 
