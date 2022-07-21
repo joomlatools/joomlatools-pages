@@ -14,6 +14,7 @@ class ComPagesTemplateHelperPaginator extends KTemplateHelperPaginator
     public function pagination($config = array())
     {
         $config = new KObjectConfigJson($config);
+        $config->append($this->getConfig());
         $config->append(array(
             'total'      => 0,
             'display'    => 2,
