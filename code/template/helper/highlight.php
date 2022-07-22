@@ -15,7 +15,7 @@ class ComPagesTemplateHelperHighlight extends ComKoowaTemplateHelperBehavior
             'debug'    => $this->getObject('pages.config')->debug,
             'selector' => 'body',
             'style'    => 'base16/flat',
-            'version'    => '11.5.1',
+            'version'    => '11.6.0',
         ));
 
         parent::_initialize($config);
