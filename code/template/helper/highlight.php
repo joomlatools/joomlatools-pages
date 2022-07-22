@@ -133,6 +133,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 .highlight-container {
    cursor: pointer;
    border-radius: 0.25rem;
+   margin: 1em 0px;
 }
 
 .hljs-copy-wrapper {
