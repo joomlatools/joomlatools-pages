@@ -131,9 +131,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
 <style>
 .highlight-container {
-   cursor: pointer;
    border-radius: 0.25rem;
    margin: 1em 0px;
+}
+
+.highlight-container code  {
+   cursor: pointer;
 }
 
 .hljs-copy-wrapper {
@@ -160,12 +163,15 @@ document.addEventListener('DOMContentLoaded', (event) => {
   background-repeat: no-repeat;
   background-position: center;
   transition: background-color 200ms ease, transform 200ms ease-out;
+ 
 }
 .hljs-copy-button:hover {
   border-color: #ffffff44;
+  
 }
 .hljs-copy-button:active {
   border-color: #ffffff66;
+  
 }
 .hljs-copy-button[data-copied="true"] {
   text-indent: 0px; /* Shows the inner text */
