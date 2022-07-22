@@ -14,9 +14,7 @@ class ComPagesTemplateHelperHighlight extends ComKoowaTemplateHelperBehavior
         $config->append(array(
             'debug'    => $this->getObject('pages.config')->debug,
             'selector' => 'body',
-            'style'    => 'atom-one-light',
-            'badge_icon' => true,
-            'badge_lang' => true,
+            'style'    => 'base16/flat',
             'version'    => '11.5.1',
         ));
 
@@ -28,69 +26,95 @@ class ComPagesTemplateHelperHighlight extends ComKoowaTemplateHelperBehavior
         $config = new ComPagesObjectConfig($config);
         $config->append($this->getConfig());
 
-        if($config->badge_icon) {
-            $config->badge_icon = 'initial';
-        } else {
-            $config->badge_icon = 'none';
-        }
-
-        if($config->badge_lang) {
-            $config->badge_lang = 'initial';
-        } else {
-            $config->badge_lang = 'none';
-        }
-
         $html = '';
         if (!static::isLoaded('highlight'))
         {
-            $style_url = 'https://unpkg.com/@highlightjs/cdn-assets@'.$config->version.'/styles/'.$config->style.'.min.css';
-            $hljs_url  = 'https://unpkg.com/@highlightjs/cdn-assets@'.$config->version.'/highlight.' . (!$config->debug ? 'min.js' : 'js');
-            $badge_url = 'https://unpkg.com/highlightjs-badge@0.1.9/highlightjs-badge.' . (!$config->debug ? 'min.js' : 'js');
+            $style  = 'https://unpkg.com/@highlightjs/cdn-assets@'.$config->version.'/styles/'.$config->style.'.min.css';
+            $script = 'https://unpkg.com/@highlightjs/cdn-assets@'.$config->version.'/highlight.' . (!$config->debug ? 'min.js' : 'js');
 
-            $html .= '<ktml:style src= />';
             $html .= <<<HIGHLIGHT
 <script>
 document.addEventListener('DOMContentLoaded', (event) => {
 
-    // Add HighlightJS-badge (options are optional)
-    var options = {
-        contentSelector: '$config->selector pre > code',
-    };
-    
     const observer = new IntersectionObserver(entries => {
+    
+        function createButton(el, text) {
+            // Create the copy button and append it to the codeblock.
+            let button = Object.assign(document.createElement("button"), {
+              innerHTML: "Copy",
+              className: "hljs-copy-button",
+            });
+            
+            button.dataset.copied = false;
+            el.parentElement.classList.add("hljs-copy-wrapper");
+            el.parentElement.appendChild(button);
+        
+            // Add a custom proprety to the code block so that the copy button can reference and match its background-color value.
+            el.parentElement.style.setProperty("--hljs-theme-background", window.getComputedStyle(el).backgroundColor);
+        
+            if (navigator.clipboard) {
+                button.onclick = function() {
+                    navigator.clipboard
+                        .writeText(text)
+                        .then(function () {
+                            button.innerHTML = "Copied!";
+                            button.dataset.copied = true;
+                    
+                            let alert = Object.assign(document.createElement("div"), {
+                                role: "status",
+                                className: "hljs-copy-alert",
+                                innerHTML: "Copied to clipboard",
+                            });
+                            el.parentElement.appendChild(alert);
+                        
+                            setTimeout(() => {
+                                button.innerHTML = "Copy";
+                                button.dataset.copied = false;
+                                el.parentElement.removeChild(alert);
+                                alert = null;
+                            }, 2000);
+                        })
+                }
+            }   
+        };
+        
+        function highlightElement(el) {
+            hljs.addPlugin({
+                'after:highlightElement': ({ el, result, text }) => {
+                    createButton(el, text);
+                }
+            });
+                           
+            hljs.highlightElement(el);
+        }   
+    
         entries.forEach(entry => {
             if (entry.intersectionRatio > 0)  {
                 if(typeof hljs == 'undefined') {
                     var style = document.createElement('link');
                     style.rel = 'stylesheet'
-                    style.href = '$style_url'
+                    style.href = '$style'
                     document.head.appendChild(style)
 
                     var script = document.createElement('script')
                     script.async = false
-                    script.src   = '$hljs_url'
+                    script.src   = '$script'
                     document.head.appendChild(script)
-                    
-                    var badge = document.createElement('script')
-                    badge.async = false
-                    badge.src   = '$badge_url'
-                    document.head.appendChild(badge)
-                    
+                     
                     script.addEventListener('load', () => {
-                        hljs.highlightElement(entry.target);
-                    })
-                
-                    badge.addEventListener('load', () => {
-                        window.highlightJsBadge(options);  
+                        highlightElement(entry.target);
                     })
                 } else {
-                    hljs.highlightElement(entry.target);
-                    window.highlightJsBadge(options);
+                    highlightElement(entry.target);
                 }
                
 		        observer.unobserve(entry.target);
             }
         });
+    });
+    
+    document.querySelectorAll('$config->selector pre').forEach((el) => {
+        el.classList.add('highlight-container');
     });
     
     document.querySelectorAll('$config->selector pre > code').forEach((el) => {
@@ -106,21 +130,62 @@ document.addEventListener('DOMContentLoaded', (event) => {
 </script>
 
 <style>
-pre .code-badge {
-    cursor: pointer;
-    padding: 3px 7px;
-    background: #ccc;
+.highlight-container {
+   cursor: pointer;
+   border-radius: 0.25rem;
 }
-pre .code-badge-language { display: $config->badge_lang;}
-pre .code-badge-copy-icon {
-    display: $config->badge_icon;
-    background: url('data:image/svg+xml;base64,PHN2ZyBhcmlhLWhpZGRlbj0idHJ1ZSIgZm9jdXNhYmxlPSJmYWxzZSIgZGF0YS1wcmVmaXg9ImZhciIgZGF0YS1pY29uPSJjb3B5IiBjbGFzcz0ic3ZnLWlubGluZS0tZmEgZmEtY29weSBmYS13LTE0IiByb2xlPSJpbWciIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDQ0OCA1MTIiPjxwYXRoIGZpbGw9ImN1cnJlbnRDb2xvciIgZD0iTTQzMy45NDEgNjUuOTQxbC01MS44ODItNTEuODgyQTQ4IDQ4IDAgMCAwIDM0OC4xMTggMEgxNzZjLTI2LjUxIDAtNDggMjEuNDktNDggNDh2NDhINDhjLTI2LjUxIDAtNDggMjEuNDktNDggNDh2MzIwYzAgMjYuNTEgMjEuNDkgNDggNDggNDhoMjI0YzI2LjUxIDAgNDgtMjEuNDkgNDgtNDh2LTQ4aDgwYzI2LjUxIDAgNDgtMjEuNDkgNDgtNDhWOTkuODgyYTQ4IDQ4IDAgMCAwLTE0LjA1OS0zMy45NDF6TTI2NiA0NjRINTRhNiA2IDAgMCAxLTYtNlYxNTBhNiA2IDAgMCAxIDYtNmg3NHYyMjRjMCAyNi41MSAyMS40OSA0OCA0OCA0OGg5NnY0MmE2IDYgMCAwIDEtNiA2em0xMjgtOTZIMTgyYTYgNiAwIDAgMS02LTZWNTRhNiA2IDAgMCAxIDYtNmgxMDZ2ODhjMCAxMy4yNTUgMTAuNzQ1IDI0IDI0IDI0aDg4djIwMmE2IDYgMCAwIDEtNiA2em02LTI1NmgtNjRWNDhoOS42MzJjMS41OTEgMCAzLjExNy42MzIgNC4yNDMgMS43NTdsNDguMzY4IDQ4LjM2OGE2IDYgMCAwIDEgMS43NTcgNC4yNDNWMTEyeiI+PC9wYXRoPjwvc3ZnPg==');
-    background-size: 100% 100%;
+
+.hljs-copy-wrapper {
+  position: relative;
+  overflow: hidden;
 }
-pre .code-badge-check-icon {
-    display: $config->badge_icon;
-    background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGFyaWEtaGlkZGVuPSJ0cnVlIiBmb2N1c2FibGU9ImZhbHNlIiBkYXRhLXByZWZpeD0iZmFzIiBkYXRhLWljb249ImNoZWNrIiBjbGFzcz0ic3ZnLWlubGluZS0tZmEgZmEtY2hlY2sgZmEtdy0xNiIgcm9sZT0iaW1nIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiIgc3R5bGU9IiYjMTA7ICAgIGNvbG9yOiAjMmFmZjMyOyYjMTA7Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik0xNzMuODk4IDQzOS40MDRsLTE2Ni40LTE2Ni40Yy05Ljk5Ny05Ljk5Ny05Ljk5Ny0yNi4yMDYgMC0zNi4yMDRsMzYuMjAzLTM2LjIwNGM5Ljk5Ny05Ljk5OCAyNi4yMDctOS45OTggMzYuMjA0IDBMMTkyIDMxMi42OSA0MzIuMDk1IDcyLjU5NmM5Ljk5Ny05Ljk5NyAyNi4yMDctOS45OTcgMzYuMjA0IDBsMzYuMjAzIDM2LjIwNGM5Ljk5NyA5Ljk5NyA5Ljk5NyAyNi4yMDYgMCAzNi4yMDRsLTI5NC40IDI5NC40MDFjLTkuOTk4IDkuOTk3LTI2LjIwNyA5Ljk5Ny0zNi4yMDQtLjAwMXoiLz48L3N2Zz4=');
-    background-size: 100% 100%;
+.hljs-copy-wrapper:hover .hljs-copy-button,
+.hljs-copy-button:focus {
+  transform: translateX(0);
+}
+.hljs-copy-button {
+  position: absolute;
+  transform: translateX(calc(100% + 1.125em));
+  top: 1em;
+  right: 1em;
+  width: 2rem;
+  height: 2rem;
+  text-indent: -9999px; /* Hide the inner text */
+  color: #fff;
+  border-radius: 0.25rem;
+  border: 1px solid #ffffff22;
+  background-color: var(--hljs-theme-background);
+  background-image: url('data:image/svg+xml;utf-8,<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M6 5C5.73478 5 5.48043 5.10536 5.29289 5.29289C5.10536 5.48043 5 5.73478 5 6V20C5 20.2652 5.10536 20.5196 5.29289 20.7071C5.48043 20.8946 5.73478 21 6 21H18C18.2652 21 18.5196 20.8946 18.7071 20.7071C18.8946 20.5196 19 20.2652 19 20V6C19 5.73478 18.8946 5.48043 18.7071 5.29289C18.5196 5.10536 18.2652 5 18 5H16C15.4477 5 15 4.55228 15 4C15 3.44772 15.4477 3 16 3H18C18.7956 3 19.5587 3.31607 20.1213 3.87868C20.6839 4.44129 21 5.20435 21 6V20C21 20.7957 20.6839 21.5587 20.1213 22.1213C19.5587 22.6839 18.7957 23 18 23H6C5.20435 23 4.44129 22.6839 3.87868 22.1213C3.31607 21.5587 3 20.7957 3 20V6C3 5.20435 3.31607 4.44129 3.87868 3.87868C4.44129 3.31607 5.20435 3 6 3H8C8.55228 3 9 3.44772 9 4C9 4.55228 8.55228 5 8 5H6Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M7 3C7 1.89543 7.89543 1 9 1H15C16.1046 1 17 1.89543 17 3V5C17 6.10457 16.1046 7 15 7H9C7.89543 7 7 6.10457 7 5V3ZM15 3H9V5H15V3Z" fill="white"/></svg>');
+  background-repeat: no-repeat;
+  background-position: center;
+  transition: background-color 200ms ease, transform 200ms ease-out;
+}
+.hljs-copy-button:hover {
+  border-color: #ffffff44;
+}
+.hljs-copy-button:active {
+  border-color: #ffffff66;
+}
+.hljs-copy-button[data-copied="true"] {
+  text-indent: 0px; /* Shows the inner text */
+  width: auto;
+  background-image: none;
+}
+@media (prefers-reduced-motion) {
+  .hljs-copy-button {
+    transition: none;
+  }
+}
+
+/* visually-hidden */
+.hljs-copy-alert {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
 }
 </style>
 
