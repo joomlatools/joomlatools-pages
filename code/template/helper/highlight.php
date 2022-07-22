@@ -77,16 +77,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 }
             }   
         };
-        
-        function highlightElement(el) {
-            hljs.addPlugin({
-                'after:highlightElement': ({ el, result, text }) => {
-                    createButton(el, text);
-                }
-            });
-                           
-            hljs.highlightElement(el);
-        }   
     
         entries.forEach(entry => {
             if (entry.intersectionRatio > 0)  {
@@ -102,10 +92,18 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     document.head.appendChild(script)
                      
                     script.addEventListener('load', () => {
-                        highlightElement(entry.target);
+                        hljs.addPlugin({
+                            'after:highlightElement': ({ el, result, text }) => {
+                                createButton(el, text);
+                           }
+                        });
+                        
+                        hljs.highlightElement(entry.target);
+                        
                     })
+                    
                 } else {
-                    highlightElement(entry.target);
+                     hljs.highlightElement(entry.target);
                 }
                
 		        observer.unobserve(entry.target);
