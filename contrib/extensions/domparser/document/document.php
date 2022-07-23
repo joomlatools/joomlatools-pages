@@ -25,7 +25,7 @@ class ExtDomparserDocument extends \DOMDocument implements ExtDomparserDocumentI
      * @param string $version  The version number of the document as part of the XML declaration.
      * @param string $encoding The encoding of the document as part of the XML declaration.
      */
-    public function __construct($version = '1.0', $encoding ='UTF-8')
+    public function __construct($version = '1.0', $encoding = 'UTF-8')
     {
         parent::__construct($version, $encoding);
 
@@ -74,6 +74,7 @@ class ExtDomparserDocument extends \DOMDocument implements ExtDomparserDocumentI
                 $html = preg_replace('@(charset=["]?)([^"\s]+)([^"]*["]?)@im', '$1utf-8$3', $result);
             }
         }
+        else $html = mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8');
 
         return parent::loadHTML($html, $options);
     }
