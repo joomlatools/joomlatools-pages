@@ -519,7 +519,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             if($page = $this->getPage())
             {
                 $format = $this->getController()->getView()->getFormat();
-                $cache  = $format == 'json' ? false : true;
+                $cache  = $format != 'html' ? false : true;
 
                 if($page->process->get('cache', $cache) === false) {
                     $result = false;
