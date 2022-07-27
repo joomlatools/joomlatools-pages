@@ -122,9 +122,7 @@ class ComPagesModelWebservice extends ComPagesModelCollection
 
     protected function _actionHash(KModelContext $context)
     {
-        $hash = parent::_actionHash($context);
-
-        $data = $context->data;
+        $data = $this->fetchData();
 
         $url      = $this->getUrl($this->getState()->getValues());
         $identity = $this->getState()->get($this->getIdentityKey());
