@@ -155,7 +155,6 @@ class ComPagesModelWebservice extends ComPagesModelCollection
 
         $http    = $this->_getHttpClient();
         $url     = $this->getUrl($this->getState()->getValues());
-        $headers = ['Origin' => $url->toString(KHttpUrl::AUTHORITY)];
 
         $headers = $this->getHeaders();
         $headers['Origin'] = $url->toString(KHttpUrl::AUTHORITY);
