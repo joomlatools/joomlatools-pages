@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * See: https://muffinman.io/blog/hack-for-ios-safari-to-display-html-video-thumbnail/
+ */
 class ComPagesTemplateHelperVideo extends ComPagesTemplateHelperLazysizes
 {
     public function player($config = array())
@@ -21,12 +24,29 @@ class ComPagesTemplateHelperVideo extends ComPagesTemplateHelperLazysizes
             $html .= $this->import('unveilhooks');
             $html .= <<<PLYR
 <script>
+document.addEventListener("DOMContentLoaded", (e) => 
+{
+    document.querySelectorAll('video').forEach(video => 
+    {
+        if(video.preload == 'metadata')  {
+            video.querySelectorAll('source').forEach(el => {
+                let url = new URL(el.src);
+                if(!url.hash) {
+                    url.hash = 't=0.001';
+                }
+                
+                el.src = url;
+            })
+        }
+    });
+});
+
 document.addEventListener("lazybeforeunveil", (e) =>
 {
     if((typeof Plyr == 'undefined') && e.target.matches('{$config->selector}'))
     {
         const video = e.target
-
+        
         var style = document.createElement('link');
         style.rel = 'stylesheet'
         style.href = '{$style}'
