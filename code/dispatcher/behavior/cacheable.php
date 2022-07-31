@@ -388,7 +388,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             }
         }
 
-        return $data ?? array();
+        return $data ?? null;
     }
 
     public function validateCache($validators, $refresh = false)
@@ -520,20 +520,18 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
             {
                 $format = $this->getController()->getView()->getFormat();
                 $cache  = $format != 'html' ? false : true;
-
-                if($page->process->get('cache', $cache) === false) {
-                    $result = false;
-                }
-
+                $result = $page->process->get('cache', $cache);
             }
             else $result = false;
 
             //Failsafe in case an error got cached, or cache is corrupted
-            $cache = $this->loadCache();
-            if(is_array($cache) && isset($cache['status'])) {
-                $result = $cache['status'] >= 400 ? false : $result;
-            } else {
-                $result = false;
+            if($cache = $this->loadCache())
+            {
+                if(isset($cache['status'])) {
+                    $result = $cache['status'] >= 400 ? false : $result;
+                } else {
+                    $result = false;
+                }
             }
         }
 
