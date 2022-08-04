@@ -355,24 +355,23 @@ class ComPagesViewJson extends KViewAbstract
                         $links[$format] = $self;
                     }
 
-                    if($entity->type == 'collection' || $entity->getContentType())
+                    if($entity->type == 'collection')
                     {
-                        if($format == 'json') {
-                            $links['self'] = $self;
-                        }
+                        $page = $this->getObject('page.registry')->getPage($entity->path);
+                        if($formats = (array) $page->collection->format)
+                        {
+                            if(in_array('json', $formats)) {
+                                $links['self'] = "$self.json";
+                            }
 
-                        if($format == 'html') {
-                            $links['self'] = "$self.json";
-                        }
-                    }
-
-                    $formats = (array) $entity->getModel()->getCollection()->format;
-                    foreach($formats as $format)
-                    {
-                        if($format == 'html') {
-                            $links[$format] = "$self";
-                        } else {
-                            $links[$format] = "$self.$format";
+                            foreach($formats as $format)
+                            {
+                                if($format == 'html') {
+                                    $links[$format] = "$self";
+                                } else {
+                                    $links[$format] = "$self.$format";
+                                }
+                            }
                         }
                     }
                 }
@@ -386,26 +385,24 @@ class ComPagesViewJson extends KViewAbstract
                 {
                     if($format != 'json') {
                         $links[$format] = $self;
-                    } else {
-                        $links['self'] = $self;
                     }
 
-                    if($format == 'html') {
-                        $links['self'] = "$self.json";
-                    }
-
-                    $formats = (array) $entity->getModel()->getCollection()->format;
-                    foreach($formats as $format)
+                    if($formats = (array) $entity->getModel()->getCollection()->format)
                     {
-                        if($format == 'html') {
-                            $links[$format] = "$self";
-                        } else {
-                            $links[$format] = "$self.$format";
+                        if(in_array('json', $formats)) {
+                            $links['self'] = "$self.json";
                         }
 
+                        foreach($formats as $format)
+                        {
+                            if($format == 'html') {
+                                $links[$format] = "$self";
+                            } else {
+                                $links[$format] = "$self.$format";
+                            }
+                        }
                     }
                 }
-
             }
         }
 
