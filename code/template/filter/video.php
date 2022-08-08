@@ -41,13 +41,13 @@ class ComPagesTemplateFilterVideo extends ComPagesTemplateFilterAbstract
                         }
 
                         //Preload
-                        if(isset($attribs['preload'])) {
-                            $attribs['data-preload'] = $attribs['preload'];
-                        } else {
+                        if(!isset($attribs['preload']))
+                        {
+                            //Let browser preload
                             $attribs['data-preload'] = 'metadata';
+                            $attribs['preload'] = 'metadata';
                         }
-
-                        $attribs['preload'] = 'none';
+                        else $attribs['data-preload'] = $attribs['preload'];
 
                         //Poster
                         if(isset($attribs['poster']))
@@ -57,6 +57,7 @@ class ComPagesTemplateFilterVideo extends ComPagesTemplateFilterAbstract
 
                             //We have a poster image do not preload
                             $attribs['data-preload'] = 'none';
+                            $attribs['preload'] = 'none';
                         }
 
                         //Add lazyload
@@ -66,7 +67,7 @@ class ComPagesTemplateFilterVideo extends ComPagesTemplateFilterAbstract
                         $text = str_replace($matches[1][$key], $this->buildAttributes($attribs), $text);
 
                         //Enable plyr (custom player)
-                        $text .= $this->helper('video.player');
+                        $text .= $this->helper('video')->player();
                     }
                 }
             }

@@ -12,11 +12,7 @@ class ComPagesTemplateFilterHighlight extends ComPagesTemplateFilterAbstract
     protected function _initialize(KObjectConfig $config)
     {
         $config->append(array(
-            'debug'    => $this->getObject('pages.config')->debug,
-            'selector'   => 'body',
-            'style'      => 'atom-one-light',
-            'badge_icon' => true,
-            'badge_lang' => true,
+            'debug' => $this->getObject('pages.config')->debug,
         ));
 
         parent::_initialize($config);
@@ -26,7 +22,7 @@ class ComPagesTemplateFilterHighlight extends ComPagesTemplateFilterAbstract
     {
         if ($this->isEnabled() && preg_match_all('#<pre>\s*<code\s*([^>]*)>(.*)<\/code>\s*</pre>#siU', $text, $matches))
         {
-            $html = $this->helper('behavior.highlight', $this->getConfig());
+            $html = $this->helper('highlight', $this->getConfig());
             $text = $text."\n".$html;
         }
     }

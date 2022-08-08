@@ -55,8 +55,8 @@ class ComPagesControllerCollection extends KControllerModel
             $model = parent::getModel();
 
             //Set the folder to the active page path if no folder is defined
-            if($model->getState()->path === null) {
-                $model->getState()->path = $this->getPage()->path;
+            if($model->getState()->folder === null) {
+                $model->getState()->folder = $this->getPage()->path;
             }
         }
 
@@ -67,7 +67,7 @@ class ComPagesControllerCollection extends KControllerModel
     {
         //Create the collection model
         $model = $this->getObject('model.factory')
-            ->createModel($this->getPage()->path, $this->getRequest()->query->toArray(), false);
+            ->createModel($this->getPage()->path, $this->getRequest()->query->toArray(), [], [], false);
 
         return parent::setModel($model);
     }

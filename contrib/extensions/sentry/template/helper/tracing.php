@@ -7,13 +7,13 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ExtSentryTemplateHelperBehavior extends ComPagesTemplateHelperBehavior
+class ExtSentryTemplateHelperTracing extends ComPagesTemplateHelperBehavior
 {
     protected function _initialize(KObjectConfig $config)
     {
         $config->append($this->getConfig('ext:sentry.config'));
         $config->append(array(
-            'version' => null,
+            'version' => '6.19.7',
             'options' => [
                 'debug'   => $this->getObject('pages.config')->debug,
                 'tunnel'  => null,
@@ -35,7 +35,7 @@ class ExtSentryTemplateHelperBehavior extends ComPagesTemplateHelperBehavior
      *
      * For more info see: https://docs.sentry.io/platforms/javascript/
      */
-    public function tracing($config = array())
+    public function __invoke($config = array())
     {
         $config = new ComPagesObjectConfig($config);
         $config->append($this->getConfig());
@@ -62,7 +62,12 @@ class ExtSentryTemplateHelperBehavior extends ComPagesTemplateHelperBehavior
                 $options->initialScope->context = $context;
             }
 
-            $html .= '<ktml:script src="https://unpkg.com/@sentry/tracing'. $version .'/build/bundle.tracing.'.(!$sentry->debug ? 'min.js' : 'js').'" crossorigin="anonymous" />';
+            if($config->options->debug) {
+                $html .= '<ktml:script src="https://unpkg.com/@sentry/tracing'. $version .'/build/bundle.tracing.es6.debug.min.js" crossorigin="anonymous" />';
+            } else {
+                $html .= '<ktml:script src="https://unpkg.com/@sentry/tracing'. $version .'/build/bundle.tracing.es6.min.js" crossorigin="anonymous" />';
+            }
+
             $html .= <<<SENTRY
 <script>
 Sentry.init({... $options, ... { integrations: [new Sentry.Integrations.BrowserTracing()]}} )

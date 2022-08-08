@@ -125,16 +125,43 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     );
                 }
 
+                //Merge extend (is a string)
+                $from = (array) KObjectConfig::unbox($result->get('extend', []));
+
+                if($extend->has('extend'))
+                {
+                    $extend->extend = (array) KObjectConfig::unbox($extend->extend);
+                    $extend->extend->merge($from);
+                }
+                else $extend->extend = $from;
+
+                //Merge page
+                if($extend->has('config')) {
+                    $extend->config->merge($result->get('config', []));
+                } else {
+                    $extend->config = $result->get('config');
+                }
+
                 //Merge state
                 if($extend->has('state')) {
-                    $extend->state->merge($result->get('state', array()));
+                    $extend->state->merge($result->get('state', []));
                 } else {
                     $extend->state = $result->get('state');
                 }
 
+                //Merge state (can be a string)
+                $filter = (array) KObjectConfig::unbox($result->get('filter', []));
+
+                if($extend->has('filter'))
+                {
+                    $extend->filter = (array) KObjectConfig::unbox($extend->filter);
+                    $extend->filter->merge($filter);
+                }
+                else $extend->filter = $filter;
+
                 //Merge page
                 if($extend->has('page')) {
-                    $extend->page->merge($result->get('page', array()));
+                    $extend->page->merge($result->get('page', []));
                 } else {
                     $extend->page = $result->get('page');
                 }
@@ -144,9 +171,14 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                     $extend->type = $result->get('type');
                 }
 
+                //Merge route
+                if($result->has('route')) {
+                    $extend->route = $result->get('route');
+                }
+
                 //Merge format
                 if($result->has('format')) {
-                    $extend->format->merge($result->get('format'));
+                    $extend->format = $result->get('format');
                 }
 
                 $result = $extend;
@@ -175,6 +207,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
     public function getPages($path = '/', $mode = self::PAGES_LIST, $depth = -1)
     {
         $result = array();
+
 
         //Get a list of pages
         if($mode != self::PAGES_ONLY)
@@ -227,8 +260,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         //Get a specific page by path
         else
         {
-            $path = ltrim($path, '/');
-
             if ($file = $this->getLocator()->locate('page:' . $path))
             {
                 //Get the relative file path
@@ -239,7 +270,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 if(isset($this->__data['routes'][$path])) {
                     $result[$path] = $this->__data['pages'][$file]['properties'];
                 }
-
             }
         }
 
@@ -301,38 +331,6 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
         }
 
         return $page;
-    }
-
-    public function getPageContent($path, $render = false)
-    {
-        $content = false;
-
-        if($path instanceof ComPagesPageObject) {
-            $path = $path->path;
-        }
-
-        if($render)
-        {
-            $template = $this->getObject('lib:template');
-
-            //Load and render the page
-            if($template->loadFile('page:'.$path))
-            {
-                $content = $template->render(KObjectConfig::unbox($template->getData()));
-
-                //Remove <ktml:*> filter tags
-                $content = preg_replace('#<ktml:*\s*([^>]*)>#siU', '', $content);
-            }
-        }
-        else
-        {
-            $file = $this->getObject('template.locator.factory')->locate('page:'.$path);
-            $page = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
-
-            $content = $page->getContent();
-        }
-
-        return $content;
     }
 
     public function getRoutes($path = null)
@@ -459,8 +457,10 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                      */
                                     $page = (new ComPagesObjectConfigFrontmatter())->fromFile($file);
 
-                                    //Append the page properties
                                     $page->append($this->getConfig()->properties);
+
+                                    //Set the file
+                                    $page->file = $file;
 
                                     //Set the path
                                     $page->path = $path;
@@ -530,12 +530,17 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                     }
 
                                     //File (do not include index pages)
-                                    if(strpos($file, '/index') === false) {
+                                    if(strpos($file, '/index.html') === false) {
                                         $files[$path] = $file;
                                     }
 
                                     //Collection
-                                    if(isset($page->collection) && $page->collection !== false) {
+                                    if(isset($page->collection) && $page->collection !== false)
+                                    {
+                                        if(!$page->collection->extend && !$page->collection->route) {
+                                            $page->collection->route = $path;
+                                        }
+
                                         $collections[$path] = KObjectConfig::unbox($page->collection);
                                     }
 
@@ -547,7 +552,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                                 else
                                 {
                                     //Iterate over path
-                                    if($result = $iterate($file)) {
+                                    if(false !== $result = $iterate($file)) {
                                         $files[$path] = $result;
                                     }
                                 }

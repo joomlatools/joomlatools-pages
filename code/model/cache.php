@@ -25,6 +25,7 @@ class ComPagesModelCache extends ComPagesModelCollection
             'type'  => 'cache',
             'debug' => $this->getObject('pages.config')->debug,
             'cache_path' =>  $this->getObject('pages.config')->getCachePath(),
+            'identity_key' => 'id',
         ])->append([
             'behaviors'   => [
                 'com:pages.model.behavior.paginatable',
@@ -49,7 +50,7 @@ class ComPagesModelCache extends ComPagesModelCollection
             {
                 while (false !== ($entry = readdir($handle)))
                 {
-                    if ($entry != "." && $entry != "..")
+                    if (!str_starts_with($entry, '.'))
                     {
                         if($limit && $i >= ($offset + $limit)) {
                             break;
@@ -92,9 +93,9 @@ class ComPagesModelCache extends ComPagesModelCollection
         {
             try
             {
-                $data = require $file;
+                $data = include $file;
 
-                if($data && is_array($data))
+                if($data && is_array($data) && isset($data['id']))
                 {
                     $result[] = array(
                         'id'          => $data['id'],

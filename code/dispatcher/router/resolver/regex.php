@@ -68,16 +68,16 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
         $config->append(array(
             'routes'   => array(),
             'types' =>  [
-                'email' => '\S+@\S+',
+                'email' => '\S++@\S++',
                 'month' => '(0?[1-9]|1[012])',
                 'year'  => '(19|20)\d{2}',
                 'lang'  => '[a-z]{2,3}(-[A-Z]{2,3}){0,1}',
                 'digit' => '[0-9]++',
-                '*digit' => '[0-9]+(,[0-9]+)*',
+                '*digit' => '[0-9]++(,[0-9]+)*+',
                 'alnum' => '[0-9A-Za-z]++',
-                '*alnum' => '[0-9A-Za-z]+(,[0-9A-Za-z]+)*',
+                '*alnum' => '[0-9A-Za-z]++(,[0-9A-Za-z]+)*+',
                 'alpha' => '[A-Za-z]++',
-                '*alpha' => '[A-Za-z]+(,[A-Za-z]+)*',
+                '*alpha' => '[A-Za-z]++(,[A-Za-z]+)*+',
                 '*'     => '.+?',
                 '**'    => '.++',
                 ''      => '[^/\.]++',
@@ -259,7 +259,7 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
                         . ($param !== '' ? "?P<$param>" : null)
                         . $type
                         . ')'
-                        . $optional
+                        . ($pre !== '\.' ? $optional : null)
                         . ')'
                         . $optional;
 

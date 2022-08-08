@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * See: https://muffinman.io/blog/hack-for-ios-safari-to-display-html-video-thumbnail/
+ */
 class ComPagesTemplateHelperVideo extends ComPagesTemplateHelperLazysizes
 {
     public function player($config = array())
@@ -8,24 +11,42 @@ class ComPagesTemplateHelperVideo extends ComPagesTemplateHelperLazysizes
         $config->append(array(
             'quality_default' => '540',
             'quality_lowest'  => '240',
-            'selector'        => 'video'
+            'selector'        => 'video',
+            'version'         => '3.6.9'
         ));
 
         $html = '';
         if (!static::isLoaded('plyr'))
         {
-            $script = 'https://unpkg.com/plyr@3.6.9/dist/plyr.'.(!$config->debug ? 'min.js' : 'js');
-            $style  = 'https://unpkg.com/plyr@3.6.9/dist/plyr.css';
+            $script = 'https://unpkg.com/plyr@'.$config->version.'/dist/plyr.'.(!$config->debug ? 'min.js' : 'js');
+            $style  = 'https://unpkg.com/plyr@'.$config->version.'/dist/plyr.css';
 
             $html .= $this->import('unveilhooks');
             $html .= <<<PLYR
 <script>
+document.addEventListener("DOMContentLoaded", (e) => 
+{
+    document.querySelectorAll('video').forEach(video => 
+    {
+        if(video.preload == 'metadata')  {
+            video.querySelectorAll('source').forEach(el => {
+                let url = new URL(el.src);
+                if(!url.hash) {
+                    url.hash = 't=0.001';
+                }
+                
+                el.src = url;
+            })
+        }
+    });
+});
+
 document.addEventListener("lazybeforeunveil", (e) =>
 {
     if((typeof Plyr == 'undefined') && e.target.matches('{$config->selector}'))
     {
         const video = e.target
-
+        
         var style = document.createElement('link');
         style.rel = 'stylesheet'
         style.href = '{$style}'

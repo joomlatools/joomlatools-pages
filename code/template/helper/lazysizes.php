@@ -7,6 +7,7 @@ class ComPagesTemplateHelperLazysizes extends ComPagesTemplateHelperBehavior
         $config = new KObjectConfigJson($config);
         $config->append(array(
             'debug' =>  JFactory::getConfig()->get('debug'),
+            'version' => '5.2.2'
         ));
 
         $html   = '';
@@ -15,7 +16,7 @@ class ComPagesTemplateHelperLazysizes extends ComPagesTemplateHelperBehavior
         {
             if($script == 'lazysizes')
             {
-                $html .= '<ktml:script src="https://unpkg.com/lazysizes@5.2.2/lazysizes.'.(!$config->debug ? 'min.js' : 'js').'" defer="defer" />';
+                $html .= '<ktml:script src="https://unpkg.com/lazysizes@'.$config->version.'/lazysizes.'.(!$config->debug ? 'min.js' : 'js').'" defer="defer" />';
                 $html .= <<<LAZYSIZES
 <script>
 window.lazySizesConfig = window.lazySizesConfig || {}

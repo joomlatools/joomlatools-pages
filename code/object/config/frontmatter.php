@@ -29,9 +29,10 @@ class ComPagesObjectConfigFrontmatter extends KObjectConfigYaml
         $this->__hash = hash("crc32b", $string);
 
         // Normalize line endings to Unix style.
-        $string = preg_replace("/(\r\n|\r)/", "\n", $string);
+        $string = trim(preg_replace("/(\r\n|\r)/", "\n", $string));
 
-        if (strpos($string, "---") !== false)
+        //Frontmatter block needs to be on top
+        if(substr( $string, 0, 3 ) === "---" )
         {
             if(preg_match('#\s*---(.*|[\s\S]*)\s*---#siU', $string, $matches))
             {
@@ -46,31 +47,32 @@ class ComPagesObjectConfigFrontmatter extends KObjectConfigYaml
                     $this->__attributes = array_combine($attributes[2], $attributes[2]);
                 }
 
-                $data = parent::fromString($matches[1], false);
-
-                //Handle dynamic data
-                array_walk_recursive ($data, function(&$value, $key)
+                if($data = parent::fromString($matches[1], false))
                 {
-                    if(is_string($value) && strpos($value, 'data://') === 0)
+                    array_walk_recursive ($data, function(&$value, $key)
                     {
-                        $matches = array();
-                        preg_match('#data\:\/\/([^\[]+)(?:\[(.*)\])*#si', $value, $matches);
-
-                        if(!empty($matches[0]))
+                        if(is_string($value) && strpos($value, 'data://') === 0)
                         {
-                            $data = Koowa::getObject('data.registry')
-                                ->fromPath($matches[1]);
+                            $matches = array();
+                            preg_match('#data\:\/\/([^\[]+)(?:\[(.*)\])*#si', $value, $matches);
 
-                            if($data && !empty($matches[2])) {
-                                $data = $data->get($matches[2]);
+                            if(!empty($matches[0]))
+                            {
+                                $data = Koowa::getObject('data.registry')
+                                    ->fromPath($matches[1]);
+
+                                if($data && !empty($matches[2])) {
+                                    $data = $data->get($matches[2]);
+                                }
+
+                                $value = $data;
                             }
-
-                            $value = $data;
                         }
-                    }
-                });
+                    });
 
-                $this->merge($data);
+                    $this->merge($data);
+                }
+
             }
 
             if($matches) {

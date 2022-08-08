@@ -16,47 +16,19 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
         parent::onMixin($mixer);
 
         $mixer->getState()
-            ->insert('filter', 'string');
+            ->insert('filter', 'string', []);
     }
 
     protected function _beforeFetch(KModelContextInterface $context)
     {
         if($filters = $context->state->filter)
         {
-            if(!is_array($filters))
+            foreach ($filters as $property => $filter)
             {
-                if($matches = preg_split('#\b(and|or)\b#', $filters, null, PREG_SPLIT_DELIM_CAPTURE))
+                if(!is_int($property))
                 {
-                    array_unshift($matches, 'and');
-                    $matches = array_chunk($matches, 2);
-
-                    foreach($matches as $match)
-                    {
-                        $combination = strtoupper($match[0]);
-                        $expression  = $match[1];
-
-                        if($filter = preg_split('#^(\w+)\s+([eq|neq|gt|gte|lt|lte|in|nin]+)\s+(.+)\s*$#i', trim($expression), null, PREG_SPLIT_DELIM_CAPTURE))
-                        {
-                            $attribute = $filter[1];
-                            $operation = $filter[2];
-                            $values    = $filter[3];
-
-                            $this->_filters[] = [
-                                'attribute' => $attribute,
-                                'operation' => $operation,
-                                'values'    => array_unique(explode(',',  $values)),
-                                'combination' => $combination
-                            ];
-                        }
-                    }
-                }
-            }
-            else
-            {
-                foreach ($filters as $attribute => $values)
-                {
-                    //Multiple constraints on the same attribute
-                    foreach((array) $values as $key => $v)
+                    //Multiple constraints on the same property
+                    foreach((array) $filter as $key => $v)
                     {
                         //With one level nesting
                         foreach((array) $v as $value)
@@ -65,7 +37,7 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                             if (preg_match('#^([eq|neq|gt|gte|lt|lte|in|nin]+):(.+)\s*$#i', $value, $matches))
                             {
                                 $this->_filters[] = [
-                                    'attribute' => $attribute,
+                                    'property' => $property,
                                     'key'       => !is_numeric($key) ? $key : null,
                                     'operation' => $matches[1],
                                     'values' => array_unique(explode(',', $matches[2])),
@@ -75,7 +47,7 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                             else
                             {
                                 $this->_filters[] = [
-                                    'attribute' => $attribute,
+                                    'property' => $property,
                                     'key'       => !is_numeric($key) ? $key : null,
                                     'operation' => 'eq',
                                     'values' => array_unique(explode(',', $value)),
@@ -85,6 +57,35 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                         }
                     }
                 }
+                else
+                {
+                    if($matches = preg_split('#\b(and|or)\b#', $filter, null, PREG_SPLIT_DELIM_CAPTURE))
+                    {
+                        array_unshift($matches, 'and');
+                        $matches = array_chunk($matches, 2);
+
+                        foreach($matches as $match)
+                        {
+                            $combination = strtoupper($match[0]);
+                            $expression  = $match[1];
+
+                            if($filter = preg_split('#^(\w+)\s+([eq|neq|gt|gte|lt|lte|in|nin]+)\s+(.+)\s*$#i', trim($expression), null, PREG_SPLIT_DELIM_CAPTURE))
+                            {
+                                $property  = $filter[1];
+                                $operation = $filter[2];
+                                $values    = $filter[3];
+
+                                $this->_filters[] = [
+                                    'property' => $property,
+                                    'operation' => $operation,
+                                    'values'    => array_unique(explode(',',  $values)),
+                                    'combination' => $combination
+                                ];
+                            }
+                        }
+                    }
+                }
+
             }
 
             if($this->_filters) {
@@ -102,11 +103,12 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
         {
             $filtered = array_filter($items, function ($item) use ($filter)
             {
-                $attribute = $filter['attribute'];
+                $property = $filter['property'];
 
-                if(isset($item[$attribute]))
+
+                if(isset($item[$property]))
                 {
-                    $item_value = $item[$attribute];
+                    $item_value = $item[$property];
 
                     //Handle one dimensional assiociate array values
                     if(isset($filter['key']))
@@ -119,6 +121,7 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                             $item_value = null;
                         }
                     }
+
                 }
                 else $item_value = null;
 
@@ -144,7 +147,7 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                         }
                         else
                         {
-                            if ($item_value == $value) {
+                            if (!is_null($item_value) && $item_value == $value) {
                                 return true;
                             }
                         }
@@ -159,7 +162,7 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                         }
                         else
                         {
-                            if($item_value != $value) {
+                            if(is_null($item_value) || $item_value != $value) {
                                 return true;
                             }
                         }
@@ -221,7 +224,7 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
             if (isset($filter['values']))
             {
                 $combination = $filter['combination'];
-                $column      = $table->mapColumns($filter['attribute']);
+                $column      = $table->mapColumns($filter['property']);
 
                 foreach ((array)$filter['values'] as $key => $value)
                 {

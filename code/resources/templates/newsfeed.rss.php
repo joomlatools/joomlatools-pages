@@ -24,7 +24,7 @@
             <image>
                 <url><?= url(page()->image->url) ?></url>
                 <title><?= page()->image->alt ?  page()->image->alt  : page()->title ?></title>
-                <link><?= route(page()->path) ?></link>
+                <link><?= route(page()) ?></link>
                 <? if($description = page()->image->caption) : ?>
                     <description><?= $description ?></description>
                 <? endif ?>
@@ -39,9 +39,9 @@
         <?foreach(collection() as $item):?>
             <item>
                 <title><?= escape($item->title); ?></title>
-                <? if($item->path) : ?>
-                    <link><?= route($item->path); ?></link>
-                    <guid isPermaLink="true"><?= route($item->path); ?></guid>
+                <? if($url = route($item)) : ?>
+                    <link><?= $url ?></link>
+                    <guid isPermaLink="true"><?= $url ?></guid>
                 <? endif ?>
                 <? if($item->image && $item->image->url): ?>
                     <media:content medium="image" url="<?= url($item->image->url) ?>" />

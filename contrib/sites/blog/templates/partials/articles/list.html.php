@@ -27,5 +27,5 @@
 <? endforeach ;?>
 
 <div class="inline-block relative w-auto">
-    <?= helper('paginator.pagination') ?>
+    <?= helper('paginator')->pagination() ?>
 </div>

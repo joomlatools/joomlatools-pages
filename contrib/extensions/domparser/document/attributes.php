@@ -7,10 +7,7 @@
  * @link        https://github.com/joomlatools/joomlatools-pages for the canonical source repository
  */
 
-class ExtJoomlaModelEntityField extends ComPagesModelEntityItem
+class ExtDomparserDocumentAttributes extends ComPagesObjectConfig
 {
-    public function __toString()
-    {
-        return $this->value;
-    }
+
 }

@@ -47,17 +47,18 @@ class ComPagesTemplateFilterToc extends ComPagesTemplateFilterAbstract
 
                 $result = '<h'.$level.' id="'.$id.'" class="toc-anchor"><a href="#'.$id.'">'.$content.'</a></h'.$level.'>';
                 $text   = str_replace($headers[0][$key], $result, $text);
+            }
 
-                if($this->getConfig()->anchor)
-                {
-                    $icon = $this->getConfig()->icon;
+            if($this->getConfig()->anchor)
+            {
+                $icon = $this->getConfig()->icon;
 
-                    if(strlen($icon) == 1) {
-                        $icon = '"'.$icon.'"';
-                    }
+                if(strlen($icon) == 1) {
+                    $icon = '"'.$icon.'"';
+                }
 
-                    //Accessible anchor links, see https://codepen.io/johanjanssens/pen/PoWObpL
-                    $text .= <<<ANCHOR
+                //Accessible anchor links, see https://codepen.io/johanjanssens/pen/PoWObpL
+                $text .= <<<ANCHOR
 <style>
 @media (hover: hover) {
   .toc-anchor  {
@@ -86,7 +87,6 @@ class ComPagesTemplateFilterToc extends ComPagesTemplateFilterAbstract
 </style>
 ANCHOR;
 
-                }
             }
 
             /*
@@ -104,6 +104,7 @@ ANCHOR;
                     {
                         $toc = '<ul class="toc" itemscope itemtype="http://www.schema.org/SiteNavigationElement">';
 
+                        $depth = 0;
                         foreach($headers[1] as $key => $level)
                         {
                             $content = $headers[2][$key];
@@ -117,12 +118,23 @@ ANCHOR;
                                 $next = $headers[1][0];
                             }
 
-                            if($next > $level) {
+                            if($next > $level)
+                            {
+                                $depth++;
                                 $toc .= '<ul>';
                             }
 
-                            if($next < $level) {
-                                $toc .= str_repeat('</li></ul>', $level - $next);
+                            if($next < $level)
+                            {
+                                $repeat = $level - $next;
+
+                                if($repeat > $depth) {
+                                    $repeat = $depth;
+                                }
+
+                                $depth = $depth - $repeat;
+
+                                $toc .= str_repeat('</li></ul>', $repeat);
                             }
 
                             if($next == $level) {
@@ -131,8 +143,8 @@ ANCHOR;
                         }
 
                         $toc .= '</ul>';
-                    }
 
+                    }
                 }
 
                 //Remove the <khtml:toc> tags

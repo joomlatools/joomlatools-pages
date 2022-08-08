@@ -34,11 +34,15 @@ return function($path, $cache = true)
     {
         $namespace = parse_url($path, PHP_URL_SCHEME);
 
-        if(!in_array($namespace, ['http', 'https'])) {
-            $result = $this->getObject('data.registry')->fromPath($path);
-        } else {
-            $result = $this->getObject('data.registry')->fromUrl($path, $cache);
+        if(!in_array($namespace, ['http', 'https']))
+        {
+            if(pathinfo($path, PATHINFO_EXTENSION)) {
+                $result = $this->getObject('data.registry')->fromFile($path);
+            } else {
+                $result = $this->getObject('data.registry')->fromPath($path);
+            }
         }
+        else $result = $this->getObject('data.registry')->fromUrl($path, $cache);
     }
 
     return $result;

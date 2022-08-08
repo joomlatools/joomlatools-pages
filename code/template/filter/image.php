@@ -28,7 +28,7 @@ class ComPagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
             $images  = array();
 
             //Find images between <ktml:images></ktml:images>
-            if(preg_match_all('#<ktml:images(.*)>(.*)<\/ktml:images>#siU', $text, $matches))
+            if(preg_match_all('#<ktml:image(.*)>(.*)<\/ktml:image>#siU', $text, $matches))
             {
                 foreach($matches[0] as $key => $match)
                 {
@@ -88,7 +88,7 @@ class ComPagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
                         $attribs['class'] = explode(' ', $attribs['class']);
                     }
 
-                    if($this->helper('image.supported', $src))
+                    if($this->helper('image')->supported($src))
                     {
                         if(strpos($src, '://') === false)
                         {
@@ -108,15 +108,16 @@ class ComPagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
 
                     unset($attribs['src']);
 
-                    //Strip data- prefix
+                    $options = array();
+
+                    //Handle data attributes
+                    $options['attributes'] = [];
                     foreach($attribs as $name => $value)
                     {
-                        if(strpos($name, 'data-') !== false)
+                        if(str_starts_with($name, 'data-'))
                         {
                             unset($attribs[$name]);
-
-                            $name = str_replace('data-', '', $name);
-                            $attribs[$name] = $value;
+                            $options['attributes'][$name] = $value;
                         }
                     }
 
@@ -143,7 +144,7 @@ class ComPagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
                     }
 
                     //Filter the images
-                    $html = str_replace($matches[0][$key], $this->helper('image', $options), $html);
+                    $html = str_replace($matches[0][$key], $this->helper('image')->responsive($options), $html);
                 }
             }
         }
@@ -158,30 +159,21 @@ class ComPagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
         {
             foreach($matches[1] as $key => $match)
             {
-                $html .= $this->helper('image.import', 'bgset');
+                $html .= $this->helper('image')->import('bgset');
 
                 $attribs = $this->parseAttributes($match);
 
+                $options['attributes'] = [];
+
+                //Handle data attributes
                 foreach($attribs as $name => $value)
                 {
-                    if(strpos($name, 'data-') !== false)
+                    if(str_starts_with($name, 'data-'))
                     {
                         unset($attribs[$name]);
-
-                        $name = str_replace('data-', '', $name);
-
-                        if($value === 'true') {
-                            $value = true;
-                        }
-
-                        if($value === 'false') {
-                            $value = false;
-                        }
-
-                        $attribs[$name] = $value;
+                        $options['attributes'][$name] = $value;
                     }
                 }
-
 
                 //Rename hyphen to underscore
                 $options = array();
@@ -191,7 +183,21 @@ class ComPagesTemplateFilterImage extends ComPagesTemplateFilterAbstract
                     $options[$name] = $value;
                 }
 
-                if($srcset = $this->helper('image.srcset', $matches[3][$key], $options))
+                //Covert false/true
+                foreach($options as $name => $value)
+                {
+                    if($value === 'true') {
+                        $value = true;
+                    }
+
+                    if($value === 'false') {
+                        $value = false;
+                    }
+
+                    $options[$name] = $value;
+                }
+
+                if($srcset = $this->helper('image')->srcset($matches[3][$key], $options))
                 {
                     $attribs['data-sizes'] = 'auto';
                     $attribs['data-bgset'] = implode(',', $srcset);
