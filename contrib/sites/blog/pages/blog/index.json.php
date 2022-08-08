@@ -8,5 +8,6 @@
         limit: 0
     format: [csv]
 
-visible: false
+state:
+    visible: false
 ---

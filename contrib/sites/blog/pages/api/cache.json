@@ -1,0 +1,10 @@
+---
+@collection:
+  extend: cache
+  state:
+    limit: 100
+    route: false
+
+@process:
+    cache: true
+---

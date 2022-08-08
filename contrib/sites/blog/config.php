@@ -12,6 +12,14 @@ return array(
         'name'  => 'Joomlatools Pages - A blog site',
     ],
 
+    'pages' =>
+    [
+        'filter' => [
+            'state' => ['visible' => 'neq:false'],
+            'format' => 'html'
+        ]
+    ],
+
     // Page
     'page' => [
 

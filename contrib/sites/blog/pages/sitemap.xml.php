@@ -4,23 +4,26 @@
 
 metadata:
     robots: [none]
-visible: false
+state:
+    visible: false
 ---
 
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
-    <? $pages = collection('pages', [
-        'level'  => 0,
-        'limit'  => 0,
-        'sort'   => 'date',
-        'order'  => 'desc',
-        'filter' => [
+    <? $pages = collection('pages',
+        state: [
+            'level'  => 0,
+            'limit'  => 0,
+            'sort'   => 'date',
+            'order'  => 'desc',
+        ],
+        filter: [
             'metadata' => [
-                'robots' => ['nin:noindex', 'nin:none'],
+                'robots' => ['nin:noindex', 'nin:none', 'nin:nositemap'],
             ],
             'redirect' => 'null',
         ]
-    ]); ?>
+    ); ?>
 
     <? $urls = []; ?>
     <? foreach($pages as $page): ?>
@@ -37,14 +40,14 @@ visible: false
         <? endif ?>
     <? endforeach ?>
 
-    <? $cache = collection('/cache.json', [
-        'limit' => 0,
-        'filter' => [
-            'robots' => ['nin:noindex', 'nin:none'],
+    <? $cache = collection('/api/cache.json',
+        state: ['limit' => 0],
+        filter: [
+            'robots' => ['nin:noindex', 'nin:none', 'nin:nositemap'],
             'format' => 'html',
             'status' => 200,
         ]
-    ]); ?>
+    ); ?>
 
     <? foreach($cache as $item) : ?>
 

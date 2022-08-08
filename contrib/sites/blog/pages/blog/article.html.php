@@ -6,7 +6,8 @@
 
 metadata:
     'og:type': article
-visible: false
+state:
+    visible: false
 ---
 
 <?= partial('/articles/single.html', [
