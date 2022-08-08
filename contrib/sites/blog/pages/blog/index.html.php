@@ -31,10 +31,6 @@ summary: Description for an very awesome blog
 
 <!-- articles -->
 <div class="w-full md:pr-12 mb-12 prose">
-
-    <?= partial('/articles/list.html', [
-         'articles' => collection(),
-    ]); ?>
-
+    <?= partial('/articles/list.html', ['articles' => collection()]); ?>
 </div>
 <!--/ articles -->

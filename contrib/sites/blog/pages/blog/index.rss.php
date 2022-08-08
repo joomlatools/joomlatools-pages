@@ -6,7 +6,8 @@
 
 title: The blog
 summary:  Description for the blog
-visible: false
+state:
+    visible: false
 ---
 
 <?= import('com:pages.collection.newsfeed.rss'); ?>

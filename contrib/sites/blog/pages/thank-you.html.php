@@ -5,7 +5,8 @@ title: Thank you for contacting us
 summary: Thank you for contacting us
 metadata:
     robots: [noindex, nofollow]
-visible: false
+state:
+    visible: false
 ---
 
 <div class="align-center">

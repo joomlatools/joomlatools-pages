@@ -12,6 +12,14 @@ return array(
         'name'  => 'Joomlatools Pages - A blog site',
     ],
 
+    'pages' =>
+    [
+        'filter' => [
+            'state' => ['visible' => 'neq:false'],
+            'format' => 'html'
+        ]
+    ],
+
     // Page
     'page' => [
 
@@ -40,7 +48,7 @@ return array(
     'ga_code' => '',
 
     // Extensions
-    'extensions' => [
+    'extension_config' => [
 
         'ext:joomla.model.articles'  => [
             'aliases' => [

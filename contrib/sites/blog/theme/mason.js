@@ -17,6 +17,9 @@ async function postcss() {
           'bg-right', 
           'object-center', 
           'object-right',
+          // These classes are used by helper('paginator.pagination'), let's add them to the safe list
+          'active',
+          'k-pagination__pages',
           // These classes are used by icons, let's add them to the safe list
           'w-5',
           'h-5',
@@ -48,9 +51,6 @@ async function postcss() {
         opacity: ['responsive', 'hover'],
         borderWidth: ['responsive', 'hover', 'focus'],
       },
-      plugins: [
-        require('@tailwindcss/typography'),
-      ],
     }
   });
 }
