@@ -30,8 +30,8 @@ Joomlatools Pages is for website developers and designers who create bespoke (Jo
 
 ## Requirements
 
-* PHP7.4
-* Joomlatools Framework 3.5
+* PHP8.0
+* Joomlatools Framework 4.0
 
 ## Installation
 
