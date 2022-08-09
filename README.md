@@ -8,7 +8,7 @@
 
 It's written in PHP and inspired by the ideas and concepts of flat-file CMS systems like [Grav](https://getgrav.org/) and [Statamic](statamic.com), static site generators like [Jekyll]( https://jekyllrb.com), [Hugo](https://gohugo.io), [Gatsby](https://www.gatsbyjs.org/) and Headless CMS system like [Strapi](https://strapi.io/) and [Prismic](https://prismic.io/) etc. 
 
-Make no mistake, Pages is **not** a static site generator (SSG), Pages works in a _dynamic, lazy and smart_ way. A pages are dynamically generated, and cached and incrementally re-generated when their content or layout has changed.
+Make no mistake, Pages is **not** a static site generator (SSG), Pages works in a _dynamic, lazy and smart_ way. Pages are dynamically generated, and cached and incrementally re-generated when their content or layout has changed.
 
 > Pages is more than a page generator, _it's an engine for creating websites_, combining the power of a dynamic web application, with the performance of a static site generator. 
 
