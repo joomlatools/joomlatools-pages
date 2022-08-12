@@ -77,7 +77,7 @@ class ComPagesModelBehaviorPaginatable extends ComPagesModelBehaviorQueryable
                     $offset = floor(($total - 1) / $limit) * $limit;
                 }
 
-                $state->offset = $offset;
+                $state->offset = (int) $offset;
             }
 
             return parent::_beforeFetch($context);
@@ -100,7 +100,7 @@ class ComPagesModelBehaviorPaginatable extends ComPagesModelBehaviorQueryable
     protected function _queryArray(array $data, KModelStateInterface $state)
     {
         if($data && count($data) > $state->offset) {
-            $data = array_slice($data, $state->offset, $state->limit);
+            $data = array_slice($data, (int) $state->offset, (int) $state->limit);
         }
 
         return $data;
