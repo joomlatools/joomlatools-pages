@@ -98,7 +98,6 @@ class ComPagesModelBehaviorSortable extends ComPagesModelBehaviorQueryable
                         $sorting = -1;
                     }
                 }
-                throw new KHttpExceptionBadRequest("Cannot sort on: $name, property does not exist");
 
                 return $sorting;
             });
@@ -140,8 +139,6 @@ class ComPagesModelBehaviorSortable extends ComPagesModelBehaviorQueryable
 
                 if($column) {
                     $query->order($column, $order);
-                } else {
-                    throw new KHttpExceptionBadRequest("Cannot sort on: $state->sort, property does not exist");
                 }
             }
 
