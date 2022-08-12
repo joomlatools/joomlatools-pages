@@ -87,13 +87,17 @@ class ComPagesModelBehaviorSortable extends ComPagesModelBehaviorQueryable
                 $sorting = 0;
                 $name    = $state->sort;
 
-                $first_value  = $first[$name];
-                $second_value = $second[$name];
+                if(isset($first[$name]) && isset($second[$name]))
+                {
+                    $first_value  = $first[$name];
+                    $second_value = $second[$name];
 
-                if($first_value > $second_value) {
-                    $sorting = 1;
-                } elseif ($first_value < $second_value) {
-                    $sorting = -1;
+                    if($first_value > $second_value) {
+                        $sorting = 1;
+                    } elseif ($first_value < $second_value) {
+                        $sorting = -1;
+                    }
+
                 }
 
                 return $sorting;
