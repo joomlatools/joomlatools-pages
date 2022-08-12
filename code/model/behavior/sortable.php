@@ -97,8 +97,8 @@ class ComPagesModelBehaviorSortable extends ComPagesModelBehaviorQueryable
                     } elseif ($first_value < $second_value) {
                         $sorting = -1;
                     }
-
                 }
+                throw new KHttpExceptionBadRequest("Cannot sort on: $name, property does not exist");
 
                 return $sorting;
             });
@@ -138,7 +138,11 @@ class ComPagesModelBehaviorSortable extends ComPagesModelBehaviorQueryable
                     $column = 'tbl.'.$this->getTable()->mapColumns($state->sort);
                 }
 
-                $query->order($column, $order);
+                if($column) {
+                    $query->order($column, $order);
+                } else {
+                    throw new KHttpExceptionBadRequest("Cannot sort on: $state->sort, property does not exist");
+                }
             }
 
             if($state->order && in_array($state->order, ['shuffle', 'random'])) {
