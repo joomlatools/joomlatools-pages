@@ -87,14 +87,18 @@ class ComPagesModelBehaviorSortable extends ComPagesModelBehaviorQueryable
                 $sorting = 0;
                 $name    = $state->sort;
 
-                $first_value  = $first[$name];
-                $second_value = $second[$name];
+                if(isset($first[$name]) && isset($second[$name]))
+                {
+                    $first_value  = $first[$name];
+                    $second_value = $second[$name];
 
-                if($first_value > $second_value) {
-                    $sorting = 1;
-                } elseif ($first_value < $second_value) {
-                    $sorting = -1;
+                    if($first_value > $second_value) {
+                        $sorting = 1;
+                    } elseif ($first_value < $second_value) {
+                        $sorting = -1;
+                    }
                 }
+                throw new KHttpExceptionBadRequest("Cannot sort on: $name, property does not exist");
 
                 return $sorting;
             });
@@ -134,7 +138,11 @@ class ComPagesModelBehaviorSortable extends ComPagesModelBehaviorQueryable
                     $column = 'tbl.'.$this->getTable()->mapColumns($state->sort);
                 }
 
-                $query->order($column, $order);
+                if($column) {
+                    $query->order($column, $order);
+                } else {
+                    throw new KHttpExceptionBadRequest("Cannot sort on: $state->sort, property does not exist");
+                }
             }
 
             if($state->order && in_array($state->order, ['shuffle', 'random'])) {
