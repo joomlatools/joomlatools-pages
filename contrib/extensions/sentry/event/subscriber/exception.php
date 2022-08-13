@@ -15,12 +15,32 @@ class ExtSentryEventSubscriberException extends ComPagesEventSubscriberAbstract
         $config->append(array(
             'priority' => KEvent::PRIORITY_HIGH,
             'bootstrap'  => true,
-            'disable_on' => [401, 403, 404],
             'options'    => [
                 'server_name'  => gethostname(),
-                'logger'       => 'php.pages'
+                'logger'       => 'php.pages',
+                'default_integrations' => false,
+                'integrations'         => [
+                    new \Sentry\Integration\RequestIntegration(),
+                    new \Sentry\Integration\TransactionIntegration(),
+                    new \Sentry\Integration\FrameContextifierIntegration(),
+                    new \Sentry\Integration\EnvironmentIntegration(),
+                ],
             ],
+            'ignore_exceptions' => [
+                'ComPagesControllerExceptionRequestBlocked',
+                'ComPagesControllerExceptionRequestInvalid',
+            ],
+            'ignore_tags' => [],
+            'disable_on' => [401, 403],
         ));
+
+        if(count($config->ignore_tags) || count($config->ignore_exceptions))
+        {
+            $config->options->integrations[] = new \Sentry\Integration\IgnoreErrorsIntegration([
+                'ignore_exceptions' => KObjectConfig::unbox($config->ignore_exceptions),
+                'ignore_tags'       => KObjectConfig::unbox($config->ignore_tags),
+            ]);
+        }
 
         parent::_initialize($config);
     }

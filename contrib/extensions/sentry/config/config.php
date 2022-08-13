@@ -20,7 +20,6 @@ class ExtSentryConfig extends ComPagesConfigAbstract
                 'environment' => getenv('SENTRY_ENVIRONMENT') ?: null,
                 'release'     => getenv('SENTRY_RELEASE') ?: null,
             ],
-            'disable_on' => [401, 403, 404],
         ));
 
         //A number between 0 (false|off) and 1 (true|on), controlling the percentage chance a
