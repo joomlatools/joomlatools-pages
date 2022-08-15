@@ -586,6 +586,9 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 throw new RuntimeException(sprintf('The page registry "%s" cannot be loaded from cache.', $cache));
             }
 
+            //Cast to array
+            $result = (array) $result;
+
             //Check if the cache is still valid, if not refresh it
             if($this->getConfig()->cache_validation && $result['hash'] != $this->getHash($basedir)) {
                 $this->loadCache($basedir, true);

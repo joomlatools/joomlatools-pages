@@ -264,7 +264,7 @@ class ComPagesDispatcherBehaviorCacheable extends KDispatcherBehaviorCacheable
         //Get the response from the context
         $response = $context->getResponse();
 
-        if($this->isCacheable())
+        if($this->isCacheable() && !$response->isError())
         {
             //Set the content collections
             if($models = $this->getObject('model.factory')->getModels())
