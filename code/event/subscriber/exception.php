@@ -79,6 +79,7 @@ class ComPagesEventSubscriberException extends ComPagesEventSubscriberAbstract
             {
                 if($page = $dispatcher->getPage('/'.$code))
                 {
+                    $dispatcher->setController('page');
                     $dispatcher->getPage()->setProperties($page);
 
                     $content = $dispatcher->getController()->render($exception);
