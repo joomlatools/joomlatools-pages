@@ -155,7 +155,7 @@ class ExtDomparserDocumentElementList implements \Countable, \IteratorAggregate,
     public function getText($normalize_whitespace = true)
     {
         $result = $this->reduce(function($carry, $node) use($normalize_whitespace) {
-            return $carry .= $node->getText($normalize_whitespace);
+            return $carry .= $node->getText($normalize_whitespace).' ';
         }, '');
 
         return $result;
