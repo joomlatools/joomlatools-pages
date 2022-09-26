@@ -241,8 +241,13 @@ class ComPagesEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstrac
             }
 
             //Register template functions
-            if($functions) {
-                $this->getConfig('com:pages.template')->merge(['functions' => $functions]);
+            if($functions)
+            {
+                if($this->getConfig('com:pages.template')->has('functions')) {
+                    $this->getConfig('com:pages.template')->functions->merge($functions);
+                } else {
+                    $this->getConfig('com:pages.template')->functions = $functions;
+                }
             }
 
             $result = true;
