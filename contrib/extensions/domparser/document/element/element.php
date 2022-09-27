@@ -26,7 +26,7 @@ class ExtDomparserDocumentElement extends \DOMElement implements ExtDomparserDoc
 
     public function getType()
     {
-        return $this->nodeName;
+        return $this->nodeType;
     }
 
     public function getValue()
