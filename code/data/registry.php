@@ -225,7 +225,7 @@ final class ComPagesDataRegistry extends KObject implements KObjectSingleton
         // Locate path
         $format = pathinfo($path, PATHINFO_EXTENSION);
         if(!$this->getObject('object.config.factory')->isRegistered($format)) {
-            $path = $path.'*';
+            $path = $path.'.*';
         }
 
         if($file = $this->getLocator()->locate($path)) {
