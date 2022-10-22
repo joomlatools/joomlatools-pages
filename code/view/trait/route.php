@@ -43,10 +43,8 @@ trait ComPagesViewTraitRoute
 
                             foreach($params as $param)
                             {
-                                if($entity->hasProperty($param))
+                                if($value = $entity->getProperty($param))
                                 {
-                                    $value = $entity->getProperty($param);
-
                                     if($value instanceof ComPagesModelEntityInterface) {
                                         $query[$param] = $value->{$value->getIdentityKey()};
                                     } else {
