@@ -127,6 +127,19 @@ class ComPagesModelEntityItems extends KModelEntityComposite implements JsonSeri
         return $entity;
     }
 
+    public function remove(KObjectHandlable $items)
+    {
+        if($items instanceof KModelEntityInterface)
+        {
+            foreach($items as $item) {
+                parent::remove($item);
+            }
+        }
+        else parent::remove($items);
+
+        return $this;
+    }
+
     public function setModel(ComPagesModelInterface $model)
     {
         $this->__model = $model;
