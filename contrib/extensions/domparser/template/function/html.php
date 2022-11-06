@@ -10,18 +10,22 @@
 return function($html = array())
 {
     $data = false;
-    if(is_string($html))
+
+    if(!empty($html))
     {
-        if(trim($html)[0] != '<') {
-            $data = $this->data($html);
+        if(is_string($html))
+        {
+            if(trim($html)[0] != '<') {
+                $data = $this->data($html);
+            }
         }
-    }
-    else
-    {
-        if(!$html instanceof KObjectConfigInterface) {
-            $data = $this->data($html);
-        } else {
-            $data = $html;
+        else
+        {
+            if(!$html instanceof KObjectConfigInterface) {
+                $data = $this->data($html);
+            } else {
+                $data = $html;
+            }
         }
     }
 
