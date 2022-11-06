@@ -65,12 +65,12 @@ class ComPagesTemplateFilterToc extends ComPagesTemplateFilterAbstract
     margin-left: -1em;
     padding-left: 1em;
   }
-  .toc-anchor a {
+  .toc-anchor a:first-child {
     text-decoration: none;
     pointer-events: none;
     color: inherit !important;
   }
-  .toc-anchor a::after  {
+  .toc-anchor a:first-child::after  {
     content: $icon;
     font-size: 0.8em;
     float: left;
@@ -80,7 +80,7 @@ class ComPagesTemplateFilterToc extends ComPagesTemplateFilterAbstract
     visibility: hidden;
     display: inline-block;
   }
-  .toc-anchor:hover a::after {
+  .toc-anchor:hover a:first-child::after {
     visibility: visible;
   }
 }
@@ -107,7 +107,7 @@ ANCHOR;
                         $depth = 0;
                         foreach($headers[1] as $key => $level)
                         {
-                            $content = $headers[2][$key];
+                            $content = strip_tags($headers[2][$key]);
                             $id      = $this->_generateId($content);
 
                             $toc .= '<li><a href="#'.$id.'" title="'.$content.'" itemprop="url"><span itemprop="name">'.$content.'</span></a>';
@@ -149,12 +149,15 @@ ANCHOR;
 
                 //Remove the <khtml:toc> tags
                 $text = str_replace($match, $toc, $text);
+
             }
         }
     }
 
     protected function _generateId($text)
     {
+        $text = strip_tags($text);
+
         // Lowercase the string and convert a few characters.
         $id = strtr(strtolower($text), array(' ' => '-', '_' => '-', '[' => '-', ']' => ''));
 
