@@ -11,18 +11,21 @@ return function($xml = array())
 {
     $data = false;
 
-    if(is_string($xml))
+    if(!empty($xml))
     {
-        if(trim($xml)[0] != '<') {
-            $data = $this->data($xml);
+        if(is_string($xml))
+        {
+            if(trim($xml)[0] != '<') {
+                $data = $this->data($xml);
+            }
         }
-    }
-    else
-    {
-        if(!$xml instanceof KObjectConfigInterface) {
-            $data = $this->data($xml);
-        } else {
-            $data = $xml;
+        else
+        {
+            if(!$xml instanceof KObjectConfigInterface) {
+                $data = $this->data($xml);
+            } else {
+                $data = $xml;
+            }
         }
     }
 
