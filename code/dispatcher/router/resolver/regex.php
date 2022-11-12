@@ -354,7 +354,14 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
                 $route-> path = ''; //Reset the path
                 $route->setUrl($regex);
             }
-            else $route->setPath('/'.ltrim($regex, '/'));
+            else
+            {
+                $path     = parse_url($regex,  PHP_URL_PATH);
+                $route->setPath('/'.ltrim($path, '/'));
+
+                $fragment = parse_url($regex,  PHP_URL_FRAGMENT);
+                $route->setFragment($fragment);
+            }
         }
 
         return $result;
