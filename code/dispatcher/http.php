@@ -208,9 +208,11 @@ class ComPagesDispatcherHttp extends ComKoowaDispatcherHttp
                 $route = $context->router->generate($route, ['format' => $format]);
             }
 
-            $location = $context->router->qualify($route);
-
-            $context->response->headers->set('Content-Location', (string) $location);
+            if($route)
+            {
+                $location = $context->router->qualify($route);
+                $context->response->headers->set('Content-Location', (string) $location);
+            }
         }
     }
 
