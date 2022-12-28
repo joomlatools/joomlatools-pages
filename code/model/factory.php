@@ -105,9 +105,9 @@ class ComPagesModelFactory extends KObject implements KObjectSingleton
                 } else {
                     $filter = array_replace_recursive($filter, $default_filter);
                 }
-
-                $state['filter'] = $filter;
             }
+
+            $state['filter'] = $filter;
 
             $model->setState($state);
 
