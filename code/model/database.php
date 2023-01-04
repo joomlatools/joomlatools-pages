@@ -105,7 +105,7 @@ class ComPagesModelDatabase extends ComPagesModelCollection
 
     protected function getQuery($columns = true)
     {
-        $query = $this->getObject('lib:database.query.select')
+        $query = $this->getObject('lib:database.query.select', ['adapter' => $this->getTable()->getAdapter()])
             ->table(array('tbl' => $this->getTable()->getName()));
 
         if($columns) {
