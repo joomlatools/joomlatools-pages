@@ -23,7 +23,7 @@
     ],
     "require": {
         "php": ">=8.0.0",
-        "joomlatools/framework": "^4.0.4",
+        "joomlatools/framework": "dev-master as 4.0.x-dev",
         "michelf/php-markdown": "1.9.*"
     },
     "extra": {
