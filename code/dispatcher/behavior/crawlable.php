@@ -15,7 +15,7 @@ class ComPagesDispatcherBehaviorCrawlable extends KControllerBehaviorAbstract
         {
             //Add a (self-referential) canonical URL (only to GET and HEAD requests)
             if($url = $context->subject->getController()->getView()->getCanonical()) {
-                $context->response->getHeaders()->set('Link', array((string) $url => array('rel' => 'canonical')));
+                $context->response->getHeaders()->set('Link', ['<'.rtrim($url, '/').'>' => ['rel' => 'canonical']], false);
             }
 
             //Add X-Robots-Tag
