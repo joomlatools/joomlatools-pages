@@ -565,7 +565,7 @@ class ComPagesPageRegistry extends KObject implements KObjectSingleton
                 else return false;
             };
 
-            Closure::bind($iterate, $this, get_class());
+            Closure::bind($iterate, $this, get_class($this));
 
             $result['files']       = $iterate($basedir);
             $result['pages']       = $pages;

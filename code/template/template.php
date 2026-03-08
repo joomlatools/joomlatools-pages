@@ -128,6 +128,12 @@ class ComPagesTemplate extends KTemplate
 
     public function invokeHelper($identifier, ...$params)
     {
+        if (is_string($identifier) && strpos($identifier, '.') !== false && strpos($identifier, ':') === false)
+        {
+            $args = !empty($params) ? (is_numeric(key($params)) ? reset($params) : $params) : [];
+            return parent::invoke($identifier, $args);
+        }
+
         $helper = $this->createHelper($identifier);
 
         if(is_callable($helper))
@@ -166,7 +172,7 @@ class ComPagesTemplate extends KTemplate
         {
             $class = $this->getObject('manager')->getClass($identifier);
 
-            if(array_key_exists('KTemplateHelperParameterizable', class_implements($class))) {
+            if(is_string($class) && class_exists($class) && array_key_exists('KTemplateHelperParameterizable', class_implements($class))) {
                 $config = $this->getParameters()->toArray();
             } else {
                 $config = array();

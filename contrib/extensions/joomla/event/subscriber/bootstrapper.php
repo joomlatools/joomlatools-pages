@@ -26,15 +26,8 @@ class ExtJoomlaEventSubscriberBootstrapper extends ComPagesEventSubscriberAbstra
             $install();
         }
 
-        //Handle Joomla context
-        if(JFactory::getApplication()->getCfg('sef_rewrite'))
-        {
-            $path = '';
-            if(!JFactory::getApplication()->getCfg('sef_rewrite')) {
-                $path = !empty($path) ? $path.'/index.php' : 'index.php';
-            }
-
-            $event->config->set('script_name', $path);
-        }
+        //Set script_name based on Joomla's sef_rewrite setting
+        $sefRewrite = (bool) JFactory::getApplication()->getCfg('sef_rewrite');
+        $event->config->set('script_name', $sefRewrite ? '' : 'index.php');
     }
 }

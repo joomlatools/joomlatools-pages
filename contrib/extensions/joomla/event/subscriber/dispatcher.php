@@ -52,18 +52,20 @@ class ExtJoomlaEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
         {
             $application = JFactory::getApplication();
 
-            //Turn off component sef_advanced to bypass routing failure
+            //Claim Pages routes: if Joomla's main router left a non-empty path (no menu item matched),
+            //and Pages has a route for this URL, clear the path and set option=com_pages so Joomla
+            //does not throw a RouteNotFoundException.
             //See: https://github.com/joomla/joomla-cms/blob/staging/libraries/src/Router/Router.php#L238
             $application->getRouter()->attachParseRule(function($router, $url) use ($dispatcher)
             {
-                if($dispatcher->getRoute())
+                if(strlen($url->getPath()) > 0 && $dispatcher->getRoute())
                 {
                     $page = $dispatcher->getPage();
 
                     if($page->path && !$page->isDecorator())
                     {
-                        $option = $router->getVar('option');
-                        JComponentHelper::getParams($option)->set('sef_advanced', 0);
+                        $url->setPath('');
+                        $router->setVar('option', 'com_pages');
                     }
                 }
 
@@ -412,7 +414,9 @@ class ExtJoomlaEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
 
     public function isDispatchable()
     {
-        return (bool) ($this->__dispatchable && $this->getDispatcher()->getRoute() && JFactory::getApplication()->isSite());
+        $app = JFactory::getApplication();
+        $isSite = method_exists($app, 'isClient') ? $app->isClient('site') : $app->isSite();
+        return (bool) ($this->__dispatchable && $this->getDispatcher()->getRoute() && $isSite);
     }
 
     public function isDecorator()

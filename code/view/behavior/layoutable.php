@@ -64,7 +64,7 @@ class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
 
             };
 
-            Closure::bind($mergeLayout, $this, get_class());
+            Closure::bind($mergeLayout, $this, get_class($this));
             $mergeLayout($context, $layout->path);
         }
     }
@@ -142,7 +142,7 @@ class ComPagesViewBehaviorLayoutable extends KViewBehaviorAbstract
                 }
             };
 
-            Closure::bind($renderLayout, $this, get_class());
+            Closure::bind($renderLayout, $this, get_class($this));
             $renderLayout($context, $layout);
         }
 

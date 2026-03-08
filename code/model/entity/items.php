@@ -68,6 +68,7 @@ class ComPagesModelEntityItems extends KModelEntityComposite implements JsonSeri
         return $result;
     }
 
+    #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
         $result = array();

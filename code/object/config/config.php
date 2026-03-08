@@ -37,6 +37,7 @@ class ComPagesObjectConfig extends KObjectConfig implements JsonSerializable
         return $json->toString();
     }
 
+    #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return $this->toArray();

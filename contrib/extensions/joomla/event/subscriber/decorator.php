@@ -283,7 +283,9 @@ class ExtJoomlaEventSubscriberDecorator extends ComPagesEventSubscriberAbstract
         $result = false;
 
         //Only decorate GET requests that are not routing to com_pages
-        if($this->getObject('request')->isGet() && JFactory::getApplication()->isSite()) {
+        $app = JFactory::getApplication();
+        $isSite = method_exists($app, 'isClient') ? $app->isClient('site') : $app->isSite();
+        if($this->getObject('request')->isGet() && $isSite) {
             $result = (bool) $this->getDispatcher();
         }
 
