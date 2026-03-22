@@ -11,7 +11,7 @@ class ComPagesDataObject extends ComPagesObjectConfig
 {
     public function shuffle()
     {
-        $data = $this->toArray();
+        $data = $this->toArray() ?? [];
         shuffle($data);
 
         return new static($data);
@@ -37,7 +37,7 @@ class ComPagesDataObject extends ComPagesObjectConfig
     {
         if($key)
         {
-            $data = $this->toArray();
+            $data = $this->toArray() ?? [];
 
             usort($data, function($first, $second) use($key)
             {

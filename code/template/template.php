@@ -128,6 +128,8 @@ class ComPagesTemplate extends KTemplate
 
     public function invokeHelper($identifier, ...$params)
     {
+        // If the identifier is a helper.method pattern (e.g. 'form.honeypot'), delegate to
+        // the base invoke() which correctly splits the method from the helper identifier.
         if (is_string($identifier) && strpos($identifier, '.') !== false && strpos($identifier, ':') === false)
         {
             $args = !empty($params) ? (is_numeric(key($params)) ? reset($params) : $params) : [];
@@ -207,7 +209,7 @@ class ComPagesTemplate extends KTemplate
         return $result;
     }
 
-    public function handleException(Exception &$exception)
+    public function handleException(\Throwable &$exception)
     {
         if($exception instanceof KTemplateExceptionError)
         {

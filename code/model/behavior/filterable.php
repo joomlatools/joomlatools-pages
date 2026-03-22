@@ -59,7 +59,7 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                 }
                 else
                 {
-                    if($matches = preg_split('#\b(and|or)\b#', $filter, null, PREG_SPLIT_DELIM_CAPTURE))
+                    if($matches = preg_split('#\b(and|or)\b#', $filter, -1, PREG_SPLIT_DELIM_CAPTURE))
                     {
                         array_unshift($matches, 'and');
                         $matches = array_chunk($matches, 2);
@@ -69,7 +69,7 @@ class ComPagesModelBehaviorFilterable extends ComPagesModelBehaviorQueryable
                             $combination = strtoupper($match[0]);
                             $expression  = $match[1];
 
-                            if($filter = preg_split('#^(\w+)\s+([eq|neq|gt|gte|lt|lte|in|nin]+)\s+(.+)\s*$#i', trim($expression), null, PREG_SPLIT_DELIM_CAPTURE))
+                            if($filter = preg_split('#^(\w+)\s+([eq|neq|gt|gte|lt|lte|in|nin]+)\s+(.+)\s*$#i', trim($expression), -1, PREG_SPLIT_DELIM_CAPTURE))
                             {
                                 $property  = $filter[1];
                                 $operation = $filter[2];

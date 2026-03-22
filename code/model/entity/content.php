@@ -55,7 +55,7 @@ class ComPagesModelEntityContent extends ComPagesModelEntityItem
 
     public function getPropertyExcerpt()
     {
-        $parts = preg_split('#<!--(.*)more(.*)-->#i', $this->getContent(), 2);
+        $parts = preg_split('#<!--(.*)more(.*)-->#i', ($this->getContent() ?? -1 ), 2);
 
         if(count($parts) > 1) {
             $excerpt = $parts[0];
@@ -68,7 +68,7 @@ class ComPagesModelEntityContent extends ComPagesModelEntityItem
 
     public function getPropertyText()
     {
-        $parts = preg_split('#<!--(.*)more(.*)-->#i', $this->getContent(), 2);
+        $parts = preg_split('#<!--(.*)more(.*)-->#i', ($this->getContent() ?? -1 ), 2);
 
         if(count($parts) > 1) {
             $text = $parts[1];

@@ -139,6 +139,9 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
         $result = false;
         $path  = $route->getPath();
 
+        //Normalize path to include leading slash for matching against stored patterns
+        $path = '/' . ltrim($path, '/');
+
         //Check if we have a static route
         if(!isset($this->__static_routes[$path]))
         {
@@ -232,6 +235,9 @@ class ComPagesDispatcherRouterResolverRegex  extends ComPagesDispatcherRouterRes
 
         $query  = array();
         $path   = $route->getPath();
+
+        //Normalize path to include leading slash for matching against stored patterns
+        $path = '/' . ltrim($path, '/');
 
         if(strpos($regex, '[') !== false)
         {

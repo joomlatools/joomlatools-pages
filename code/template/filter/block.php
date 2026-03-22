@@ -250,7 +250,7 @@ class ComPagesTemplateFilterBlock extends ComPagesTemplateFilterAbstract
     protected function _countBlocks($condition)
     {
         $operators = '(\+|\-|\*|\/|==|\!=|\<\>|\<|\>|\<=|\>=|and|or|xor)';
-        $words = preg_split('# ' . $operators . ' #', $condition, null, PREG_SPLIT_DELIM_CAPTURE);
+        $words = preg_split('# ' . $operators . ' #', $condition, -1, PREG_SPLIT_DELIM_CAPTURE);
         for ($i = 0, $n = count($words); $i < $n; $i += 2)
         {
             // Odd parts (blocks)

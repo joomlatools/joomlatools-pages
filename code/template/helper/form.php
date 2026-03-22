@@ -20,11 +20,11 @@ class ComPagesTemplateHelperForm extends ComPagesTemplateHelperAbstract
         );
     }
 
-    public function honeypot()
+    public function honeypot($name = null)
     {
         $config = new ComPagesObjectConfig();
         $config->append(array(
-            'name'    => $this->getTemplate()->page()->form->honeypot,
+            'name'    => $name ?? $this->getTemplate()->page()->form->honeypot,
             'snippet' => 'form.honeypot',
         ));
 
