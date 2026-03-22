@@ -40,8 +40,8 @@ return array(
 
     // Aliases
     'aliases' => [
-        'theme://'  => '/joomlatools-pages/theme/',
-        'images://' => '/joomlatools-pages/images/',
+        'theme://'  => '/theme/',
+        'images://' => '/images/',
     ],
 
     // Google Analytics

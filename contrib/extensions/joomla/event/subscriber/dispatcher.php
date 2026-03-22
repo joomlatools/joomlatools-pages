@@ -238,18 +238,20 @@ class ExtJoomlaEventSubscriberDispatcher extends ComPagesEventSubscriberAbstract
 
         if($dispatcher->getDecorator() == 'joomla')
         {
+            $view = $dispatcher->getController()->getView();
+
             //Set the title
-            if($title = $dispatcher->getController()->getView()->getTitle()) {
+            if(method_exists($view, 'getTitle') && ($title = $view->getTitle())) {
                 JFactory::getDocument()->setTitle($title);
             }
 
             //Set the direction
-            if($direction = $dispatcher->getController()->getView()->getDirection()) {
+            if(method_exists($view, 'getDirection') && ($direction = $view->getDirection())) {
                 JFactory::getDocument()->setDirection($direction);
             }
 
             //Set the language
-            if($language = $dispatcher->getController()->getView()->getLanguage()) {
+            if(method_exists($view, 'getLanguage') && ($language = $view->getLanguage())) {
                 JFactory::getDocument()->setLanguage($language);
             }
         }
