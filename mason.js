@@ -218,6 +218,93 @@ async function bundle({ config = {} }) {
   await cleanup();
 }
 
+async function buildStandalone({ config = {} }) {
+  config = mason.config.merge(
+    {
+      location: pagesRoot,
+      destination: `${pagesRoot}/artifacts/standalone-pages.zip`,
+      framework: {
+        source: 'local',
+        location: path.resolve(pagesRoot, '..', 'joomlatools-framework'),
+        includeComponents: false,
+      },
+    },
+    config
+  );
+
+  const { path: tmp, cleanup } = await mason.fs.getTemporaryDirectory();
+  const appDir = `${tmp}/app`;
+  const vendorDir = `${appDir}/vendor`;
+
+  mason.log.debug(`Using ${tmp} folder for standalone build`);
+
+  // 1. composer install first so it doesn't overwrite our joomlatools packages
+  await mason.fs.ensureDir(appDir);
+  await fs.writeFile(
+    `${appDir}/composer.json`,
+    JSON.stringify(
+      {
+        require: {
+          'michelf/php-markdown': '1.9.*',
+          'symfony/yaml': '^5.4',
+        },
+      },
+      null,
+      2
+    )
+  );
+  mason.log.debug('Running composer install…');
+  await execShellCommand(`cd "${appDir}" && composer install --no-dev`);
+
+  // 2. Build framework into app/vendor/joomlatools/framework/code/
+  await buildFramework({
+    config: {
+      ...config.framework,
+      compress: false,
+      destination: `${vendorDir}/joomlatools/framework/code`,
+    },
+  });
+
+  // 3. Build pages into app/vendor/joomlatools/pages/code/
+  await build({
+    config: {
+      ...config,
+      compress: false,
+      destination: `${vendorDir}/joomlatools/pages/code`,
+    },
+  });
+
+  // 4. Copy bootstrapper
+  await mason.fs.ensureDir(`${vendorDir}/joomlatools/pages/resources/pages`);
+  await fs.copyFile(
+    `${pagesRoot}/resources/pages/bootstrapper.php`,
+    `${vendorDir}/joomlatools/pages/resources/pages/bootstrapper.php`
+  );
+
+  // 5. Config
+  await mason.fs.ensureDir(`${appDir}/config`);
+  await fs.copyFile(
+    `${pagesRoot}/resources/standalone/config.php`,
+    `${appDir}/config/koowa.php`
+  );
+
+  // 6. Entry point — defines paths then delegates to bootstrapper
+  await fs.writeFile(
+    `${tmp}/index.php`,
+    `<?php\ndefine('KOOWA_ROOT', __DIR__);\ndefine('KOOWA_VENDOR', __DIR__.'/app/vendor');\ndefine('KOOWA_CONFIG', __DIR__.'/app/config');\ndefine('PAGES_SITE_ROOT', __DIR__.'/sites');\nrequire KOOWA_VENDOR.'/joomlatools/pages/resources/pages/bootstrapper.php';\n`
+  );
+
+  // 7. Empty sites/ placeholder
+  await mason.fs.ensureDir(`${tmp}/sites`);
+  await fs.writeFile(`${tmp}/sites/.gitkeep`, '');
+
+  // 8. Archive
+  await mason.fs.ensureDir(`${pagesRoot}/artifacts`);
+  await mason.fs.archiveDirectory(tmp, config.destination);
+
+  await cleanup();
+}
+
 module.exports = {
   version: "1.0",
   options: {
@@ -230,7 +317,8 @@ module.exports = {
     build,
     buildExtensions,
     buildFramework,
+    buildStandalone,
     bundle,
-    default: ["bundle" , 'buildExtensions'],
+    default: ["bundle", "buildExtensions"],
   },
 };

@@ -1,5 +1,5 @@
 framework:
-  source: remote # or local
+  source: local
   branch: v4.0.4
 extensions:
   folder: contrib
