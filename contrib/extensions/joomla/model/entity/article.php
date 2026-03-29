@@ -11,6 +11,8 @@ JLoader::register('ContentHelperRoute', JPATH_SITE . '/components/com_content/he
 
 class ExtJoomlaModelEntityArticle extends ExtJoomlaModelEntityAbstract
 {
+	protected $_images = [];
+
 	protected function _initialize(KObjectConfig $config)
 	{
 		$config->append([
@@ -34,6 +36,12 @@ class ExtJoomlaModelEntityArticle extends ExtJoomlaModelEntityAbstract
 					'url' 	   => '',
 					'alt'	   => '',
 					'caption'  => '',
+				],
+				'intro' => [
+					'image' => ['url' => '', 'alt' => '', 'caption' => ''],
+				],
+				'full' => [
+					'image' => ['url' => '', 'alt' => '', 'caption' => ''],
 				],
 				'metadata'    => [
 					'og:type'        => 'article',
@@ -201,43 +209,81 @@ class ExtJoomlaModelEntityArticle extends ExtJoomlaModelEntityAbstract
 			$value = json_decode($value, true);
 		}
 
-		//Normalize images
+		$this->_images = is_array($value) ? $value : [];
+
+		//Normalize images — fulltext takes priority, intro is fallback
 		$image = array();
 
 		if(isset($value['image_fulltext']) && $value['image_fulltext'])
 		{
-			$url = $value['image_fulltext'];
-
-			if(is_string($url) && strpos($url, '://') === false) {
-				$url = $this->getBasePath().'/'.ltrim($url, '/');
-			}
-
-			$url = $this->getObject('lib:http.url')->setUrl($url);
-
 			$image = [
-				'url'      => $url,
-				'alt'      => $value['image_fulltext_alt'] ?? '',
-				'caption'  => $value['image_fulltext_caption'] ?? '',
+				'url'     => $this->_normalizeImageUrl($value['image_fulltext']),
+				'alt'     => $value['image_fulltext_alt'] ?? '',
+				'caption' => $value['image_fulltext_caption'] ?? '',
 			];
 		}
 		elseif(isset($value['image_intro']) && $value['image_intro'])
 		{
-			$url = $value['image_intro'];
-
-			if(is_string($url) && strpos($url, '://') === false) {
-				$url =  $this->getBasePath().'/'.ltrim($url, '/');
-			}
-
-			$url = $this->getObject('lib:http.url')->setUrl($url);
-
 			$image = [
-				'url'      => $url,
-				'alt'      => $value['image_intro_alt'] ?? '',
-				'caption'  => $value['image_intro_caption'] ?? '',
+				'url'     => $this->_normalizeImageUrl($value['image_intro']),
+				'alt'     => $value['image_intro_alt'] ?? '',
+				'caption' => $value['image_intro_caption'] ?? '',
 			];
- 		}
+		}
 
 		return new ComPagesObjectConfig($image);
+	}
+
+	public function getPropertyIntro()
+	{
+		$image = ['url' => '', 'alt' => '', 'caption' => ''];
+
+		if (!empty($this->_images['image_intro'])) {
+			$image = [
+				'url'     => $this->_normalizeImageUrl($this->_images['image_intro']),
+				'alt'     => $this->_images['image_intro_alt'] ?? '',
+				'caption' => $this->_images['image_intro_caption'] ?? '',
+			];
+		}
+
+		return new ComPagesObjectConfig(['image' => $image]);
+	}
+
+	public function getPropertyFull()
+	{
+		$image = ['url' => '', 'alt' => '', 'caption' => ''];
+
+		if (!empty($this->_images['image_fulltext'])) {
+			$image = [
+				'url'     => $this->_normalizeImageUrl($this->_images['image_fulltext']),
+				'alt'     => $this->_images['image_fulltext_alt'] ?? '',
+				'caption' => $this->_images['image_fulltext_caption'] ?? '',
+			];
+		}
+
+		return new ComPagesObjectConfig(['image' => $image]);
+	}
+
+	private function _normalizeImageUrl($url)
+	{
+		if (is_string($url)) {
+			// Pages was built for Joomla 3. Joomla 4+ media manager appends a
+			// #joomlaImage://... fragment to store image dimensions. Use the
+			// Joomla-native helper to strip it cleanly.
+			$url = \Joomla\CMS\HTML\HTMLHelper::cleanImageURL($url)->url;
+		}
+
+		if (is_string($url) && strpos($url, '://') === false) {
+			// Joomla article images live at JPATH_ROOT/images, which is a different
+			// root from the Pages site images folder. The Pages image helper cannot
+			// resolve JPATH_ROOT/images paths (its base_path points to site images).
+			// Produce an absolute URL instead — supported() returns false for absolute
+			// URLs without a configured origin, so the filter outputs a plain <img>.
+			$baseUrl = rtrim((string) $this->getObject('request')->getBaseUrl(), '/');
+			$url     = $baseUrl . '/' . ltrim($url, '/');
+		}
+
+		return $this->getObject('lib:http.url')->setUrl($url);
 	}
 
 	public function setPropertyLinks($value)
