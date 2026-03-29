@@ -4,12 +4,15 @@ class ComPagesTemplateHelperImage extends ComPagesTemplateHelperLazysizes
 {
     protected function _initialize(KObjectConfig $config)
     {
+        $sitePath    = $this->getObject('com:pages.config')->getSitePath();
+        $siteUrlPath = $sitePath ? str_replace(JPATH_ROOT, '', rtrim($sitePath, '/')) : '';
+
         $config->append(array(
             'max_width' => 1920,
             'min_width' => 320,
             'max_dpr'   => 3,
-            'base_url'   => $this->getObject('request')->getBasePath().'/images',
-            'base_path'  => $this->getObject('com:pages.config')->getSitePath().'/images',
+            'base_url'   => $this->getObject('request')->getBasePath().$siteUrlPath.'/images',
+            'base_path'  => $sitePath.'/images',
             'cache_path' => $this->getObject('com:pages.config')->getCachePath().'/images',
             'exclude'    => ['svg'],
             'lazyload'   => true,
