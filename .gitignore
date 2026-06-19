@@ -3,4 +3,4 @@ artifacts/*
 .env
 
 # Built extension packages (mason build/bundle output)
-*.zip
+/*.zip
