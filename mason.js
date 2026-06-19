@@ -6,9 +6,12 @@ const exec = require('child_process').exec;
 const pagesRoot = process.cwd();
 
 // Read the shared GitHub token from the monorepo-root .env (gitignored, outside the repos).
-if (typeof process.loadEnvFile === 'function') {
-    try { process.loadEnvFile(path.resolve(process.cwd(), '..', '.env')); } catch (e) { /* .env is optional */ }
-}
+try {
+    for (const line of require('fs').readFileSync(path.resolve(process.cwd(), '..', '.env'), 'utf8').split('\n')) {
+        const m = line.match(/^\s*([\w.-]+)\s*=\s*(.*?)\s*$/);
+        if (m && process.env[m[1]] === undefined) { process.env[m[1]] = m[2].replace(/^(['"])([\s\S]*)\1$/, '$2'); }
+    }
+} catch (e) { /* .env is optional */ }
 
 async function build({ config = {} }) {
   config = mason.config.merge(
