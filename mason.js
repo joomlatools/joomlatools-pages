@@ -5,6 +5,11 @@ const exec = require('child_process').exec;
 
 const pagesRoot = process.cwd();
 
+// Read the shared GitHub token from the monorepo-root .env (gitignored, outside the repos).
+if (typeof process.loadEnvFile === 'function') {
+    try { process.loadEnvFile(path.resolve(process.cwd(), '..', '.env')); } catch (e) { /* .env is optional */ }
+}
+
 async function build({ config = {} }) {
   config = mason.config.merge(
     {
@@ -166,7 +171,7 @@ async function buildFramework({ config = {} }) {
 async function bundle({ config = {} }) {
   config = mason.config.merge(
     {
-      githubToken: null,
+      githubToken: process.env.JOOMLATOOLS_GITHUB_TOKEN || null,
       framework: {},
       bundle: {
         manifest: {},
